@@ -131,6 +131,8 @@ def test_a_job_goes_from_waiting_questions_to_a_downloadable_video(client: TestC
     )
     assert [h["kind"] for h in d["history"]] == list(KINDS) and d["pending"] is None
     assert client.get(d["video_url"]).content == b"0123456789" * 100
+    attach = client.get(d["video_url"] + "?download=1")
+    assert "attachment" in attach.headers["content-disposition"]
     ranged = client.get(d["video_url"], headers={"Range": "bytes=0-9"})
     assert ranged.status_code == 206 and ranged.content == b"0123456789"
     assert job_id in [j["job_id"] for j in client.get("/api/jobs").json()]

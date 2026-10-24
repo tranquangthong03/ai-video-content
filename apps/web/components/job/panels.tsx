@@ -170,7 +170,7 @@ export function VideoPanel({ ctx }: { ctx: JobCtx }) {
         )}
         {src && (
           <Button asChild className="w-full max-w-[280px]">
-            <a href={src} download="video.mp4">
+            <a href={`${src}?download=1`} download="video.mp4">
               <Download className="h-4 w-4" /> Tải MP4
             </a>
           </Button>

@@ -312,7 +312,7 @@ def resume(request: Request, job_id: str, redo_script: bool = False) -> dict[str
 
 
 @router.get("/jobs/{job_id}/files/{path:path}")
-def get_file(request: Request, job_id: str, path: str) -> FileResponse:
+def get_file(request: Request, job_id: str, path: str, download: bool = False) -> FileResponse:
     """Serve a file from inside the job dir only (Range requests are handled by FileResponse)."""
     directory = job_dir_of(request, job_id).resolve()
     target = (directory / path).resolve()
@@ -320,4 +320,6 @@ def get_file(request: Request, job_id: str, path: str) -> FileResponse:
         raise HTTPException(404, "Không tìm thấy tệp")
     if target.name in ("storage_state.json", JOB_FILE) or target.suffix == ".log":
         raise HTTPException(404, "Không tìm thấy tệp")
+    if download:  # a cross-origin <a download> is ignored by browsers: the server asks for it
+        return FileResponse(target, filename=target.name, content_disposition_type="attachment")
     return FileResponse(target)

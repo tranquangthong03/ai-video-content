@@ -1,7 +1,11 @@
 COMPOSE     = docker compose -f infra/docker-compose.yml
 COMPOSE_DEV = $(COMPOSE) -f infra/docker-compose.dev.yml
 
-.PHONY: up up-dev down logs codegen codegen-check test lint fmt migrate env
+.PHONY: up up-dev down logs codegen codegen-check test lint fmt migrate env demo
+
+# Demo without Docker: API (:8000) + web (:3000); rendering is done by the API process itself.
+demo:
+	pnpm dev:all
 
 env:
 	@test -f .env || (cp .env.example .env && echo "Created .env from .env.example - fill in secrets")
