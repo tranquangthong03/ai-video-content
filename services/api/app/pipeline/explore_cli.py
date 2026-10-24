@@ -61,7 +61,19 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--enter-policy", choices=["strict", "relaxed"], default="strict",
         help="when Enter may be pressed after typing (see app/browser/enter_policy.py)",
     )  # fmt: skip
+    p.add_argument(
+        "--capture", metavar="WxH", help="recording size, e.g. 1280x800 (default 1440x900)"
+    )
     return p.parse_args(argv)
+
+
+def parse_capture(text: str | None) -> tuple[int, int] | None:
+    if not text:
+        return None
+    match = re.fullmatch(r"(\d{3,4})x(\d{3,4})", text.strip().lower())
+    if match is None:
+        raise SystemExit(f"--capture must look like 1280x800, got {text!r}")
+    return int(match.group(1)), int(match.group(2))
 
 
 def default_job_dir(url: str) -> Path:
@@ -156,6 +168,7 @@ def main(argv: list[str] | None = None) -> int:
         enter_policy=args.enter_policy,
         stop_after=args.stop_after,
         from_step=args.from_step,
+        capture=parse_capture(args.capture),
     )
     frontend = ScriptedFrontend.from_file(args.answers) if args.auto else TerminalFrontend(console)
     return run_job(cfg, frontend, ConsoleReporter(console)).exit_code

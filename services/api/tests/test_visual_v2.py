@@ -126,7 +126,12 @@ def lite() -> LiteContext:
 
 
 def test_the_hero_is_the_h1_and_the_cta_is_a_real_prominent_button_not_a_nav_link() -> None:
-    assert hero_locator(index(), HOME) == {"css": "h1", "text": "Việc nhanh cho cả nhóm"}
+    assert hero_locator(index(), HOME) == {
+        "role": "heading",
+        "name": "Việc nhanh cho cả nhóm",
+        "css": "h1",
+        "text": "Việc nhanh cho cả nhóm",
+    }
     button = cta_button(index(), HOME, "Thử ngay hôm nay")
     assert button is not None and button["name"] == "Dùng thử miễn phí"  # not "Log in" / "Pricing"
     assert cta_button(PageIndex(), HOME) is None
@@ -333,10 +338,13 @@ def test_the_next_unused_section_of_the_same_page_replaces_a_repeated_scene() ->
 
 def fake_recorder(box: dict[str, int], calls: list[str]):  # type: ignore[no-untyped-def]
     def record(session: Any, sc: Any, out: Path, speech_ms: int, **kw: Any) -> RecordResult:
-        calls.append(sc.root.visual.actions[1].locator.text)
+        text = sc.root.visual.actions[1].locator.text
+        calls.append(text)
+        # the same spot for the original section; a swapped one lands somewhere else
+        where = box if text == "Báo cáo tự động" else {**box, "x": 1000, "y": 700}
         return RecordResult(
             kind="recording",
-            focus_log=[{"t_ms": 0, "bbox": box, "kind": "highlight", "hold_ms": 900}],
+            focus_log=[{"t_ms": 0, "bbox": where, "kind": "highlight", "hold_ms": 900}],
         )
 
     return record

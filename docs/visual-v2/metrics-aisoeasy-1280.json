@@ -1,0 +1,93 @@
+{
+  "job": "aisoeasy-1280",
+  "headline": "Mỗi vai trò một lộ trình học AI riêng",
+  "target_s": 30.0,
+  "actual_s": 32.2,
+  "duration_ratio": 1.073,
+  "scenes": [
+    {
+      "id": "s1",
+      "type": "hook",
+      "kind": "thao tác",
+      "speech_ms": 3850,
+      "final_ms": 3850,
+      "playback_rate": 1.0,
+      "trimmed_ms": 668,
+      "actions": 1,
+      "hold_ms": 1500,
+      "idle_max_ms": 2255
+    },
+    {
+      "id": "s2",
+      "type": "feature_demo",
+      "kind": "cuộn-highlight",
+      "speech_ms": 9450,
+      "final_ms": 9450,
+      "playback_rate": 1.0,
+      "trimmed_ms": 580,
+      "actions": 2,
+      "hold_ms": 1650,
+      "idle_max_ms": 2036
+    },
+    {
+      "id": "s3",
+      "type": "feature_demo",
+      "kind": "cuộn-highlight",
+      "speech_ms": 9050,
+      "final_ms": 9050,
+      "playback_rate": 1.0,
+      "trimmed_ms": 1208,
+      "actions": 2,
+      "hold_ms": 1650,
+      "idle_max_ms": 2154
+    },
+    {
+      "id": "s4",
+      "type": "before_after",
+      "kind": "ảnh",
+      "speech_ms": 4650,
+      "final_ms": 4650,
+      "playback_rate": 1.0,
+      "trimmed_ms": 0,
+      "actions": 0,
+      "hold_ms": null,
+      "idle_max_ms": 0
+    },
+    {
+      "id": "s5",
+      "type": "cta",
+      "kind": "cuộn-highlight",
+      "speech_ms": 5050,
+      "final_ms": 5129,
+      "playback_rate": 1.15,
+      "trimmed_ms": 465,
+      "actions": 2,
+      "hold_ms": 1650,
+      "idle_max_ms": 1583
+    }
+  ],
+  "camera_cover_share": 0.997,
+  "camera_mean_zoom": 1.058,
+  "duplicate_signatures": [],
+  "side_page_scenes": [],
+  "text_on_black_s": 0.0,
+  "hold_avg_ms": 1629,
+  "max_action_speedup": 1.0,
+  "max_speedup_any": 1.15,
+  "trimmed_ms": 2921,
+  "footage_ratio": 0.855,
+  "idle_ok": true,
+  "ffprobe": {
+    "codec_name": "h264",
+    "width": 1080,
+    "height": 1920,
+    "pix_fmt": "yuv420p",
+    "r_frame_rate": "30/1"
+  },
+  "warnings": [
+    "s3: trùng hình ảnh với s2, đổi sang section «The workforce upskilling platform for SMEs»",
+    "s5: trùng hình ảnh với s3, đổi sang section «TikTok»",
+    "s5: trùng hình ảnh với s2, đổi sang section «Facebook Page»"
+  ],
+  "dropped_scenes": []
+}

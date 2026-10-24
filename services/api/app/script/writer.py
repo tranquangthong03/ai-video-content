@@ -84,6 +84,7 @@ class WriterContext:
 
     # the video is longer than the product can fill with real footage and the user insisted
     forced: bool = False
+    capture: tuple[int, int] | None = None  # recording size; None = the schema default (1440x900)
 
     @property
     def demo_max_words(self) -> int:
@@ -353,6 +354,8 @@ def build_script(draft: DraftScript, ctx: WriterContext) -> tuple[Script, list[s
         "theme": ctx.theme.model_dump(),
         "scenes": scenes,
     }
+    if ctx.capture is not None:
+        data["capture"] = {"viewport": "desktop", "width": ctx.capture[0], "height": ctx.capture[1]}
     try:
         script = Script.model_validate(data)
     except ValidationError as e:

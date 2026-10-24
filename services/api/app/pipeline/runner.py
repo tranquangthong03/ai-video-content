@@ -69,6 +69,7 @@ class JobConfig:
     from_step: Literal["explore", "script", "produce"] = "explore"
     # polled while a step reports progress: True makes the job stop with Cancelled (web: Hủy)
     should_stop: Callable[[], bool] | None = None
+    capture: tuple[int, int] | None = None  # recording size (width, height); None = 1440x900
 
 
 @dataclass
@@ -379,6 +380,7 @@ def run_script_step(
         outline,
         cfg.url,
         theme_fn=derive,
+        capture=cfg.capture,
     )
     return runner.run()
 

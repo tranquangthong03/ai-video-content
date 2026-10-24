@@ -74,10 +74,12 @@ class ScriptRunner:
         url: str,
         *,
         theme_fn: Callable[[], ThemeResult],
+        capture: tuple[int, int] | None = None,
     ) -> None:
         self.job_id, self.dir, self.caller, self.frontend = job_id, job_dir, caller, frontend
         self.profile, self.outline, self.url = profile, outline, url
         self.theme_fn = theme_fn
+        self.capture = capture
         self.store = ScriptStore(job_dir)
         self.report: dict[str, Any] = {"warnings": []}
         saved = job_dir / "script_report.json"
@@ -148,6 +150,7 @@ class ScriptRunner:
             self.url,
             load_setup_counts(self.dir / "explore", self.profile),
         )
+        self.ctx.capture = self.capture
         self.ctx.lite = LiteContext(self.profile, load_page_index(self.dir / "explore"), self.url)
         budget = budget_for(self.profile)
         self.report.update(

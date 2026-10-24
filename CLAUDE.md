@@ -39,6 +39,7 @@ Người dùng nhập URL website (+ tài khoản demo tùy chọn). Hệ thốn
 ## Môi trường
 - Dự án chạy trên Windows: CLI phải ép UTF-8 cho stdout/stderr (`reconfigure(encoding="utf-8")`), nếu không khi redirect ra file thì codepage cũ (cp1258/cp1252) làm crash với tiếng Việt và ký tự như "→".
 - Quay video: viewport 1440×900 (mặc định `script.capture`), explorer vẫn 1920×1080. Đã thử quay 2x (Playwright `record_video` với device_scale_factor 2 và CDP screencast): cả hai đều không cho ảnh 2x thật (xem docs/visual-v2/spike-2x/README.md) nên clip là 1440×900, chữ khi zoom bị phóng từ nguồn 1440 px. Mỗi thao tác chính có `hold` 1,5s và tối đa 3 thao tác chính mỗi scene; recorder ghi `focus_log` (bbox tiêu điểm) cho camera.
+- Hình ảnh (docs/visual-v2): template mặc định `desktop_focus` (khung 4:5, camera "focus-first" tính theo đơn vị cover, min 1,0 max 1,4, mọi hằng số ở `apps/render/src/camera/config.ts`); cảnh thao tác không bao giờ tăng tốc (cắt đoạn chết bằng ffmpeg ở producer), chỉ cảnh cuộn/chỉ vị trí tới 1,15x; hook/CTA là clip trang chủ; trang phụ (đăng nhập/đăng ký/thanh toán...) không được làm đích quay (`core/subpages.py`); `--capture WxH` đổi kích thước quay; `SHARPEN_AMOUNT` chỉnh độ nét cuối (mặc định 0,5).
 - Blacklist chỉ áp dụng cho phần tử được click/hover, không áp dụng cho text được gõ (gõ "Mua sữa" vào ô nhập là hợp lệ).
 
 ## Lệnh thường dùng

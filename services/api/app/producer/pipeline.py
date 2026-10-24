@@ -30,6 +30,7 @@ MAX_RATE = 1.0  # clicks and typing play at normal speed
 SCROLL_RATE = 1.15  # scrolling and pointing scenes may be a little faster
 SCROLL_KINDS = ("cuộn-highlight", "chỉ vị trí (showcase_lite)")
 IDLE_LIMIT_MS = 2500
+MAX_SWAPS = 3  # sections tried for a repeated scene before giving up
 MAIN_FOCUS = ("click", "dblclick", "type", "hover", "highlight", "section")
 Recorder = Callable[..., RecordResult]
 Renderer = Callable[[dict[str, Any], Path, Path], Any]
@@ -214,11 +215,14 @@ def record_unique(
     size = (viewport["width"], viewport["height"])
     sid = scene.root.id
     sig = recorded_signature(scene.root.visual.model_dump(), record.focus_log, size)
-    if sig is not None and sig in dedupe.seen:
+    for _ in range(MAX_SWAPS):
+        if sig is None or sig not in dedupe.seen:
+            break
         earlier = dedupe.seen[sig]
         swapped = swap_scene(scene, dedupe.index, dedupe.used)
         if swapped is not None:
             scene, section = swapped
+            dedupe.used.add(section.text.lower())  # whatever it turns out to be, not this one again
             dedupe.notes.append(
                 f"{sid}: trùng hình ảnh với {earlier}, đổi sang section «{section.text}»"
             )
@@ -231,6 +235,7 @@ def record_unique(
             dedupe.notes.append(
                 f"{sid}: trùng hình ảnh với {earlier} (giữ vì cần ≥ {MIN_SCENES} cảnh)"
             )
+            break
     if sig is not None:
         dedupe.seen.setdefault(sig, sid)
     dedupe.used |= used_texts(scene.root.visual.model_dump())

@@ -560,17 +560,7 @@ class _Recorder:
             if self.now() - started >= missing_ms:
                 break
             self.move_to(c["x"], c["y"], self.rng.randint(800, 1200))
-            self.event("hover", c["x"], c["y"])
-            self.focus(
-                "hover",
-                {
-                    "x": c["x"] - c["w"] / 2,
-                    "y": c["y"] - c["h"] / 2,
-                    "width": c["w"],
-                    "height": c["h"],
-                },
-                250,
-            )
+            self.event("hover", c["x"], c["y"])  # filler: the camera does not follow it
             self.page.wait_for_timeout(250)
         remaining = missing_ms - (self.now() - started)
         if remaining > 1200:

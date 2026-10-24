@@ -30,6 +30,11 @@ def _words(text: str) -> set[str]:
     return {w for w in re.findall(r"[a-z0-9]{3,}", _fold(text))}
 
 
+def heading_locator(level: int, text: str) -> dict[str, Any]:
+    """By role and exact name first (headings often share a tag, rarely a name), css/text after."""
+    return {"role": "heading", "name": text[:80], "css": f"h{level}", "text": text[:80]}
+
+
 @dataclass(frozen=True)
 class Section:
     url: str
@@ -38,7 +43,7 @@ class Section:
 
     @property
     def locator(self) -> dict[str, Any]:
-        return {"css": f"h{self.level}", "text": self.text[:80]}
+        return heading_locator(self.level, self.text)
 
 
 def home_page(index: PageIndex, home_url: str) -> dict[str, Any] | None:
@@ -54,7 +59,7 @@ def hero_locator(index: PageIndex, home_url: str) -> dict[str, Any] | None:
     pick = next((h for h in heads if h.get("level") == 1), heads[0] if heads else None)
     if pick is None or not pick.get("text"):
         return None
-    return {"css": f"h{pick.get('level', 1)}", "text": pick["text"][:80]}
+    return heading_locator(int(pick.get("level", 1)), pick["text"])
 
 
 def cta_button(index: PageIndex, home_url: str, hint: str = "") -> dict[str, Any] | None:
@@ -77,7 +82,7 @@ def cta_button(index: PageIndex, home_url: str, hint: str = "") -> dict[str, Any
         score += 1.0 if el.get("tag") == "button" or el.get("role") == "button" else 0.0
         if el.get("region") in CTA_REGIONS:
             score += 0.5 - 0.1 * CTA_REGIONS.index(el["region"])
-        if score > 0 and (best is None or score > best[0]):
+        if score >= 1.0 and (best is None or score > best[0]):  # a button, or CTA wording
             best = (score, el)
     return None if best is None else dict(best[1]["locator"])
 
