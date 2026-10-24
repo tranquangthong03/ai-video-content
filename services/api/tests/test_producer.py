@@ -4,7 +4,13 @@ from pathlib import Path
 from typing import Any
 
 from app.core.timing import estimate_speech_ms
-from app.producer.pipeline import IDLE_LIMIT_MS, plan_scene_timing, produce, scene_idle_gaps
+from app.producer.pipeline import (
+    IDLE_LIMIT_MS,
+    SCROLL_RATE,
+    plan_scene_timing,
+    produce,
+    scene_idle_gaps,
+)
 from app.recorder.record import RecordResult
 from tests.test_fit_and_scene_writer import make_script
 from tests.test_script_writer import make_profile
@@ -20,15 +26,16 @@ def test_a_clip_as_long_as_the_speech_plays_as_is() -> None:
     assert plan_scene_timing(8000, 8000) == (8000, 1.0, False)
 
 
-def test_a_clip_somewhat_longer_is_sped_up_to_fit_the_speech() -> None:
-    final, rate, freeze = plan_scene_timing(8000, 10000)
-    assert (final, rate, freeze) == (8000, 1.25, False)
+def test_actions_are_never_sped_up_the_scene_just_grows() -> None:
+    assert plan_scene_timing(8000, 10000) == (10000, 1.0, False)
+    assert plan_scene_timing(8000, 15000) == (15000, 1.0, False)
 
 
-def test_a_clip_much_longer_plays_at_1_5x_and_the_scene_grows_to_fit() -> None:
-    final, rate, freeze = plan_scene_timing(8000, 15000)
-    assert rate == 1.5 and final == 10000 and freeze is False
-    assert final > 8000
+def test_scrolling_and_pointing_scenes_may_play_up_to_1_15x() -> None:
+    final, rate, freeze = plan_scene_timing(8000, 8800, SCROLL_RATE)
+    assert (final, rate, freeze) == (8000, 1.1, False)
+    final, rate, _ = plan_scene_timing(8000, 15000, SCROLL_RATE)
+    assert rate == 1.15 and final == round(15000 / 1.15)  # still longer than the speech
 
 
 def test_scenes_without_footage_last_exactly_their_speech() -> None:
@@ -116,7 +123,7 @@ def test_produce_fits_every_scene_and_writes_the_report(tmp_path: Path) -> None:
         and s2.playback_rate == 1.0
     )
     assert s3.usable_ms == 14000 and s3.freeze is False  # 17 s minus 3 s: setup cut, not shown
-    assert s3.playback_rate == min(1.5, 14000 / speech["s3"])
+    assert s3.playback_rate == 1.0 and s3.final_ms == 14000  # an action scene: never sped up
     assert (
         by_id["s1"].usable_ms is None and by_id["s1"].final_ms == speech["s1"]
     )  # photo: its speech

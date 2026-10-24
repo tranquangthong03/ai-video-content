@@ -9,7 +9,7 @@ import { SceneSchema, ScriptSchema, ThemeSchema } from "./generated";
 import { clipPlayback } from "./templates/DesktopShowcase/playback";
 import { ICON_NAMES, ICON_PATHS } from "./icons";
 import { InputPropsSchema } from "./props";
-import { ensureYuv420p, probePixelFormat } from "./pixelFormat";
+import { SHARPEN_AMOUNT, ensureYuv420p, finalFilter, finalizeVideo, probePixelFormat } from "./pixelFormat";
 import { sourceHash } from "./renderer";
 import { BULLET, MEDIA, placeBullets, splitHeadline } from "./templates/DesktopShowcase/layout";
 import { productNameOf } from "./templates/DesktopShowcase/DesktopVideo";
@@ -189,6 +189,33 @@ describe("pixel format fix", () => {
     const before = statSync(file).mtimeMs;
     expect(ensureYuv420p(file)).toBe("yuv420p"); // already fine: untouched
     expect(statSync(file).mtimeMs).toBe(before);
+    rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+describe("final sharpen pass", () => {
+  const hasFfmpeg = spawnSync("ffmpeg", ["-version"]).status === 0;
+
+  it("only sharpens luma: the filter keeps chroma amount at 0 and is limited range", () => {
+    expect(finalFilter(0.5)).toBe("scale=out_range=tv,unsharp=5:5:0.5:5:5:0.0");
+    expect(finalFilter(0.35)).toContain("unsharp=5:5:0.35:5:5:0.0");
+    expect(finalFilter(0)).toBe("scale=out_range=tv");
+    expect(SHARPEN_AMOUNT).toBeGreaterThanOrEqual(0);
+  });
+
+  it.skipIf(!hasFfmpeg)("re-encodes to yuv420p with a visible but small change, and amount 0 leaves it alone", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sharpen-"));
+    const file = path.join(dir, "in.mp4");
+    spawnSync("ffmpeg", ["-y", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=320x180:rate=10:duration=1", "-pix_fmt", "yuv420p", "-c:v", "libx264", file]);
+    const frameHash = (f: string) =>
+      spawnSync("ffmpeg", ["-v", "error", "-i", f, "-frames:v", "1", "-f", "md5", "-"], { encoding: "utf8" }).stdout;
+    const original = frameHash(file);
+    const before = statSync(file).mtimeMs;
+    expect(finalizeVideo(file, 0)).toBe("yuv420p"); // off: untouched
+    expect(statSync(file).mtimeMs).toBe(before);
+    expect(finalizeVideo(file, 0.5)).toBe("yuv420p");
+    expect(frameHash(file)).not.toBe(original); // sharpened
+    expect(probePixelFormat(file)).toBe("yuv420p");
     rmSync(dir, { recursive: true, force: true });
   });
 });

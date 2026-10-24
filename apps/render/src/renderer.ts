@@ -6,7 +6,7 @@ import { createServer } from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { COMPOSITION_ID } from "./compositionId";
-import { ensureYuv420p } from "./pixelFormat";
+import { finalizeVideo } from "./pixelFormat";
 import type { InputProps } from "./props";
 import { webpackOverride } from "./webpackOverride";
 
@@ -139,7 +139,7 @@ export async function renderVideo(
   });
 
   onStage("pixel_format");
-  const pixelFormat = ensureYuv420p(file);
+  const pixelFormat = finalizeVideo(file);
   console.log(`[render] pixel format: ${pixelFormat ?? "unknown (ffprobe not found)"}`);
 
   return {

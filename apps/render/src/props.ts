@@ -38,6 +38,8 @@ export const SceneAssetsSchema = z.object({
   screenshot_url: z.string().optional(),
   click_log: z.array(ClickSchema).optional(), // x,y in source clip pixels, t_ms in clip time
   focus_log: z.array(FocusSchema).optional(), // what the camera should look at, clip pixels / clip time
+  // stretches the producer already cut out of clip_url (original clip time); informational only
+  segments: z.array(z.object({ from_ms: z.number(), to_ms: z.number() })).optional(),
   clip_width: z.number().positive().optional(),
   clip_height: z.number().positive().optional(),
   captions: z.array(CaptionSchema).optional(),
