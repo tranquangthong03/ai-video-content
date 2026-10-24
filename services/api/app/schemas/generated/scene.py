@@ -17,6 +17,16 @@ class Visual(BaseModel):
     page: str | None = None
     effect: str | None = None
     actions: Annotated[list[action.BrowserAction], Field(validate_default=True)] = []
+    setup: Annotated[
+        list[action.BrowserAction],
+        Field(
+            description='Steps that prepare the state (e.g. add sample data) before actions',
+            validate_default=True,
+        ),
+    ] = []
+    show_setup: Annotated[
+        bool, Field(description='false: the render trims the setup part off the clip')
+    ] = False
 
 
 class HookScene(BaseModel):

@@ -35,6 +35,25 @@ SAMPLE_VARS = {
                            outline_json="{}", instruction="sửa"),
     "site_classifier": dict(url="u", title="t", meta_description="m", headings="h", signals="{}", heuristic="x"),
     "shortener": dict(lines_json="[]"),
+    "beat_feature_mapper": dict(outline_json="{}", features_json="[]"),
+    "script_writer": dict(
+        product_profile_json="{}", outline_json="{}", theme_json="{}", scene_catalog_json="{}",
+        allowed_icons="check, globe", duration_s=45, target_words=110,
+    ),
+    "duration_fit": dict(
+        direction="ngắn hơn", target_words=110, current_words=80, script_json="{}",
+        product_profile_summary="s",
+    ),
+    "scene_writer": dict(
+        task_type="rewrite", instruction="i", fields="voiceover", scene_type="hook",
+        current_scene_json_or_null="null", prev_scene_summary_or_none="none",
+        next_scene_summary_or_none="none", goal="awareness", duration_s=30, headline="h",
+        product_profile_summary="s", scene_catalog_json="{}", allowed_icons="check",
+    ),
+    "edit_planner": dict(
+        version=1, script_json="{}", product_profile_json="{}", targets_json="[]",
+        instruction="sửa", layouts_by_type="{}",
+    ),
 }  # fmt: skip
 
 

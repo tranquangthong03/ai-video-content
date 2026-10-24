@@ -70,7 +70,7 @@ export const Header: React.FC<{ badge: string | null; headline: string; highligh
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const { primary, fontFamily } = useTheme();
+  const { primary, highlight: markColor, fontFamily } = useTheme();
   const appear = interpolate(frame, [0, Math.round(0.5 * fps)], [0, 1], { extrapolateRight: "clamp" });
   const { before, mark, after } = splitHeadline(headline, highlight);
   return (
@@ -108,7 +108,7 @@ export const Header: React.FC<{ badge: string | null; headline: string; highligh
             textTransform: "uppercase",
           }}
         >
-          <Icon name="code" size={26} color={primary} />
+          <Icon name="code" size={26} color={markColor} />
           {badge}
         </div>
       )}
@@ -124,7 +124,7 @@ export const Header: React.FC<{ badge: string | null; headline: string; highligh
         }}
       >
         {before}
-        {mark && <span style={{ color: primary }}>{mark}</span>}
+        {mark && <span style={{ color: markColor }}>{mark}</span>}
         {after}
       </div>
     </div>
@@ -136,7 +136,7 @@ export const Bullets: React.FC<{ items: { start: number; text: string; icon: Ico
   items,
 }) => {
   const frame = useCurrentFrame();
-  const { primary, fontFamily } = useTheme();
+  const { highlight, fontFamily } = useTheme();
   const placed = placeBullets(
     items.map((i) => i.start),
     frame,
@@ -180,11 +180,11 @@ export const Bullets: React.FC<{ items: { start: number; text: string; icon: Ico
             }}
           >
             {item.icon ? (
-              <Icon name={item.icon} size={34} color={primary} />
+              <Icon name={item.icon} size={34} color={highlight} />
             ) : (
               // no icon: a small dot keeps the text aligned with the other rows
               <div style={{ width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ width: 12, height: 12, borderRadius: 6, background: primary }} />
+                <div style={{ width: 12, height: 12, borderRadius: 6, background: highlight }} />
               </div>
             )}
             {item.text}

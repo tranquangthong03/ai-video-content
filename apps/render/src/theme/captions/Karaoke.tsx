@@ -11,7 +11,7 @@ export const Karaoke: React.FC<{ captions: Caption[]; paddingBottom?: number }> 
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const { fontFamily, primary } = useTheme();
+  const { fontFamily, highlight } = useTheme();
 
   const ms = (frame / fps) * 1000;
   const group = captions.find((c) => ms >= c.start_ms && ms < c.end_ms);
@@ -37,7 +37,7 @@ export const Karaoke: React.FC<{ captions: Caption[]; paddingBottom?: number }> 
           <span
             key={i}
             style={{
-              color: i === active ? primary : "#fff",
+              color: i === active ? highlight : "#fff",
               display: "inline-block",
               transform: i === active ? "scale(1.08)" : "none",
               marginRight: i === words.length - 1 ? 0 : "0.28em",

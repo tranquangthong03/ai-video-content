@@ -1,10 +1,11 @@
 import React from "react";
-import { AbsoluteFill, Img, OffthreadVideo, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Freeze, Img, OffthreadVideo, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { resolveAsset } from "../../assets";
 import { cameraAt, cursorAt, project } from "../../camera";
 import type { Scene } from "../../generated";
 import type { SceneAssets } from "../../props";
 import { useTheme } from "../../theme/context";
+import { clipPlayback } from "./playback";
 import { MEDIA } from "./layout";
 
 const FRAME = { w: MEDIA.w, h: MEDIA.h };
@@ -33,14 +34,16 @@ const Arrow: React.FC<{ press: number }> = ({ press }) => (
 );
 
 /** The recorded clip, seen through the virtual camera, with the drawn cursor and click ripples. */
-const ClipView: React.FC<{ assets: SceneAssets }> = ({ assets }) => {
+const ClipView: React.FC<{ assets: SceneAssets; durationInFrames: number }> = ({ assets, durationInFrames }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const { motion, primary } = useTheme();
+  const { motion, highlight } = useTheme();
   const clip = { w: assets.clip_width ?? 1920, h: assets.clip_height ?? 1080 };
-  const offsetMs = assets.start_offset_ms ?? 0;
+  const { startMs, rate, lastFrame } = clipPlayback(assets, fps, durationInFrames);
   const clicks = assets.click_log ?? [];
-  const tMs = (frame / fps) * 1000 + offsetMs; // click_log is in clip time
+  // the video holds its last frame once past the end (freeze_last_frame, and the crossfade overrun)
+  const shown = lastFrame === null ? frame : Math.min(frame, lastFrame);
+  const tMs = startMs + (shown / fps) * 1000 * rate; // click_log is in clip time
   const cam = cameraAt(tMs, clicks, clip, FRAME, { spring: motion.spring, clickZoom: motion.clickZoom });
   const cursor = cursorAt(tMs, clicks, clip, FRAME);
   const tip = project(cursor, cam);
@@ -55,12 +58,15 @@ const ClipView: React.FC<{ assets: SceneAssets }> = ({ assets }) => {
           transform: `translate(${-cam.left * cam.scale}px, ${-cam.top * cam.scale}px) scale(${cam.scale})`,
         }}
       >
-        <OffthreadVideo
-          src={resolveAsset(assets.clip_url!)}
-          startFrom={Math.round((offsetMs / 1000) * fps)}
-          muted
-          style={{ width: FRAME.w, height: FRAME.h, objectFit: "cover", display: "block" }}
-        />
+        <Freeze frame={shown}>
+          <OffthreadVideo
+            src={resolveAsset(assets.clip_url!)}
+            startFrom={Math.round((startMs / 1000) * fps)}
+            playbackRate={rate}
+            muted
+            style={{ width: FRAME.w, height: FRAME.h, objectFit: "cover", display: "block" }}
+          />
+        </Freeze>
       </div>
       {cursor.ripples.map((r, i) => {
         const p = project(r, cam);
@@ -75,7 +81,7 @@ const ClipView: React.FC<{ assets: SceneAssets }> = ({ assets }) => {
               width: size,
               height: size,
               borderRadius: "50%",
-              border: `4px solid ${primary}`,
+              border: `4px solid ${highlight}`,
               opacity: (1 - r.age) * 0.85,
             }}
           />
@@ -241,7 +247,7 @@ export const SceneView: React.FC<ViewProps> = (props) => {
   if (scene.type === "before_after") return <BeforeAfterView {...props} />;
   if (scene.type === "cta") return <CtaView {...props} />;
   if (scene.type === "hook") return <HookView {...props} />;
-  if (hasClip(assets)) return <ClipView assets={assets} />;
+  if (hasClip(assets)) return <ClipView assets={assets} durationInFrames={durationInFrames} />;
   if (hasShot(assets)) return <ShotView assets={assets} durationInFrames={durationInFrames} />;
   return <FeatureCard {...props} />;
 };

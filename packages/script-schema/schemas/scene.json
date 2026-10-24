@@ -18,7 +18,9 @@
         "mode": { "enum": ["recording", "screenshot", "template"] },
         "page": { "type": ["string", "null"], "default": null },
         "effect": { "type": ["string", "null"], "default": null },
-        "actions": { "type": "array", "items": { "$ref": "action.json" }, "default": [] }
+        "actions": { "type": "array", "items": { "$ref": "action.json" }, "default": [] },
+        "setup": { "type": "array", "items": { "$ref": "action.json" }, "default": [], "description": "Steps that prepare the state (e.g. add sample data) before actions" },
+        "show_setup": { "type": "boolean", "default": false, "description": "false: the render trims the setup part off the clip" }
       }
     },
     "HookScene": {

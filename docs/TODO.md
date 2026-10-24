@@ -19,7 +19,10 @@ container publishes; fixed by `freePort()` in `src/renderer.ts`.
 - [ ] Remotion warns that it expects `zod` 4.5.4 (we have 3.25.x). Non-blocking so far; revisit before using the `schema` prop.
 - [ ] `server.ts` `/render` and the docker image were not re-verified after the Remotion work. The image also needs
   `ffmpeg` for the pixel-format fix, and a writable `.bundle-cache` directory.
-- [ ] `OffthreadVideo` past the end of a clip (a scene that outlasts its clip by the 10-frame crossfade) was not
-  exercised; the sample clip is longer than its scene. The producer should set a freeze-last-frame option.
-- [ ] Karaoke/headline highlight use the theme `primary` as text color; a dark primary (e.g. #4F46E5 on #070B14)
-  has low contrast. Consider lightening the color used for text only.
+- [x] `OffthreadVideo` past the end of a clip (a scene that outlasts its clip, or the 10-frame crossfade overrun):
+  `asset.clip_duration_ms` + `freeze_last_frame` make the clip hold its last frame (`clipPlayback()` in
+  `templates/DesktopShowcase/playback.ts`, `Freeze`); the overrun is clamped even without the flag. Props also
+  accept `trim_start_ms` and `playback_rate` (1-1.5). The producer sets these.
+- [x] Karaoke/headline highlight/bullet icons/ripples use `highlightColor(primary)` (`src/color.ts`): primary lightened,
+  same hue, to >= 4.5:1 against #0B1426. Borders and glows keep the original primary. The recorder's highlight
+  overlay uses the Python mirror `highlight_color()` in `app/script/theme.py`.

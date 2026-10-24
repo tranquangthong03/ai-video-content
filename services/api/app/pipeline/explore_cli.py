@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 from rich.console import Console
 from rich.table import Table
 
+from app.browser.session import BrowserSession
 from app.core.usage import BudgetExceeded, UsageTracker
 from app.explorer.mapper import BlockedByChallenge
 from app.explorer.report import DeadlineExceeded
@@ -24,10 +25,18 @@ from app.llm.json_call import JsonCaller, OpenAIChat
 from app.pipeline.explore_run import ExploreRunner
 from app.pipeline.frontend import ScriptedFrontend, TerminalFrontend
 from app.pipeline.proposal_run import Cancelled, ProposalRunner
+from app.pipeline.script_run import ScriptRunner
 from app.proposal.understanding import score_dots
+from app.schemas.generated.outline import Outline
+from app.schemas.generated.product_profile import ProductProfile
+from app.schemas.generated.script import Script
+from app.script.theme import ThemeResult, derive_theme
+from app.script.writer import WriterError
 
-EXIT_CANCELLED, EXIT_BLOCKED, EXIT_TOKENS, EXIT_TIMEOUT, EXIT_USAGE = 1, 2, 3, 4, 5
+EXIT_CANCELLED, EXIT_BLOCKED, EXIT_TOKENS, EXIT_TIMEOUT, EXIT_USAGE, EXIT_SCRIPT = 1, 2, 3, 4, 5, 6
 STEPS = ("classify", "analyze", "synthesize", "verify", "delta", "concepts", "outline")
+SCRIPT_STEPS = ("beat_map", "script", "fit", "scene", "edit_plan")
+FROM_STEPS = ("explore", "script", "produce")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -51,6 +60,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument(
         "--scope", choices=["path", "domain"], default="path",
         help="path: a start URL with a path only crawls links under that path (default)",
+    )  # fmt: skip
+    p.add_argument(
+        "--stop-after", choices=("outline", "script"), default="script",
+        help="last step to run: outline stops before the script is written",
+    )  # fmt: skip
+    p.add_argument(
+        "--from-step", choices=FROM_STEPS, default="explore",
+        help="start at this step, reusing what an earlier run saved in --job-dir",
     )  # fmt: skip
     p.add_argument(
         "--enter-policy", choices=["strict", "relaxed"], default="strict",
@@ -79,7 +96,7 @@ def print_features(console: Console, runner: ExploreRunner) -> None:
 def write_summary(job_dir: Path, runner: ExploreRunner, concept_id: str, started: float) -> Path:
     profile = runner.state.profile
     steps = runner.tracker.steps
-    for name in STEPS:
+    for name in (*STEPS, *SCRIPT_STEPS):
         steps.setdefault(name, {"input": 0, "output": 0, "calls": 0})
     summary = {
         "url": runner.url,
@@ -107,6 +124,62 @@ def write_summary(job_dir: Path, runner: ExploreRunner, concept_id: str, started
     return path
 
 
+def make_caller(args: argparse.Namespace, job_dir: Path) -> tuple[JsonCaller, UsageTracker]:
+    settings = load_settings()
+    usage_file = job_dir / "explore" / "usage.json"
+    resuming = args.resume or args.from_step != "explore"
+    tracker = (
+        UsageTracker.from_dict(json.loads(usage_file.read_text(encoding="utf-8")), args.max_tokens)
+        if resuming and usage_file.is_file()
+        else UsageTracker(max_tokens=args.max_tokens)
+    )
+    caller = JsonCaller(
+        OpenAIChat(settings),
+        tracker=tracker,
+        cache_enabled=settings.cache_enabled,
+        cache_dir=settings.cache_dir,
+    )
+    return caller, tracker
+
+
+def run_script_step(
+    args: argparse.Namespace,
+    console: Console,
+    job_dir: Path,
+    caller: JsonCaller,
+    frontend: ScriptedFrontend | TerminalFrontend,
+    profile: ProductProfile,
+    outline: Outline,
+) -> Script:
+    """Theme, Script Writer, duration fit and script_review; returns the approved script."""
+
+    def derive() -> ThemeResult:
+        console.print("[cyan]\\[theme][/] Lấy màu thương hiệu từ website...")
+        with BrowserSession(args.url, storage_state=args.storage_state) as session:
+            return derive_theme(
+                session, args.url, job_dir, screenshot=job_dir / "explore" / "pages" / "1.png"
+            )
+
+    runner = ScriptRunner(
+        job_dir.name, job_dir, caller, frontend, profile, outline, args.url, theme_fn=derive
+    )
+    return runner.run()
+
+
+def load_saved(job_dir: Path) -> tuple[ProductProfile, Outline]:
+    profile_file, outline_file = (
+        job_dir / "confirmed_profile.json",
+        job_dir / "outline_approved.json",
+    )
+    missing = [f.name for f in (profile_file, outline_file) if not f.is_file()]
+    if missing:
+        raise FileNotFoundError(f"thiếu {', '.join(missing)} trong {job_dir}")
+    return (
+        ProductProfile.model_validate_json(profile_file.read_text(encoding="utf-8")),
+        Outline.model_validate_json(outline_file.read_text(encoding="utf-8")),
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     for stream in (
@@ -118,7 +191,8 @@ def main(argv: list[str] | None = None) -> int:
     console = Console()
     started = time.monotonic()
     job_dir: Path = args.job_dir or default_job_dir(args.url)
-    if job_dir.exists() and any(job_dir.iterdir()) and not args.resume:
+    fresh = args.from_step == "explore" and not args.resume
+    if job_dir.exists() and any(job_dir.iterdir()) and fresh:
         console.print(
             f"[red]{job_dir} đã có dữ liệu. Dùng --resume để tiếp tục hoặc chọn --job-dir khác.[/]"
         )
@@ -126,70 +200,91 @@ def main(argv: list[str] | None = None) -> int:
     if args.auto and not args.answers:
         console.print("[red]--auto cần --answers answers.json[/]")
         return EXIT_USAGE
+    if args.from_step == "produce":
+        console.print(
+            "[red]Bước quay + render chưa có trong phiên bản này (--from-step produce).[/]"
+        )
+        return EXIT_USAGE
     job_dir.mkdir(parents=True, exist_ok=True)
 
-    settings = load_settings()
-    usage_file = job_dir / "explore" / "usage.json"
-    tracker = (
-        UsageTracker.from_dict(json.loads(usage_file.read_text(encoding="utf-8")), args.max_tokens)
-        if args.resume and usage_file.is_file()
-        else UsageTracker(max_tokens=args.max_tokens)
-    )
-    caller = JsonCaller(
-        OpenAIChat(settings),
-        tracker=tracker,
-        cache_enabled=settings.cache_enabled,
-        cache_dir=settings.cache_dir,
-    )
-    runner = ExploreRunner(
-        args.url,
-        job_dir,
-        caller,
-        tracker,
-        storage_state=args.storage_state,
-        max_pages=args.max_pages,
-        timeout_s=args.timeout,
-        allow_mutations=args.allow_mutations,
-        scope=args.scope,
-        enter_policy=args.enter_policy,
-        progress=lambda step, msg: console.print(f"[cyan]\\[{step}][/] {msg}"),
-    )
-    console.print(f"[bold]Khám phá {args.url}[/]  → {job_dir}")
-    try:
-        runner.run()
-    except BlockedByChallenge as e:
-        console.print(f"[red]Website chặn truy cập tự động ({e}). Dừng, không cố vượt qua.[/]")
-        return EXIT_BLOCKED
-    except BudgetExceeded as e:
-        console.print(f"[red]{e}. Trạng thái đã lưu, chạy lại với --resume.[/]")
-        return EXIT_TOKENS
-    except DeadlineExceeded as e:
-        console.print(f"[red]{e}. Trạng thái đã lưu, chạy lại với --resume.[/]")
-        return EXIT_TIMEOUT
-    print_features(console, runner)
-
+    caller, tracker = make_caller(args, job_dir)
     frontend = ScriptedFrontend.from_file(args.answers) if args.auto else TerminalFrontend(console)
-    proposal = ProposalRunner(
-        job_dir.name, job_dir, caller, frontend, explore_more=runner.explore_more
-    )
-    assert runner.state.profile is not None
+    runner: ExploreRunner | None = None
+    concept_id = ""
+    if args.from_step == "explore":
+        runner = ExploreRunner(
+            args.url,
+            job_dir,
+            caller,
+            tracker,
+            storage_state=args.storage_state,
+            max_pages=args.max_pages,
+            timeout_s=args.timeout,
+            allow_mutations=args.allow_mutations,
+            scope=args.scope,
+            enter_policy=args.enter_policy,
+            progress=lambda step, msg: console.print(f"[cyan]\\[{step}][/] {msg}"),
+        )
+        console.print(f"[bold]Khám phá {args.url}[/]  → {job_dir}")
+        try:
+            runner.run()
+        except BlockedByChallenge as e:
+            console.print(f"[red]Website chặn truy cập tự động ({e}). Dừng, không cố vượt qua.[/]")
+            return EXIT_BLOCKED
+        except BudgetExceeded as e:
+            console.print(f"[red]{e}. Trạng thái đã lưu, chạy lại với --resume.[/]")
+            return EXIT_TOKENS
+        except DeadlineExceeded as e:
+            console.print(f"[red]{e}. Trạng thái đã lưu, chạy lại với --resume.[/]")
+            return EXIT_TIMEOUT
+        print_features(console, runner)
+
+        proposal = ProposalRunner(
+            job_dir.name, job_dir, caller, frontend, explore_more=runner.explore_more
+        )
+        assert runner.state.profile is not None
+        try:
+            profile, notes = proposal.confirm_understanding(runner.state.profile)
+            concept, concept_notes = proposal.choose_concept(profile, notes)
+            outline = proposal.review_outline(profile, concept, concept_notes)
+            concept_id = concept.id
+        except Cancelled as e:
+            console.print(f"[yellow]Đã hủy ở bước {e}.[/]")
+            runner.save("cancelled")
+            return EXIT_CANCELLED
+        except BudgetExceeded as e:
+            console.print(f"[red]{e}. Trạng thái đã lưu, chạy lại với --resume.[/]")
+            runner.save("paused_token_ceiling")
+            return EXIT_TOKENS
+        runner.save("done")
+        summary = write_summary(job_dir, runner, concept_id, started)
+        console.print(f"[green]Đã chốt dàn ý v{outline.version}: {outline.title}[/]")
+        console.print(f"Dàn ý: {job_dir / 'outline_approved.json'}\nTóm tắt: {summary}")
+        if args.stop_after == "outline":
+            return 0
+    else:
+        try:
+            profile, outline = load_saved(job_dir)
+        except FileNotFoundError as e:
+            console.print(f"[red]{e}. Chạy bước explore trước.[/]")
+            return EXIT_USAGE
+
     try:
-        profile, notes = proposal.confirm_understanding(runner.state.profile)
-        concept, concept_notes = proposal.choose_concept(profile, notes)
-        outline = proposal.review_outline(profile, concept, concept_notes)
+        script = run_script_step(args, console, job_dir, caller, frontend, profile, outline)
     except Cancelled as e:
         console.print(f"[yellow]Đã hủy ở bước {e}.[/]")
-        runner.save("cancelled")
         return EXIT_CANCELLED
     except BudgetExceeded as e:
-        console.print(f"[red]{e}. Trạng thái đã lưu, chạy lại với --resume.[/]")
-        runner.save("paused_token_ceiling")
+        console.print(f"[red]{e}. Trạng thái đã lưu, chạy lại với --from-step script.[/]")
         return EXIT_TOKENS
-
-    runner.save("done")
-    summary = write_summary(job_dir, runner, concept.id, started)
-    console.print(f"[green]Đã chốt dàn ý v{outline.version}: {outline.title}[/]")
-    console.print(f"Dàn ý: {job_dir / 'outline_approved.json'}\nTóm tắt: {summary}")
+    except WriterError as e:
+        console.print(f"[red]Không viết được kịch bản hợp lệ: {e}[/]")
+        return EXIT_SCRIPT
+    (job_dir / "script_usage.json").write_text(
+        json.dumps(tracker.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    console.print(f"[green]Đã duyệt kịch bản: {job_dir / 'script_approved.json'}[/]")
+    console.print(f"Báo cáo: {job_dir / 'script_report.json'}  ({script.headline})")
     return 0
 
 

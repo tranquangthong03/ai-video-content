@@ -5,7 +5,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { activeWordIndex, wordsOf } from "./captionWords";
 import { buildSampleProps, desktopSampleScript, phoneSampleScript } from "./dev/sampleProps";
-import { ScriptSchema, ThemeSchema } from "./generated";
+import { SceneSchema, ScriptSchema, ThemeSchema } from "./generated";
+import { clipPlayback } from "./templates/DesktopShowcase/playback";
 import { ICON_NAMES, ICON_PATHS } from "./icons";
 import { InputPropsSchema } from "./props";
 import { ensureYuv420p, probePixelFormat } from "./pixelFormat";
@@ -189,6 +190,79 @@ describe("pixel format fix", () => {
     expect(ensureYuv420p(file)).toBe("yuv420p"); // already fine: untouched
     expect(statSync(file).mtimeMs).toBe(before);
     rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+describe("clip playback", () => {
+  const fps = 30;
+  it("adds the setup trim to the loading offset and keeps the rate", () => {
+    expect(clipPlayback({ start_offset_ms: 400, trim_start_ms: 1600, playback_rate: 1.25 }, fps, 100)).toEqual({
+      startMs: 2000,
+      rate: 1.25,
+      lastFrame: null,
+    });
+  });
+
+  it("never freezes without knowing the clip length", () => {
+    expect(clipPlayback({ freeze_last_frame: true }, fps, 300).lastFrame).toBeNull();
+  });
+
+  it("holds the last frame when the scene outlasts the clip", () => {
+    // 4s clip = 120 frames, scene 6s = 180 frames
+    const p = clipPlayback({ clip_duration_ms: 4000, freeze_last_frame: true }, fps, 180);
+    expect(p.lastFrame).toBe(119);
+  });
+
+  it("counts only the part after the trim, at the playback rate", () => {
+    // 8s clip, first 2s trimmed, played at 1.5x: 6s / 1.5 = 4s = 120 frames
+    const p = clipPlayback({ clip_duration_ms: 8000, start_offset_ms: 500, trim_start_ms: 1500, playback_rate: 1.5, freeze_last_frame: true }, fps, 120);
+    expect(p.lastFrame).toBe(119);
+  });
+
+  it("also holds through the crossfade overrun even without the flag", () => {
+    // the clip ends exactly with the scene: the 10 frames of overrun would run past the end
+    expect(clipPlayback({ clip_duration_ms: 4000 }, fps, 120).lastFrame).toBe(119);
+    // a clip that lasts through the overrun does not freeze
+    expect(clipPlayback({ clip_duration_ms: 4500 }, fps, 120).lastFrame).toBeNull();
+  });
+
+  it("props accept the new asset fields and the hover click type", () => {
+    const parsed = InputPropsSchema.parse({
+      script: base,
+      assets: {
+        s2: {
+          clip_url: "x.mp4",
+          trim_start_ms: 1000,
+          playback_rate: 1.5,
+          freeze_last_frame: true,
+          clip_duration_ms: 9000,
+          click_log: [{ t_ms: 1, x: 1, y: 1, type: "hover" }],
+        },
+      },
+    });
+    expect(parsed.assets.s2.playback_rate).toBe(1.5);
+    expect(InputPropsSchema.safeParse({ script: base, assets: { s2: { playback_rate: 2 } } }).success).toBe(false);
+    expect(InputPropsSchema.safeParse({ script: base, assets: { s2: { playback_rate: 0.5 } } }).success).toBe(false);
+  });
+});
+
+describe("visual setup fields", () => {
+  it("parse with defaults and accept the new actions", () => {
+    const scene = { ...sampleJson.scenes[1] };
+    const plain = SceneSchema.parse(scene);
+    expect(plain.visual.setup).toEqual([]);
+    expect(plain.visual.show_setup).toBe(false);
+    const rich = SceneSchema.parse({
+      ...scene,
+      visual: {
+        ...scene.visual,
+        setup: [{ do: "type", text: "x" }],
+        show_setup: true,
+        actions: [{ do: "scroll_to", target: "Phần tính năng" }, { do: "highlight", ms: 1800 }],
+      },
+    });
+    expect(rich.visual.actions.map((a) => a.do)).toEqual(["scroll_to", "highlight"]);
+    expect(rich.visual.show_setup).toBe(true);
   });
 });
 

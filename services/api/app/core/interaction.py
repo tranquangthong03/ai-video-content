@@ -10,6 +10,7 @@ ALLOWED_ACTIONS: dict[str, list[str]] = {
     "confirm_understanding": ["answer", "edit", "explore_more", "cancel"],
     "choose_concept": ["answer", "regenerate", "cancel"],
     "outline_review": ["approve", "edit", "regenerate", "cancel"],
+    "script_review": ["approve", "edit", "regenerate", "revert", "cancel"],
 }
 
 

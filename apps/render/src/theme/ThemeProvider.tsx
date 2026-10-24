@@ -1,6 +1,7 @@
 import { loadFont as loadBeVietnamPro } from "@remotion/google-fonts/BeVietnamPro";
 import React, { useEffect, useMemo, useState } from "react";
 import { cancelRender, continueRender, delayRender } from "remotion";
+import { highlightColor } from "../color";
 import type { Theme } from "../generated";
 import { FALLBACK_FONT, ThemeContext, type ThemeValue } from "./context";
 import { MOTION } from "./motion";
@@ -43,6 +44,7 @@ export const ThemeProvider: React.FC<{ theme: Theme; children: React.ReactNode }
   const value = useMemo<ThemeValue>(
     () => ({
       primary: theme.primary,
+      highlight: highlightColor(theme.primary),
       accent: theme.accent,
       fontFamily: `"${fontFamily}", sans-serif`,
       logo: theme.logo_asset ?? null,

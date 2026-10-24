@@ -1,7 +1,10 @@
 /**
  * Virtual camera and cursor for the desktop_showcase media frame. Pure functions of time: given the
  * click log of a clip they return where the camera looks and where the cursor is. All points are in
- * clip pixels on input and in media-frame pixels on output; times are scene-local milliseconds.
+ * clip pixels on input and in media-frame pixels on output; times are clip-time milliseconds.
+ *
+ * click, dblclick: zoom the camera and ripple. highlight: a gentler zoom. hover: the cursor moves
+ * there but the camera does not zoom. scroll: ignored.
  */
 import { mapClipPoint, type Point, type Size } from "../geometry";
 
@@ -9,7 +12,7 @@ export type ClipClick = {
   t_ms: number;
   x: number;
   y: number;
-  type?: "click" | "dblclick" | "scroll" | "highlight";
+  type?: "click" | "dblclick" | "scroll" | "highlight" | "hover";
 };
 export type SpringConfig = { damping: number; stiffness: number; mass: number };
 export type CameraPreset = { spring: SpringConfig; clickZoom: number };
@@ -21,6 +24,7 @@ export const CHAIN_GAP_MS = 1500; // clicks closer than this share one zoom (the
 export const PAN_LEAD_MS = 300; // the pan toward the next click starts this long before it
 export const CURSOR_LEAD_MS = 400; // the cursor starts moving this long before the click
 export const RIPPLE_MS = 600;
+export const HIGHLIGHT_ZOOM = 0.35; // share of the click zoom used for a highlight
 const PRESS_MS = 260;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
@@ -43,18 +47,18 @@ export function springStep(tSec: number, { damping, stiffness, mass }: SpringCon
   return 1 - (s2 * Math.exp(s1 * tSec) - s1 * Math.exp(s2 * tSec)) / (s2 - s1);
 }
 
-type Event = { t: number; x: number; y: number };
-type Chain = { start: number; end: number; points: Event[] };
+type Event = { t: number; x: number; y: number; k: number }; // k: share of the click zoom
+type Chain = { start: number; end: number; points: Event[]; k: number };
 
-/** Click events that move the camera and cursor (scroll and highlight do not), mapped to frame px. */
-function events(clicks: ClipClick[], clip: Size, frame: Size): Event[] {
+const toFrame = (c: ClipClick, clip: Size, frame: Size) =>
+  mapClipPoint({ x: c.x, y: c.y }, clip, { x: 0, y: 0, ...frame });
+
+/** Events that move the camera: clicks (full zoom) and highlights (gentle zoom). */
+function zoomEvents(clicks: ClipClick[], clip: Size, frame: Size): Event[] {
   return clicks
-    .filter((c) => c.type === undefined || c.type === "click" || c.type === "dblclick")
+    .filter((c) => c.type === undefined || c.type === "click" || c.type === "dblclick" || c.type === "highlight")
     .sort((a, b) => a.t_ms - b.t_ms)
-    .map((c) => ({
-      t: c.t_ms,
-      ...mapClipPoint({ x: c.x, y: c.y }, clip, { x: 0, y: 0, ...frame }),
-    }));
+    .map((c) => ({ t: c.t_ms, ...toFrame(c, clip, frame), k: c.type === "highlight" ? HIGHLIGHT_ZOOM : 1 }));
 }
 
 /** Consecutive events closer than CHAIN_GAP_MS belong to one zoom. */
@@ -65,8 +69,9 @@ function chainsOf(evts: Event[]): Chain[] {
     if (last && e.t - last.end < CHAIN_GAP_MS) {
       last.points.push(e);
       last.end = e.t;
+      last.k = Math.max(last.k, e.k);
     } else {
-      chains.push({ start: e.t, end: e.t, points: [e] });
+      chains.push({ start: e.t, end: e.t, points: [e], k: e.k });
     }
   }
   return chains;
@@ -99,10 +104,10 @@ export function cameraAt(
   frame: Size,
   preset: CameraPreset,
 ): Camera {
-  const chains = chainsOf(events(clicks, clip, frame));
+  const chains = chainsOf(zoomEvents(clicks, clip, frame));
   let best: { chain: Chain; env: number } | null = null;
   for (const chain of chains) {
-    const env = envelope(chain, tMs, preset.spring);
+    const env = envelope(chain, tMs, preset.spring) * chain.k;
     if (env > 0 && (!best || env > best.env)) best = { chain, env };
   }
   if (!best) return { scale: 1, left: 0, top: 0 };
@@ -131,9 +136,14 @@ export type CursorState = {
   ripples: { x: number; y: number; age: number }[]; // age 0..1
 };
 
-/** Cursor at time t: glides to each click (starting CURSOR_LEAD_MS early) and ripples on it. */
+type CursorEvent = { t: number; x: number; y: number; press: boolean };
+
+/** Cursor at time t: glides to each click or hover (starting CURSOR_LEAD_MS early); clicks ripple. */
 export function cursorAt(tMs: number, clicks: ClipClick[], clip: Size, frame: Size): CursorState {
-  const evts = events(clicks, clip, frame);
+  const evts: CursorEvent[] = clicks
+    .filter((c) => c.type === undefined || c.type === "click" || c.type === "dblclick" || c.type === "hover")
+    .sort((a, b) => a.t_ms - b.t_ms)
+    .map((c) => ({ t: c.t_ms, ...toFrame(c, clip, frame), press: c.type !== "hover" }));
   const home: Point = { x: frame.w * 0.78, y: frame.h * 0.85 };
   if (evts.length === 0) return { ...home, opacity: 0, press: 0, ripples: [] };
 
@@ -158,6 +168,7 @@ export function cursorAt(tMs: number, clicks: ClipClick[], clip: Size, frame: Si
   let press = 0;
   const ripples: CursorState["ripples"] = [];
   for (const e of evts) {
+    if (!e.press) continue;
     const dt = tMs - e.t;
     if (dt >= 0 && dt < PRESS_MS) press = Math.max(press, Math.sin((Math.PI * dt) / PRESS_MS));
     if (dt >= 0 && dt <= RIPPLE_MS) ripples.push({ x: e.x, y: e.y, age: dt / RIPPLE_MS });

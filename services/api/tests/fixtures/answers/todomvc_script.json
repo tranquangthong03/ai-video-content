@@ -1,0 +1,6 @@
+{
+  "script_review": [
+    { "action": "edit", "edit": { "instruction": "Scene 2: viết lại lời đọc ngắn gọn và tự nhiên hơn một chút" } },
+    { "action": "approve" }
+  ]
+}

@@ -1,0 +1,215 @@
+"""Scene visuals are never written by the LLM: they come from the verified data in the profile.
+
+feature_demo with demo_kind
+  interaction / navigation -> recording, actions = the feature's demo_steps (verified locators),
+                              with the setup part (requires_setup) split into visual.setup;
+  showcase                 -> recording: goto, scroll_to and highlight of the showcase target;
+  failed / unverified      -> not demonstrable: a screenshot, with a warning.
+hook -> screenshot of the home page; before_after and cta -> template (drawn by the renderer).
+"""
+
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+from app.schemas.generated.product_profile import DemoStep, Feature, ProductProfile
+
+HIGHLIGHT_MS = 1800
+ZOOM_STEPS = ("click", "dblclick")
+
+
+@dataclass
+class VisualResult:
+    visual: dict[str, Any]
+    warnings: list[str] = field(default_factory=list)
+
+
+def load_setup_counts(explore_dir: Path, profile: ProductProfile) -> dict[str, int]:
+    """feature id -> number of leading demo_steps that only recreate a state.
+
+    The stateful step of the explorer stores those steps on the page it found the feature on
+    (pages/*.json -> setup_steps); the feature's demo_steps start with them. Verified by comparing
+    the steps, so a mismatch yields no entry (the caller then treats every step as an action).
+    """
+    pages: list[dict[str, Any]] = []
+    for file in sorted((explore_dir / "pages").glob("*.json")):
+        try:
+            data = json.loads(file.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if data.get("setup_steps"):
+            pages.append(data)
+    counts: dict[str, int] = {}
+    for feature in profile.features:
+        if not feature.requires_setup:
+            continue
+        for page in pages:
+            setup = page["setup_steps"]
+            head = feature.demo_steps[: len(setup)]
+            if len(head) == len(setup) and all(
+                _same(a, b) for a, b in zip(head, setup, strict=True)
+            ):
+                counts[feature.id] = len(setup)
+                break
+    return counts
+
+
+def _same(step: DemoStep, raw: dict[str, Any]) -> bool:
+    return (step.do, step.ref, step.text) == (raw.get("do"), raw.get("ref"), raw.get("text"))
+
+
+def step_to_action(step: DemoStep) -> dict[str, Any] | None:
+    """A verified DemoStep as a BrowserAction; None when it cannot be replayed (no locator)."""
+    if step.do in ("goto",):
+        return {"do": "goto", "url": step.url}
+    if step.do == "wait":
+        return {"do": "wait", "ms": 800}
+    if step.do == "scroll" and step.locator is None:
+        return {"do": "scroll", "ms": 700}
+    if step.locator is None:
+        return None
+    action: dict[str, Any] = {
+        "do": step.do,
+        "url": step.url,
+        "locator": step.locator.model_dump(),
+        "target": step.locator.name or step.locator.text,
+        "zoom": step.do in ZOOM_STEPS,
+    }
+    if step.text is not None:
+        action["text"] = step.text
+    if step.file is not None:
+        action["file"] = step.file
+    return action
+
+
+def _actions(steps: list[DemoStep], warnings: list[str], feature: Feature) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for step in steps:
+        action = step_to_action(step)
+        if action is None:
+            warnings.append(f"{feature.id}: bỏ qua một bước «{step.do}» vì thiếu locator")
+            continue
+        out.append(action)
+    return out
+
+
+def _interaction_visual(feature: Feature, setup_len: int | None, show_setup: bool) -> VisualResult:
+    warnings: list[str] = []
+    steps = list(feature.demo_steps)
+    setup: list[dict[str, Any]] = []
+    if feature.requires_setup:
+        if setup_len and 0 < setup_len < len(steps):
+            setup = _actions(steps[:setup_len], warnings, feature)
+            steps = steps[setup_len:]
+            # the own steps were recorded after a reload; replaying that goto would lose the setup
+            if steps and steps[0].do == "goto" and steps[0].url == setup_goto_url(setup):
+                steps = steps[1:]
+        else:
+            warnings.append(
+                f"{feature.id}: không tách được phần chuẩn bị (setup), "
+                "dùng toàn bộ bước làm thao tác"
+            )
+    actions = _actions(steps, warnings, feature)
+    visual: dict[str, Any] = {
+        "mode": "recording",
+        "page": next((s.url for s in feature.demo_steps if s.do == "goto" and s.url), None),
+        "actions": actions,
+        "setup": setup,
+        "show_setup": bool(show_setup and setup),
+    }
+    return VisualResult(visual, warnings)
+
+
+def setup_goto_url(setup: list[dict[str, Any]]) -> str | None:
+    return next((a["url"] for a in setup if a["do"] == "goto"), None)
+
+
+def _showcase_visual(feature: Feature) -> VisualResult | None:
+    target = feature.showcase_target
+    if target is None:
+        return None
+    locator = {"css": target.selector, "text": target.text_quote[:80]}
+    return VisualResult(
+        {
+            "mode": "recording",
+            "page": target.url,
+            "actions": [
+                {"do": "goto", "url": target.url},
+                {
+                    "do": "scroll_to",
+                    "url": target.url,
+                    "locator": locator,
+                    "target": target.text_quote,
+                },
+                {
+                    "do": "highlight",
+                    "url": target.url,
+                    "locator": locator,
+                    "target": target.text_quote,
+                    "ms": HIGHLIGHT_MS,
+                },
+            ],
+        }
+    )
+
+
+def screenshot_visual(home_url: str) -> dict[str, Any]:
+    return {"mode": "screenshot", "page": home_url, "actions": []}
+
+
+def template_visual() -> dict[str, Any]:
+    return {"mode": "template", "page": None, "actions": []}
+
+
+def demo_visual(
+    feature: Feature | None,
+    home_url: str,
+    *,
+    setup_len: int | None,
+    show_setup: bool,
+    scene_id: str,
+) -> VisualResult:
+    """Visual of a feature_demo scene, by the feature's verified demo_kind."""
+    if feature is None:
+        return VisualResult(
+            screenshot_visual(home_url),
+            [f"{scene_id}: tính năng không tồn tại, dùng ảnh trang chủ"],
+        )
+    if feature.demo_kind in ("interaction", "navigation"):
+        result = _interaction_visual(feature, setup_len, show_setup)
+        if result.visual["actions"] or result.visual["setup"]:
+            return result
+        result.warnings.append(f"{scene_id}: «{feature.id}» không có bước nào chạy lại được")
+        return VisualResult(screenshot_visual(home_url), result.warnings)
+    if feature.demo_kind == "showcase":
+        showcase = _showcase_visual(feature)
+        if showcase is not None:
+            return showcase
+        return VisualResult(
+            screenshot_visual(home_url),
+            [f"{scene_id}: «{feature.id}» thiếu showcase_target, dùng ảnh trang chủ"],
+        )
+    kind = feature.demo_kind or "chưa kiểm chứng"
+    return VisualResult(
+        screenshot_visual(home_url),
+        [f"{scene_id}: «{feature.id}» có demo_kind {kind}, không quay được nên dùng ảnh trang chủ"],
+    )
+
+
+def visual_for_scene(
+    scene_type: str,
+    feature: Feature | None,
+    home_url: str,
+    *,
+    setup_len: int | None = None,
+    show_setup: bool = False,
+    scene_id: str = "",
+) -> VisualResult:
+    if scene_type == "feature_demo":
+        return demo_visual(
+            feature, home_url, setup_len=setup_len, show_setup=show_setup, scene_id=scene_id
+        )
+    if scene_type == "hook":
+        return VisualResult(screenshot_visual(home_url))
+    return VisualResult(template_visual())

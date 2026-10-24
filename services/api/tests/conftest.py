@@ -201,6 +201,18 @@ def scripted_handler(prompt: str) -> dict[str, Any]:
                 "ops": [{"op": "set", "beat_id": "b2", "text": "Tạo việc chỉ một cú nhấp"}],
             }
         return {"status": "ok", "ops": []}
+    if prompt.startswith("Bạn là trợ lý biên tập video. Nhiệm vụ: gán"):
+        outline = json.loads(_section(prompt, "outline"))
+        feats = json.loads(_section(prompt, "features").split("   {#")[0])
+        mapping = []
+        for i, beat in enumerate(outline["beats"]):
+            fid = None
+            if "Demo" in beat["text"] and feats:
+                fid = feats[min(i - 1, len(feats) - 1)]["id"]
+            mapping.append(
+                {"beat_id": beat["id"], "feature_id": fid, "confidence": 0.9, "reason": "fake"}
+            )
+        return {"mapping": mapping}
     if prompt.startswith("Bạn là biên tập viên rút gọn"):
         lines = json.loads(_section(prompt, "lines"))
         return {"lines": [{"id": x["id"], "text": " ".join(x["text"].split()[: x["max_words"] - 1])}

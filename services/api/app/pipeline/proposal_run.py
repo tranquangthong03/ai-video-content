@@ -12,6 +12,7 @@ from pathlib import Path
 from app.core.interaction import check_response, make_request
 from app.llm.json_call import JsonCaller, LLMCallError
 from app.pipeline.frontend import Frontend
+from app.proposal import beat_mapper
 from app.proposal import concepts as concepts_mod
 from app.proposal import outline as outline_mod
 from app.proposal import understanding as understanding_mod
@@ -45,6 +46,7 @@ class ProposalRunner:
         self.frontend = frontend
         self.explore_more = explore_more
         self.warnings: list[str] = []  # word-limit cuts etc., saved with the approved outline
+        self.beat_mappings: list[dict] = []  # type: ignore[type-arg]  # beat_feature_mapper decisions
 
     # --- interaction plumbing ----------------------------------------------------------------
 
@@ -152,6 +154,24 @@ class ProposalRunner:
 
     # --- 3. outline --------------------------------------------------------------------------
 
+    def _map_beats(
+        self, profile: ProductProfile, outline: Outline, only: set[str] | None = None
+    ) -> tuple[Outline, list[str]]:
+        """Link demo beats to features (beat_feature_mapper); on failure keep the outline."""
+        if not beat_mapper.needs_mapping(outline) and only is None:
+            return outline, []
+        try:
+            mapped = beat_mapper.map_beats(self.caller, profile, outline, only_beats=only)
+        except LLMCallError as e:
+            self.warnings.append(f"Chưa gắn được tính năng cho các beat: {e}")
+            return outline, []
+        self.warnings += mapped.warnings
+        self.beat_mappings.append({"outline_version": outline.version, "mapping": mapped.mapping})
+        (self.dir / "beat_mapping.json").write_text(
+            json.dumps(self.beat_mappings, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        return mapped.outline, mapped.changes
+
     def _plan_and_apply(
         self, profile: ProductProfile, concept: VideoConcept, outline: Outline, instruction: str
     ) -> tuple[Outline, list[str], str]:
@@ -185,6 +205,11 @@ class ProposalRunner:
                 text = f"{instruction}\n(Làm rõ: {label})"
                 continue
             applied = outline_mod.apply_ops(outline, plan.ops, valid)
+            before = {b.id: b.text for b in outline.beats}
+            touched = {b.id for b in applied.outline.beats if before.get(b.id) != b.text}
+            if touched:  # new or reworded beats: link them to a feature when they show one
+                applied.outline, linked = self._map_beats(profile, applied.outline, touched)
+                applied.changes += linked
             shortened, cut_warnings = enforce_outline(self.caller, applied.outline)  # <= 15 words
             self.warnings += cut_warnings
             notices = [f"Bị từ chối: {r.request} — {r.reason}" for r in plan.rejected]
@@ -201,7 +226,7 @@ class ProposalRunner:
             return Outline.model_validate_json(approved_file.read_text(encoding="utf-8"))
 
         outline = outline_mod.outline_from_concept(concept, profile)
-        changes: list[str] = []
+        outline, changes = self._map_beats(profile, outline)
         notice = ""
         if (
             concept_notes.strip()
@@ -214,7 +239,9 @@ class ProposalRunner:
                 outline.model_dump_json(indent=2), encoding="utf-8"
             )
             response = self._ask(
-                outline_mod.build_request(self.job_id, outline, changes=changes, notice=notice)
+                outline_mod.build_request(
+                    self.job_id, outline, changes=changes, notice=notice, profile=profile
+                )
             )
             if response.action == "approve":
                 approved_file.write_text(outline.model_dump_json(indent=2), encoding="utf-8")
@@ -224,7 +251,8 @@ class ProposalRunner:
                 return outline
             if response.action == "regenerate":
                 outline = outline_mod.outline_from_concept(concept, profile)
-                changes, notice = ["Đã tạo lại dàn ý từ hướng đã chọn"], ""
+                outline, linked = self._map_beats(profile, outline)
+                changes, notice = ["Đã tạo lại dàn ý từ hướng đã chọn", *linked], ""
                 continue
             instruction = (response.edit.instruction if response.edit else "") or ""
             if not instruction.strip():

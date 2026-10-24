@@ -89,13 +89,40 @@ describe("cameraAt", () => {
     expect(p.y).toBeCloseTo(FRAME.h / 2, 0);
   });
 
-  it("ignores scroll and highlight events", () => {
-    const events: ClipClick[] = [
-      { t_ms: 1000, x: 900, y: 500, type: "scroll" },
-      { t_ms: 1000, x: 900, y: 500, type: "highlight" },
-    ];
+  it("ignores scroll events", () => {
+    const events: ClipClick[] = [{ t_ms: 1000, x: 900, y: 500, type: "scroll" }];
     expect(cam(1500, events).scale).toBe(1);
+    expect(cursorAt(1500, events, CLIP, FRAME).opacity).toBe(0);
     expect(cam(1500, [{ ...click(1000, 900, 500), type: "dblclick" }]).scale).toBeGreaterThan(1.5);
+  });
+});
+
+describe("hover and highlight events", () => {
+  it("does not zoom for a hover but the cursor still goes there, without a ripple", () => {
+    const hover: ClipClick[] = [{ t_ms: 3000, x: 400, y: 300, type: "hover" }];
+    expect(cam(3600, hover).scale).toBe(1);
+    const c = cursorAt(3000, hover, CLIP, FRAME);
+    expect(c.x).toBeCloseTo((400 * FRAME.w) / CLIP.w, 3);
+    expect(c.ripples).toHaveLength(0);
+    expect(cursorAt(3100, hover, CLIP, FRAME).press).toBe(0);
+    expect(cursorAt(3000, hover, CLIP, FRAME).opacity).toBe(1);
+  });
+
+  it("zooms a highlight gently: more than 1, clearly less than a click", () => {
+    const hl: ClipClick[] = [{ t_ms: 1000, x: 960, y: 540, type: "highlight" }];
+    const gentle = cam(2000, hl).scale;
+    const full = cam(2000, [click(1000, 960, 540)]).scale;
+    expect(gentle).toBeGreaterThan(1.2);
+    expect(gentle).toBeLessThan(full - 0.4);
+    expect(cursorAt(2000, hl, CLIP, FRAME).opacity).toBe(0); // a highlight does not move the cursor
+  });
+
+  it("a click after a hover chain keeps the click zoom", () => {
+    const mixed: ClipClick[] = [
+      { t_ms: 1000, x: 400, y: 300, type: "hover" },
+      click(1500, 960, 540),
+    ];
+    expect(cam(2500, mixed).scale).toBeCloseTo(2.0, 1);
   });
 });
 

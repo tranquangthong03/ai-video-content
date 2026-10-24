@@ -12,7 +12,17 @@ _env = Environment(
     keep_trailing_newline=True,
 )
 
-PROMPTS = ("page_analyzer", "product_synthesizer", "concept_proposer", "outline_editor")
+PROMPTS = (
+    "page_analyzer",
+    "product_synthesizer",
+    "concept_proposer",
+    "outline_editor",
+    "beat_feature_mapper",
+    "script_writer",
+    "duration_fit",
+    "scene_writer",
+    "edit_planner",
+)
 
 
 def render(name: str, **variables: Any) -> str:

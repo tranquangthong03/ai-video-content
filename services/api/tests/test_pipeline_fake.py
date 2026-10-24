@@ -35,7 +35,7 @@ def test_auto_run_produces_an_approved_outline_after_edits(
     job = tmp_path / "job"
 
     code = main(["--url", site + "/", "--job-dir", str(job), "--auto", "--answers", str(answers),
-                 "--max-pages", "6", "--timeout", "180"])  # fmt: skip
+                 "--max-pages", "6", "--timeout", "180", "--stop-after", "outline"])  # fmt: skip
     assert code == 0
 
     explore = job / "explore"
@@ -102,6 +102,8 @@ def test_resume_skips_finished_steps(site: str, tmp_path: Path, monkeypatch) -> 
         str(answers),
         "--max-pages",
         "4",
+        "--stop-after",
+        "outline",
     ]
     assert main(args) == 0
     calls_first = len(llm.calls)
@@ -127,6 +129,8 @@ def test_token_ceiling_pauses_and_resume_continues(site: str, tmp_path: Path, mo
         str(answers),
         "--max-pages",
         "4",
+        "--stop-after",
+        "outline",
     ]
     assert main([*args, "--max-tokens", "400"]) == 3  # each fake call costs 150 tokens
     report = json.loads((job / "explore" / "report.json").read_text(encoding="utf-8"))

@@ -18,6 +18,7 @@ DEFAULT_ACTION = {
     "confirm_understanding": ("answer", {}),
     "choose_concept": ("answer", {"answers": {"concept_id": "recommended"}}),
     "outline_review": ("approve", {}),
+    "script_review": ("approve", {}),
     "clarify": ("cancel", {}),
 }
 
@@ -122,9 +123,11 @@ class TerminalFrontend:
             Panel(request.message, title=f"Dàn ý v{outline.version}", border_style="cyan")
         )
         self.console.print(f"[bold]{outline.title}[/] · {outline.goal} · {outline.duration_s}s")
+        names = {f.id: f.name for f in request.profile.features} if request.profile else {}
         for n, b in enumerate(outline.beats, start=1):
-            link = f" [dim]({b.feature_id})[/]" if b.feature_id else ""
-            self.console.print(f"  {n}. [{b.id}] {b.text}{link}")
+            # b2 · [Tạo việc cần làm] Gõ 'Buy milk'…: the feature a beat shows, editable by the user
+            tag = f"\\[{names.get(b.feature_id, b.feature_id)}] " if b.feature_id else ""
+            self.console.print(f"  {n}. {b.id} · {tag}{b.text}")
         for change in request.changes or []:
             self.console.print(f"[green]✓ {change}[/]")
 
@@ -171,6 +174,8 @@ class TerminalFrontend:
                 text = questionary.text("Yêu cầu sửa:").ask() or ""
                 return make_response(request, "edit", edit={"instruction": text})
             return make_response(request, action or "cancel")
+        if kind == "script_review":
+            return self._ask_script_review(request, questionary)
         if kind == "clarify":
             q = request.questions[0]
             self.console.print(Panel(q.text, title="Cần làm rõ", border_style="yellow"))
@@ -182,6 +187,71 @@ class TerminalFrontend:
                 return make_response(request, "cancel")
             return make_response(request, "answer", answers={q.id: pick})
         raise ValueError(f"TerminalFrontend cannot render {kind}")
+
+    def _ask_script_review(self, request: InteractionRequest, questionary: Any) -> UserResponse:
+        version = request.script_version
+        while True:
+            action = questionary.select(
+                "Bạn muốn làm gì?",
+                choices=[
+                    questionary.Choice("a — Duyệt kịch bản", "a"),
+                    questionary.Choice("e — Sửa bằng câu tự do", "e"),
+                    questionary.Choice("s — Sửa nhanh một trường", "s"),
+                    questionary.Choice("r — Sinh lại toàn bộ", "r"),
+                    questionary.Choice("v — Quay về bản cũ", "v"),
+                    questionary.Choice("j — Xem JSON", "j"),
+                    questionary.Choice("q — Thoát", "q"),
+                ],
+            ).ask()
+            if action == "j":
+                self.console.print_json(getattr(self, "script_json", "{}"))
+                continue
+            break
+        if action in (None, "q"):
+            return make_response(request, "cancel")
+        if action == "a":
+            return make_response(request, "approve", base_version=version)
+        if action == "r":
+            return make_response(request, "regenerate", base_version=version)
+        if action == "e":
+            text = questionary.text("Yêu cầu sửa (ví dụ: scene 2: nói ngắn hơn):").ask() or ""
+            return make_response(request, "edit", base_version=version, edit={"instruction": text})
+        if action == "v":
+            older = [str(n) for n in range(1, (version or 1))]
+            if not older:
+                self.console.print("[yellow]Chưa có bản cũ.[/]")
+                return self._ask_script_review(request, questionary)
+            pick = questionary.select("Về bản nào?", choices=older).ask()
+            return make_response(
+                request, "revert", base_version=version, revert_to=int(pick or older[-1])
+            )
+        return self._quick_set(request, questionary)
+
+    def _quick_set(self, request: InteractionRequest, questionary: Any) -> UserResponse:
+        """[s]: pick a scene, a field and a value; becomes one explicit set / set_theme op."""
+        version = request.script_version
+        fields = [
+            questionary.Choice("Lời đọc (voiceover)", "voiceover"),
+            questionary.Choice("Chữ trên màn hình (on_screen_text)", "on_screen_text"),
+            questionary.Choice("Bố cục (layout)", "layout"),
+            questionary.Choice("Tính năng (feature)", "feature"),
+            questionary.Choice("Màu chủ đạo (primary)", "primary"),
+        ]
+        field = questionary.select("Sửa trường nào?", choices=fields).ask()
+        if field is None:
+            return make_response(request, "cancel")
+        if field == "primary":
+            value = questionary.text("Màu (#RRGGBB):").ask() or ""
+            op = {"op": "set_theme", "field": "primary", "value": value}
+        else:
+            scenes = [
+                questionary.Choice(f"{s.scene_id}: {s.one_liner}", s.scene_id)
+                for s in request.summary or []
+            ]
+            scene = questionary.select("Scene nào?", choices=scenes).ask()
+            value = questionary.text("Nội dung mới:").ask() or ""
+            op = {"op": "set", "scene_id": scene, "field": field, "value": value}
+        return make_response(request, "edit", base_version=version, edit={"ops": [op]})
 
     def _ask_understanding(self, request: InteractionRequest, questionary: Any) -> UserResponse:
         profile = request.profile

@@ -23,7 +23,7 @@ def require_key() -> None:
 
 def run(url: str, job: Path, **flags: str) -> dict:  # type: ignore[type-arg]
     argv = ["--url", url, "--job-dir", str(job), "--auto", "--answers", str(ANSWERS),
-            "--timeout", "600", "--max-tokens", "400000"]  # fmt: skip
+            "--timeout", "600", "--max-tokens", "400000", "--stop-after", "outline"]  # fmt: skip
     for k, v in flags.items():
         argv += [f"--{k.replace('_', '-')}", v]
     assert main(argv) == 0

@@ -5,7 +5,7 @@ export const ClickSchema = z.object({
   t_ms: z.number(),
   x: z.number(),
   y: z.number(),
-  type: z.enum(["click", "dblclick", "scroll", "highlight"]).optional(),
+  type: z.enum(["click", "dblclick", "scroll", "highlight", "hover"]).optional(),
 });
 
 export const WordSchema = z.object({ text: z.string(), start_ms: z.number(), end_ms: z.number() });
@@ -22,6 +22,10 @@ export const SceneAssetsSchema = z.object({
   audio_url: z.string().optional(),
   clip_url: z.string().optional(),
   start_offset_ms: z.number().min(0).optional(), // trims the loading phase off the clip start
+  trim_start_ms: z.number().min(0).optional(), // extra trim after start_offset_ms: cuts the setup part
+  playback_rate: z.number().min(1).max(1.5).optional(), // speeds up a clip that is longer than the speech
+  freeze_last_frame: z.boolean().optional(), // hold the last frame when the scene outlasts the clip
+  clip_duration_ms: z.number().positive().optional(), // length of the clip file (needed to freeze its end)
   screenshot_url: z.string().optional(),
   click_log: z.array(ClickSchema).optional(), // x,y in source clip pixels, t_ms in clip time
   clip_width: z.number().positive().optional(),

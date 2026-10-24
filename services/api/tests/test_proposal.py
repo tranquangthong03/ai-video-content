@@ -218,6 +218,7 @@ def test_allowed_actions_per_kind_and_response_checks() -> None:
         "confirm_understanding": ["answer", "edit", "explore_more", "cancel"],
         "choose_concept": ["answer", "regenerate", "cancel"],
         "outline_review": ["approve", "edit", "regenerate", "cancel"],
+        "script_review": ["approve", "edit", "regenerate", "revert", "cancel"],
     }
     request = make_request("j", "choose_concept", "m")
     assert request.allowed_actions == ["answer", "regenerate", "cancel"]

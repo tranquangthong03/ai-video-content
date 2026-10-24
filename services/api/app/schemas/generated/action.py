@@ -23,6 +23,8 @@ class BrowserAction(BaseModel):
         'upload',
         'dblclick',
         'right_click',
+        'scroll_to',
+        'highlight',
     ]
     target: Annotated[
         str | None, Field(description='Natural-language description of the element')

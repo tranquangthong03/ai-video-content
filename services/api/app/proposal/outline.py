@@ -182,6 +182,7 @@ def build_request(
     *,
     changes: list[str] | None = None,
     notice: str = "",
+    profile: ProductProfile | None = None,
 ) -> InteractionRequest:
     message = (
         "Đây là dàn ý video. Bạn duyệt, hoặc nhập yêu cầu sửa bằng câu tự do "
@@ -192,6 +193,7 @@ def build_request(
         "outline_review",
         f"{notice}\n{message}" if notice else message,
         outline=outline.model_dump(),
+        profile=profile.model_dump() if profile else None,  # lets the UI show feature names
         changes=changes,
         script_version=outline.version,
     )
