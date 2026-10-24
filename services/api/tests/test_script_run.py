@@ -308,7 +308,7 @@ def test_an_old_outline_gets_its_demo_beats_linked_before_the_writer_runs(tmp_pa
 
 
 def test_an_outline_that_is_already_linked_is_not_sent_to_the_mapper(tmp_path: Path) -> None:
-    linked = make_outline(feature_ids={1: "create", 2: "filter", 3: "broken"})  # every middle beat
+    linked = make_outline(feature_ids={1: "create", 2: "filter", 3: "story"})  # every middle beat
     runner, handler, *_ = build(
         tmp_path, {"script_review": [{"action": "approve"}]}, outline=linked
     )

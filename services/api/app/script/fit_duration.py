@@ -18,13 +18,15 @@ from app.llm.json_call import JsonCaller, LLMCallError
 from app.llm.prompts import render
 from app.schemas.generated.script import Script
 from app.script import catalog as cat
+from app.script.lite import ALT_TEXTS, is_lite
+from app.script.lite import MIN_WORDS as MIN_LITE_WORDS
 from app.script.scene_writer import product_summary, write_scene
 from app.script.writer import WriterContext, WriterError
 
 TOLERANCE = 0.10
 MAX_SCENES = 6
 MIN_FIT_WORDS = 6  # hook and cta may be shortened but not below this
-MAX_SHORTEN_ROUNDS = 2
+MAX_SHORTEN_ROUNDS = 4
 MAX_EXTRA_ROUNDS = 3  # extra lengthening rounds when no scene can be added
 MIN_REAL_ACTIONS = 2  # a 45/60 s feature_demo should show at least this many real operations
 REAL_ACTIONS = ("click", "dblclick", "type", "hover", "upload", "right_click")
@@ -93,9 +95,13 @@ def _with_voiceovers(script: Script, changes: dict[str, str]) -> Script:
 
 
 def apply_voiceovers(
-    script: Script, items: list[VoiceoverItem], *, extend: bool
+    script: Script, items: list[VoiceoverItem], *, extend: bool, forced: bool = False
 ) -> tuple[Script, list[str]]:
-    """Accept only voiceover changes that follow the rules; returns (script, refusal notes)."""
+    """Accept only voiceover changes that follow the rules; returns (script, refusal notes).
+
+    forced (the video is longer than the product can fill): every scene may be lengthened, demos
+    up to 35 words, hook and cta up to 20.
+    """
     notes: list[str] = []
     by_id = {s.root.id: s.root for s in script.scenes}
     accepted: dict[str, str] = {}
@@ -106,11 +112,11 @@ def apply_voiceovers(
             notes.append(f"bỏ qua scene không tồn tại: {item.scene_id}")
         elif item.voiceover.strip() == scene.voiceover.strip():
             continue
-        elif extend and scene.type != "feature_demo":
+        elif extend and scene.type != "feature_demo" and not forced:
             notes.append(f"{item.scene_id}: chỉ được kéo dài scene feature_demo")
-        elif words > cat.DEMO_VOICEOVER_MAX_WORDS:
-            notes.append(f"{item.scene_id}: {words} từ vượt {cat.DEMO_VOICEOVER_MAX_WORDS}, bỏ qua")
-        elif not extend and words < MIN_FIT_WORDS:
+        elif words > _cap(scene.type, forced):
+            notes.append(f"{item.scene_id}: {words} từ vượt {_cap(scene.type, forced)}, bỏ qua")
+        elif not extend and words < (MIN_LITE_WORDS if is_lite(scene.visual) else MIN_FIT_WORDS):
             notes.append(f"{item.scene_id}: rút xuống {words} từ là quá ngắn, bỏ qua")
         elif extend and words <= cat.word_count(scene.voiceover):
             notes.append(f"{item.scene_id}: không dài hơn bản cũ, bỏ qua")
@@ -121,9 +127,55 @@ def apply_voiceovers(
     return (_with_voiceovers(script, accepted) if accepted else script), notes
 
 
+def _cap(scene_type: str, forced: bool) -> int:
+    """Most voiceover words a fit may give a scene."""
+    if not forced:
+        return cat.DEMO_VOICEOVER_MAX_WORDS
+    if scene_type == "feature_demo":
+        return cat.FORCED_DEMO_MAX_WORDS
+    return cat.FORCED_OTHER_MAX_WORDS
+
+
+def repeat_operations(script: Script, report: FitReport, per_scene: int = 2) -> Script:
+    """More of the same verified operation: copies of a demo's `type` step with other sample texts.
+
+    Only repeats what was already checked (the typed step, which submits itself); nothing new is
+    invented. Adds time on screen for scenes that would otherwise hold a still last frame.
+    """
+    data = script.model_dump()
+    used = {
+        (a["text"] or "").strip().lower()
+        for s in data["scenes"]
+        for a in [*s["visual"]["setup"], *s["visual"]["actions"]]
+        if a["do"] == "type"
+    }
+    fresh = [t for t in ALT_TEXTS if t.lower() not in used]
+    changed = False
+    for scene in data["scenes"]:
+        visual = scene["visual"]
+        if scene["type"] != "feature_demo" or visual["mode"] != "recording":
+            continue
+        if any(a["do"] == "highlight" for a in visual["actions"]):
+            continue  # pointing scenes (showcase / showcase_lite) have nothing to repeat
+        typed = [i for i, a in enumerate(visual["actions"]) if a["do"] == "type" and a["locator"]]
+        if not typed or len(fresh) < per_scene:
+            continue
+        last = typed[-1]
+        copies = []
+        for _ in range(per_scene):
+            copy = dict(visual["actions"][last])
+            copy["text"] = fresh.pop(0)
+            copies.append(copy)
+        visual["actions"][last + 1 : last + 1] = copies
+        report.actions.append(f"{scene['id']}: thêm {per_scene} lần lặp thao tác gõ đã kiểm chứng")
+        changed = True
+    return Script.model_validate(data) if changed else script
+
+
 def _ask_fit(caller: JsonCaller, script: Script, ctx: WriterContext, direction: str) -> FitOutput:
     prompt = render(
         "duration_fit",
+        forced=ctx.forced,
         direction=direction,
         target_words=_target_words(script),
         current_words=total_words(script),
@@ -226,7 +278,7 @@ def fit_duration(
         report.rounds += 1
         try:
             out = _ask_fit(caller, script, ctx, "ngắn hơn")
-            script, notes = apply_voiceovers(script, out.voiceovers, extend=True)
+            script, notes = apply_voiceovers(script, out.voiceovers, extend=True, forced=ctx.forced)
             report.warnings += notes
             report.actions.append("kéo dài voiceover các scene feature_demo")
         except LLMCallError as e:
@@ -248,7 +300,9 @@ def fit_duration(
             before = total_words(script)
             try:
                 out = _ask_fit(caller, script, ctx, "ngắn hơn")
-                script, notes = apply_voiceovers(script, out.voiceovers, extend=True)
+                script, notes = apply_voiceovers(
+                    script, out.voiceovers, extend=True, forced=ctx.forced
+                )
                 report.warnings += notes
                 report.actions.append("kéo dài voiceover lần nữa (không thêm được scene)")
             except LLMCallError as e:
@@ -256,6 +310,8 @@ def fit_duration(
                 break
             if total_words(script) <= before:
                 break  # the model gave nothing more: stop asking
+        if ctx.forced and short():  # more footage for the longer voiceovers to sit on
+            script = repeat_operations(script, report)
     elif adjust and long():
         for _ in range(MAX_SHORTEN_ROUNDS):
             if not long():

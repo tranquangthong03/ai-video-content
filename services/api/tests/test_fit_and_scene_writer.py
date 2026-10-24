@@ -103,7 +103,7 @@ def test_still_short_adds_one_demo_scene_before_the_cta_with_the_best_unused_fea
         assert (
             "Loại: insert" in prompt and "Loại scene cần tạo (với insert): feature_demo" in prompt
         )
-        assert "Scene trước: s4 (before_after)" in prompt and "Scene sau: s5 (cta)" in prompt
+        assert "Scene trước: s4 (feature_demo)" in prompt and "Scene sau: s5 (cta)" in prompt
         return {"scene": good_scene(9, "feature_demo", feature="nav", voiceover=words(25, "navx"),
                                     key_point="Xem bảng giá")}  # fmt: skip
 

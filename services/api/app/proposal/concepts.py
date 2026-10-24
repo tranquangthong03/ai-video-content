@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from typing import Literal
 
+from app.core.budget import budget_for
 from app.core.interaction import make_request
 from app.llm.json_call import JsonCaller
 from app.llm.prompts import render
@@ -22,14 +23,16 @@ class ConceptDecision:
 
 
 def normalize_concepts(concepts: list[VideoConcept], profile: ProductProfile) -> list[VideoConcept]:
-    """Unique ids, only real feature ids, exactly one recommended concept."""
+    """Unique ids, only real feature ids, the recommended duration, exactly one recommended one."""
     valid = {f.id for f in profile.features}
+    recommended_s = budget_for(profile).recommended_duration_s
     seen: set[str] = set()
     for i, c in enumerate(concepts, start=1):
         if not c.id or c.id in seen:
             c.id = f"c{i}"
         seen.add(c.id)
         c.feature_ids = [f for f in c.feature_ids if f in valid]
+        c.duration_s = recommended_s  # type: ignore[assignment]  # code decides; the LLM may not
     flagged = [c for c in concepts if c.recommended]
     keep = (
         flagged[0] if flagged else next((c for c in concepts if c.angle == "overview"), concepts[0])
@@ -49,6 +52,7 @@ def propose_concepts(
         "concept_proposer",
         confirmed_product_profile_json=profile.model_dump_json(indent=1),
         user_notes_or_empty=notes,
+        recommended_duration_s=budget_for(profile).recommended_duration_s,
     )
     result = caller.call("concepts", prompt, ConceptSet)
     concepts = normalize_concepts(result.concepts, profile)
@@ -64,6 +68,10 @@ def build_request(
     message = (
         "Mình đề xuất 3 hướng video. Chọn một hướng (có thể kèm ghi chú) hoặc yêu cầu đề xuất lại."
     )
+    if concepts:
+        message += (
+            f" Thời lượng đề xuất: {concepts[0].duration_s}s (theo số tính năng trình diễn được)."
+        )
     return make_request(
         job_id,
         "choose_concept",

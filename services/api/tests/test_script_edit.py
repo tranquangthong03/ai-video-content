@@ -407,7 +407,7 @@ def test_diff_lists_changes_in_vietnamese(base: tuple[Script, WriterContext]) ->
     lines = diff_scripts(script, res.script)
     text = "\n".join(lines)
     assert "Scene s1: đổi lời đọc" in text and "Câu mở đầu mới" in text
-    assert "Xóa scene s4 (before_after)" in text
+    assert "Xóa scene s4 (feature_demo)" in text
     assert "Đổi màu chủ đạo: #4F46E5 → #0F766E" in text
     assert "Scene s2: đổi tính năng «create» → «nav»" in text
     assert "Đổi thứ tự các scene: s1 → s5 → s2 → s3" in text

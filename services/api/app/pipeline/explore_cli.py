@@ -317,7 +317,15 @@ def run_produce_step(
         "fit_generation": script_report.get("fit_generation"),
         "script_versions": script_report.get("versions"),
         "script_warnings": script_report.get("warnings", []),
+        "content_budget_s": script_report.get("content_budget_s"),
+        "content_budget_formula": script_report.get("content_budget_formula"),
+        "recommended_duration_s": script_report.get("recommended_duration_s"),
+        "footage_ratio_estimated": script_report.get("footage_ratio"),
     }
+    fit = script_report.get("fit") or {}
+    if not fit.get("within_tolerance", True) or script_report.get("warnings"):
+        for w in script_report.get("warnings", []):
+            console.print(f"[yellow]Lưu ý trước khi quay: {w}[/]")
     try:
         with BrowserSession(args.url, storage_state=args.storage_state) as session:
             result = produce(

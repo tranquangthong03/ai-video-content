@@ -124,9 +124,7 @@ def good_output(**patch: Any) -> dict[str, Any]:
         good_scene(1, "hook"),
         good_scene(2, "feature_demo", feature="create"),
         good_scene(3, "feature_demo", feature="filter", show_setup=True),
-        good_scene(
-            4, "before_after", before_text="Rối ren", after_text="Gọn gàng", layout="split_vertical"
-        ),
+        good_scene(4, "feature_demo", feature="story"),
         good_scene(5, "cta"),
     ]
     script = {
@@ -289,7 +287,7 @@ def test_a_good_draft_becomes_a_script_with_code_made_visuals(tmp_path: Path) ->
         "screenshot",
         "recording",
         "recording",
-        "template",
+        "recording",  # the showcase of «story»
         "template",
     ]
     filt = s.scenes[2].root

@@ -30,7 +30,9 @@ SAMPLE_VARS = {
     "page_analyzer": dict(url="u", title="t", headings="h", key_texts="k", elements="e1 | link | A | nav", signals="{}"),
     "product_synthesizer": dict(root_url="u", site_type="landing", title="t", meta_description="m",
                                 og_description="o", page_insights_json="[]", sample_files="- sample.jpg: ảnh", delta_json="", known_features=""),
-    "concept_proposer": dict(confirmed_product_profile_json="{}", user_notes_or_empty=""),
+    "concept_proposer": dict(
+        confirmed_product_profile_json="{}", user_notes_or_empty="", recommended_duration_s=30
+    ),
     "outline_editor": dict(confirmed_profile_summary="s", concept_json="{}", version=1,
                            outline_json="{}", instruction="sửa"),
     "site_classifier": dict(url="u", title="t", meta_description="m", headings="h", signals="{}", heuristic="x"),
@@ -42,13 +44,13 @@ SAMPLE_VARS = {
     ),
     "duration_fit": dict(
         direction="ngắn hơn", target_words=110, current_words=80, script_json="{}",
-        product_profile_summary="s",
+        product_profile_summary="s", forced=False,
     ),
     "scene_writer": dict(
         task_type="rewrite", instruction="i", fields="voiceover", scene_type="hook",
         current_scene_json_or_null="null", prev_scene_summary_or_none="none",
         next_scene_summary_or_none="none", goal="awareness", duration_s=30, headline="h",
-        product_profile_summary="s", scene_catalog_json="{}", allowed_icons="check",
+        product_profile_summary="s", forced=False, scene_catalog_json="{}", allowed_icons="check",
     ),
     "edit_planner": dict(
         version=1, script_json="{}", product_profile_json="{}", targets_json="[]",

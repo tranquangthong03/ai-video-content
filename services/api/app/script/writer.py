@@ -22,6 +22,9 @@ from app.schemas.generated.product_profile import Feature, ProductProfile
 from app.schemas.generated.script import Script
 from app.schemas.generated.theme import Theme
 from app.script import catalog as cat
+from app.script.footage import SceneFacts, structure_issues
+from app.script.lite import MIN_WORDS as MIN_LITE_WORDS
+from app.script.lite import LiteContext
 from app.script.validate import validate_script
 from app.script.visuals import visual_for_scene
 
@@ -75,6 +78,14 @@ class WriterContext:
     home_url: str
     setup_counts: dict[str, int] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)  # tone / audience given by the user (set_global)
+    lite: LiteContext | None = None  # lets failed/unverified features be pointed at (showcase_lite)
+
+    # the video is longer than the product can fill with real footage and the user insisted
+    forced: bool = False
+
+    @property
+    def demo_max_words(self) -> int:
+        return cat.FORCED_DEMO_MAX_WORDS if self.forced else cat.DEMO_VOICEOVER_MAX_WORDS
 
     @property
     def features(self) -> dict[str, Feature]:
@@ -148,19 +159,24 @@ def build_prompt(ctx: WriterContext) -> str:
 # --- checks ---------------------------------------------------------------------------------------
 
 
-def check_scene(s: DraftScene, label: str, features: dict[str, Feature]) -> list[str]:
+def check_scene(
+    s: DraftScene,
+    label: str,
+    features: dict[str, Feature],
+    demo_max: int = cat.VOICEOVER_MAX_WORDS,
+) -> list[str]:
     """Limits that hold for every scene, whoever wrote it (writer, scene writer, user edit)."""
     errors: list[str] = []
+    max_words = demo_max if s.type == "feature_demo" else cat.VOICEOVER_MAX_WORDS
     if s.layout not in LAYOUTS_BY_TYPE[s.type]:
         errors.append(
             f"{label}: layout «{s.layout}» không hợp lệ cho {s.type} "
             f"(chọn một trong {', '.join(LAYOUTS_BY_TYPE[s.type])})"
         )
     words = cat.word_count(s.voiceover)
-    if not cat.VOICEOVER_MIN_WORDS <= words <= cat.VOICEOVER_MAX_WORDS:
+    if not cat.VOICEOVER_MIN_WORDS <= words <= max_words:
         errors.append(
-            f"{label}: voiceover có {words} từ, cần "
-            f"{cat.VOICEOVER_MIN_WORDS}–{cat.VOICEOVER_MAX_WORDS}"
+            f"{label}: voiceover có {words} từ, cần {cat.VOICEOVER_MIN_WORDS}–{max_words}"
         )
     if cat.word_count(s.on_screen_text) > cat.ON_SCREEN_MAX_WORDS:
         errors.append(f"{label}: on_screen_text quá {cat.ON_SCREEN_MAX_WORDS} từ")
@@ -177,6 +193,10 @@ def check_scene(s: DraftScene, label: str, features: dict[str, Feature]) -> list
             errors.append(f"{label}: feature_demo thiếu feature")
         elif s.feature not in features:
             errors.append(f"{label}: feature «{s.feature}» không có trong product")
+        elif features[s.feature].demo_kind not in cat.DEMOABLE and words < MIN_LITE_WORDS:
+            errors.append(
+                f"{label}: scene chỉ vị trí quay khoảng 5 giây, voiceover cần ≥ {MIN_LITE_WORDS} từ"
+            )
     elif s.feature:
         errors.append(f"{label}: chỉ feature_demo mới có field feature")
     if s.type == "before_after":
@@ -215,11 +235,14 @@ def check_draft(draft: DraftScript, ctx: WriterContext) -> list[str]:
     seen: dict[str, str] = {}
     for i, scene in enumerate(scenes):
         label = f"scene {i + 1}"
-        errors += check_scene(scene, label, features)
+        errors += check_scene(scene, label, features, ctx.demo_max_words)
         beat = beats[i] if i < len(beats) else None
         if beat and beat.feature_id:
             feature = features.get(beat.feature_id)
-            demoable = feature is not None and feature.demo_kind in cat.DEMOABLE
+            # failed / unverified features are pointed at, so their beats are feature_demo too
+            demoable = feature is not None and (
+                feature.demo_kind in cat.DEMOABLE or ctx.lite is not None
+            )
             if demoable and (scene.type != "feature_demo" or scene.feature != beat.feature_id):
                 errors.append(
                     f"{label}: beat {beat.id} trình diễn «{beat.feature_id}» nên phải là "
@@ -233,21 +256,48 @@ def check_draft(draft: DraftScript, ctx: WriterContext) -> list[str]:
     return errors
 
 
+def scene_facts(draft: DraftScript, ctx: WriterContext) -> list[SceneFacts]:
+    """Which draft scenes will carry a recorded clip (any feature_demo, pointed at if need be)."""
+    facts = []
+    for s in draft.scenes:
+        feature = ctx.features.get(s.feature or "")
+        demoable = feature is not None and (
+            feature.demo_kind in cat.DEMOABLE or ctx.lite is not None
+        )
+        facts.append(
+            SceneFacts(s.type, s.feature, s.voiceover, s.type == "feature_demo" and demoable)
+        )
+    return facts
+
+
+def soft_issues(draft: DraftScript, ctx: WriterContext) -> list[str]:
+    """Quality rules (footage ratio, scene mix): asked to fix twice, then only warned about."""
+    return structure_issues(scene_facts(draft, ctx), ctx.outline.duration_s)
+
+
 # --- building -------------------------------------------------------------------------------------
 
 
 def scene_dict(
-    s: DraftScene, scene_id: str, ctx: WriterContext, warnings: list[str]
+    s: DraftScene,
+    scene_id: str,
+    ctx: WriterContext,
+    warnings: list[str],
+    used: set[str] | None = None,
 ) -> dict[str, Any]:
     feature = ctx.features.get(s.feature) if s.feature else None
+    again = bool(used is not None and s.feature in used)  # a repeat continues the earlier scene
     visual = visual_for_scene(
         s.type,
         feature,
         ctx.home_url,
         setup_len=ctx.setup_counts.get(s.feature or ""),
-        show_setup=bool(s.show_setup),
+        show_setup=bool(s.show_setup) and not again,
         scene_id=scene_id,
+        lite=ctx.lite,
     )
+    if used is not None and s.feature:
+        used.add(s.feature)
     warnings += visual.warnings
     out: dict[str, Any] = {
         "id": scene_id,
@@ -270,7 +320,10 @@ def scene_dict(
 def build_script(draft: DraftScript, ctx: WriterContext) -> tuple[Script, list[str]]:
     """Assemble the Script (code-made ids, theme, goal and visuals). Raises WriterError."""
     warnings: list[str] = []
-    scenes = [scene_dict(s, f"s{i}", ctx, warnings) for i, s in enumerate(draft.scenes, start=1)]
+    used: set[str] = set()
+    scenes = [
+        scene_dict(s, f"s{i}", ctx, warnings, used) for i, s in enumerate(draft.scenes, start=1)
+    ]
     data: dict[str, Any] = {
         "title": draft.title.strip() or ctx.outline.title,
         "goal": ctx.outline.goal,
@@ -323,6 +376,7 @@ def write_script(caller: JsonCaller, ctx: WriterContext) -> WriterResult:
     prompt = base
     history: list[list[str]] = []
     output: WriterOutput | None = None
+    best: tuple[WriterOutput, Script, list[str], list[str], int] | None = None
     for attempt in range(1, MAX_REPAIRS + 2):
         output = caller.call("script", prompt, WriterOutput)
         errors = check_draft(output.script, ctx)
@@ -333,8 +387,9 @@ def write_script(caller: JsonCaller, ctx: WriterContext) -> WriterResult:
                 script, warnings = build_script(output.script, ctx)
             except WriterError as e:
                 errors = e.errors
-        history.append(errors)
-        if script is not None:
+        soft = soft_issues(output.script, ctx) if script is not None else []
+        history.append(errors or soft)
+        if script is not None and not soft:
             return WriterResult(
                 script,
                 summary_for(script, output.summary),
@@ -342,5 +397,16 @@ def write_script(caller: JsonCaller, ctx: WriterContext) -> WriterResult:
                 attempt,
                 history,
             )
-        prompt = repair_prompt(base, output, errors)
+        if script is not None and (best is None or len(soft) <= len(best[3])):
+            best = (output, script, warnings, soft, attempt)  # valid, but not yet good
+        prompt = repair_prompt(base, output, errors or soft)
+    if best is not None:  # still not good after the repairs: keep the best one and say so
+        out, script, warnings, soft, attempt = best
+        return WriterResult(
+            script,
+            summary_for(script, out.summary),
+            [*out.warnings, *warnings, *[f"chưa đạt: {s}" for s in soft]],
+            attempt,
+            history,
+        )
     raise WriterError(history[-1])

@@ -120,7 +120,12 @@ def test_produce_fits_every_scene_and_writes_the_report(tmp_path: Path) -> None:
     assert (
         by_id["s1"].usable_ms is None and by_id["s1"].final_ms == speech["s1"]
     )  # photo: its speech
-    assert by_id["s4"].kind == "chữ" and by_id["s1"].kind == "ảnh" and s2.kind == "thao tác"
+    assert (
+        by_id["s5"].kind == "chữ"
+        and by_id["s4"].kind == "cuộn-highlight"
+        and by_id["s1"].kind == "ảnh"
+        and s2.kind == "thao tác"
+    )
 
     # the script that is rendered carries the final durations
     final = {s["id"]: s["duration_ms"] for s in renders[0]["script"]["scenes"]}
@@ -142,11 +147,11 @@ def test_produce_fits_every_scene_and_writes_the_report(tmp_path: Path) -> None:
     assert report["ffprobe"]["pix_fmt"] == "yuv420p" and report["actual_ms"] > 0
     assert report["phases_s"].keys() >= {"timing", "record", "render", "total"}
     assert report["tokens"] == {"total": 1} and report["url"] == "https://todo.example/"
-    assert [f["id"] for f in report["features"]] == ["create", "filter"]
+    assert [f["id"] for f in report["features"]] == ["create", "filter", "story"]
     assert len(report["scenes"]) == 5 and report["idle_limit_ms"] == IDLE_LIMIT_MS
     assert {"id", "type", "kind", "speech_ms", "usable_ms", "final_ms", "playback_rate", "freeze",
             "idle_max_ms", "warnings"} <= set(report["scenes"][1])  # fmt: skip
-    assert report["warnings"] == ["s2: cảnh báo thử", "s3: cảnh báo thử"]
+    assert report["warnings"] == ["s2: cảnh báo thử", "s3: cảnh báo thử", "s4: cảnh báo thử"]
     assert any("scene 1/5" in m for m in messages) and result.video == work / "video.mp4"
     assert (
         s2.idle_max_ms is not None and s2.idle_max_ms >= speech["s2"] - 4500

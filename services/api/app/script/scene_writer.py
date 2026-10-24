@@ -169,7 +169,7 @@ def write_scene(
             draft = _merge_rewrite(current, written, fields)
         else:
             draft = written.model_copy(update={"type": kind, "id": new_id})
-        errors = check_scene(draft, "scene", ctx.features)
+        errors = check_scene(draft, "scene", ctx.features, ctx.demo_max_words)
         if not errors:
             warnings: list[str] = []
             data: dict[str, Any] = scene_dict(draft, new_id, ctx, warnings)

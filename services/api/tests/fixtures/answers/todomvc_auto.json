@@ -1,0 +1,16 @@
+{
+  "confirm_understanding": [{ "action": "answer" }],
+  "choose_concept": [
+    { "action": "answer", "answers": { "concept_id": "recommended", "notes": "" } }
+  ],
+  "outline_review": [
+    { "action": "edit", "edit": { "instruction": "Đổi câu mở đầu thành câu hỏi về việc hay quên việc cần làm mỗi ngày" } },
+    { "action": "edit", "edit": { "instruction": "Thay beat thứ 4 bằng beat giới thiệu bộ lọc Active/Completed của danh sách (chỉ cho xem vị trí), giữ nguyên số lượng beat" } },
+    { "action": "approve" }
+  ],
+  "clarify": [{ "action": "answer", "answers": { "clarify": "b1" } }],
+  "script_review": [
+    { "action": "edit", "edit": { "instruction": "Scene 1: viết lại lời đọc ngắn gọn, vào thẳng vấn đề hơn" } },
+    { "action": "approve" }
+  ]
+}

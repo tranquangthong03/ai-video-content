@@ -3,6 +3,7 @@
 import re
 from dataclasses import dataclass, field
 
+from app.core.budget import budget_for, oversize_warning
 from app.core.interaction import make_request
 from app.llm.json_call import JsonCaller
 from app.llm.prompts import render
@@ -188,6 +189,9 @@ def build_request(
         "Đây là dàn ý video. Bạn duyệt, hoặc nhập yêu cầu sửa bằng câu tự do "
         "(ví dụ: «đổi mở đầu thành câu hỏi», «bỏ ý 3»)."
     )
+    too_long = oversize_warning(outline.duration_s, budget_for(profile)) if profile else None
+    if too_long:  # the user may still keep it: the duration fit then stretches what it can
+        message = f"{too_long} Bạn có thể đổi thời lượng hoặc giữ nguyên.\n{message}"
     return make_request(
         job_id,
         "outline_review",

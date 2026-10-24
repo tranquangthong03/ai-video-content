@@ -25,6 +25,7 @@ from app.recorder import motion
 from app.recorder.screenshot import take_screenshot
 from app.schemas.generated.locator import LocatorSpec
 from app.schemas.generated.scene import Scene
+from app.script.lite import GROUP, is_lite
 
 TAIL_MS = 800  # keep recording a little after the last step
 FILL_THRESHOLD_MS = 2000  # shorter than this and the renderer just holds the last frame
@@ -170,6 +171,10 @@ class _Recorder:
         self.mouse = HOME
         self.activity: list[float] = []  # page changes seen so far, wall-clock ms
         self.marks: list[int] = []  # clip times where the cursor moved, text was typed, ...
+        self.hover_boxes: list[
+            dict[str, float]
+        ] = []  # boxes of the slow hovers since the last outline
+        self.pointed = 0  # showcase_lite: elements hovered or outlined
         self.ok = self.failed = 0
 
     # --- clock ----------------------------------------------------------------------------
@@ -197,9 +202,12 @@ class _Recorder:
         sx, sy = self.mouse
         duration = ms or motion.move_duration_ms(hypot(x - sx, y - sy))
         for i, (px, py, wait) in enumerate(motion.mouse_path((sx, sy), (x, y), duration)):
+            began = time.monotonic()
             self.page.mouse.move(px, py)
             if i % 8 == 0:
                 self.mark()
+            if ms:  # a requested duration is wall-clock: the move call itself already took time
+                wait = max(0.0, wait - (time.monotonic() - began) * 1000)
             self.page.wait_for_timeout(wait)
         self.mouse = (x, y)
 
@@ -252,7 +260,8 @@ class _Recorder:
         target = self.target_of(a.locator, label)
         self.safe(target)
         x, y = self.center_of(target)
-        self.move_to(x, y)
+        slow = kind == "hover" and bool(a.ms)  # showcase_lite: a slow, deliberate hover
+        self.move_to(x, y, self.rng.randint(900, 1200) if slow else None)
         self.event(kind, x, y)
         if kind == "click":
             target.click()
@@ -260,7 +269,12 @@ class _Recorder:
             target.dblclick()
         else:
             target.hover()
-            self.page.wait_for_timeout(600)
+            self.page.wait_for_timeout(a.ms if slow and a.ms else 600)
+            if slow:
+                box = target.box()
+                if box:
+                    self.hover_boxes.append(box)
+                    self.pointed += 1
 
     def do_click(self, a: Any, label: str) -> None:
         self._pointer_action(a, label, "click")
@@ -328,14 +342,20 @@ class _Recorder:
         self._scroll_center(target)
 
     def do_highlight(self, a: Any, label: str) -> None:
-        target = self.target_of(a.locator, label)
-        box = target.box()
-        viewport = self.page.viewport_size or {"width": 1920, "height": 1080}
-        if box is None or box["y"] < 0 or box["y"] + box["height"] > viewport["height"]:
-            self._scroll_center(target)
+        group = a.text == GROUP and self.hover_boxes
+        if group:  # outline the area that holds every element hovered just before
+            box = union_box(self.hover_boxes)
+            self.hover_boxes = []
+        else:
+            target = self.target_of(a.locator, label)
             box = target.box()
+            viewport = self.page.viewport_size or {"width": 1920, "height": 1080}
+            if box is None or box["y"] < 0 or box["y"] + box["height"] > viewport["height"]:
+                self._scroll_center(target)
+                box = target.box()
         if box is None:
             raise RuntimeError(f"{label}: element has no box")
+        self.pointed += 1
         self.page.evaluate(HIGHLIGHT_ON_JS, [box, self.color])
         self.event("highlight", box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
         self.page.wait_for_timeout(a.ms or 1800)
@@ -421,6 +441,15 @@ class _Recorder:
                     self.page.mouse.wheel(0, dy)
                     self.page.wait_for_timeout(40)
         return self.now() - started
+
+
+def union_box(boxes: list[dict[str, float]]) -> dict[str, float]:
+    """The smallest box that holds all the given boxes."""
+    x0 = min(b["x"] for b in boxes)
+    y0 = min(b["y"] for b in boxes)
+    x1 = max(b["x"] + b["width"] for b in boxes)
+    y1 = max(b["y"] + b["height"] for b in boxes)
+    return {"x": x0, "y": y0, "width": x1 - x0, "height": y1 - y0}
 
 
 def to_mp4(webm: Path, mp4: Path) -> None:
@@ -526,7 +555,8 @@ def record_scene(
         to_mp4(webm, clip_path)
 
     warnings = list(rec.warnings)
-    if rec.ok == 0 and (setup or actions):
+    pointed_nothing = is_lite(visual) and rec.pointed == 0
+    if (rec.ok == 0 or pointed_nothing) and (setup or actions):
         # nothing could be carried out: a photo of the page is better than an empty recording
         image = take_screenshot(session, start_url, out_dir / f"{s.id}.png")
         warnings.append("không bước nào chạy được, dùng ảnh trang đích thay cho clip")

@@ -18,6 +18,9 @@ BEFORE_AFTER_MAX_WORDS = 6
 VOICEOVER_MIN_WORDS = 8
 VOICEOVER_MAX_WORDS = 30
 DEMO_VOICEOVER_MAX_WORDS = 30
+# when the user insists on a video longer than the product can fill (core/budget.py)
+FORCED_DEMO_MAX_WORDS = 35
+FORCED_OTHER_MAX_WORDS = 20  # hook / cta may be lengthened up to this by the duration fit
 
 
 def _icons() -> tuple[str, ...]:

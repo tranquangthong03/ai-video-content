@@ -14,6 +14,15 @@ from pathlib import Path
 from typing import Any
 
 from app.schemas.generated.product_profile import DemoStep, Feature, ProductProfile
+from app.script.lite import (
+    LiteContext,
+    lite_actions,
+    needs_data,
+    own_pointing,
+    pick_elements,
+    pick_setup,
+    retext,
+)
 
 HIGHLIGHT_MS = 1800
 ZOOM_STEPS = ("click", "dblclick")
@@ -154,6 +163,36 @@ def _showcase_visual(feature: Feature) -> VisualResult | None:
     )
 
 
+def _lite_visual(feature: Feature, lite: LiteContext, scene_id: str) -> VisualResult | None:
+    """showcase_lite: hover slowly over the feature's elements and outline them; never click."""
+    elements, page_url = pick_elements(feature, lite)
+    steps: list[DemoStep] | None = None
+    if not any(e["ref"] for e in elements):  # nothing the explorer saw: use the steps it tried
+        own = own_pointing(feature)
+        if own is not None:
+            elements, prep, own_page = own
+            page_url = own_page or page_url
+            steps = retext(prep, lite) if prep else None
+    elif needs_data(elements) and page_url is not None:
+        steps = pick_setup(page_url, lite)
+    if not elements or page_url is None:
+        return None
+    warnings: list[str] = []
+    setup: list[dict[str, Any]] = []
+    if steps:
+        setup = [a for a in (step_to_action(s) for s in steps) if a is not None]
+    elif needs_data(elements):
+        warnings.append(f"{scene_id}: «{feature.id}» cần dữ liệu nhưng không có setup cùng trang")
+    visual = {
+        "mode": "recording",
+        "page": page_url,
+        "setup": setup,
+        "show_setup": False,
+        "actions": lite_actions(elements, page_url, with_goto=not setup),
+    }
+    return VisualResult(visual, warnings)
+
+
 def screenshot_visual(home_url: str) -> dict[str, Any]:
     return {"mode": "screenshot", "page": home_url, "actions": []}
 
@@ -169,6 +208,7 @@ def demo_visual(
     setup_len: int | None,
     show_setup: bool,
     scene_id: str,
+    lite: LiteContext | None = None,
 ) -> VisualResult:
     """Visual of a feature_demo scene, by the feature's verified demo_kind."""
     if feature is None:
@@ -182,15 +222,15 @@ def demo_visual(
             return result
         result.warnings.append(f"{scene_id}: «{feature.id}» không có bước nào chạy lại được")
         return VisualResult(screenshot_visual(home_url), result.warnings)
-    if feature.demo_kind == "showcase":
-        showcase = _showcase_visual(feature)
-        if showcase is not None:
-            return showcase
-        return VisualResult(
-            screenshot_visual(home_url),
-            [f"{scene_id}: «{feature.id}» thiếu showcase_target, dùng ảnh trang chủ"],
-        )
+    # showcase, failed or unverified: highlight the section when the page has one, else point at it
+    showcase = _showcase_visual(feature)
+    if showcase is not None:
+        return showcase
     kind = feature.demo_kind or "chưa kiểm chứng"
+    if lite is not None:
+        found = _lite_visual(feature, lite, scene_id)
+        if found is not None:
+            return found
     return VisualResult(
         screenshot_visual(home_url),
         [f"{scene_id}: «{feature.id}» có demo_kind {kind}, không quay được nên dùng ảnh trang chủ"],
@@ -205,10 +245,16 @@ def visual_for_scene(
     setup_len: int | None = None,
     show_setup: bool = False,
     scene_id: str = "",
+    lite: LiteContext | None = None,
 ) -> VisualResult:
     if scene_type == "feature_demo":
         return demo_visual(
-            feature, home_url, setup_len=setup_len, show_setup=show_setup, scene_id=scene_id
+            feature,
+            home_url,
+            setup_len=setup_len,
+            show_setup=show_setup,
+            scene_id=scene_id,
+            lite=lite,
         )
     if scene_type == "hook":
         return VisualResult(screenshot_visual(home_url))

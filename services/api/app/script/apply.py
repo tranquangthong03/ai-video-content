@@ -154,6 +154,7 @@ def _set(
             setup_len=ctx.setup_counts.get(value),
             show_setup=scene["visual"].get("show_setup", False),
             scene_id=op.scene_id,
+            lite=ctx.lite,
         )
         scene["visual"] = visual.visual
         result.warnings += visual.warnings

@@ -18,6 +18,7 @@ from app.recorder.motion import idle_gaps
 from app.recorder.record import RecordResult, record_scene
 from app.schemas.generated.product_profile import ProductProfile
 from app.schemas.generated.script import Script
+from app.script.lite import is_lite
 from app.script.theme import highlight_color
 
 MAX_RATE = 1.5
@@ -85,6 +86,8 @@ def kind_of(scene_root: Any, record: RecordResult | None) -> str:
         return "ảnh"
     mode = scene_root.visual.mode
     if mode == "recording":
+        if is_lite(scene_root.visual):
+            return "chỉ vị trí (showcase_lite)"
         return (
             "cuộn-highlight"
             if any(a.do == "highlight" for a in scene_root.visual.actions)
@@ -141,6 +144,8 @@ def produce(
         if record.kind == "recording":
             gaps = scene_idle_gaps(record.activity_ms, trim, usable or 0, rate, final_ms)
             idle = max(gaps, default=0)
+        elif record.kind in ("screenshot", "fallback_screenshot"):
+            idle = 0  # a still page still moves: the template's Ken Burns zoom never pauses
         data["scenes"][i]["duration_ms"] = final_ms
         captions = estimate_captions(s.voiceover, 0, max(1, speech_ms - PAUSE_MS))
         entry: dict[str, Any] = {"captions": captions}
@@ -201,11 +206,14 @@ def produce(
             if o.feature
         ]
     estimated = sum(o.speech_ms for o in outcomes)
+    planned = sum(o.final_ms for o in outcomes)
+    footage_ms = sum(o.final_ms for o in outcomes if o.recording == "recording")
     report: dict[str, Any] = {
         "video": str(out),
         "target_ms": script.target_duration_s * 1000,
         "estimated_ms": estimated,
-        "planned_ms": sum(o.final_ms for o in outcomes),
+        "planned_ms": planned,
+        "footage_ratio": round(footage_ms / planned, 3) if planned else 0.0,
         "actual_ms": info["duration_ms"],
         "ffprobe": {
             k: info[k] for k in ("codec_name", "width", "height", "pix_fmt", "r_frame_rate")

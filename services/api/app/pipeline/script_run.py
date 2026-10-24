@@ -11,6 +11,7 @@ from typing import Any
 
 from rich.markup import escape
 
+from app.core.budget import budget_for, oversize_warning
 from app.core.interaction import check_response, make_request
 from app.llm.json_call import JsonCaller, LLMCallError
 from app.pipeline.frontend import Frontend
@@ -25,6 +26,8 @@ from app.schemas.generated.user_response import UserResponse
 from app.script.diff import diff_scripts
 from app.script.edit import EditOutcome, apply_edit, apply_global
 from app.script.fit_duration import FitReport, fit_duration
+from app.script.footage import SceneFacts, footage_ratio, min_ratio
+from app.script.lite import LiteContext, load_page_index
 from app.script.theme import ThemeResult
 from app.script.versions import ScriptStore
 from app.script.view import one_liners, render_script
@@ -77,6 +80,12 @@ class ScriptRunner:
         self.theme_fn = theme_fn
         self.store = ScriptStore(job_dir)
         self.report: dict[str, Any] = {"warnings": []}
+        saved = job_dir / "script_report.json"
+        if saved.is_file():  # a resumed run keeps what only the first generation knows
+            old = json.loads(saved.read_text(encoding="utf-8"))
+            for key in ("fit_generation", "generation"):
+                if key in old:
+                    self.report[key] = old[key]
         self.ctx: WriterContext | None = None
         self.fit: FitReport | None = None
         self.last_write: WriterResult | None = None
@@ -139,6 +148,17 @@ class ScriptRunner:
             self.url,
             load_setup_counts(self.dir / "explore", self.profile),
         )
+        self.ctx.lite = LiteContext(self.profile, load_page_index(self.dir / "explore"), self.url)
+        budget = budget_for(self.profile)
+        self.report.update(
+            content_budget_s=budget.content_budget_s,
+            content_budget_formula=budget.formula,
+            recommended_duration_s=budget.recommended_duration_s,
+        )
+        warning = oversize_warning(outline.duration_s, budget)
+        if warning:
+            self.ctx.forced = True
+            self.report["warnings"].append(warning)
         return self.ctx
 
     # --- generation ----------------------------------------------------------------------------
@@ -155,6 +175,7 @@ class ScriptRunner:
         }
         self.report["fit"] = self.report["fit_generation"] = fit.as_dict()
         self.report["warnings"] += [*written.warnings, *fit.warnings]
+        self._footage(script)
         return script
 
     def _measure(self, script: Script) -> None:
@@ -162,6 +183,21 @@ class ScriptRunner:
         assert self.ctx is not None
         _, self.fit = fit_duration(self.caller, script, self.ctx, adjust=False)
         self.report["fit"] = self.fit.as_dict()
+        self._footage(script)
+
+    def _footage(self, script: Script) -> None:
+        """footage_ratio of the script as it stands (estimated from the speech time)."""
+        facts = [
+            SceneFacts(
+                s.root.type,
+                getattr(s.root, "feature", None),
+                s.root.voiceover,
+                s.root.visual.mode == "recording",
+            )
+            for s in script.scenes
+        ]
+        self.report["footage_ratio"] = round(footage_ratio(facts), 3)
+        self.report["footage_min"] = min_ratio(script.target_duration_s)
 
     # --- interaction ---------------------------------------------------------------------------
 
