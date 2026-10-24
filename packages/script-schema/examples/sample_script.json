@@ -1,0 +1,62 @@
+{
+  "title": "TaskFlow - Quản lý công việc không còn rối",
+  "goal": "conversion",
+  "aspect_ratio": "9:16",
+  "target_duration_s": 40,
+  "theme": {
+    "primary": "#4F46E5",
+    "accent": "#F59E0B",
+    "font": "Inter",
+    "logo_asset": null,
+    "motion_preset": "energetic",
+    "caption_style": "tiktok_bounce",
+    "music_mood": "upbeat",
+    "voice_id": "vi_female_01",
+    "language": "vi"
+  },
+  "scenes": [
+    {
+      "id": "s1",
+      "type": "hook",
+      "layout": "big_text_over_blur",
+      "voiceover": "Công việc chất đống mà không biết bắt đầu từ đâu?",
+      "on_screen_text": "Quá nhiều task? 😵",
+      "visual": { "mode": "screenshot", "page": "/dashboard", "effect": "blur_zoom", "actions": [] }
+    },
+    {
+      "id": "s2",
+      "type": "feature_demo",
+      "layout": "phone_mockup",
+      "feature": "Bảng Kanban kéo thả",
+      "voiceover": "Với TaskFlow, bạn kéo thả công việc giữa các cột chỉ trong một giây.",
+      "on_screen_text": "Kéo thả siêu nhanh",
+      "visual": {
+        "mode": "recording",
+        "page": "/board",
+        "effect": null,
+        "actions": [
+          { "do": "goto", "url": "/board" },
+          { "do": "hover", "target": "Thẻ công việc đầu tiên", "zoom": true },
+          { "do": "scroll", "ms": 800 }
+        ]
+      }
+    },
+    {
+      "id": "s3",
+      "type": "before_after",
+      "layout": "split_vertical",
+      "voiceover": "Trước đây hay quên deadline, giờ mọi thứ đều được nhắc đúng lúc.",
+      "before_text": "Quên deadline, trễ việc",
+      "after_text": "Nhắc việc tự động, đúng hạn",
+      "visual": { "mode": "template", "page": null, "effect": "split_reveal", "actions": [] }
+    },
+    {
+      "id": "s4",
+      "type": "cta",
+      "layout": "button_pulse",
+      "voiceover": "Dùng thử TaskFlow miễn phí ngay hôm nay!",
+      "on_screen_text": "Dùng thử miễn phí",
+      "visual": { "mode": "template", "page": null, "effect": null, "actions": [] }
+    }
+  ]
+}

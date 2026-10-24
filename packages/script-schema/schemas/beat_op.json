@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "beat_op.json",
+  "title": "BeatOp",
+  "discriminator": { "propertyName": "op" },
+  "oneOf": [
+    { "$ref": "#/$defs/SetBeatOp" },
+    { "$ref": "#/$defs/DeleteBeatOp" },
+    { "$ref": "#/$defs/InsertBeatOp" },
+    { "$ref": "#/$defs/MoveBeatOp" },
+    { "$ref": "#/$defs/SetMetaOp" }
+  ],
+  "$defs": {
+    "SetBeatOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "beat_id", "text"],
+      "properties": {
+        "op": { "const": "set" },
+        "beat_id": { "type": "string" },
+        "text": { "type": "string", "minLength": 1 },
+        "feature_id": { "type": ["string", "null"], "default": null }
+      }
+    },
+    "DeleteBeatOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "beat_id"],
+      "properties": { "op": { "const": "delete" }, "beat_id": { "type": "string" } }
+    },
+    "InsertBeatOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "after_beat_id", "text"],
+      "properties": {
+        "op": { "const": "insert" },
+        "after_beat_id": { "type": ["string", "null"] },
+        "text": { "type": "string", "minLength": 1 },
+        "feature_id": { "type": ["string", "null"], "default": null }
+      }
+    },
+    "MoveBeatOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "beat_id", "after_beat_id"],
+      "properties": {
+        "op": { "const": "move" },
+        "beat_id": { "type": "string" },
+        "after_beat_id": { "type": ["string", "null"] }
+      }
+    },
+    "SetMetaOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "field", "value"],
+      "properties": {
+        "op": { "const": "set_meta" },
+        "field": { "enum": ["title", "goal", "duration_s"] },
+        "value": { "oneOf": [{ "type": "string" }, { "type": "number" }] }
+      }
+    }
+  }
+}

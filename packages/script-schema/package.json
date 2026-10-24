@@ -1,0 +1,15 @@
+{
+  "name": "@svai/script-schema",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "codegen:zod": "node codegen-zod.mjs ../../apps/render/src/generated=.js ../../apps/web/lib/generated"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "json-schema-to-zod": "^2.6.0"
+  }
+}

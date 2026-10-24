@@ -1,0 +1,143 @@
+name: short-video-ai
+
+x-app: &app
+  env_file: ../.env
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    # minio/minio and minio/mc are no longer pullable from Docker Hub/quay (2026); bitnamilegacy is a frozen mirror.
+    # Dev only: swap for a maintained image before production.
+    image: bitnamilegacy/minio
+    restart: unless-stopped
+    env_file: ../.env
+    # Root credentials come from S3_ACCESS_KEY / S3_SECRET_KEY in .env
+    entrypoint:
+      - sh
+      - -c
+      - MINIO_ROOT_USER="$$S3_ACCESS_KEY" MINIO_ROOT_PASSWORD="$$S3_SECRET_KEY" exec /opt/bitnami/scripts/minio/entrypoint.sh /opt/bitnami/scripts/minio/run.sh
+    volumes:
+      - minio-data:/bitnami/minio/data
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio-init:
+    image: bitnamilegacy/minio-client
+    env_file: ../.env
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint:
+      - sh
+      - -c
+      # Retry: bitnami minio restarts once after its internal setup, so the first health pass can be early
+      - until mc alias set local "$$S3_ENDPOINT" "$$S3_ACCESS_KEY" "$$S3_SECRET_KEY"; do sleep 2; done && mc mb --ignore-existing "local/$$S3_BUCKET"
+
+  browser-vnc:
+    build: ./browser-vnc
+    restart: unless-stopped
+    shm_size: 1gb
+    ports:
+      - "6080:6080"
+      - "9222:9222"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:6080/vnc.html >/dev/null && curl -fs http://localhost:9222/json/version >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  api:
+    <<: *app
+    build: ../services/api
+    image: short-video-ai-api
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      minio-init: { condition: service_completed_successfully }
+      browser-vnc: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  worker:
+    <<: *app
+    build: ../services/api
+    image: short-video-ai-api
+    command: ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=info"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      minio-init: { condition: service_completed_successfully }
+      browser-vnc: { condition: service_healthy }
+
+  render:
+    <<: *app
+    build:
+      context: ..
+      dockerfile: apps/render/Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      minio-init: { condition: service_completed_successfully }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  web:
+    <<: *app
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      api: { condition: service_healthy }
+
+volumes:
+  postgres-data:
+  minio-data:

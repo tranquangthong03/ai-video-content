@@ -1,0 +1,9 @@
+{
+  "confirm_understanding": [{ "action": "answer" }],
+  "choose_concept": [{ "action": "answer", "answers": { "concept_id": "recommended" } }],
+  "outline_review": [
+    { "action": "edit", "edit": { "instruction": "Đổi câu mở đầu thành câu hỏi về ảnh quá nặng làm trang web chậm" } },
+    { "action": "approve" }
+  ],
+  "clarify": [{ "action": "answer", "answers": { "clarify": "b1" } }]
+}

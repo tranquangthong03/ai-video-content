@@ -1,0 +1,225 @@
+"""Interactive loops: confirm understanding -> choose concept -> approve outline.
+
+Everything the user sees or answers goes through InteractionRequest / UserResponse, via a Frontend.
+Artifacts under <job_dir>: confirmed_profile.json, confirmed_notes.json, concepts.json,
+concept_choice.json, outline_v<n>.json, outline_approved.json, interactions.jsonl.
+"""
+
+import json
+from collections.abc import Callable
+from pathlib import Path
+
+from app.core.interaction import check_response, make_request
+from app.llm.json_call import JsonCaller, LLMCallError
+from app.pipeline.frontend import Frontend
+from app.proposal import concepts as concepts_mod
+from app.proposal import outline as outline_mod
+from app.proposal import understanding as understanding_mod
+from app.schemas.generated.interaction import InteractionRequest
+from app.schemas.generated.outline import Outline
+from app.schemas.generated.product_profile import ProductProfile
+from app.schemas.generated.user_response import UserResponse
+from app.schemas.generated.video_concept import VideoConcept
+
+MAX_CLARIFY_ROUNDS = 2
+
+
+class Cancelled(RuntimeError):
+    """The user chose cancel."""
+
+
+class ProposalRunner:
+    def __init__(
+        self,
+        job_id: str,
+        job_dir: Path,
+        caller: JsonCaller,
+        frontend: Frontend,
+        *,
+        explore_more: Callable[[list[str], str | None], ProductProfile],
+    ) -> None:
+        self.job_id = job_id
+        self.dir = job_dir
+        self.caller = caller
+        self.frontend = frontend
+        self.explore_more = explore_more
+
+    # --- interaction plumbing ----------------------------------------------------------------
+
+    def _ask(self, request: InteractionRequest) -> UserResponse:
+        while True:
+            response = self.frontend.ask(request)
+            errors = check_response(request, response)
+            if not errors:
+                break
+            self.frontend.info(f"[red]Phản hồi không hợp lệ: {'; '.join(errors)}[/]")
+        with (self.dir / "interactions.jsonl").open("a", encoding="utf-8") as f:
+            f.write(
+                json.dumps(
+                    {
+                        "request": request.model_dump(mode="json", exclude_none=True),
+                        "response": response.model_dump(mode="json", exclude_none=True),
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
+        if response.action == "cancel":
+            raise Cancelled(request.kind)
+        return response
+
+    # --- 1. understanding --------------------------------------------------------------------
+
+    def confirm_understanding(self, base: ProductProfile) -> tuple[ProductProfile, str]:
+        """Returns (confirmed profile, notes for the concept proposer from the answers)."""
+        done = self.dir / "confirmed_profile.json"
+        notes_file = self.dir / "confirmed_notes.json"
+        if done.is_file():
+            return ProductProfile.model_validate_json(done.read_text(encoding="utf-8")), (
+                json.loads(notes_file.read_text(encoding="utf-8")) if notes_file.is_file() else ""
+            )
+        edits = understanding_mod.ProfileEdits()
+        notice = ""
+        for round_no in range(1, 30):
+            profile = understanding_mod.apply_edits(base, edits)
+            response = self._ask(
+                understanding_mod.build_request(
+                    self.job_id, profile, round_no=round_no, notice=notice
+                )
+            )
+            if response.action == "explore_more":
+                query = response.explore
+                before = len(base.features)
+                base = self.explore_more(
+                    query.urls if query else [], query.description if query else None
+                )
+                notice = f"Đã xem thêm trang: có {len(base.features) - before} tính năng mới."
+                continue
+            understanding_mod.merge_response(edits, response)
+            if response.action == "answer":
+                confirmed = understanding_mod.apply_edits(base, edits)
+                notes = "\n".join(f"- {k}: {v}" for k, v in edits.answers.items())
+                done.write_text(confirmed.model_dump_json(indent=2), encoding="utf-8")
+                notes_file.write_text(json.dumps(notes, ensure_ascii=False), encoding="utf-8")
+                return confirmed, notes
+            notice = "Đã cập nhật theo yêu cầu của bạn."
+        raise RuntimeError("too many confirm_understanding rounds")
+
+    # --- 2. concepts -------------------------------------------------------------------------
+
+    def choose_concept(self, profile: ProductProfile, notes: str) -> tuple[VideoConcept, str]:
+        """Returns (chosen concept, free-text notes the user attached to the choice)."""
+        concepts_file = self.dir / "concepts.json"
+        choice_file = self.dir / "concept_choice.json"
+        if concepts_file.is_file() and choice_file.is_file():
+            concepts = [
+                VideoConcept(**c) for c in json.loads(concepts_file.read_text(encoding="utf-8"))
+            ]
+            choice = json.loads(choice_file.read_text(encoding="utf-8"))
+            return next(c for c in concepts if c.id == choice["concept_id"]), choice["notes"]
+
+        guidance = notes
+        for _ in range(10):
+            concepts = concepts_mod.propose_concepts(self.caller, profile, guidance)
+            concepts_file.write_text(
+                json.dumps([c.model_dump() for c in concepts], ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            while True:
+                response = self._ask(concepts_mod.build_request(self.job_id, concepts))
+                try:
+                    decision = concepts_mod.read_decision(concepts, response)
+                except ValueError as e:
+                    self.frontend.info(f"[red]{e}[/]")
+                    continue
+                break
+            if decision.kind == "regenerate":
+                guidance = f"{notes}\n{decision.notes}".strip()
+                continue
+            assert decision.concept is not None
+            choice_file.write_text(
+                json.dumps(
+                    {"concept_id": decision.concept.id, "notes": decision.notes}, ensure_ascii=False
+                ),
+                encoding="utf-8",
+            )
+            return decision.concept, decision.notes
+        raise RuntimeError("too many concept rounds")
+
+    # --- 3. outline --------------------------------------------------------------------------
+
+    def _plan_and_apply(
+        self, profile: ProductProfile, concept: VideoConcept, outline: Outline, instruction: str
+    ) -> tuple[Outline, list[str], str]:
+        """LLM plans ops for `instruction`, code applies them: (outline, changes, notice)."""
+        valid = {f.id for f in profile.features}
+        text = instruction
+        for _ in range(MAX_CLARIFY_ROUNDS + 1):
+            try:
+                plan = outline_mod.edit_outline(self.caller, profile, concept, outline, text)
+            except LLMCallError as e:
+                return outline, [], f"Chưa xử lý được yêu cầu ({e}). Bạn thử diễn đạt lại nhé."
+            if plan.status == "needs_clarification" and plan.clarification:
+                q = plan.clarification
+                request = make_request(
+                    self.job_id,
+                    "clarify",
+                    q.question,
+                    allowed_actions=["answer", "cancel"],
+                    questions=[
+                        {
+                            "id": "clarify",
+                            "text": q.question,
+                            "type": "single",
+                            "options": [o.model_dump() for o in q.options],
+                            "allow_custom": True,
+                        }
+                    ],
+                )
+                answer = (self._ask(request).answers or {}).get("clarify", "")
+                label = next((o.label for o in q.options if o.id == answer), str(answer))
+                text = f"{instruction}\n(Làm rõ: {label})"
+                continue
+            applied = outline_mod.apply_ops(outline, plan.ops, valid)
+            notices = [f"Bị từ chối: {r.request} — {r.reason}" for r in plan.rejected]
+            notices += [f"Lưu ý: {w}" for w in [*plan.warnings, *applied.warnings]]
+            notices += [f"Không áp dụng được: {e}" for e in applied.errors]
+            return applied.outline, applied.changes, "\n".join(notices)
+        return outline, [], "Yêu cầu chưa rõ, dàn ý giữ nguyên."
+
+    def review_outline(
+        self, profile: ProductProfile, concept: VideoConcept, concept_notes: str
+    ) -> Outline:
+        approved_file = self.dir / "outline_approved.json"
+        if approved_file.is_file():
+            return Outline.model_validate_json(approved_file.read_text(encoding="utf-8"))
+
+        outline = outline_mod.outline_from_concept(concept, profile)
+        changes: list[str] = []
+        notice = ""
+        if (
+            concept_notes.strip()
+        ):  # notes attached to the concept choice are the first edit instruction
+            outline, changes, notice = self._plan_and_apply(
+                profile, concept, outline, concept_notes
+            )
+        for _ in range(30):
+            (self.dir / f"outline_v{outline.version}.json").write_text(
+                outline.model_dump_json(indent=2), encoding="utf-8"
+            )
+            response = self._ask(
+                outline_mod.build_request(self.job_id, outline, changes=changes, notice=notice)
+            )
+            if response.action == "approve":
+                approved_file.write_text(outline.model_dump_json(indent=2), encoding="utf-8")
+                return outline
+            if response.action == "regenerate":
+                outline = outline_mod.outline_from_concept(concept, profile)
+                changes, notice = ["Đã tạo lại dàn ý từ hướng đã chọn"], ""
+                continue
+            instruction = (response.edit.instruction if response.edit else "") or ""
+            if not instruction.strip():
+                changes, notice = [], "Bạn chưa nhập yêu cầu sửa."
+                continue
+            outline, changes, notice = self._plan_and_apply(profile, concept, outline, instruction)
+        raise RuntimeError("too many outline rounds")

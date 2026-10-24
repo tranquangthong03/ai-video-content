@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>TaskFlow - Công việc</title>
+</head>
+<body>
+  <aside>
+    <nav>
+      <button id="tab-tasks" data-testid="tab-tasks">Công việc</button>
+      <button data-testid="tab-reports" id="tab-reports">Báo cáo</button>
+    </nav>
+  </aside>
+  <main>
+    <h1 id="heading">Công việc</h1>
+    <button id="new-task">New task</button>
+    <button id="noop">Thông tin</button>
+    <input id="search" type="search" placeholder="Tìm công việc" aria-label="Tìm công việc">
+    <ul id="list">
+      <li>Viết báo cáo <button class="del" aria-label="Delete task">Delete</button></li>
+    </ul>
+    <dialog id="dlg">
+      <form id="f">
+        <input id="title" name="title" aria-label="Task title">
+        <button type="submit" id="add">Add</button>
+        <button type="button" id="cancel">Cancel</button>
+      </form>
+    </dialog>
+  </main>
+  <script>
+    document.getElementById('new-task').addEventListener('click', () => document.getElementById('dlg').showModal());
+    document.getElementById('cancel').addEventListener('click', () => document.getElementById('dlg').close());
+    document.querySelector('.del').addEventListener('click', () => fetch('/hit/delete'));
+    document.getElementById('f').addEventListener('submit', (e) => { e.preventDefault(); fetch('/hit/submit'); });
+    document.getElementById('tab-reports').addEventListener('click', () => {
+      history.pushState({}, '', '/app.html?tab=reports');
+      document.getElementById('heading').textContent = 'Báo cáo';
+    });
+  </script>
+</body>
+</html>

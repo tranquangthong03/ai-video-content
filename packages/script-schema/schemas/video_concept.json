@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "video_concept.json",
+  "title": "VideoConcept",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "angle", "title", "goal", "hook_example", "feature_ids", "beats", "duration_s", "why", "recommended"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "angle": { "enum": ["overview", "deep_dive", "pain_solution"] },
+    "title": { "type": "string", "minLength": 1 },
+    "goal": { "enum": ["awareness", "conversion", "tutorial", "recruitment"] },
+    "hook_example": { "type": "string" },
+    "feature_ids": { "type": "array", "items": { "type": "string" } },
+    "beats": { "type": "array", "items": { "type": "string" }, "minItems": 4, "maxItems": 6 },
+    "duration_s": { "enum": [30, 45, 60] },
+    "why": { "type": "string" },
+    "recommended": { "type": "boolean" }
+  }
+}

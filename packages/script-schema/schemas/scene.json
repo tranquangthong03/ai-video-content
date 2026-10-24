@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scene.json",
+  "title": "Scene",
+  "discriminator": { "propertyName": "type" },
+  "oneOf": [
+    { "$ref": "#/$defs/HookScene" },
+    { "$ref": "#/$defs/FeatureDemoScene" },
+    { "$ref": "#/$defs/BeforeAfterScene" },
+    { "$ref": "#/$defs/CtaScene" }
+  ],
+  "$defs": {
+    "Visual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["recording", "screenshot", "template"] },
+        "page": { "type": ["string", "null"], "default": null },
+        "effect": { "type": ["string", "null"], "default": null },
+        "actions": { "type": "array", "items": { "$ref": "action.json" }, "default": [] }
+      }
+    },
+    "HookScene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "layout", "voiceover", "visual"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "hook" },
+        "layout": { "enum": ["big_text_over_blur", "emoji_pop"] },
+        "voiceover": { "type": "string" },
+        "on_screen_text": { "type": ["string", "null"], "default": null },
+        "visual": { "$ref": "#/$defs/Visual" },
+        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
+      }
+    },
+    "FeatureDemoScene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "layout", "feature", "voiceover", "visual"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "feature_demo" },
+        "layout": { "enum": ["full_screen", "phone_mockup"] },
+        "feature": { "type": "string", "minLength": 1 },
+        "voiceover": { "type": "string" },
+        "on_screen_text": { "type": ["string", "null"], "default": null },
+        "visual": { "$ref": "#/$defs/Visual" },
+        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
+      }
+    },
+    "BeforeAfterScene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "layout", "before_text", "after_text", "voiceover", "visual"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "before_after" },
+        "layout": { "enum": ["split_vertical", "swipe"] },
+        "before_text": { "type": "string", "minLength": 1 },
+        "after_text": { "type": "string", "minLength": 1 },
+        "voiceover": { "type": "string" },
+        "on_screen_text": { "type": ["string", "null"], "default": null },
+        "visual": { "$ref": "#/$defs/Visual" },
+        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
+      }
+    },
+    "CtaScene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "layout", "voiceover", "visual"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "cta" },
+        "layout": { "enum": ["logo_center", "button_pulse"] },
+        "voiceover": { "type": "string" },
+        "on_screen_text": { "type": ["string", "null"], "default": null },
+        "visual": { "$ref": "#/$defs/Visual" },
+        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
+      }
+    }
+  }
+}

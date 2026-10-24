@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "concept_set.json",
+  "title": "ConceptSet",
+  "description": "Output of the Concept Proposer: exactly 3 concepts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["concepts"],
+  "properties": {
+    "concepts": { "type": "array", "items": { "$ref": "video_concept.json" }, "minItems": 3, "maxItems": 3 }
+  }
+}

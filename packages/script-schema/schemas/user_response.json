@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "user_response.json",
+  "title": "UserResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["interaction_id", "job_id", "action"],
+  "properties": {
+    "interaction_id": { "type": "string" },
+    "job_id": { "type": "string" },
+    "base_version": { "type": ["integer", "null"], "default": null },
+    "action": {
+      "enum": ["answer", "approve", "edit", "regenerate", "revert", "login_done", "cancel", "explore_more"]
+    },
+    "explore": {
+      "type": ["object", "null"],
+      "default": null,
+      "additionalProperties": false,
+      "description": "Payload of explore_more: pages to look at (urls) and/or a free-text description of them.",
+      "properties": {
+        "urls": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "description": { "type": ["string", "null"], "default": null }
+      }
+    },
+    "profile_edit": {
+      "type": ["object", "null"],
+      "default": null,
+      "additionalProperties": false,
+      "description": "Payload of edit on confirm_understanding.",
+      "properties": {
+        "exclude_feature_ids": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "one_liner": { "type": ["string", "null"], "default": null },
+        "target_users": { "type": ["array", "null"], "items": { "type": "string" }, "default": null },
+        "added_features": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "description"],
+            "properties": { "name": { "type": "string" }, "description": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "answers": {
+      "type": ["object", "null"],
+      "default": null,
+      "additionalProperties": {
+        "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+      }
+    },
+    "edit": {
+      "type": ["object", "null"],
+      "default": null,
+      "additionalProperties": false,
+      "properties": {
+        "instruction": { "type": ["string", "null"], "default": null },
+        "targets": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["scene_id", "field"],
+            "properties": {
+              "scene_id": { "type": "string" },
+              "field": { "enum": ["voiceover", "on_screen_text", "visual", "layout", "whole"] }
+            }
+          }
+        },
+        "ops": { "type": "array", "items": { "$ref": "edit_op.json" }, "default": [] }
+      }
+    },
+    "revert_to": { "type": ["integer", "null"], "default": null }
+  }
+}

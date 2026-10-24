@@ -1,0 +1,27 @@
+# Dev override: mount source + hot reload.
+# Usage: docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up
+services:
+  api:
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    volumes:
+      - ../services/api:/app
+
+  worker:
+    command: ["watchfiles", "--filter", "python", "celery -A app.worker.celery_app worker --loglevel=info", "app"]
+    volumes:
+      - ../services/api:/app
+
+  # render/web images are pnpm-workspace layouts: sources live in /app/apps/<name>,
+  # dependencies in /app/node_modules (+ per-app symlink dir, kept from the image)
+  render:
+    command: ["pnpm", "dev"]
+    volumes:
+      - ../apps/render:/app/apps/render
+      - /app/apps/render/node_modules
+
+  web:
+    command: ["pnpm", "dev"]
+    volumes:
+      - ../apps/web:/app/apps/web
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "edit_op.json",
+  "title": "EditOp",
+  "discriminator": { "propertyName": "op" },
+  "oneOf": [
+    { "$ref": "#/$defs/SetOp" },
+    { "$ref": "#/$defs/RewriteOp" },
+    { "$ref": "#/$defs/DeleteOp" },
+    { "$ref": "#/$defs/InsertOp" },
+    { "$ref": "#/$defs/MoveOp" },
+    { "$ref": "#/$defs/SetThemeOp" },
+    { "$ref": "#/$defs/SetGlobalOp" }
+  ],
+  "$defs": {
+    "SetOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "scene_id", "field", "value"],
+      "properties": {
+        "op": { "const": "set" },
+        "scene_id": { "type": "string" },
+        "field": { "enum": ["voiceover", "on_screen_text", "layout", "feature"] },
+        "value": { "type": "string" }
+      }
+    },
+    "RewriteOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "scene_id", "fields", "instruction"],
+      "properties": {
+        "op": { "const": "rewrite" },
+        "scene_id": { "type": "string" },
+        "fields": {
+          "type": "array",
+          "items": { "enum": ["voiceover", "on_screen_text", "visual"] },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "instruction": { "type": "string" }
+      }
+    },
+    "DeleteOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "scene_id"],
+      "properties": {
+        "op": { "const": "delete" },
+        "scene_id": { "type": "string" }
+      }
+    },
+    "InsertOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "after_scene_id", "scene_type", "instruction"],
+      "properties": {
+        "op": { "const": "insert" },
+        "after_scene_id": { "type": ["string", "null"] },
+        "scene_type": { "enum": ["hook", "feature_demo", "before_after", "cta"] },
+        "instruction": { "type": "string" }
+      }
+    },
+    "MoveOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "scene_id", "after_scene_id"],
+      "properties": {
+        "op": { "const": "move" },
+        "scene_id": { "type": "string" },
+        "after_scene_id": { "type": ["string", "null"] }
+      }
+    },
+    "SetThemeOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "field", "value"],
+      "properties": {
+        "op": { "const": "set_theme" },
+        "field": { "enum": ["motion_preset", "caption_style", "music_mood", "voice_id", "primary"] },
+        "value": { "type": "string" }
+      }
+    },
+    "SetGlobalOp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "field", "value"],
+      "properties": {
+        "op": { "const": "set_global" },
+        "field": { "enum": ["goal", "tone", "duration", "audience", "cta", "features"] },
+        "value": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] }
+      }
+    }
+  }
+}

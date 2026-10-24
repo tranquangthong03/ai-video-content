@@ -1,0 +1,16 @@
+{
+  "interaction_id": "int_0002",
+  "job_id": "job_123",
+  "base_version": 1,
+  "action": "edit",
+  "answers": null,
+  "edit": {
+    "instruction": "Làm cảnh 2 ngắn gọn hơn và đổi layout cảnh 4 sang logo ở giữa",
+    "targets": [
+      { "scene_id": "s2", "field": "voiceover" },
+      { "scene_id": "s4", "field": "layout" }
+    ],
+    "ops": []
+  },
+  "revert_to": null
+}

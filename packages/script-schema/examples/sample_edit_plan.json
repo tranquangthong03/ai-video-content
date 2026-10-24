@@ -1,0 +1,17 @@
+{
+  "status": "ok",
+  "ops": [
+    { "op": "rewrite", "scene_id": "s2", "fields": ["voiceover"], "instruction": "Viết ngắn gọn hơn, tối đa 12 từ" },
+    { "op": "set", "scene_id": "s4", "field": "layout", "value": "logo_center" },
+    { "op": "set_theme", "field": "motion_preset", "value": "calm" },
+    { "op": "set_global", "field": "features", "value": ["Kanban", "Nhắc việc"] }
+  ],
+  "clarification": null,
+  "rejected": [
+    {
+      "request": "Thêm hiệu ứng pháo hoa",
+      "reason": "Hiệu ứng này chưa được hỗ trợ trong MVP",
+      "suggestion": "Dùng motion preset energetic để video sống động hơn"
+    }
+  ]
+}

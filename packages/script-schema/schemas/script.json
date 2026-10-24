@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "script.json",
+  "title": "Script",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "goal", "aspect_ratio", "target_duration_s", "theme", "scenes"],
+  "properties": {
+    "title": { "type": "string", "minLength": 1 },
+    "goal": { "enum": ["awareness", "conversion", "tutorial", "recruitment"] },
+    "aspect_ratio": { "const": "9:16" },
+    "target_duration_s": { "type": "integer", "minimum": 15, "maximum": 90 },
+    "theme": { "$ref": "theme.json" },
+    "scenes": { "type": "array", "items": { "$ref": "scene.json" }, "minItems": 3, "maxItems": 6 }
+  }
+}

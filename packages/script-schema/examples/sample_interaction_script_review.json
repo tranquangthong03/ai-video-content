@@ -1,0 +1,29 @@
+{
+  "interaction_id": "int_0002",
+  "job_id": "job_123",
+  "kind": "script_review",
+  "message": "Đây là bản tóm tắt kịch bản video. Bạn duyệt hoặc yêu cầu chỉnh sửa nhé!",
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Bạn muốn giọng đọc theo phong cách nào?",
+      "type": "single",
+      "options": [
+        { "id": "friendly", "label": "Thân thiện", "description": "Giọng nữ trẻ trung" },
+        { "id": "pro", "label": "Chuyên nghiệp", "description": null }
+      ],
+      "allow_custom": true
+    }
+  ],
+  "script_version": 1,
+  "summary": [
+    { "scene_id": "s1", "one_liner": "Hook: nêu nỗi đau quá nhiều công việc" },
+    { "scene_id": "s2", "one_liner": "Demo bảng Kanban kéo thả" },
+    { "scene_id": "s3", "one_liner": "Trước/sau khi dùng nhắc việc tự động" },
+    { "scene_id": "s4", "one_liner": "CTA: dùng thử miễn phí" }
+  ],
+  "changes": ["Rút ngắn lời thoại cảnh 2"],
+  "live_login_url": null,
+  "video_url": null,
+  "allowed_actions": ["approve", "edit", "regenerate", "revert", "cancel"]
+}

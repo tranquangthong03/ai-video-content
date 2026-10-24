@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "page_insight.json",
+  "title": "PageInsight",
+  "description": "Output of the Page Analyzer for one page. url/title are filled in by code, not by the LLM.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["page_type", "purpose", "visual_quality"],
+  "properties": {
+    "url": { "type": "string", "default": "" },
+    "title": { "type": "string", "default": "" },
+    "page_type": {
+      "enum": [
+        "landing_hero", "landing_features", "pricing", "app_dashboard", "app_list", "app_editor",
+        "app_detail", "app_settings", "product_listing", "product_detail", "docs", "other"
+      ]
+    },
+    "purpose": { "type": "string" },
+    "actions": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ref", "name", "intent"],
+        "properties": {
+          "ref": { "type": "string" },
+          "name": { "type": "string" },
+          "intent": {
+            "enum": ["create", "edit", "filter", "search", "export", "share", "view", "navigate_feature", "other"]
+          }
+        }
+      }
+    },
+    "claimed_features": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "quote"],
+        "properties": { "name": { "type": "string" }, "quote": { "type": "string" } }
+      }
+    },
+    "visual_quality": { "type": "number", "minimum": 0, "maximum": 1 }
+  }
+}

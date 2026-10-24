@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "outline_edit_plan.json",
+  "title": "OutlineEditPlan",
+  "description": "Output of the Outline Editor.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status"],
+  "properties": {
+    "status": { "enum": ["ok", "needs_clarification"] },
+    "ops": { "type": "array", "items": { "$ref": "beat_op.json" }, "default": [] },
+    "clarification": {
+      "type": ["object", "null"],
+      "default": null,
+      "additionalProperties": false,
+      "required": ["question"],
+      "properties": {
+        "question": { "type": "string" },
+        "options": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label"],
+            "properties": { "id": { "type": "string" }, "label": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "rejected": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["request", "reason"],
+        "properties": {
+          "request": { "type": "string" },
+          "reason": { "type": "string" },
+          "suggestion": { "type": ["string", "null"], "default": null }
+        }
+      }
+    },
+    "warnings": { "type": "array", "items": { "type": "string" }, "default": [] }
+  }
+}

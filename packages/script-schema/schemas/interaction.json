@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "interaction.json",
+  "title": "InteractionRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["interaction_id", "job_id", "kind", "message", "allowed_actions"],
+  "properties": {
+    "interaction_id": { "type": "string" },
+    "job_id": { "type": "string" },
+    "kind": {
+      "enum": [
+        "clarify", "login_required", "script_review", "video_review",
+        "confirm_understanding", "choose_concept", "outline_review"
+      ]
+    },
+    "message": { "type": "string" },
+    "questions": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "text": { "type": "string" },
+          "type": { "enum": ["single", "multi", "text"] },
+          "options": {
+            "type": "array",
+            "default": [],
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "label"],
+              "properties": {
+                "id": { "type": "string" },
+                "label": { "type": "string" },
+                "description": { "type": ["string", "null"], "default": null }
+              }
+            }
+          },
+          "allow_custom": { "type": "boolean", "default": false }
+        }
+      }
+    },
+    "script_version": { "type": ["integer", "null"], "default": null },
+    "summary": {
+      "type": ["array", "null"],
+      "default": null,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scene_id", "one_liner"],
+        "properties": {
+          "scene_id": { "type": "string" },
+          "one_liner": { "type": "string" }
+        }
+      }
+    },
+    "changes": { "type": ["array", "null"], "items": { "type": "string" }, "default": null },
+    "live_login_url": { "type": ["string", "null"], "default": null },
+    "video_url": { "type": ["string", "null"], "default": null },
+    "allowed_actions": { "type": "array", "items": { "type": "string" } },
+    "profile": { "oneOf": [{ "$ref": "product_profile.json" }, { "type": "null" }], "default": null },
+    "concepts": {
+      "type": ["array", "null"],
+      "items": { "$ref": "video_concept.json" },
+      "default": null
+    },
+    "outline": { "oneOf": [{ "$ref": "outline.json" }, { "type": "null" }], "default": null }
+  }
+}

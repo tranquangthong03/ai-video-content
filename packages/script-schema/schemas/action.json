@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "action.json",
+  "title": "BrowserAction",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["do"],
+  "properties": {
+    "do": { "enum": ["goto", "click", "type", "scroll", "wait", "hover"] },
+    "target": { "type": ["string", "null"], "default": null, "description": "Natural-language description of the element" },
+    "selector": { "type": ["string", "null"], "default": null },
+    "url": { "type": ["string", "null"], "default": null },
+    "text": { "type": ["string", "null"], "default": null },
+    "ms": { "type": ["integer", "null"], "minimum": 0, "default": null },
+    "zoom": { "type": "boolean", "default": false }
+  }
+}

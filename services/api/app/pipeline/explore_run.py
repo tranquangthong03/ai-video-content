@@ -1,0 +1,324 @@
+"""Runs the explorer steps (classify, map, analyze, synthesize, verify), resumably.
+
+Files under <job_dir>/explore: pages/<n>.json|png, map.json, classify.json, insights/<n>.json,
+profile.json (synthesized), profile_verified.json, verify/, report.json, usage.json.
+"""
+
+import json
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from app.core.usage import BudgetExceeded, UsageTracker
+from app.explorer.analyze import analyze_pages
+from app.explorer.browser import BrowserSession
+from app.explorer.classify import classify_site
+from app.explorer.mapper import (
+    BlockedByChallenge,
+    Candidate,
+    crawl,
+    normalize_url,
+    pick_candidates_by_description,
+    same_site,
+    save_map,
+    visit,
+)
+from app.explorer.models import PageData
+from app.explorer.report import Deadline, DeadlineExceeded, Report
+from app.explorer.synthesize import synthesize
+from app.explorer.verify import verify_features
+from app.llm.json_call import JsonCaller
+from app.schemas.generated.page_insight import PageInsight
+from app.schemas.generated.product_profile import Feature, ProductProfile
+
+Progress = Callable[[str, str], None]  # (step, message)
+
+
+@dataclass
+class ExploreState:
+    url: str
+    pages: list[PageData] = field(default_factory=list)
+    insights: list[PageInsight] = field(default_factory=list)
+    site_type: str = "landing"
+    profile: ProductProfile | None = None
+
+
+class ExploreRunner:
+    def __init__(
+        self,
+        url: str,
+        job_dir: Path,
+        caller: JsonCaller,
+        tracker: UsageTracker,
+        *,
+        storage_state: Path | None = None,
+        max_pages: int = 15,
+        timeout_s: float = 300,
+        allow_mutations: bool = False,
+        progress: Progress | None = None,
+    ) -> None:
+        self.url = url
+        self.dir = job_dir / "explore"
+        self.dir.mkdir(parents=True, exist_ok=True)
+        self.caller = caller
+        self.tracker = tracker
+        self.storage_state = storage_state
+        self.max_pages = max_pages
+        self.allow_mutations = allow_mutations
+        self.deadline = Deadline(timeout_s)
+        self.report = Report(url)
+        self._load_report()
+        self.progress = progress or (lambda step, msg: None)
+        self.state = ExploreState(url)
+
+    # --- persistence -------------------------------------------------------------------------
+
+    def _load_report(self) -> None:
+        path = self.dir / "report.json"
+        if path.is_file():
+            self.report.data.update(json.loads(path.read_text(encoding="utf-8")))
+
+    def save(self, status: str | None = None) -> None:
+        if status:
+            self.report.data["status"] = status
+        self.report.data["tokens"] = self.tracker.to_dict()
+        self.report.save(self.dir / "report.json")
+        (self.dir / "usage.json").write_text(json.dumps(self.tracker.to_dict()), encoding="utf-8")
+
+    def _load_pages(self) -> list[PageData]:
+        files = sorted((self.dir / "pages").glob("*.json"), key=lambda p: int(p.stem))
+        return [PageData.model_validate_json(f.read_text(encoding="utf-8")) for f in files]
+
+    # --- steps -------------------------------------------------------------------------------
+
+    def run(self) -> ExploreState:
+        """Run or resume the exploration (may raise Blocked/Budget/Deadline errors)."""
+        try:
+            with BrowserSession(
+                self.url, storage_state=self.storage_state, allow_mutations=self.allow_mutations
+            ) as session:
+                self._crawl(session)
+                self._analyze()
+                self._synthesize()
+                self._verify(session)
+            self.save("done")
+        except BlockedByChallenge:
+            self.save("blocked_by_challenge")
+            raise
+        except BudgetExceeded:
+            self.save("paused_token_ceiling")
+            raise
+        except DeadlineExceeded:
+            self.save("paused_timeout")
+            raise
+        finally:
+            pass
+        return self.state
+
+    def _crawl(self, session: BrowserSession) -> None:
+        existing = self._load_pages() if (self.dir / "map.json").is_file() else []
+        classify_file = self.dir / "classify.json"
+        if existing:
+            self.state.pages = existing
+            self.progress("crawl", f"dùng lại {len(existing)} trang đã khám phá")
+        else:
+            context = session.new_context()
+            page = context.new_page()
+
+            def on_page(n: int, total: int, data: PageData) -> None:
+                if n == 1:
+                    self.progress("classify", "Phân loại website...")
+                    with self.report.timed("classify"):
+                        site_type, source = classify_site(self.caller, data)
+                    self.state.site_type = site_type
+                    classify_file.write_text(json.dumps({"site_type": site_type, "source": source}))
+                    self.report.data["site_type"] = site_type
+                    self.progress("classify", f"site_type = {site_type} ({source})")
+                self.progress("map", f"Đã xem {n}/{total}: {data.url}")
+
+            try:
+                with self.report.timed("map"):
+                    pages, frontier = crawl(
+                        page,
+                        context,
+                        self.url,
+                        self.dir,
+                        self.report,
+                        self.deadline,
+                        max_pages=self.max_pages,
+                        on_page=on_page,
+                    )
+            finally:
+                context.close()
+            self.state.pages = pages
+            save_map(self.dir / "map.json", frontier, pages)
+            self.report.data["pages_seen"] = [p.url for p in pages]
+            self.report.data["request_guard"] = session.guard.report()
+            self.save()
+        if classify_file.is_file():
+            self.state.site_type = json.loads(classify_file.read_text())["site_type"]
+            self.report.data["site_type"] = self.state.site_type
+        if not self.state.pages:
+            raise RuntimeError("no page could be explored (see report.json for blockers)")
+
+    def _analyze(self) -> None:
+        self.deadline.check("analyze")
+        self.progress("analyze", f"Phân tích {len(self.state.pages)} trang...")
+        with self.report.timed("analyze"):
+            self.state.insights = analyze_pages(
+                self.caller,
+                self.state.pages,
+                self.dir,
+                self.report,
+                on_done=lambda done, total: self.progress(
+                    "analyze", f"Phân tích {done}/{total} trang"
+                ),
+            )
+        self.save()
+
+    def _synthesize(self) -> None:
+        profile_file = self.dir / "profile.json"
+        if profile_file.is_file():
+            self.state.profile = ProductProfile.model_validate_json(
+                profile_file.read_text(encoding="utf-8")
+            )
+            return
+        self.deadline.check("synthesize")
+        self.progress("synthesize", "Tổng hợp hiểu biết về sản phẩm...")
+        with self.report.timed("synthesize"):
+            profile = synthesize(
+                self.caller,
+                self.url,
+                self.state.site_type,
+                self.state.pages,
+                self.state.insights,
+                self.report,
+            )
+        profile_file.write_text(profile.model_dump_json(indent=2), encoding="utf-8")
+        self.state.profile = profile
+        self.save()
+
+    def _verify(self, session: BrowserSession) -> None:
+        verified_file = self.dir / "profile_verified.json"
+        if verified_file.is_file():
+            self.state.profile = ProductProfile.model_validate_json(
+                verified_file.read_text(encoding="utf-8")
+            )
+            return
+        assert self.state.profile is not None
+        self.progress("verify", "Kiểm chứng tính năng nào demo được...")
+        with self.report.timed("verify"):
+            verify_features(
+                session,
+                self.state.profile,
+                self.state.pages,
+                self.url,
+                self.dir,
+                self.report,
+                self.deadline,
+                on_feature=lambda i, n, f: self.progress(
+                    "verify", f"Kiểm chứng {i}/{n}: {f.name} → {f.demo_score}"
+                ),
+            )
+        self.report.data["request_guard"] = session.guard.report()
+        verified_file.write_text(self.state.profile.model_dump_json(indent=2), encoding="utf-8")
+        self.save()
+
+    # --- explore_more ------------------------------------------------------------------------
+
+    def explore_more(self, urls: list[str], description: str | None) -> ProductProfile:
+        """View extra pages (urls and/or a description) and merge their features in."""
+        assert self.state.profile is not None
+        known = json.loads((self.dir / "map.json").read_text(encoding="utf-8"))
+        targets = [
+            u for u in (normalize_url(x, self.url) for x in urls) if u and same_site(u, self.url)
+        ]
+        if description:
+            targets += pick_candidates_by_description(
+                known["candidates"], known["visited"], description
+            )
+        targets = [t for t in dict.fromkeys(targets) if t not in known["visited"]]
+        if not targets:
+            self.report.warn("explore_more: no new page matched the request")
+            return self.state.profile
+
+        self.deadline = Deadline(self.deadline.seconds)  # fresh budget for this interactive step
+        new_pages: list[PageData] = []
+        with BrowserSession(
+            self.url, storage_state=self.storage_state, allow_mutations=self.allow_mutations
+        ) as s:
+            context = s.new_context()
+            page = context.new_page()
+            for url in targets[:3]:
+                n = len(self.state.pages) + len(new_pages) + 1
+                self.progress("map", f"Xem thêm: {url}")
+                data = visit(
+                    page,
+                    Candidate(url, "", "main", 1, 5.0, "user"),
+                    n,
+                    self.dir,
+                    self.report,
+                    self.url,
+                )
+                if data:
+                    new_pages.append(data)
+            context.close()
+            if not new_pages:
+                return self.state.profile
+            self.state.pages += new_pages
+            self.report.data["pages_seen"] = [p.url for p in self.state.pages]
+            new_insights = analyze_pages(self.caller, new_pages, self.dir, self.report)
+            self.state.insights += new_insights
+            fresh = synthesize(
+                self.caller,
+                self.url,
+                self.state.site_type,
+                self.state.pages,
+                self.state.insights,
+                self.report,
+            )
+            merged = merge_profiles(self.state.profile, fresh)
+            added = [
+                f
+                for f in merged.features
+                if f.id not in {x.id for x in self.state.profile.features}
+            ]
+            # shallow copy shares the Feature objects, so verification fills them in `merged`
+            only_new = merged.model_copy(update={"features": added})
+            verify_features(
+                s,
+                only_new,
+                self.state.pages,
+                self.url,
+                self.dir,
+                self.report,
+                self.deadline,
+                limit=3,
+            )
+        self.state.profile = merged
+        known["visited"] = [p.url for p in self.state.pages]
+        (self.dir / "map.json").write_text(
+            json.dumps(known, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        (self.dir / "profile_verified.json").write_text(
+            merged.model_dump_json(indent=2), encoding="utf-8"
+        )
+        self.save()
+        return merged
+
+
+def merge_profiles(old: ProductProfile, new: ProductProfile) -> ProductProfile:
+    """Keep every old feature (with its demo_score); append features only the new run found."""
+    merged = old.model_copy(deep=True)
+    names = {f.name.strip().lower() for f in merged.features}
+    ids = {f.id for f in merged.features}
+    for feature in new.features:
+        if feature.name.strip().lower() in names:
+            continue
+        copy: Feature = feature.model_copy(deep=True)
+        while copy.id in ids:
+            copy.id += "_n"
+        ids.add(copy.id)
+        merged.features.append(copy)
+    merged.open_questions = list(dict.fromkeys(merged.open_questions + new.open_questions))
+    return merged

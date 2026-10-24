@@ -1,0 +1,45 @@
+# Secrets / env
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.cache/
+*.egg-info/
+
+# Node / Next.js / Remotion
+node_modules/
+.next/
+out/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+pnpm-debug.log*
+
+# Media / render output
+output/
+media/
+recordings/
+renders/
+*.mp4
+*.webm
+*.mp3
+*.wav
+
+# Local data volumes
+.data/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
