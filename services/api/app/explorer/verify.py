@@ -307,8 +307,12 @@ def perform_step(page: Page, step: DemoStep, ctx: Context) -> None:
         raise StepFailure("not_found", f"cannot locate {name!r}", resolution.tried)
     target = resolution.target
     info = target.info()
+    if step.do == "hover" and info.input_type == "file":
+        return  # hovering a (usually hidden) file input does nothing: skip without waiting
     try:
-        if step.do in ("click", "dblclick", "right_click", "hover"):
+        if info.input_type == "file" and step.do in ("click", "dblclick", "type"):
+            pass  # becomes an upload in _act; the file input itself is never a blacklist target
+        elif step.do in ("click", "dblclick", "right_click", "hover"):
             check_clickable(
                 info, ctx.root_url, scope_prefix=ctx.scope_prefix, ignore_texts=ctx.typed
             )
@@ -358,15 +362,17 @@ def _act(
 ) -> None:
     """Carry out a step on the resolved (and already safety-checked) element."""
     report = ctx.report
+    if step.do in ("click", "dblclick", "type") and (info.file_input or info.input_type == "file"):
+        # a file input, its label or its drop zone: never open a native dialog, upload a sample
+        handle = target.file_input()
+        if handle:
+            report.data["clicks"].append(record)
+            file_name, path = _sample_for(step, info, element, name)
+            handle.set_input_files(path)
+            _auto_upload(ctx, name, "direct", file_name, step)
+            return
     if step.do == "click":
         report.data["clicks"].append(record)
-        if info.file_input:  # a file input, its label or its drop zone: never open a native dialog
-            handle = target.file_input()
-            if handle:
-                file_name, path = _sample_for(step, info, element, name)
-                handle.set_input_files(path)
-                _auto_upload(ctx, name, "direct", file_name, step)
-                return
         chooser = target.click_catching_file_chooser(page)  # some buttons open a chooser via JS
         if chooser:
             file_name, path = _sample_for(step, info, element, name)

@@ -28,6 +28,21 @@ Thời gian tăng chủ yếu vì bước `stateful` (84.6 s plausible, 50.4 s t
 | squoosh: nén ảnh là interaction nhờ auto_upload | **Không đạt.** `compress-image` vẫn là showcase, `auto_upload` rỗng. LLM sinh `open-image-input` với bước `hover` lên `input[type=file]` ẩn → timeout 4 s (hover trên input ẩn không thể thực hiện), nên không bao giờ tới bước click. auto_upload chỉ chuyển đổi `click`, không chuyển `hover`. Stateful không chạy vì chưa có interaction nào tạo dữ liệu. |
 | plausible: trang live demo được phân tích | **Đạt.** Trang demo `https://plausible.io/plausible.io` nằm trong 15 trang; từ đó stateful sinh 4 tính năng (channel_breakdown, goals_conversions, realtime_visitors, browser_breakdown), 7 tính năng interaction trong tổng số. Còn 1 lỗi định vị (`AI Assistants`, step 7 của channel_breakdown: không tìm thấy bằng cả 5 chiến lược). |
 
+### Lần 3b: chỉ chạy lại squoosh sau "fix(explorer): auto-upload on file inputs"
+
+Sửa: bước click/dblclick/type có phần tử resolve là `input[type=file]` (kể cả ẩn) hoặc label/drop zone liên kết với nó → chuyển thành upload với file mẫu theo `accept`; hover lên `input[type=file]` → bỏ qua ngay, không chờ. Có unit test (`tests/test_upload_and_settle.py`).
+
+| squoosh | lần 3 | lần 3b |
+|---|---|---|
+| Tính năng | 7 | 6 |
+| Kết luận demo | showcase 4, interaction 1, failed 1, null 1 | navigation 3, showcase 2, failed 1 |
+| auto_upload | 0 | **0** |
+| Lỗi bước | 1 (hover input ẩn, timeout 4 s) | **0** |
+| Click đã làm | 1 | 3 (các nút ảnh mẫu) |
+| Thời gian (s) / Token | 63.6 / 16721 | 61.9 / 14242 |
+
+Kết quả: lỗi timeout do hover đã hết. Nhưng `auto_upload` vẫn rỗng, vì lần chạy này model chọn click vào các nút ảnh mẫu (Large photo, Artwork, SVG icon) dẫn tới `/editor` thay vì tới input file, nên đường auto-upload không được kích hoạt; kiểm chứng việc chuyển click→upload chỉ có ở unit test. Squoosh chưa thành "interaction nén ảnh": trang `/editor` không được phân tích (`target page not analysed`). LLM chọn bước khác nhau giữa các lần chạy, nên kết quả chạy lại không tái lập chính xác.
+
 ### Điểm còn tồn tại (chưa sửa, theo yêu cầu dừng sau vòng này)
 
 1. `hover`/bước khác lên `input[type=file]` ẩn nên được đổi thành upload (hoặc bị loại ở sanitize) như `click`; đây là nguyên nhân squoosh vẫn chưa upload được.

@@ -146,3 +146,44 @@ def test_extraction_marks_every_file_input_even_when_hidden(
     assert sorted(e.accept or "" for e in inputs) == ["", ".csv", "application/pdf"]
     # the label and the drop zone in front of them are listed too, so the LLM can refer to them
     assert {e.tag for e in uploads if e.tag != "input"} == {"label", "div"}
+
+
+# --- steps that land on a file input itself -------------------------------------------------------
+
+
+def css_step(do: str, url: str, selector: str) -> dict:  # type: ignore[type-arg]
+    from app.schemas.generated.locator import LocatorSpec
+
+    return {"do": do, "url": url, "locator": LocatorSpec(css=selector).model_dump()}
+
+
+def test_click_dblclick_and_type_on_a_hidden_file_input_become_uploads(
+    browser_session: BrowserSession, site: str, tmp_path: Path
+) -> None:
+    data = page_of(browser_session, site, "/pick.html", tmp_path)
+    typed = css_step("type", data.url, "#f3") | {"text": "ignored"}
+    feats = [
+        feature("c", None, [css_step("click", data.url, "#f1")], url=data.url),
+        feature("d", None, [css_step("dblclick", data.url, "#f2")], url=data.url),
+        feature("t", None, [typed], url=data.url),
+    ]
+    prof = profile(feats)
+    report = verify(browser_session, prof, [data], site, tmp_path)
+    by_feature = {u["feature"]: u for u in report.data["auto_upload"]}
+    assert set(by_feature) == {"c", "d", "t"}
+    assert by_feature["c"]["file"] == "sample.pdf" and by_feature["d"]["file"] == "sample.csv"
+    assert by_feature["t"]["file"] == "sample.jpg"
+    assert all(f.demo_kind == "interaction" for f in prof.features)
+
+
+def test_hover_on_a_hidden_file_input_is_skipped_without_waiting(
+    browser_session: BrowserSession, site: str, tmp_path: Path
+) -> None:
+    data = page_of(browser_session, site, "/pick.html", tmp_path)
+    steps = [css_step("hover", data.url, "#f3"), css_step("click", data.url, "#plain")]
+    prof = profile([feature("h", None, steps, url=data.url)])
+    started = time.monotonic()
+    report = verify(browser_session, prof, [data], site, tmp_path)
+    assert time.monotonic() - started < 3.5  # a hover would have burned the 4s timeout
+    assert report.data["step_errors"] == [] and report.data["auto_upload"] == []
+    assert prof.features[0].demo_kind == "interaction"  # the click after it still ran
