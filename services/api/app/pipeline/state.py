@@ -49,13 +49,15 @@ class JobState:
         return asdict(self)
 
 
-_LOCK = threading.Lock()
+# readers and writers share one process; Windows cannot replace a file another thread is reading
+IO_LOCK = threading.RLock()
 
 
 def read_state(job_dir: Path) -> JobState | None:
     file = job_dir / STATE_FILE
     try:
-        data = json.loads(file.read_text(encoding="utf-8"))
+        with IO_LOCK:
+            data = json.loads(file.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return None
     known = {k: v for k, v in data.items() if k in JobState.__dataclass_fields__}
@@ -66,14 +68,14 @@ def write_state(job_dir: Path, state: JobState) -> None:
     state.updated_at = now_iso()
     job_dir.mkdir(parents=True, exist_ok=True)
     tmp = job_dir / f"{STATE_FILE}.tmp"
-    with _LOCK:
+    with IO_LOCK:
         tmp.write_text(json.dumps(state.as_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
         os.replace(tmp, job_dir / STATE_FILE)
 
 
 def update_state(job_dir: Path, **changes: Any) -> JobState | None:
     """Read-modify-write; a missing state.json is left missing (the job was never registered)."""
-    with _LOCK:
+    with IO_LOCK:
         state = read_state(job_dir)
         if state is None:
             return None

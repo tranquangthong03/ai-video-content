@@ -46,5 +46,10 @@ Người dùng nhập URL website (+ tài khoản demo tùy chọn). Hệ thốn
 - make codegen-check: kiểm tra file generated không lệch so với schema
 - make test: chạy toàn bộ test
 - make lint
+
+## Web demo (API + UI)
+- Web và CLI dùng chung `run_job` (services/api/app/pipeline/runner.py); CLI chỉ là frontend terminal. Tiến độ ghi ở `job-dir/state.json`.
+- `FileFrontend` chặn thread chờ phản hồi (`pending.json` → `responses/<interaction_id>.json`) — chỉ phù hợp khi chạy 1 job một lúc. Khi cần nhiều job song song sẽ chuyển sang resume theo bước (LangGraph).
+- API: `cd services/api && uv run uvicorn app.api.main:app --port 8000` (job ở `out/jobs/<id>/`, đổi bằng env JOBS_DIR). Khởi động lại thì job running/waiting thành failed "Máy chủ đã khởi động lại"; nút "Chạy tiếp" dùng resume.
 - Pipeline URL → video (không TTS), trong services/api: `uv run python -m app.pipeline.explore_cli --url <url> --job-dir out/<job> [--auto --answers tests/fixtures/answers/<x>.json] [--from-step explore|script|produce] [--stop-after outline|script|produce]`. Sinh `outline_approved.json`, `scripts/v{n}.json`, `script_approved.json`, `video.mp4`, `report.json` trong job-dir (`out/` bị gitignore).
 - Render: `pnpm --filter render render:sample` (mẫu), `scripts/render-job.ts <props.json> <out.mp4>` (do producer gọi; asset là file local, phục vụ qua http cục bộ).

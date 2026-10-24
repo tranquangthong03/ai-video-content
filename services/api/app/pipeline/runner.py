@@ -9,6 +9,7 @@ show); progress is also written to job-dir/state.json so a web UI can poll it.
 import json
 import re
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, Protocol
@@ -66,6 +67,8 @@ class JobConfig:
     enter_policy: Literal["strict", "relaxed"] = "strict"
     stop_after: Literal["outline", "script", "produce"] = "produce"
     from_step: Literal["explore", "script", "produce"] = "explore"
+    # polled while a step reports progress: True makes the job stop with Cancelled (web: Hủy)
+    should_stop: Callable[[], bool] | None = None
 
 
 @dataclass
@@ -164,11 +167,17 @@ class Progress:
 
     def __init__(self, cfg: JobConfig) -> None:
         self.dir = cfg.job_dir
+        self.should_stop = cfg.should_stop
         if read_state(self.dir) is None:
             write_state(self.dir, JobState(job_id=self.dir.name, url=cfg.url))
         self.last_png: str | None = None
 
+    def check_stop(self) -> None:
+        if self.should_stop is not None and self.should_stop():
+            raise Cancelled("hủy bởi người dùng")
+
     def set(self, step: str, text: str, pct: int | None = None, **extra: object) -> None:
+        self.check_stop()
         changes: dict[str, object] = {"step": step, "progress_text": text, **extra}
         if pct is not None:
             changes["progress_pct"] = pct
@@ -212,7 +221,10 @@ def run_job(cfg: JobConfig, frontend: Frontend, rep: Reporter | None = None) -> 
     job_dir.mkdir(parents=True, exist_ok=True)
     progress = Progress(cfg)
     update_state(job_dir, status="running", error=None)
-    result = _run(cfg, frontend, rep, progress)
+    try:
+        result = _run(cfg, frontend, rep, progress)
+    except Cancelled:  # raised by a progress callback or a blocked question
+        result = JobResult(EXIT_CANCELLED, "cancelled")
     final = {"done": "done", "failed": "failed", "cancelled": "cancelled"}[result.status]
     changes: dict[str, object] = {"status": final, "error": result.error}
     if final == "done":
