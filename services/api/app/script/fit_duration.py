@@ -21,6 +21,7 @@ from app.script import catalog as cat
 from app.script.lite import ALT_TEXTS, is_lite
 from app.script.lite import MIN_WORDS as MIN_LITE_WORDS
 from app.script.scene_writer import product_summary, write_scene
+from app.script.visuals import MAX_MAIN_ACTIONS, main_count
 from app.script.writer import WriterContext, WriterError
 
 TOLERANCE = 0.10
@@ -158,16 +159,17 @@ def repeat_operations(script: Script, report: FitReport, per_scene: int = 2) -> 
         if any(a["do"] == "highlight" for a in visual["actions"]):
             continue  # pointing scenes (showcase / showcase_lite) have nothing to repeat
         typed = [i for i, a in enumerate(visual["actions"]) if a["do"] == "type" and a["locator"]]
-        if not typed or len(fresh) < per_scene:
+        room = min(per_scene, MAX_MAIN_ACTIONS - main_count(visual["actions"]))
+        if not typed or room < 1 or len(fresh) < room:
             continue
         last = typed[-1]
         copies = []
-        for _ in range(per_scene):
+        for _ in range(room):
             copy = dict(visual["actions"][last])
             copy["text"] = fresh.pop(0)
             copies.append(copy)
         visual["actions"][last + 1 : last + 1] = copies
-        report.actions.append(f"{scene['id']}: thêm {per_scene} lần lặp thao tác gõ đã kiểm chứng")
+        report.actions.append(f"{scene['id']}: thêm {room} lần lặp thao tác gõ đã kiểm chứng")
         changed = True
     return Script.model_validate(data) if changed else script
 

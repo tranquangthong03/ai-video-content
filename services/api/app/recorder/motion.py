@@ -11,8 +11,8 @@ def ease_in_out(u: float) -> float:
 
 
 def move_duration_ms(distance: float) -> int:
-    """Longer moves take longer, between 350 and 900 ms."""
-    return int(min(900, max(350, 300 + distance * 0.5)))
+    """Longer moves take longer, between 700 and 1000 ms (slow enough to follow on a phone)."""
+    return int(min(1000, max(700, 600 + distance * 0.3)))
 
 
 def mouse_path(
@@ -30,8 +30,8 @@ def mouse_path(
 
 
 def typing_delays(text: str, rng: random.Random) -> list[int]:
-    """Pause after each character: 60-90 ms like a person typing steadily."""
-    return [rng.randint(60, 90) for _ in text]
+    """Pause after each character: 90-130 ms, a calm typist the viewer can read along with."""
+    return [rng.randint(90, 130) for _ in text]
 
 
 def scroll_steps(total: float, steps: int = 10) -> list[float]:

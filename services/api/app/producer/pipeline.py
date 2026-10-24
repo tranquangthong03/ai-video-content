@@ -130,7 +130,15 @@ def produce(
         timing = speech[s.id]
         speech_ms = timing.duration_ms
         say(f"[record] scene {i + 1}/{len(script.scenes)} {s.id} ({s.type}) ...")
-        record = recorder(session, scene, work, speech_ms, root_url=url, highlight_color=color)
+        record = recorder(
+            session,
+            scene,
+            work,
+            speech_ms,
+            root_url=url,
+            highlight_color=color,
+            viewport={"width": script.capture.width, "height": script.capture.height},
+        )
         usable: int | None = None
         trim = 0
         if record.kind == "recording":
@@ -157,9 +165,10 @@ def produce(
                 playback_rate=rate,
                 freeze_last_frame=freeze,
                 clip_duration_ms=record.content_ms,
-                clip_width=1920,
-                clip_height=1080,
+                clip_width=record.width or script.capture.width,
+                clip_height=record.height or script.capture.height,
                 click_log=[e for e in record.click_log if e["t_ms"] >= trim],
+                focus_log=[e for e in record.focus_log if e["t_ms"] >= trim],
             )
         elif record.image_path:
             entry["screenshot_url"] = str(record.image_path)

@@ -26,6 +26,42 @@ from app.script.lite import (
 
 HIGHLIGHT_MS = 1800
 ZOOM_STEPS = ("click", "dblclick")
+# what the viewer watches (goto and setup are not counted); each is followed by a 1.5 s hold
+MAIN_ACTIONS = (
+    "click",
+    "dblclick",
+    "right_click",
+    "type",
+    "hover",
+    "upload",
+    "scroll_to",
+    "highlight",
+)
+MAX_MAIN_ACTIONS = 3
+
+
+def main_count(actions: list[dict[str, Any]]) -> int:
+    return sum(1 for a in actions if a["do"] in MAIN_ACTIONS)
+
+
+def cap_main_actions(
+    actions: list[dict[str, Any]], warnings: list[str], label: str
+) -> list[dict[str, Any]]:
+    """Keep the first MAX_MAIN_ACTIONS main actions of a scene (more would be rushed on screen)."""
+    kept: list[dict[str, Any]] = []
+    seen = dropped = 0
+    for a in actions:
+        if a["do"] in MAIN_ACTIONS:
+            if seen >= MAX_MAIN_ACTIONS:
+                dropped += 1
+                continue
+            seen += 1
+        kept.append(a)
+    if dropped:
+        warnings.append(
+            f"{label}: chỉ giữ {MAX_MAIN_ACTIONS} thao tác chính mỗi cảnh, bỏ {dropped}"
+        )
+    return kept
 
 
 @dataclass
@@ -119,7 +155,7 @@ def _interaction_visual(feature: Feature, setup_len: int | None, show_setup: boo
                 f"{feature.id}: không tách được phần chuẩn bị (setup), "
                 "dùng toàn bộ bước làm thao tác"
             )
-    actions = _actions(steps, warnings, feature)
+    actions = cap_main_actions(_actions(steps, warnings, feature), warnings, feature.id)
     visual: dict[str, Any] = {
         "mode": "recording",
         "page": next((s.url for s in feature.demo_steps if s.do == "goto" and s.url), None),

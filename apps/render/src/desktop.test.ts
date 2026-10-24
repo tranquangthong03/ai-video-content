@@ -36,7 +36,7 @@ describe("script fields for the desktop template", () => {
     const { template: _t, capture: _c, badge: _b, headline_highlight: _h, ...rest } = sampleJson;
     const parsed = ScriptSchema.parse(rest);
     expect(parsed.template).toBe("desktop_showcase");
-    expect(parsed.capture.width).toBe(1920);
+    expect(parsed.capture.width).toBe(1440);
     expect(parsed.badge).toBeNull();
     expect(parsed.headline_highlight).toBeNull();
   });

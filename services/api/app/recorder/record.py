@@ -1,8 +1,10 @@
 """Record one scene of a script: drive the page like a person and write an mp4 plus a click log.
 
-A new context per scene (1920x1080, video recording, request guard on). Steps come from the
-verified data in the script; a step that fails is skipped with a warning and a screenshot, it never
-breaks the scene. The real cursor is never drawn: the template paints its own from `click_log`.
+A new context per scene (the script's capture size, 1440x900 by default, video recording, request
+guard on). Besides the click log it writes a focus log: boxes (clip pixels) the camera should
+frame, with how long to stay (hold_ms). Steps come from the verified data in the script; a step
+that fails is skipped with a warning and a screenshot, it never breaks the scene. The real
+cursor is never drawn: the template paints its own from `click_log`.
 """
 
 import random
@@ -27,10 +29,23 @@ from app.schemas.generated.locator import LocatorSpec
 from app.schemas.generated.scene import Scene
 from app.script.lite import GROUP, is_lite
 
-TAIL_MS = 800  # keep recording a little after the last step
+TAIL_MS = 300  # keep recording a little after the last step (the hold after it comes first)
+HOLD_MS = 1500  # stay on the result of a main action so the viewer can read it
+FOCUS_SAMPLE_MS = 400  # while scrolling: log the block in the middle of the viewport this often
 FILL_THRESHOLD_MS = 2000  # shorter than this and the renderer just holds the last frame
 MAX_FILL_HOVERS = 3
-HOME = (960.0, 620.0)  # where the real mouse rests before the first move
+CAPTURE = {"width": 1440, "height": 900}  # same as the schema default of script.capture
+HOME_FRACTION = (0.5, 0.57)  # where the real mouse rests before the first move
+HOLD_ACTIONS = (
+    "click",
+    "dblclick",
+    "right_click",
+    "type",
+    "upload",
+    "hover",
+    "scroll_to",
+    "highlight",
+)
 
 INIT_JS = """
 (() => {
@@ -119,7 +134,7 @@ NEARBY_JS = """
     if (cs.visibility === 'hidden' || cs.display === 'none') continue;
     const x = r.left + r.width / 2, y = r.top + r.height / 2;
     out.push({
-      x, y, d: Math.hypot(x - px, y - py),
+      x, y, w: r.width, h: r.height, d: Math.hypot(x - px, y - py),
       texts: [el.innerText, el.getAttribute('aria-label'), el.getAttribute('title')]
         .map((t) => (t || '').trim()),
       href: el.getAttribute('href'),
@@ -131,6 +146,55 @@ NEARBY_JS = """
 
 SCROLLABLE_JS = "() => document.documentElement.scrollHeight - innerHeight"
 
+# the block around an element worth framing (a section/card/list item), clipped to the viewport
+SECTION_JS = """
+(el) => {
+  const vw = innerWidth, vh = innerHeight;
+  const rect = (e) => e.getBoundingClientRect();
+  const tags = new Set(['SECTION', 'ARTICLE', 'ASIDE', 'HEADER', 'FOOTER', 'NAV', 'FORM', 'LI', 'FIGURE']);
+  const base = rect(el);
+  let pick = el;
+  for (let e = el.parentElement; e && e !== document.body && e !== document.documentElement; e = e.parentElement) {
+    const r = rect(e);
+    if (r.height > vh * 0.9 || r.width < base.width * 0.9) break;
+    const role = e.getAttribute('role');
+    if (tags.has(e.tagName) || role === 'region' || role === 'group') { pick = e; break; }
+    if (r.height >= base.height * 1.5 && r.width >= vw * 0.3) pick = e;
+  }
+  const r = rect(pick);
+  const x = Math.max(0, r.left), y = Math.max(0, r.top);
+  const w = Math.min(vw, r.right) - x, h = Math.min(vh, r.bottom) - y;
+  return w > 8 && h > 8 ? { x, y, width: w, height: h } : null;
+}
+"""
+
+# the large block of the page that is in the middle of the viewport right now (while scrolling)
+CENTER_BLOCK_JS = """
+() => {
+  const vw = innerWidth, vh = innerHeight;
+  const main = document.querySelector('main') || document.body;
+  const stack = document.elementsFromPoint(vw / 2, vh / 2);
+  const el = stack.find((e) => main.contains(e) && e !== main && e !== document.body && e !== document.documentElement);
+  if (!el) return null;
+  let block = el;
+  while (block.parentElement && block.parentElement !== main && block.parentElement !== document.body) {
+    block = block.parentElement;
+  }
+  if (block.getBoundingClientRect().height > vh * 1.1) {
+    let best = el;
+    for (let e = el; e && e !== block; e = e.parentElement) {
+      const r = e.getBoundingClientRect();
+      if (r.height <= vh && r.width >= 120) best = e;
+    }
+    block = best;
+  }
+  const r = block.getBoundingClientRect();
+  const x = Math.max(0, r.left), y = Math.max(0, r.top);
+  const w = Math.min(vw, r.right) - x, h = Math.min(vh, r.bottom) - y;
+  return w > 8 && h > 8 ? { x, y, width: w, height: h } : null;
+}
+"""
+
 
 @dataclass
 class RecordResult:
@@ -140,6 +204,10 @@ class RecordResult:
     start_offset_ms: int = 0  # the page was loading until here
     setup_end_ms: int = 0  # setup steps are done here (== start_offset_ms without setup)
     click_log: list[dict[str, Any]] = field(default_factory=list)
+    # camera targets: {t_ms, bbox: {x, y, w, h} in clip pixels, kind, hold_ms}
+    focus_log: list[dict[str, Any]] = field(default_factory=list)
+    width: int = 0  # clip size in pixels (the capture viewport)
+    height: int = 0
     content_ms: int = 0  # length of the clip
     idle_gaps_ms: list[int] = field(default_factory=list)  # gaps of >= 0.5 s with nothing happening
     warnings: list[str] = field(default_factory=list)
@@ -161,14 +229,18 @@ class _Recorder:
         color: str,
         policy: Policy,
         rng: random.Random,
+        viewport: dict[str, int],
     ) -> None:
         self.session, self.page, self.root_url, self.out_dir = session, page, root_url, out_dir
         self.scene_id, self.color, self.policy, self.rng = scene_id, color, policy, rng
+        self.vw, self.vh = viewport["width"], viewport["height"]
         self.t0 = time.time()
         self.log: list[dict[str, Any]] = []
+        self.focus_log: list[dict[str, Any]] = []
         self.warnings: list[str] = []
         self.typed: set[str] = set()
-        self.mouse = HOME
+        self.mouse = self.home
+        self.holding = True
         self.activity: list[float] = []  # page changes seen so far, wall-clock ms
         self.marks: list[int] = []  # clip times where the cursor moved, text was typed, ...
         self.hover_boxes: list[
@@ -186,8 +258,43 @@ class _Recorder:
         """Something is visibly moving right now (cursor, typing, scrolling): not an idle moment."""
         self.marks.append(self.now())
 
+    @property
+    def home(self) -> tuple[float, float]:
+        return (self.vw * HOME_FRACTION[0], self.vh * HOME_FRACTION[1])
+
     def event(self, kind: str, x: float, y: float) -> None:
         self.log.append({"t_ms": self.now(), "x": round(x), "y": round(y), "type": kind})
+
+    def focus(self, kind: str, box: dict[str, float] | None, hold_ms: int = 0) -> None:
+        """Remember a box the camera should frame (clip pixels), clipped to the viewport."""
+        if not box:
+            return
+        x0, y0 = max(0.0, box["x"]), max(0.0, box["y"])
+        x1 = min(float(self.vw), box["x"] + box["width"])
+        y1 = min(float(self.vh), box["y"] + box["height"])
+        if x1 - x0 < 4 or y1 - y0 < 4:
+            return
+        self.focus_log.append(
+            {
+                "t_ms": self.now(),
+                "bbox": {"x": round(x0), "y": round(y0), "w": round(x1 - x0), "h": round(y1 - y0)},
+                "kind": kind,
+                "hold_ms": hold_ms,
+            }
+        )
+
+    def sample_center(self) -> None:
+        """While scrolling: the block in the middle of the viewport is what the camera should show."""
+        try:
+            self.focus("scroll", self.page.evaluate(CENTER_BLOCK_JS))
+        except Exception:
+            pass
+
+    def section_of(self, target: Target) -> dict[str, float] | None:
+        try:
+            return self.page.evaluate(SECTION_JS, target.handle()) or target.box()
+        except Exception:
+            return target.box()
 
     def collect_activity(self) -> None:
         """Page changes live in the page: read them before a navigation throws them away."""
@@ -224,8 +331,7 @@ class _Recorder:
 
     def center_of(self, target: Target) -> tuple[float, float]:
         box = target.box()
-        viewport = self.page.viewport_size or {"width": 1920, "height": 1080}
-        if box is None or box["y"] < 0 or box["y"] + box["height"] > viewport["height"]:
+        if box is None or box["y"] < 0 or box["y"] + box["height"] > self.vh:
             target.scroll_into_view_if_needed()
             self.page.wait_for_timeout(250)
             box = target.box()
@@ -244,8 +350,22 @@ class _Recorder:
         handler = getattr(self, f"do_{do}", None)
         if handler is None:
             raise RuntimeError(f"unsupported action {do}")
+        before = len(self.focus_log)
         handler(action, label)
         self.settle()
+        self.hold(action, before)
+
+    def hold(self, a: Any, focus_before: int) -> None:
+        """Stay on the result of a main action, and record how long so the camera can stay too.
+
+        Slow pointing hovers and highlights already wait as long as they were asked to."""
+        if a.do not in HOLD_ACTIONS or not self.holding:
+            return
+        own = a.ms if a.do in ("hover", "highlight") and a.ms else 0
+        if not own:
+            self.page.wait_for_timeout(HOLD_MS)
+        if len(self.focus_log) > focus_before:
+            self.focus_log[-1]["hold_ms"] = own or HOLD_MS
 
     def do_goto(self, a: Any, label: str) -> None:
         self.collect_activity()
@@ -263,6 +383,7 @@ class _Recorder:
         slow = kind == "hover" and bool(a.ms)  # showcase_lite: a slow, deliberate hover
         self.move_to(x, y, self.rng.randint(900, 1200) if slow else None)
         self.event(kind, x, y)
+        self.focus(kind, target.box())
         if kind == "click":
             target.click()
         elif kind == "dblclick":
@@ -291,6 +412,7 @@ class _Recorder:
         x, y = self.center_of(target)
         self.move_to(x, y)
         self.event("click", x, y)
+        self.focus("click", target.box())
         target.right_click()
 
     def do_type(self, a: Any, label: str) -> None:
@@ -301,6 +423,7 @@ class _Recorder:
         x, y = self.center_of(target)
         self.move_to(x, y)
         self.event("click", x, y)
+        self.focus("type", target.box())
         target.click()
         text = a.text or ""
         target.fill("")
@@ -319,10 +442,20 @@ class _Recorder:
 
     def do_scroll(self, a: Any, label: str) -> None:
         self.event("scroll", self.mouse[0], self.mouse[1])
-        for dy in motion.scroll_steps(a.ms or 700):
+        self.sample_center()
+        self.wheel(a.ms or 700)
+        self.sample_center()
+
+    def wheel(self, total: float) -> None:
+        """Scroll by `total` px in eased steps, logging the centre block every FOCUS_SAMPLE_MS."""
+        last = self.now()
+        for dy in motion.scroll_steps(total):
             self.mark()
             self.page.mouse.wheel(0, dy)
             self.page.wait_for_timeout(40)
+            if self.now() - last >= FOCUS_SAMPLE_MS:
+                last = self.now()
+                self.sample_center()
 
     def _scroll_center(self, target: Target) -> tuple[float, float]:
         handle = target.handle()
@@ -339,7 +472,9 @@ class _Recorder:
     def do_scroll_to(self, a: Any, label: str) -> None:
         target = self.target_of(a.locator, label)
         self.event("scroll", self.mouse[0], self.mouse[1])
+        self.sample_center()
         self._scroll_center(target)
+        self.focus("section", self.section_of(target))
 
     def do_highlight(self, a: Any, label: str) -> None:
         group = a.text == GROUP and self.hover_boxes
@@ -349,8 +484,7 @@ class _Recorder:
         else:
             target = self.target_of(a.locator, label)
             box = target.box()
-            viewport = self.page.viewport_size or {"width": 1920, "height": 1080}
-            if box is None or box["y"] < 0 or box["y"] + box["height"] > viewport["height"]:
+            if box is None or box["y"] < 0 or box["y"] + box["height"] > self.vh:
                 self._scroll_center(target)
                 box = target.box()
         if box is None:
@@ -358,6 +492,7 @@ class _Recorder:
         self.pointed += 1
         self.page.evaluate(HIGHLIGHT_ON_JS, [box, self.color])
         self.event("highlight", box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+        self.focus("highlight", box if group else self.section_of(target))
         self.page.wait_for_timeout(a.ms or 1800)
         self.page.evaluate(HIGHLIGHT_OFF_JS)
 
@@ -374,6 +509,7 @@ class _Recorder:
 
     def step(self, action: Any, index: int, part: str) -> None:
         label = f"{part}[{index}] {action.do}"
+        self.holding = part == "action"  # setup steps are only the means: no hold after them
         try:
             self.run(action, label)
             self.ok += 1
@@ -421,6 +557,16 @@ class _Recorder:
                 break
             self.move_to(c["x"], c["y"], self.rng.randint(800, 1200))
             self.event("hover", c["x"], c["y"])
+            self.focus(
+                "hover",
+                {
+                    "x": c["x"] - c["w"] / 2,
+                    "y": c["y"] - c["h"] / 2,
+                    "width": c["w"],
+                    "height": c["h"],
+                },
+                250,
+            )
             self.page.wait_for_timeout(250)
         remaining = missing_ms - (self.now() - started)
         if remaining > 1200:
@@ -430,16 +576,12 @@ class _Recorder:
                 room = 0
             if room > 200:
                 self.event("scroll", self.mouse[0], self.mouse[1])
-                for dy in motion.scroll_steps(min(320, room)):
-                    self.mark()
-                    self.page.mouse.wheel(0, dy)
-                    self.page.wait_for_timeout(40)
+                self.wheel(min(320, room))
+                self.sample_center()
                 self.page.wait_for_timeout(500)
                 self.event("scroll", self.mouse[0], self.mouse[1])
-                for dy in motion.scroll_steps(-min(320, room)):
-                    self.mark()
-                    self.page.mouse.wheel(0, dy)
-                    self.page.wait_for_timeout(40)
+                self.wheel(-min(320, room))
+                self.sample_center()
         return self.now() - started
 
 
@@ -481,16 +623,18 @@ def record_scene(
     highlight_color: str = "#756eeb",
     enter_policy: Policy = "strict",
     seed: int | None = None,
+    viewport: dict[str, int] | None = None,
 ) -> RecordResult:
     """Record (or photograph) one scene into out_dir; never raises for a failing step."""
     s = scene.root
     visual = s.visual
+    viewport = viewport or CAPTURE
     out_dir.mkdir(parents=True, exist_ok=True)
     if visual.mode == "template":
         return RecordResult(kind="template")  # drawn by the renderer, nothing to capture
     if visual.mode != "recording":
         url = visual.page or root_url
-        image = take_screenshot(session, url, out_dir / f"{s.id}.png")
+        image = take_screenshot(session, url, out_dir / f"{s.id}.png", viewport)
         return RecordResult(kind="screenshot", image_path=image)
 
     rng = random.Random(seed if seed is not None else s.id)
@@ -498,7 +642,7 @@ def record_scene(
     start_url = first_goto(setup) or first_goto(actions) or visual.page or root_url
     raw_dir = out_dir / "raw" / s.id
     raw_dir.mkdir(parents=True, exist_ok=True)
-    context: BrowserContext = session.new_context(record_video_dir=raw_dir)
+    context: BrowserContext = session.new_context(record_video_dir=raw_dir, viewport=viewport)
     context.add_init_script(INIT_JS)
     try:
         page = context.new_page()
@@ -511,8 +655,9 @@ def record_scene(
             color=highlight_color,
             policy=enter_policy,
             rng=rng,
+            viewport=viewport,
         )
-        page.mouse.move(*HOME)
+        page.mouse.move(*rec.home)
         try:
             page.goto(start_url, wait_until="domcontentloaded")
             rec.settle()
@@ -558,7 +703,7 @@ def record_scene(
     pointed_nothing = is_lite(visual) and rec.pointed == 0
     if (rec.ok == 0 or pointed_nothing) and (setup or actions):
         # nothing could be carried out: a photo of the page is better than an empty recording
-        image = take_screenshot(session, start_url, out_dir / f"{s.id}.png")
+        image = take_screenshot(session, start_url, out_dir / f"{s.id}.png", viewport)
         warnings.append("không bước nào chạy được, dùng ảnh trang đích thay cho clip")
         return RecordResult(
             kind="fallback_screenshot", image_path=image, warnings=warnings, steps_failed=rec.failed
@@ -571,6 +716,9 @@ def record_scene(
         start_offset_ms=start_offset,
         setup_end_ms=setup_end,
         click_log=rec.log,
+        focus_log=rec.focus_log,
+        width=viewport["width"],
+        height=viewport["height"],
         content_ms=content_ms,
         idle_gaps_ms=gaps,
         activity_ms=activity,

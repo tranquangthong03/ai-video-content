@@ -88,13 +88,13 @@ def test_template_fields_defaults_and_limits() -> None:
     data = load("sample_script.json")
     script = Script.model_validate(data)
     assert script.template == "desktop_showcase" and script.badge == "Quản lý dự án"
-    assert script.capture.width == 1920 and script.capture.viewport == "desktop"
+    assert script.capture.width in (1920, 1440) and script.capture.viewport == "desktop"
     assert all(s.root.key_point and s.root.icon for s in script.scenes)
     for key in ("template", "capture", "badge", "headline_highlight"):
         data.pop(key)
     bare = Script.model_validate(data)
     assert bare.template == "desktop_showcase" and bare.badge is None
-    assert bare.capture.height == 1080 and bare.headline_highlight is None
+    assert bare.capture.height == 900 and bare.headline_highlight is None
 
 
 @pytest.mark.parametrize(

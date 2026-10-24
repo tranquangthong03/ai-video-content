@@ -16,10 +16,10 @@
       "additionalProperties": false,
       "properties": {
         "viewport": { "enum": ["desktop", "mobile"], "default": "desktop" },
-        "width": { "type": "integer", "minimum": 320, "maximum": 3840, "default": 1920 },
-        "height": { "type": "integer", "minimum": 320, "maximum": 3840, "default": 1080 }
+        "width": { "type": "integer", "minimum": 320, "maximum": 3840, "default": 1440 },
+        "height": { "type": "integer", "minimum": 320, "maximum": 3840, "default": 900 }
       },
-      "default": { "viewport": "desktop", "width": 1920, "height": 1080 }
+      "default": { "viewport": "desktop", "width": 1440, "height": 900 }
     },
     "badge": { "type": ["string", "null"], "maxLength": 24, "default": null },
     "headline": { "type": "string", "minLength": 1, "maxLength": 40 },

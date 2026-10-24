@@ -17,6 +17,15 @@ export const CaptionSchema = z.object({
   words: z.array(WordSchema).optional(), // per-word timing, for karaoke highlighting
 });
 
+/** One camera target recorded with the clip: a box (clip pixels) to frame and how long to stay on it. */
+export const FocusSchema = z.object({
+  t_ms: z.number().min(0),
+  bbox: z.object({ x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() }),
+  kind: z.enum(["click", "dblclick", "hover", "type", "highlight", "section", "scroll"]),
+  hold_ms: z.number().min(0).default(0),
+});
+export type FocusPoint = z.infer<typeof FocusSchema>;
+
 /** Per-scene media. URLs are absolute (http/data) or paths relative to the bundle's public dir. */
 export const SceneAssetsSchema = z.object({
   audio_url: z.string().optional(),
@@ -28,6 +37,7 @@ export const SceneAssetsSchema = z.object({
   clip_duration_ms: z.number().positive().optional(), // length of the clip file (needed to freeze its end)
   screenshot_url: z.string().optional(),
   click_log: z.array(ClickSchema).optional(), // x,y in source clip pixels, t_ms in clip time
+  focus_log: z.array(FocusSchema).optional(), // what the camera should look at, clip pixels / clip time
   clip_width: z.number().positive().optional(),
   clip_height: z.number().positive().optional(),
   captions: z.array(CaptionSchema).optional(),

@@ -15,8 +15,8 @@ class Capture(BaseModel):
         extra='forbid',
     )
     viewport: Literal['desktop', 'mobile'] = 'desktop'
-    width: Annotated[int, Field(ge=320, le=3840)] = 1920
-    height: Annotated[int, Field(ge=320, le=3840)] = 1080
+    width: Annotated[int, Field(ge=320, le=3840)] = 1440
+    height: Annotated[int, Field(ge=320, le=3840)] = 900
 
 
 class Script(BaseModel):
@@ -30,8 +30,8 @@ class Script(BaseModel):
     template: Literal['desktop_showcase', 'phone_showcase'] = 'desktop_showcase'
     capture: Annotated[Capture, Field(validate_default=True)] = {
         'viewport': 'desktop',
-        'width': 1920,
-        'height': 1080,
+        'width': 1440,
+        'height': 900,
     }
     badge: Annotated[str | None, Field(max_length=24)] = None
     headline: Annotated[str, Field(max_length=40, min_length=1)]

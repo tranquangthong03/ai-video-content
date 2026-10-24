@@ -42,17 +42,21 @@ class BrowserSession:
         if self._pw:
             self._pw.stop()
 
-    def new_context(self, record_video_dir: Path | None = None) -> BrowserContext:
+    def new_context(
+        self, record_video_dir: Path | None = None, viewport: dict[str, int] | None = None
+    ) -> BrowserContext:
         """Fresh context (clean storage apart from --storage-state) with the guard installed.
 
-        record_video_dir: record every page of the context as 1920x1080 webm into that directory.
+        viewport: defaults to the explorer's 1920x1080; the recorder passes the script's capture size.
+        record_video_dir: record every page of the context as a webm of that size into the directory.
         """
         assert self.browser is not None, "use BrowserSession as a context manager"
+        size = viewport or VIEWPORT
         context = self.browser.new_context(
-            viewport=VIEWPORT,
+            viewport=size,
             storage_state=str(self.storage_state) if self.storage_state else None,
             record_video_dir=str(record_video_dir) if record_video_dir else None,
-            record_video_size=VIEWPORT if record_video_dir else None,
+            record_video_size=size if record_video_dir else None,
         )
         context.set_default_navigation_timeout(NAV_TIMEOUT_MS)
         context.set_default_timeout(8_000)
