@@ -28,8 +28,8 @@ def test_auto_run_produces_an_approved_outline_after_edits(
     site: str, tmp_path: Path, hits: list[str], monkeypatch
 ) -> None:  # type: ignore[no-untyped-def]
     llm = FakeLLM(scripted_handler)
-    monkeypatch.setattr("app.pipeline.explore_cli.OpenAIChat", lambda settings: llm)
-    monkeypatch.setattr("app.pipeline.explore_cli.load_settings", lambda: _settings(tmp_path))
+    monkeypatch.setattr("app.pipeline.runner.OpenAIChat", lambda settings: llm)
+    monkeypatch.setattr("app.pipeline.runner.load_settings", lambda: _settings(tmp_path))
     answers = tmp_path / "answers.json"
     answers.write_text(json.dumps(ANSWERS, ensure_ascii=False), encoding="utf-8")
     job = tmp_path / "job"
@@ -37,6 +37,11 @@ def test_auto_run_produces_an_approved_outline_after_edits(
     code = main(["--url", site + "/", "--job-dir", str(job), "--auto", "--answers", str(answers),
                  "--max-pages", "6", "--timeout", "180", "--stop-after", "outline"])  # fmt: skip
     assert code == 0
+
+    state = json.loads((job / "state.json").read_text(encoding="utf-8"))  # what the web polls
+    assert state["status"] == "done" and state["step"] == "done" and state["progress_pct"] == 100
+    assert state["job_id"] == "job" and state["error"] is None
+    assert state["latest_screenshot"].startswith("explore/pages/")
 
     explore = job / "explore"
     report = json.loads((explore / "report.json").read_text(encoding="utf-8"))
@@ -87,8 +92,8 @@ def test_auto_run_produces_an_approved_outline_after_edits(
 
 def test_resume_skips_finished_steps(site: str, tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
     llm = FakeLLM(scripted_handler)
-    monkeypatch.setattr("app.pipeline.explore_cli.OpenAIChat", lambda settings: llm)
-    monkeypatch.setattr("app.pipeline.explore_cli.load_settings", lambda: _settings(tmp_path))
+    monkeypatch.setattr("app.pipeline.runner.OpenAIChat", lambda settings: llm)
+    monkeypatch.setattr("app.pipeline.runner.load_settings", lambda: _settings(tmp_path))
     answers = tmp_path / "answers.json"
     answers.write_text(json.dumps(ANSWERS, ensure_ascii=False), encoding="utf-8")
     job = tmp_path / "job"
@@ -114,8 +119,8 @@ def test_resume_skips_finished_steps(site: str, tmp_path: Path, monkeypatch) -> 
 
 def test_token_ceiling_pauses_and_resume_continues(site: str, tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
     llm = FakeLLM(scripted_handler)
-    monkeypatch.setattr("app.pipeline.explore_cli.OpenAIChat", lambda settings: llm)
-    monkeypatch.setattr("app.pipeline.explore_cli.load_settings", lambda: _settings(tmp_path))
+    monkeypatch.setattr("app.pipeline.runner.OpenAIChat", lambda settings: llm)
+    monkeypatch.setattr("app.pipeline.runner.load_settings", lambda: _settings(tmp_path))
     answers = tmp_path / "answers.json"
     answers.write_text(json.dumps(ANSWERS, ensure_ascii=False), encoding="utf-8")
     job = tmp_path / "job"

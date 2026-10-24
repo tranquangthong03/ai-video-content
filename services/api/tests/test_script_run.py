@@ -360,14 +360,14 @@ def test_cli_from_step_script_runs_to_an_approved_script_with_one_edit(
         "ops": [{"op": "set", "scene_id": "s2", "field": "on_screen_text", "value": "Gõ là có"}],
     }
     llm = FakeLLM(handler)
-    monkeypatch.setattr("app.pipeline.explore_cli.OpenAIChat", lambda settings: llm)
+    monkeypatch.setattr("app.pipeline.runner.OpenAIChat", lambda settings: llm)
     settings = LLMSettings(
         api_key="k", base_url="http://x", model="m", vision_model=None,
         cache_enabled=False, cache_dir=tmp_path / "cache",
     )  # fmt: skip
-    monkeypatch.setattr("app.pipeline.explore_cli.load_settings", lambda: settings)
+    monkeypatch.setattr("app.pipeline.runner.load_settings", lambda: settings)
     monkeypatch.setattr(
-        "app.pipeline.explore_cli.derive_theme",
+        "app.pipeline.runner.derive_theme",
         lambda *a, **k: ThemeResult(THEME, "css", "css", None, [], []),
     )
 
@@ -378,7 +378,7 @@ def test_cli_from_step_script_runs_to_an_approved_script_with_one_edit(
 
         def __exit__(self, *a: Any) -> None: ...
 
-    monkeypatch.setattr("app.pipeline.explore_cli.BrowserSession", FakeSession)
+    monkeypatch.setattr("app.pipeline.runner.BrowserSession", FakeSession)
     job = tmp_path / "job"
     job.mkdir()
     (job / "confirmed_profile.json").write_text(make_profile().model_dump_json(), encoding="utf-8")
