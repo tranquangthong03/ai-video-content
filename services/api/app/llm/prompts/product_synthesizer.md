@@ -12,6 +12,7 @@ Bạn là product marketer. Từ phân tích các trang của một website, hã
 {{ delta_json }}
 </state_delta>
 Lưu ý: <pages> chỉ chứa các phần tử MỚI xuất hiện sau khi người dùng đã thao tác (setup_steps trong <state_delta> là chuỗi bước đã tạo ra trạng thái đó). Chỉ trả về các tính năng MỚI phát hiện từ các phần tử mới này, không lặp lại các tính năng đã có: {{ known_features }}. demo_steps của tính năng mới chỉ gồm các bước SAU setup_steps.
+{# changed: general rule for filter/sort/search/tab features, only in the stateful delta block #}Quy tắc cho tính năng lọc/sắp xếp/tìm kiếm/chuyển tab: chỉ được coi là trình diễn được khi kết quả HIỂN THỊ thay đổi. Vì vậy demo_steps phải: (a) chuẩn bị dữ liệu làm kết quả khác nhau trước (ví dụ thêm 2 mục và đánh dấu hoàn thành 1 mục) — các bước chuẩn bị này nằm trong setup (hệ thống sẽ ghép chúng với setup_steps); rồi (b) bấm bộ lọc/tab mà kết quả khác với trạng thái hiện tại (ví dụ Active rồi Completed). Không đề xuất bước lọc khi dữ liệu hiện có không làm kết quả thay đổi.
 {% endif %}
 
 Quy tắc:

@@ -25,7 +25,7 @@ from app.explorer.synthesize import synthesize_delta
 from app.explorer.verify import Context, perform_step, verify_features
 from app.llm.json_call import JsonCaller, LLMCallError
 from app.schemas.generated.page_insight import PageInsight
-from app.schemas.generated.product_profile import Feature, ProductProfile
+from app.schemas.generated.product_profile import DemoStep, Feature, ProductProfile
 
 MAX_PAGES = 3
 MAX_FEATURES_TOTAL = 12  # ProductProfile.features maxItems
@@ -105,6 +105,37 @@ def capture_state(
         context.close()
 
 
+PREP_ROLES = ("checkbox", "switch", "option", "textbox", "searchbox")
+
+
+def prep_len(own: list[DemoStep], page: PageData) -> int:
+    """Leading steps of a filter/tab-style feature that only prepare data (typing, ticking a box).
+
+    They make the result differ, so their own effect is not evidence of the feature: the evidence is
+    what the first real trigger (a link, tab or button) changes afterwards.
+    """
+    n = 0
+    for step in own:
+        element = page.element(step.ref or "") if step.ref else None
+        if step.do == "type" or (
+            step.do == "click" and element is not None and element.role in PREP_ROLES
+        ):
+            n += 1
+        else:
+            break
+    return n
+
+
+def is_replaceable(feature: Feature) -> bool:
+    """A feature that could not be demonstrated (failed, or its steps were removed as invalid).
+
+    The delta step may propose it again with steps that work; it must not count as already known.
+    """
+    return feature.demo_kind == "failed" or (
+        feature.demo_kind is None and feature.verified and not feature.demo_steps
+    )
+
+
 def run_stateful(
     session: BrowserSession,
     profile: ProductProfile,
@@ -166,7 +197,7 @@ def run_stateful(
             fresh = synthesize_delta(
                 caller, root_url, site_type, pages, page, delta_insight,
                 format_elements(delta_page), setup_steps,
-                [f.name for f in [*profile.features, *added]],
+                [f.name for f in [*profile.features, *added] if not is_replaceable(f)],
             )  # fmt: skip
         except LLMCallError as e:
             report.warn(f"stateful: delta analysis failed for {page.url}: {e}")
@@ -176,7 +207,9 @@ def run_stateful(
             while feature.id in used:
                 feature.id += "-s"
             used.add(feature.id)
-            setup_counts[feature.id] = len(setup_steps)
+            setup_counts[feature.id] = len(setup_steps) + prep_len(
+                feature.demo_steps[len(setup_steps) :], page
+            )
             added.append(feature)
             entry["new_features"].append(feature.id)
 
@@ -187,5 +220,12 @@ def run_stateful(
             insights=insights, limit=len(added), enter_policy=enter_policy,
             scope_prefix=scope_prefix, setup_counts=setup_counts,
         )  # fmt: skip
+        # a failed feature is replaced by the new one that covers the same claim
+        names = {f.name.strip().lower() for f in added if f.demo_kind not in (None, "failed")}
+        profile.features[:] = [
+            f
+            for f in profile.features
+            if not (is_replaceable(f) and f.name.strip().lower() in names)
+        ]
         profile.features.extend(added)
     return added

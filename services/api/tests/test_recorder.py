@@ -293,6 +293,29 @@ def test_the_page_standing_still_is_visible_as_an_idle_gap(
     assert max(r.idle_gaps_ms) >= 2000
 
 
+def test_typing_and_cursor_movement_are_not_idle_time(
+    browser_session: BrowserSession, site: str, tmp_path: Path
+) -> None:
+    long_text = "Một việc cần làm có nội dung khá dài để gõ lâu"
+    visual = {
+        "mode": "recording",
+        "actions": [
+            goto(site, "/todo.html"),
+            {"do": "type", "locator": loc("#new"), "text": long_text},
+        ],
+    }
+    r = rec(browser_session, site, tmp_path, visual, speech_ms=1000)
+    assert r.idle_gaps_ms == [] or max(r.idle_gaps_ms) < 1500  # ~3 s of typing is continuous motion
+
+
+def test_a_template_scene_needs_no_browser(
+    browser_session: BrowserSession, site: str, tmp_path: Path, hits: list[str]
+) -> None:
+    hits.clear()
+    r = record_scene(browser_session, scene({"mode": "template"}), tmp_path, 2000, root_url=site)
+    assert r.kind == "template" and r.clip_path is None and r.image_path is None and hits == []
+
+
 def test_other_modes_are_photographs(
     browser_session: BrowserSession, site: str, tmp_path: Path
 ) -> None:

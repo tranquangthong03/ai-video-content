@@ -46,3 +46,5 @@ Người dùng nhập URL website (+ tài khoản demo tùy chọn). Hệ thốn
 - make codegen-check: kiểm tra file generated không lệch so với schema
 - make test: chạy toàn bộ test
 - make lint
+- Pipeline URL → video (không TTS), trong services/api: `uv run python -m app.pipeline.explore_cli --url <url> --job-dir out/<job> [--auto --answers tests/fixtures/answers/<x>.json] [--from-step explore|script|produce] [--stop-after outline|script|produce]`. Sinh `outline_approved.json`, `scripts/v{n}.json`, `script_approved.json`, `video.mp4`, `report.json` trong job-dir (`out/` bị gitignore).
+- Render: `pnpm --filter render render:sample` (mẫu), `scripts/render-job.ts <props.json> <out.mp4>` (do producer gọi; asset là file local, phục vụ qua http cục bộ).

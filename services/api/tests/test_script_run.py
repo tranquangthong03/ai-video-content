@@ -398,6 +398,8 @@ def test_cli_from_step_script_runs_to_an_approved_script_with_one_edit(
             str(answers),
             "--from-step",
             "script",
+            "--stop-after",
+            "script",
         ]
     )
     out = capsys.readouterr().out

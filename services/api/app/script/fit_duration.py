@@ -25,6 +25,7 @@ TOLERANCE = 0.10
 MAX_SCENES = 6
 MIN_FIT_WORDS = 6  # hook and cta may be shortened but not below this
 MAX_SHORTEN_ROUNDS = 2
+MAX_EXTRA_ROUNDS = 3  # extra lengthening rounds when no scene can be added
 MIN_REAL_ACTIONS = 2  # a 45/60 s feature_demo should show at least this many real operations
 REAL_ACTIONS = ("click", "dblclick", "type", "hover", "upload", "right_click")
 
@@ -239,6 +240,22 @@ def fit_duration(
                     report.actions.append(f"thêm scene demo «{feature_id}»")
                 except (WriterError, LLMCallError) as e:
                     report.warnings.append(f"không thêm được scene demo: {e}")
+        for _ in range(MAX_EXTRA_ROUNDS):
+            if not short() or (len(script.scenes) < MAX_SCENES and _unused_feature(script, ctx)):
+                break
+            # no room for another scene: more rounds of longer voiceovers are the only lever left
+            report.rounds += 1
+            before = total_words(script)
+            try:
+                out = _ask_fit(caller, script, ctx, "ngắn hơn")
+                script, notes = apply_voiceovers(script, out.voiceovers, extend=True)
+                report.warnings += notes
+                report.actions.append("kéo dài voiceover lần nữa (không thêm được scene)")
+            except LLMCallError as e:
+                report.warnings.append(f"không kéo dài thêm được voiceover: {e}")
+                break
+            if total_words(script) <= before:
+                break  # the model gave nothing more: stop asking
     elif adjust and long():
         for _ in range(MAX_SHORTEN_ROUNDS):
             if not long():

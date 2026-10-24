@@ -26,6 +26,8 @@ from app.pipeline.explore_run import ExploreRunner
 from app.pipeline.frontend import ScriptedFrontend, TerminalFrontend
 from app.pipeline.proposal_run import Cancelled, ProposalRunner
 from app.pipeline.script_run import ScriptRunner
+from app.producer.pipeline import produce
+from app.producer.render import RenderError, render_props
 from app.proposal.understanding import score_dots
 from app.schemas.generated.outline import Outline
 from app.schemas.generated.product_profile import ProductProfile
@@ -34,6 +36,7 @@ from app.script.theme import ThemeResult, derive_theme
 from app.script.writer import WriterError
 
 EXIT_CANCELLED, EXIT_BLOCKED, EXIT_TOKENS, EXIT_TIMEOUT, EXIT_USAGE, EXIT_SCRIPT = 1, 2, 3, 4, 5, 6
+EXIT_RENDER = 7
 STEPS = ("classify", "analyze", "synthesize", "verify", "delta", "concepts", "outline")
 SCRIPT_STEPS = ("beat_map", "script", "fit", "scene", "edit_plan")
 FROM_STEPS = ("explore", "script", "produce")
@@ -62,8 +65,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="path: a start URL with a path only crawls links under that path (default)",
     )  # fmt: skip
     p.add_argument(
-        "--stop-after", choices=("outline", "script"), default="script",
-        help="last step to run: outline stops before the script is written",
+        "--stop-after", choices=("outline", "script", "produce"), default="produce",
+        help="last step to run: outline/script stop before the next step starts",
     )  # fmt: skip
     p.add_argument(
         "--from-step", choices=FROM_STEPS, default="explore",
@@ -200,11 +203,6 @@ def main(argv: list[str] | None = None) -> int:
     if args.auto and not args.answers:
         console.print("[red]--auto cần --answers answers.json[/]")
         return EXIT_USAGE
-    if args.from_step == "produce":
-        console.print(
-            "[red]Bước quay + render chưa có trong phiên bản này (--from-step produce).[/]"
-        )
-        return EXIT_USAGE
     job_dir.mkdir(parents=True, exist_ok=True)
 
     caller, tracker = make_caller(args, job_dir)
@@ -269,22 +267,102 @@ def main(argv: list[str] | None = None) -> int:
             console.print(f"[red]{e}. Chạy bước explore trước.[/]")
             return EXIT_USAGE
 
+    approved_file = job_dir / "script_approved.json"
+    if args.from_step == "produce":
+        if not approved_file.is_file():
+            console.print(f"[red]Chưa có {approved_file.name}. Chạy bước script trước.[/]")
+            return EXIT_USAGE
+        script = Script.model_validate_json(approved_file.read_text(encoding="utf-8"))
+    else:
+        try:
+            script = run_script_step(args, console, job_dir, caller, frontend, profile, outline)
+        except Cancelled as e:
+            console.print(f"[yellow]Đã hủy ở bước {e}.[/]")
+            return EXIT_CANCELLED
+        except BudgetExceeded as e:
+            console.print(f"[red]{e}. Trạng thái đã lưu, chạy lại với --from-step script.[/]")
+            return EXIT_TOKENS
+        except WriterError as e:
+            console.print(f"[red]Không viết được kịch bản hợp lệ: {e}[/]")
+            return EXIT_SCRIPT
+        (job_dir / "script_usage.json").write_text(
+            json.dumps(tracker.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        console.print(f"[green]Đã duyệt kịch bản: {approved_file}[/]")
+        console.print(f"Báo cáo kịch bản: {job_dir / 'script_report.json'}  ({script.headline})")
+        if args.stop_after == "script":
+            return 0
+
+    return run_produce_step(args, console, job_dir, tracker, profile, script)
+
+
+def run_produce_step(
+    args: argparse.Namespace,
+    console: Console,
+    job_dir: Path,
+    tracker: UsageTracker,
+    profile: ProductProfile,
+    script: Script,
+) -> int:
+    """Record every scene, fit the timeline, render the mp4 and write report.json."""
+    script_report: dict = {}  # type: ignore[type-arg]
+    report_file = job_dir / "script_report.json"
+    if report_file.is_file():
+        script_report = json.loads(report_file.read_text(encoding="utf-8"))
+    extra = {
+        "url": args.url,
+        "headline": script.headline,
+        "theme": script_report.get("theme"),
+        "fit": script_report.get("fit"),
+        "fit_generation": script_report.get("fit_generation"),
+        "script_versions": script_report.get("versions"),
+        "script_warnings": script_report.get("warnings", []),
+    }
     try:
-        script = run_script_step(args, console, job_dir, caller, frontend, profile, outline)
-    except Cancelled as e:
-        console.print(f"[yellow]Đã hủy ở bước {e}.[/]")
-        return EXIT_CANCELLED
-    except BudgetExceeded as e:
-        console.print(f"[red]{e}. Trạng thái đã lưu, chạy lại với --from-step script.[/]")
-        return EXIT_TOKENS
-    except WriterError as e:
-        console.print(f"[red]Không viết được kịch bản hợp lệ: {e}[/]")
-        return EXIT_SCRIPT
-    (job_dir / "script_usage.json").write_text(
-        json.dumps(tracker.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8"
+        with BrowserSession(args.url, storage_state=args.storage_state) as session:
+            result = produce(
+                script,
+                url=args.url,
+                job_dir=job_dir,
+                session=session,
+                render=render_props,
+                profile=profile,
+                progress=lambda msg: console.print(f"[cyan]{msg}[/]"),
+                token_usage=tracker.to_dict(),
+                extra_report=extra,
+            )
+    except RenderError as e:
+        console.print(f"[red]{e}[/]")
+        return EXIT_RENDER
+    report = result.report
+    table = Table(title=f"{script.headline}")
+    for col in (
+        "scene",
+        "type",
+        "cảnh quay",
+        "speech",
+        "usable",
+        "final",
+        "rate",
+        "freeze",
+        "idle",
+    ):
+        table.add_column(col)
+    for o in result.scenes:
+        usable = "—" if o.usable_ms is None else f"{o.usable_ms / 1000:.1f}s"
+        idle = "—" if o.idle_max_ms is None else f"{o.idle_max_ms / 1000:.1f}s"
+        table.add_row(
+            o.id, o.type, o.kind, f"{o.speech_ms / 1000:.1f}s", usable,
+            f"{o.final_ms / 1000:.1f}s", f"{o.playback_rate:g}", "có" if o.freeze else "", idle,
+        )  # fmt: skip
+    console.print(table)
+    console.print(
+        f"mục tiêu {report['target_ms'] / 1000:.0f}s · "
+        f"ước tính {report['estimated_ms'] / 1000:.1f}s · thực tế {report['actual_ms'] / 1000:.1f}s"
     )
-    console.print(f"[green]Đã duyệt kịch bản: {job_dir / 'script_approved.json'}[/]")
-    console.print(f"Báo cáo: {job_dir / 'script_report.json'}  ({script.headline})")
+    console.print(
+        f"[green]Video:[/] {result.video.resolve()}\nBáo cáo: {(job_dir / 'report.json').resolve()}"
+    )
     return 0
 
 

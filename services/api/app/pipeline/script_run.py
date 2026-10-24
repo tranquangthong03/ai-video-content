@@ -153,7 +153,7 @@ class ScriptRunner:
             "attempts": written.attempts,
             "errors_history": written.errors_history,
         }
-        self.report["fit"] = fit.as_dict()
+        self.report["fit"] = self.report["fit_generation"] = fit.as_dict()
         self.report["warnings"] += [*written.warnings, *fit.warnings]
         return script
 

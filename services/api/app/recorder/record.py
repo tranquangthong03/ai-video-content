@@ -145,6 +145,7 @@ class RecordResult:
     steps_ok: int = 0
     steps_failed: int = 0
     filled_ms: int = 0  # time spent on the filler hovers
+    activity_ms: list[float] = field(default_factory=list)  # clip times where anything happened
 
 
 class _Recorder:
@@ -168,12 +169,17 @@ class _Recorder:
         self.typed: set[str] = set()
         self.mouse = HOME
         self.activity: list[float] = []  # page changes seen so far, wall-clock ms
+        self.marks: list[int] = []  # clip times where the cursor moved, text was typed, ...
         self.ok = self.failed = 0
 
     # --- clock ----------------------------------------------------------------------------
 
     def now(self) -> int:
         return round((time.time() - self.t0) * 1000)
+
+    def mark(self) -> None:
+        """Something is visibly moving right now (cursor, typing, scrolling): not an idle moment."""
+        self.marks.append(self.now())
 
     def event(self, kind: str, x: float, y: float) -> None:
         self.log.append({"t_ms": self.now(), "x": round(x), "y": round(y), "type": kind})
@@ -190,8 +196,10 @@ class _Recorder:
     def move_to(self, x: float, y: float, ms: int | None = None) -> None:
         sx, sy = self.mouse
         duration = ms or motion.move_duration_ms(hypot(x - sx, y - sy))
-        for px, py, wait in motion.mouse_path((sx, sy), (x, y), duration):
+        for i, (px, py, wait) in enumerate(motion.mouse_path((sx, sy), (x, y), duration)):
             self.page.mouse.move(px, py)
+            if i % 8 == 0:
+                self.mark()
             self.page.wait_for_timeout(wait)
         self.mouse = (x, y)
 
@@ -283,6 +291,7 @@ class _Recorder:
         text = a.text or ""
         target.fill("")
         for ch, delay in zip(text, motion.typing_delays(text, self.rng), strict=True):
+            self.mark()
             self.page.keyboard.type(ch)
             self.page.wait_for_timeout(delay)
         if text:
@@ -297,13 +306,16 @@ class _Recorder:
     def do_scroll(self, a: Any, label: str) -> None:
         self.event("scroll", self.mouse[0], self.mouse[1])
         for dy in motion.scroll_steps(a.ms or 700):
+            self.mark()
             self.page.mouse.wheel(0, dy)
             self.page.wait_for_timeout(40)
 
     def _scroll_center(self, target: Target) -> tuple[float, float]:
         handle = target.handle()
         y = self.page.evaluate(CENTER_TOP_JS, handle)
+        self.mark()
         self.page.evaluate(SCROLL_TO_JS, [y, 700])
+        self.mark()
         self.page.wait_for_timeout(150)
         box = target.box()
         if box is None:
@@ -399,11 +411,13 @@ class _Recorder:
             if room > 200:
                 self.event("scroll", self.mouse[0], self.mouse[1])
                 for dy in motion.scroll_steps(min(320, room)):
+                    self.mark()
                     self.page.mouse.wheel(0, dy)
                     self.page.wait_for_timeout(40)
                 self.page.wait_for_timeout(500)
                 self.event("scroll", self.mouse[0], self.mouse[1])
                 for dy in motion.scroll_steps(-min(320, room)):
+                    self.mark()
                     self.page.mouse.wheel(0, dy)
                     self.page.wait_for_timeout(40)
         return self.now() - started
@@ -443,6 +457,8 @@ def record_scene(
     s = scene.root
     visual = s.visual
     out_dir.mkdir(parents=True, exist_ok=True)
+    if visual.mode == "template":
+        return RecordResult(kind="template")  # drawn by the renderer, nothing to capture
     if visual.mode != "recording":
         url = visual.page or root_url
         image = take_screenshot(session, url, out_dir / f"{s.id}.png")
@@ -517,7 +533,7 @@ def record_scene(
         return RecordResult(
             kind="fallback_screenshot", image_path=image, warnings=warnings, steps_failed=rec.failed
         )
-    activity = [t - rec.t0 * 1000 for t in rec.activity] + [e["t_ms"] for e in rec.log]
+    activity = [t - rec.t0 * 1000 for t in rec.activity] + [e["t_ms"] for e in rec.log] + rec.marks
     gaps = motion.idle_gaps(activity, shown_from, content_ms)
     return RecordResult(
         kind="recording",
@@ -527,6 +543,7 @@ def record_scene(
         click_log=rec.log,
         content_ms=content_ms,
         idle_gaps_ms=gaps,
+        activity_ms=activity,
         warnings=warnings,
         steps_ok=rec.ok,
         steps_failed=rec.failed,

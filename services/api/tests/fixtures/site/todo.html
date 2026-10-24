@@ -6,6 +6,7 @@
     <h1>Việc cần làm</h1>
     <input id="new" aria-label="New todo" placeholder="Cần làm gì?">
     <ul id="items"></ul>
+    <p>Double-click to edit a todo</p>
     <!-- the filter bar only exists once there is at least one todo -->
     <div id="filters" hidden>
       <a href="#/all">All</a> <a href="#/active">Active</a> <a href="#/completed">Completed</a>
@@ -17,7 +18,14 @@
       if (e.key !== 'Enter' || !e.target.value) return;
       const li = document.createElement('li');
       li.innerHTML = '<input type="checkbox" aria-label="Done"> <label></label> <button aria-label="Remove item">x</button>';
-      li.querySelector('label').textContent = e.target.value;
+      const label = li.querySelector('label');
+      label.textContent = e.target.value;
+      label.addEventListener('dblclick', () => {
+        const edit = document.createElement('input');
+        edit.value = label.textContent;
+        label.replaceWith(edit);
+        edit.focus();
+      });
       items.appendChild(li);
       e.target.value = '';
       document.getElementById('filters').hidden = false;
