@@ -20,6 +20,7 @@ class SceneFacts:
     feature: str | None
     voiceover: str
     has_clip: bool
+    signature: str | None = None  # which page and where on it (script/signature.py)
 
 
 def min_ratio(duration_s: int) -> float:
@@ -49,6 +50,17 @@ def structure_issues(scenes: list[SceneFacts], duration_s: int) -> list[str]:
         a, b = scenes[i], scenes[i + 1]
         if not a.has_clip and not b.has_clip:
             issues.append(f"scene {i + 1} và scene {i + 2} đều không có cảnh quay liền nhau")
+    shown: dict[str, int] = {}
+    for i, s in enumerate(scenes, start=1):
+        if s.signature is None:
+            continue
+        if s.signature in shown:
+            issues.append(
+                f"scene {i} trùng hình ảnh với scene {shown[s.signature]} (cùng trang, cùng vùng): "
+                "đổi sang section/trang khác"
+            )
+        else:
+            shown[s.signature] = i
     seen: set[str] = set()
     for i, s in enumerate(scenes, start=1):
         if s.type == "feature_demo" and s.feature:

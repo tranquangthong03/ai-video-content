@@ -13,7 +13,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from app.core.subpages import is_subpage
 from app.schemas.generated.product_profile import DemoStep, Feature, ProductProfile
+from app.script.home import cta_actions, cta_button, hero_locator, hook_actions
 from app.script.lite import (
     LiteContext,
     lite_actions,
@@ -229,6 +231,85 @@ def _lite_visual(feature: Feature, lite: LiteContext, scene_id: str) -> VisualRe
     return VisualResult(visual, warnings)
 
 
+def subpage_index(feature: Feature) -> int | None:
+    """Index of the first demo step that happens on a side page (sign in, register, ...)."""
+    return next((i for i, s in enumerate(feature.demo_steps) if is_subpage(s.url)), None)
+
+
+def leads_to_subpage(feature: Feature) -> bool:
+    target = feature.showcase_target
+    return subpage_index(feature) is not None or (target is not None and is_subpage(target.url))
+
+
+def demoted_visual(feature: Feature, home_url: str, scene_id: str) -> VisualResult:
+    """A feature that travels to a side page is only pointed at: hover the button that leads there.
+
+    The side page is never shown; the scene stays on the page before it."""
+    warnings = [
+        f"{scene_id}: «{feature.id}» dẫn tới trang phụ (đăng nhập/đăng ký/thanh toán...), "
+        "chỉ chỉ vị trí nút dẫn tới"
+    ]
+    idx = subpage_index(feature)
+    before = feature.demo_steps[:idx] if idx is not None else []
+    trigger = next(
+        (
+            s
+            for s in reversed(before)
+            if s.locator is not None and s.do in ("click", "dblclick", "hover")
+        ),
+        None,
+    )
+    if trigger is None or trigger.locator is None:
+        return VisualResult(screenshot_visual(home_url), warnings)
+    page = next((s.url for s in reversed(before) if s.url and not is_subpage(s.url)), home_url)
+    name = trigger.locator.name or trigger.locator.text
+    element = {
+        "ref": trigger.ref,
+        "name": name,
+        "text": name,
+        "locator": trigger.locator.model_dump(),
+        "role": trigger.locator.role,
+    }
+    visual = {
+        "mode": "recording",
+        "page": page,
+        "setup": [],
+        "show_setup": False,
+        "actions": lite_actions([element], page, with_goto=True),
+    }
+    return VisualResult(visual, warnings)
+
+
+def hook_visual(lite: LiteContext, home_url: str) -> VisualResult:
+    """Short recording of the home page: establishing shot, then slowly to the hero block."""
+    hero = hero_locator(lite.pages, home_url)
+    if hero is None:
+        return VisualResult(screenshot_visual(home_url))
+    visual = {
+        "mode": "recording",
+        "page": home_url,
+        "setup": [],
+        "show_setup": False,
+        "actions": hook_actions(home_url, hero),
+    }
+    return VisualResult(visual)
+
+
+def cta_visual(lite: LiteContext, home_url: str, hint: str) -> VisualResult:
+    """Scroll to the main call-to-action button and outline it (never clicked)."""
+    button = cta_button(lite.pages, home_url, hint)
+    if button is None:
+        return VisualResult(screenshot_visual(home_url))  # Ken Burns toward the header
+    visual = {
+        "mode": "recording",
+        "page": home_url,
+        "setup": [],
+        "show_setup": False,
+        "actions": cta_actions(home_url, button),
+    }
+    return VisualResult(visual)
+
+
 def screenshot_visual(home_url: str) -> dict[str, Any]:
     return {"mode": "screenshot", "page": home_url, "actions": []}
 
@@ -252,6 +333,8 @@ def demo_visual(
             screenshot_visual(home_url),
             [f"{scene_id}: tính năng không tồn tại, dùng ảnh trang chủ"],
         )
+    if feature.demo_kind in ("interaction", "navigation", "showcase") and leads_to_subpage(feature):
+        return demoted_visual(feature, home_url, scene_id)
     if feature.demo_kind in ("interaction", "navigation"):
         result = _interaction_visual(feature, setup_len, show_setup)
         if result.visual["actions"] or result.visual["setup"]:
@@ -282,6 +365,7 @@ def visual_for_scene(
     show_setup: bool = False,
     scene_id: str = "",
     lite: LiteContext | None = None,
+    cta_hint: str = "",
 ) -> VisualResult:
     if scene_type == "feature_demo":
         return demo_visual(
@@ -292,6 +376,14 @@ def visual_for_scene(
             scene_id=scene_id,
             lite=lite,
         )
+    if lite is None:  # no explorer data: the old look (a photo for the hook, drawn text otherwise)
+        if scene_type == "hook":
+            return VisualResult(screenshot_visual(home_url))
+        return VisualResult(template_visual())
     if scene_type == "hook":
-        return VisualResult(screenshot_visual(home_url))
-    return VisualResult(template_visual())
+        return hook_visual(lite, home_url)
+    if scene_type == "cta":
+        return cta_visual(lite, home_url, cta_hint)
+    return VisualResult(
+        screenshot_visual(home_url)
+    )  # before_after: text over the blurred home page

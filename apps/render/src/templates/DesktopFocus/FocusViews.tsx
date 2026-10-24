@@ -15,7 +15,17 @@ import {
 import type { SceneAssets } from "../../props";
 import { useTheme } from "../../theme/context";
 import { clipPlayback } from "../DesktopShowcase/playback";
-import { Arrow, BeforeAfterView, Backdrop, BigLine, FeatureCard, hasClip, hasShot, type ViewProps } from "../DesktopShowcase/SceneViews";
+import {
+  Arrow,
+  Backdrop,
+  BeforeAfterView,
+  BigLine,
+  FeatureCard,
+  hasClip,
+  hasShot,
+  usePop,
+  type ViewProps,
+} from "../DesktopShowcase/SceneViews";
 import { MEDIA, OVERLAY } from "./layout";
 
 const FRAME = { w: MEDIA.w, h: MEDIA.h };
@@ -272,10 +282,47 @@ const CtaButtonStatic: React.FC<{ text: string }> = ({ text }) => {
   );
 };
 
+/** Before / after: two translucent cards over the blurred, dimmed product page (never a black screen). */
+const FocusBeforeAfter: React.FC<ViewProps> = (props) => {
+  const { scene, assets, durationInFrames } = props;
+  const { primary, fontFamily } = useTheme();
+  const pop = usePop(4);
+  if (scene.type !== "before_after") return null;
+  if (!hasClip(assets) && !hasShot(assets)) return <BeforeAfterView {...props} />;
+  const card = (label: string, text: string, after: boolean): React.ReactNode => (
+    <div
+      style={{
+        borderRadius: 28,
+        padding: "34px 40px",
+        fontFamily,
+        textAlign: "center",
+        background: after ? `${primary}e6` : "rgba(16,21,32,0.78)",
+        color: after ? "#fff" : "#B4BCCD",
+        border: after ? `2px solid ${primary}` : "1px solid rgba(255,255,255,0.14)",
+        boxShadow: after ? `0 0 50px ${primary}88` : undefined,
+      }}
+    >
+      <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "0.14em", opacity: 0.85 }}>{label}</div>
+      <div style={{ marginTop: 12, fontSize: after ? 52 : 44, fontWeight: after ? 800 : 500, lineHeight: 1.25 }}>{text}</div>
+    </div>
+  );
+  return (
+    <AbsoluteFill>
+      <AbsoluteFill style={{ filter: "blur(18px) brightness(0.5)", transform: "scale(1.08)" }}>
+        <Footage assets={assets} durationInFrames={durationInFrames} />
+      </AbsoluteFill>
+      <AbsoluteFill style={{ justifyContent: "center", padding: "0 56px", gap: 30, opacity: Math.min(1, pop * 2) }}>
+        {card("TRƯỚC", scene.before_text, false)}
+        {card("SAU", scene.after_text, true)}
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
 /** Content of the 4:5 media frame for one scene. */
 export const FocusSceneView: React.FC<ViewProps> = (props) => {
   const { scene, assets, durationInFrames } = props;
-  if (scene.type === "before_after") return <BeforeAfterView {...props} />;
+  if (scene.type === "before_after") return <FocusBeforeAfter {...props} />;
   if (scene.type === "cta") return <CtaView {...props} />;
   if (scene.type === "hook") return <HookView {...props} />;
   if (hasClip(assets) || hasShot(assets)) return <Footage assets={assets} durationInFrames={durationInFrames} />;

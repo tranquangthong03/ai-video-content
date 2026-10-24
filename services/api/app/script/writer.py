@@ -25,6 +25,8 @@ from app.script import catalog as cat
 from app.script.footage import SceneFacts, structure_issues
 from app.script.lite import MIN_WORDS as MIN_LITE_WORDS
 from app.script.lite import LiteContext
+from app.script.signature import visual_signature
+from app.script.tour import apply_tour, is_landing_only
 from app.script.validate import validate_script
 from app.script.visuals import visual_for_scene
 
@@ -257,17 +259,34 @@ def check_draft(draft: DraftScript, ctx: WriterContext) -> list[str]:
 
 
 def scene_facts(draft: DraftScript, ctx: WriterContext) -> list[SceneFacts]:
-    """Which draft scenes will carry a recorded clip (any feature_demo, pointed at if need be)."""
-    facts = []
-    for s in draft.scenes:
-        feature = ctx.features.get(s.feature or "")
-        demoable = feature is not None and (
-            feature.demo_kind in cat.DEMOABLE or ctx.lite is not None
+    """What each draft scene will show: a recorded clip or not, and where (its visual signature).
+
+    Built from the real visuals the scenes will get, so a hook or CTA that is footage counts as
+    footage and a tour of a landing page counts its different sections."""
+    scenes = build_scenes(draft, ctx, [])
+    return [
+        SceneFacts(
+            s["type"],
+            s.get("feature"),
+            s["voiceover"],
+            s["visual"]["mode"] == "recording",
+            visual_signature(s["visual"]),
         )
-        facts.append(
-            SceneFacts(s.type, s.feature, s.voiceover, s.type == "feature_demo" and demoable)
-        )
-    return facts
+        for s in scenes
+    ]
+
+
+def build_scenes(
+    draft: DraftScript, ctx: WriterContext, warnings: list[str]
+) -> list[dict[str, Any]]:
+    """Scene dicts with their visuals; a landing-only product gets a tour of its page sections."""
+    used: set[str] = set()
+    scenes = [
+        scene_dict(s, f"s{i}", ctx, warnings, used) for i, s in enumerate(draft.scenes, start=1)
+    ]
+    if ctx.lite is not None and is_landing_only(ctx.profile):
+        apply_tour(scenes, ctx.lite, warnings)
+    return scenes
 
 
 def soft_issues(draft: DraftScript, ctx: WriterContext) -> list[str]:
@@ -295,6 +314,7 @@ def scene_dict(
         show_setup=bool(s.show_setup) and not again,
         scene_id=scene_id,
         lite=ctx.lite,
+        cta_hint=" ".join(filter(None, [s.on_screen_text, s.voiceover])) if s.type == "cta" else "",
     )
     if used is not None and s.feature:
         used.add(s.feature)
@@ -320,10 +340,7 @@ def scene_dict(
 def build_script(draft: DraftScript, ctx: WriterContext) -> tuple[Script, list[str]]:
     """Assemble the Script (code-made ids, theme, goal and visuals). Raises WriterError."""
     warnings: list[str] = []
-    used: set[str] = set()
-    scenes = [
-        scene_dict(s, f"s{i}", ctx, warnings, used) for i, s in enumerate(draft.scenes, start=1)
-    ]
+    scenes = build_scenes(draft, ctx, warnings)
     data: dict[str, Any] = {
         "title": draft.title.strip() or ctx.outline.title,
         "goal": ctx.outline.goal,

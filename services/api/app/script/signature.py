@@ -44,8 +44,11 @@ def visual_signature(visual: dict[str, Any]) -> str | None:
     if visual.get("mode") != "recording":
         return None
     url = _page(visual)
+    # what the scene ends on is what it is about: the last main action (a result, not a first step
+    # that several features share, like typing into the same field)
     main = next(
-        (a for a in visual.get("actions", []) if a["do"] in MAIN and a.get("locator")), None
+        (a for a in reversed(visual.get("actions", [])) if a["do"] in MAIN and a.get("locator")),
+        None,
     )
     if main is None:
         return f"{url}|page"
@@ -61,12 +64,12 @@ def visual_signature(visual: dict[str, Any]) -> str | None:
 def recorded_signature(
     visual: dict[str, Any], focus_log: list[dict[str, Any]], size: tuple[int, int]
 ) -> str | None:
-    """Signature of what was really recorded: the first main focus box of the clip."""
+    """Signature of what was really recorded: the last main focus box of the clip."""
     planned = visual_signature(visual)
     if planned is None:
         return None
-    first = next((f for f in focus_log if f.get("kind") in MAIN_FOCUS), None)
-    if first is None:
+    last = next((f for f in reversed(focus_log) if f.get("kind") in MAIN_FOCUS), None)
+    if last is None:
         return planned
-    b = first["bbox"]
+    b = last["bbox"]
     return f"{_page(visual)}|{cell(b['x'] + b['w'] / 2, b['y'] + b['h'] / 2, size)}"

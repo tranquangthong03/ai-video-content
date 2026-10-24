@@ -6,6 +6,7 @@ from pathlib import Path
 from app.browser.blacklist import is_blocked, is_blocked_href
 from app.browser.urls import normalize_url, same_site
 from app.core.samples import CATALOG, catalog_text, pick_sample
+from app.core.subpages import is_subpage, is_subpage_text
 from app.explorer.extract import describe_layout
 from app.explorer.models import Element, PageData
 from app.explorer.report import Report
@@ -113,11 +114,21 @@ def sanitize_profile(
         used_ids.add(fid)
         feature.id = fid
 
+        if is_subpage_text(feature.name) or is_subpage_text(
+            fid.replace("_", " ").replace("-", " ")
+        ):
+            notes.append(
+                f"{fid}: feature dropped, it is about a side page (sign in / register / pay)"
+            )
+            continue
         evidence = []
         for ev in feature.evidence:
             page = lookup.get(normalize_url(ev.url) or "")
             if page is None:
                 notes.append(f"{fid}: evidence dropped, unknown page {ev.url}")
+                continue
+            if is_subpage(page.url, getattr(page, "title", None)):
+                notes.append(f"{fid}: evidence dropped, {ev.url} is a side page")
                 continue
             if ev.ref and page.element(ev.ref) is None:
                 notes.append(f"{fid}: evidence ref {ev.ref} not on {ev.url}, ref removed")
