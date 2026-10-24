@@ -6,7 +6,8 @@ from typing import Any
 
 from playwright.sync_api import Page
 
-from app.explorer.models import Element, Heading, PageData
+from app.explorer.models import Anchor, Element, FormData, Heading, PageData
+from app.schemas.generated.locator import Bbox, LocatorSpec
 
 MAX_ELEMENTS = 120
 REGION_PRIORITY = {"main": 0, "nav": 1, "aside": 1, "header": 2, "footer": 3}
@@ -62,7 +63,7 @@ EXTRACT_JS = r"""
     const img = el.querySelector('img[alt]');
     return clean(el.getAttribute('placeholder') || el.getAttribute('title') || (img && img.getAttribute('alt')) || el.getAttribute('alt')).slice(0, 80);
   };
-  const stableId = (id) => /^[A-Za-z][\w-]{1,40}$/.test(id) && !/\d{4,}/.test(id) && !/^(r|:r)/.test(id) && !/radix|headlessui/i.test(id);
+  const stableId = (id) => /^[A-Za-z][\w-]{1,40}$/.test(id) && !/\d{4,}/.test(id) && !/^:?r\d/.test(id) && !/radix|headlessui/i.test(id);
   const unique = (sel) => { try { return document.querySelectorAll(sel).length === 1; } catch (e) { return false; } };
   const selectorOf = (el) => {
     for (const attr of ['data-testid', 'data-test', 'data-cy']) {
@@ -75,27 +76,75 @@ EXTRACT_JS = r"""
     return null;
   };
 
-  const sel = 'a[href], button, input:not([type=hidden]), select, textarea, summary, [role=button], [role=link], ' +
+  const sel = 'a[href], button, input, select, textarea, summary, [role=button], [role=link], ' +
     '[role=tab], [role=menuitem], [role=checkbox], [role=switch], [role=option], [contenteditable=""], ' +
     '[contenteditable=true], [onclick]';
+  const REGION_ROOT = { nav: 'nav', aside: 'aside', header: 'header', footer: 'footer' };
+  const hasMain = !!document.querySelector('main');
+  const formOf = (el) => {
+    const form = el.closest('form');
+    if (!form) return null;
+    const inputs = [...form.querySelectorAll('input,textarea')];
+    const textType = (e) => e.tagName === 'TEXTAREA' || ['text', 'search', 'url', 'number', ''].includes((e.type || '').toLowerCase());
+    return {
+      method: (form.getAttribute('method') || 'get').toLowerCase(), action: form.action,
+      text_inputs: inputs.filter((e) => textType(e) && visible(e)).length,
+      sensitive: inputs.some((e) => ['password', 'email', 'tel', 'file'].includes((e.type || '').toLowerCase())),
+    };
+  };
   const seen = new Set();
   const elements = [];
   document.querySelectorAll(sel).forEach((el, index) => {
-    if (seen.has(el) || elements.length >= 600 || !visible(el)) return;
+    const isFile = el.tagName === 'INPUT' && (el.type || '').toLowerCase() === 'file';
+    if (el.tagName === 'INPUT' && (el.type || '').toLowerCase() === 'hidden') return;
+    // hidden file inputs (behind a button or drop zone) are the upload targets, so they are kept
+    if (seen.has(el) || elements.length >= 600 || !(isFile || visible(el))) return;
     seen.add(el);
-    const name = nameOf(el);
+    let name = nameOf(el);
+    if (isFile && !name) {
+      const zone = el.closest('label,[class*=drop],[class*=upload]');
+      name = clean((zone && zone.innerText) || el.getAttribute('title') || el.getAttribute('accept') || 'Tải tệp lên').slice(0, 80);
+    }
     const role = roleOf(el);
     if (!name && !['textbox', 'searchbox', 'checkbox', 'file'].includes(role)) return;
+    const tag = el.tagName.toLowerCase();
+    const region = regionOf(el);
     const r = el.getBoundingClientRect();
+    // a css query + position among its matches: the fallback when there is no stable selector
+    const kind = el.hasAttribute('role') ? `[role="${el.getAttribute('role')}"]` : (isFile ? 'input[type=file]' : tag);
+    const scoped = region === 'main' ? (hasMain ? 'main ' : '') : REGION_ROOT[region] + ' ';
+    let query = scoped + kind;
+    let nth = [...document.querySelectorAll(query)].indexOf(el);
+    if (nth < 0) { query = kind; nth = [...document.querySelectorAll(query)].indexOf(el); }
+    const text = clean(el.innerText).slice(0, 80);
+    const cx = r.x + r.width / 2, cy = r.y + scrollY + r.height / 2;
+    el.setAttribute('data-svai-i', String(index)); // lets Python map the browser's accessible name back
     elements.push({
-      index, role, name, region: regionOf(el), tag: el.tagName.toLowerCase(),
+      index, role, name, text, region, tag, query, nth,
       href: el.tagName === 'A' ? el.href : null,
       selector: selectorOf(el),
       input_type: el.tagName === 'INPUT' ? (el.type || 'text') : null,
       button_type: el.tagName === 'BUTTON' ? (el.getAttribute('type') || 'submit') : null,
-      in_form: !!el.closest('form'),
+      accept: isFile ? el.getAttribute('accept') : null,
+      caps: isFile ? ['upload'] : [],
+      in_form: !!el.closest('form'), form: formOf(el),
+      fingerprint: `${tag}|${text.toLowerCase()}|${(cx / innerWidth).toFixed(2)},${(cy / Math.max(1, document.documentElement.scrollHeight)).toFixed(2)}`,
       bbox: [Math.round(r.x), Math.round(r.y + scrollY), Math.round(r.width), Math.round(r.height)],
     });
+  });
+
+  const anchors = [];
+  document.querySelectorAll('a[href*="#"]').forEach((a) => {
+    try {
+      const u = new URL(a.href);
+      const samePage = u.pathname.replace(/\/$/, '') === location.pathname.replace(/\/$/, '');
+      if (!samePage || u.hash.length < 2 || u.hash.startsWith('#/') || u.hash.startsWith('#!')) return;
+      const id = decodeURIComponent(u.hash.slice(1));
+      const target = document.getElementById(id);
+      if (target && !anchors.some((x) => x.id === id)) {
+        anchors.push({ id, selector: '#' + CSS.escape(id), text: clean((target.querySelector('h1,h2,h3') || target).innerText).slice(0, 100) });
+      }
+    } catch (e) { /* malformed href */ }
   });
 
   const headings = [];
@@ -153,7 +202,7 @@ EXTRACT_JS = r"""
     title: document.title,
     meta_description: (document.querySelector('meta[name=description]') || {}).content || '',
     og_description: (document.querySelector('meta[property="og:description"]') || {}).content || '',
-    elements, headings, texts, signals, layout,
+    elements, headings, texts, signals, layout, anchors,
   };
 }
 """
@@ -176,25 +225,76 @@ def pick_elements(raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return kept
 
 
-def build_elements(raw: list[dict[str, Any]]) -> list[Element]:
+def accessible_names(page: Page) -> dict[int, str]:
+    """Accessible name per tagged element (data-svai-i), as computed by the browser itself.
+
+    One DOM call + one accessibility-tree call over CDP. Unlike innerText this includes
+    aria-label, labels and generated (::before/::after) content.
+    """
+    cdp = page.context.new_cdp_session(page)
+    try:
+        cdp.send("DOM.enable")
+        cdp.send("Accessibility.enable")
+        doc = cdp.send("DOM.getFlattenedDocument", {"depth": -1})
+        by_backend: dict[int, int] = {}
+        for node in doc["nodes"]:
+            attrs = node.get("attributes") or []
+            tagged = dict(zip(attrs[0::2], attrs[1::2], strict=False)).get("data-svai-i")
+            if tagged is not None:
+                by_backend[node["backendNodeId"]] = int(tagged)
+        names: dict[int, str] = {}
+        for node in cdp.send("Accessibility.getFullAXTree")["nodes"]:
+            index = by_backend.get(node.get("backendDOMNodeId", -1))
+            name = (node.get("name") or {}).get("value") or ""
+            if index is not None and name and not node.get("ignored"):
+                names[index] = " ".join(name.split())[:120]
+        return names
+    except Exception:
+        return {}  # fall back to the DOM-derived names
+    finally:
+        try:
+            cdp.detach()
+        except Exception:
+            pass
+
+
+def build_elements(
+    raw: list[dict[str, Any]], ax_names: dict[int, str] | None = None
+) -> list[Element]:
+    ax_names = ax_names or {}
     elements: list[Element] = []
     for i, e in enumerate(pick_elements(raw), start=1):
         role = e["role"]
+        name = ax_names.get(e["index"]) or e["name"]
+        stable = e["selector"]
+        x, y, w, h = e["bbox"]
+        spec = LocatorSpec(
+            role=None if role == "file" else role,
+            name=name or None,
+            text=e["text"] or None,
+            css=stable or e["query"],
+            nth=None if stable else e["nth"],
+            tag=e["tag"],
+            fingerprint=e["fingerprint"],
+            bbox=Bbox(x=x, y=y, w=w, h=h),
+        )
         elements.append(
             Element(
                 ref=f"e{i}",
                 role=role,
-                name=e["name"],
+                name=name,
                 region=e["region"],
                 tag=e["tag"],
+                text=e["text"],
                 href=e["href"],
-                selector=e["selector"],
-                locator_role=None if role == "file" else role,
-                locator_name=e["name"] or None,
+                selector=stable,
+                locator=spec,
                 input_type=e["input_type"],
                 button_type=e["button_type"],
+                accept=e["accept"],
                 in_form=e["in_form"],
-                bbox=tuple(e["bbox"]),  # type: ignore[arg-type]
+                form=FormData(**e["form"]) if e["form"] else None,
+                caps=e["caps"],
             )
         )
     return elements
@@ -232,6 +332,10 @@ def extract_page(
     """Extract one loaded page; writes pages/<n>.json and pages/<n>.png under out_dir."""
     settle(page)
     raw = page.evaluate(EXTRACT_JS)
+    ax_names = accessible_names(page)
+    page.evaluate(
+        "document.querySelectorAll('[data-svai-i]').forEach((e) => e.removeAttribute('data-svai-i'))"
+    )
     pages_dir = out_dir / "pages"
     pages_dir.mkdir(parents=True, exist_ok=True)
     screenshot = pages_dir / f"{n}.png"
@@ -247,7 +351,8 @@ def extract_page(
         og_description=raw["og_description"],
         headings=[Heading(**h) for h in raw["headings"]],
         key_texts=raw["texts"],
-        elements=build_elements(raw["elements"]),
+        elements=build_elements(raw["elements"], ax_names),
+        anchors=[Anchor(**a) for a in raw["anchors"]],
         signals=raw["signals"],
         layout=raw["layout"],
         screenshot=str(screenshot) if screenshot else None,

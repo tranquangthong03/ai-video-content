@@ -33,10 +33,37 @@
       "additionalProperties": false,
       "required": ["do"],
       "properties": {
-        "do": { "enum": ["goto", "click", "type", "scroll", "hover", "wait"] },
+        "do": { "enum": ["goto", "click", "type", "scroll", "hover", "wait", "upload"] },
         "url": { "type": ["string", "null"], "default": null },
         "ref": { "type": ["string", "null"], "default": null },
-        "text": { "type": ["string", "null"], "default": null }
+        "text": { "type": ["string", "null"], "default": null },
+        "file": { "type": ["string", "null"], "default": null, "description": "Sample file name for do=upload" },
+        "locator": { "oneOf": [{ "$ref": "locator.json" }, { "type": "null" }], "default": null, "description": "Filled by code from the element behind ref" }
+      }
+    },
+    "DemoEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url_changed", "dom_delta", "new_dialog", "new_list_items", "visual_diff"],
+      "properties": {
+        "url_changed": { "type": "boolean" },
+        "dom_delta": { "type": "integer" },
+        "new_dialog": { "type": "boolean" },
+        "new_list_items": { "type": "integer" },
+        "visual_diff": { "type": "number" },
+        "target_page_type": { "type": ["string", "null"], "default": null },
+        "notes": { "type": "string", "default": "" }
+      }
+    },
+    "ShowcaseTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "text_quote"],
+      "properties": {
+        "url": { "type": "string" },
+        "selector": { "type": ["string", "null"], "default": null },
+        "ref": { "type": ["string", "null"], "default": null },
+        "text_quote": { "type": "string" }
       }
     },
     "Feature": {
@@ -50,7 +77,14 @@
         "evidence": { "type": "array", "items": { "$ref": "#/$defs/Evidence" } },
         "importance": { "type": "number", "minimum": 0, "maximum": 1 },
         "demo_steps": { "type": "array", "items": { "$ref": "#/$defs/DemoStep" }, "default": [] },
-        "demo_score": { "type": "number", "minimum": 0, "maximum": 1, "default": 0 },
+        "demo_kind": {
+          "oneOf": [{ "enum": ["interaction", "navigation", "showcase", "failed"] }, { "type": "null" }],
+          "default": null,
+          "description": "null = not verified"
+        },
+        "demo_score": { "type": "number", "minimum": 0, "maximum": 1, "default": 0, "description": "Confidence of the demo_kind verdict" },
+        "demo_evidence": { "oneOf": [{ "$ref": "#/$defs/DemoEvidence" }, { "type": "null" }], "default": null },
+        "showcase_target": { "oneOf": [{ "$ref": "#/$defs/ShowcaseTarget" }, { "type": "null" }], "default": null },
         "verified": { "type": "boolean", "default": false },
         "demo_note": { "type": ["string", "null"], "default": null },
         "thumbnail": { "type": ["string", "null"], "default": null },

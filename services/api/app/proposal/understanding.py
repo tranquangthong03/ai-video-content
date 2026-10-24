@@ -7,16 +7,22 @@ from app.schemas.generated.interaction import InteractionRequest
 from app.schemas.generated.product_profile import Feature, ProductProfile
 from app.schemas.generated.user_response import UserResponse
 
+KIND_LABEL = {
+    "interaction": "thao tác",
+    "navigation": "chuyển trang",
+    "showcase": "giới thiệu (highlight)",
+    "failed": "không demo được",
+}
+
 
 def score_dots(feature: Feature) -> str:
-    """●●● / ●●○ / ○○○ for demo_score; unverified features are marked as such."""
-    if not feature.verified and feature.source == "site":
-        return "○○○ (chưa kiểm chứng)"
-    if feature.source == "user" and not feature.verified:
-        return "○○○ (bạn thêm, chưa xác minh)"
-    if feature.demo_score >= 1:
-        return "●●●"
-    return "●●○" if feature.demo_score >= 0.5 else "○○○"
+    """Demo verdict + confidence dots (●●● / ●●○ / ●○○); unverified features say so."""
+    if feature.demo_kind is None:
+        who = "bạn thêm, " if feature.source == "user" else ""
+        return f"chưa kiểm chứng ({who.rstrip(', ')})" if who else "chưa kiểm chứng"
+    score = feature.demo_score
+    dots = "●●●" if score >= 0.75 else "●●○" if score >= 0.5 else "●○○" if score > 0 else "○○○"
+    return f"{KIND_LABEL[feature.demo_kind]} {dots}"
 
 
 @dataclass

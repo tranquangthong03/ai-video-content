@@ -1,7 +1,7 @@
 import pytest
 
-from app.core.safety import is_blocked, is_blocked_href, matched_term
-from app.explorer.guard import RequestGuard
+from app.browser.blacklist import is_blocked, is_blocked_href, matched_term
+from app.browser.guard import RequestGuard
 
 GUARD = RequestGuard("https://app.example.com")
 

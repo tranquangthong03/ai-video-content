@@ -35,6 +35,8 @@
     document.getElementById('tab-reports').addEventListener('click', () => {
       history.pushState({}, '', '/app.html?tab=reports');
       document.getElementById('heading').textContent = 'Báo cáo';
+      document.getElementById('list').innerHTML =
+        '<li>Báo cáo tuần</li><li>Báo cáo tháng</li><li>Báo cáo quý</li>';
     });
   </script>
 </body>

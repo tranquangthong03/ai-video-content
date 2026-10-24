@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>TaskFlow - Thêm nhanh</title></head>
+<body>
+  <main>
+    <h1>Thêm nhanh</h1>
+    <!-- a lone input outside any <form>: Enter adds an item -->
+    <input id="q" aria-label="Add item" placeholder="Thêm mục mới">
+    <ul id="items"></ul>
+  </main>
+  <script>
+    document.getElementById('q').addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || !e.target.value) return;
+      const li = document.createElement('li');
+      li.textContent = e.target.value;
+      document.getElementById('items').appendChild(li);
+      e.target.value = '';
+    });
+  </script>
+</body>
+</html>

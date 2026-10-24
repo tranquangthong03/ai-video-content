@@ -15,6 +15,7 @@ from app.pipeline.frontend import Frontend
 from app.proposal import concepts as concepts_mod
 from app.proposal import outline as outline_mod
 from app.proposal import understanding as understanding_mod
+from app.proposal.wordlimit import enforce_outline
 from app.schemas.generated.interaction import InteractionRequest
 from app.schemas.generated.outline import Outline
 from app.schemas.generated.product_profile import ProductProfile
@@ -43,6 +44,7 @@ class ProposalRunner:
         self.caller = caller
         self.frontend = frontend
         self.explore_more = explore_more
+        self.warnings: list[str] = []  # word-limit cuts etc., saved with the approved outline
 
     # --- interaction plumbing ----------------------------------------------------------------
 
@@ -120,7 +122,9 @@ class ProposalRunner:
 
         guidance = notes
         for _ in range(10):
-            concepts = concepts_mod.propose_concepts(self.caller, profile, guidance)
+            concepts = concepts_mod.propose_concepts(
+                self.caller, profile, guidance, warnings=self.warnings
+            )
             concepts_file.write_text(
                 json.dumps([c.model_dump() for c in concepts], ensure_ascii=False, indent=2),
                 encoding="utf-8",
@@ -181,10 +185,12 @@ class ProposalRunner:
                 text = f"{instruction}\n(Làm rõ: {label})"
                 continue
             applied = outline_mod.apply_ops(outline, plan.ops, valid)
+            shortened, cut_warnings = enforce_outline(self.caller, applied.outline)  # <= 15 words
+            self.warnings += cut_warnings
             notices = [f"Bị từ chối: {r.request} — {r.reason}" for r in plan.rejected]
-            notices += [f"Lưu ý: {w}" for w in [*plan.warnings, *applied.warnings]]
+            notices += [f"Lưu ý: {w}" for w in [*plan.warnings, *applied.warnings, *cut_warnings]]
             notices += [f"Không áp dụng được: {e}" for e in applied.errors]
-            return applied.outline, applied.changes, "\n".join(notices)
+            return applied.outline, [*applied.changes, *shortened], "\n".join(notices)
         return outline, [], "Yêu cầu chưa rõ, dàn ý giữ nguyên."
 
     def review_outline(
@@ -212,6 +218,9 @@ class ProposalRunner:
             )
             if response.action == "approve":
                 approved_file.write_text(outline.model_dump_json(indent=2), encoding="utf-8")
+                (self.dir / "proposal_warnings.json").write_text(
+                    json.dumps(self.warnings, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
                 return outline
             if response.action == "regenerate":
                 outline = outline_mod.outline_from_concept(concept, profile)

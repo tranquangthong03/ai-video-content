@@ -63,7 +63,7 @@ def test_auto_run_produces_an_approved_outline_after_edits(
             "features"
         ]
     }
-    assert by_id["f_new"]["demo_score"] == 1.0
+    assert by_id["f_new"]["demo_kind"] == "interaction" and by_id["f_new"]["demo_score"] >= 0.5
 
     approved = json.loads((job / "outline_approved.json").read_text(encoding="utf-8"))
     assert approved["beats"][0]["text"] == "Bạn có đang ngập việc?"  # first edit

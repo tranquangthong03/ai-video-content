@@ -6,6 +6,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from . import locator as locator_1
+
 
 class Evidence(BaseModel):
     model_config = ConfigDict(
@@ -29,10 +31,40 @@ class DemoStep(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    do: Literal['goto', 'click', 'type', 'scroll', 'hover', 'wait']
+    do: Literal['goto', 'click', 'type', 'scroll', 'hover', 'wait', 'upload']
     url: str | None = None
     ref: str | None = None
     text: str | None = None
+    file: Annotated[str | None, Field(description='Sample file name for do=upload')] = (
+        None
+    )
+    locator: Annotated[
+        locator_1.LocatorSpec | None,
+        Field(description='Filled by code from the element behind ref'),
+    ] = None
+
+
+class DemoEvidence(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    url_changed: bool
+    dom_delta: int
+    new_dialog: bool
+    new_list_items: int
+    visual_diff: float
+    target_page_type: str | None = None
+    notes: str = ''
+
+
+class ShowcaseTarget(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    url: str
+    selector: str | None = None
+    ref: str | None = None
+    text_quote: str
 
 
 class Feature(BaseModel):
@@ -45,7 +77,15 @@ class Feature(BaseModel):
     evidence: list[Evidence]
     importance: Annotated[float, Field(ge=0.0, le=1.0)]
     demo_steps: Annotated[list[DemoStep], Field(validate_default=True)] = []
-    demo_score: Annotated[float, Field(ge=0.0, le=1.0)] = 0
+    demo_kind: Annotated[
+        Literal['interaction', 'navigation', 'showcase', 'failed'] | None,
+        Field(description='null = not verified'),
+    ] = None
+    demo_score: Annotated[
+        float, Field(description='Confidence of the demo_kind verdict', ge=0.0, le=1.0)
+    ] = 0
+    demo_evidence: DemoEvidence | None = None
+    showcase_target: ShowcaseTarget | None = None
     verified: bool = False
     demo_note: str | None = None
     thumbnail: str | None = None

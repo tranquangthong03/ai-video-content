@@ -49,6 +49,12 @@ class Report:
             "clicks": [],
             "clicks_blocked": [],
             "request_guard": {},
+            "out_of_scope": [],
+            "grouped_pages": {},
+            "anchor_sections": 0,
+            "locate": {"strategies": {}, "failures": []},
+            "step_errors": [],
+            "enter": {"pressed": 0, "blocked": []},
             "warnings": [],
             "status": "running",
             **self.data,
@@ -65,6 +71,33 @@ class Report:
 
     def warn(self, message: str) -> None:
         self.data["warnings"].append(message)
+
+    def block(self, phase: str, name: str, reason: str, detail: str = "", **extra: Any) -> None:
+        """A refused click; reason is blacklist, leaves_site, out_of_scope, not_found or other."""
+        self.data["clicks_blocked"].append(
+            {"phase": phase, "name": name, "reason": reason, "detail": detail, **extra}
+        )
+
+    def record_locate(self, where: str, strategy: str | None, tried: list[str]) -> None:
+        """Which locate strategy found an element (or why none did)."""
+        locate = self.data["locate"]
+        if strategy:
+            locate["strategies"][strategy] = locate["strategies"].get(strategy, 0) + 1
+        elif len(locate["failures"]) < 30:
+            locate["failures"].append({"where": where, "tried": tried})
+
+    def step_error(
+        self, feature: str, step: int, kind: str, tried: list[str], screenshot: str | None
+    ) -> None:
+        self.data["step_errors"].append(
+            {
+                "feature": feature,
+                "step": step,
+                "kind": kind,
+                "tried": tried,
+                "screenshot": screenshot,
+            }
+        )
 
     def skip(self, url: str, reason: str) -> None:
         self.data["pages_skipped"].append({"url": url, "reason": reason})

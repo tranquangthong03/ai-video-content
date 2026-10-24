@@ -51,8 +51,8 @@ def outline_from_concept(concept: VideoConcept, profile: ProductProfile) -> Outl
 
 
 def profile_summary(profile: ProductProfile) -> str:
-    lines = [f"{profile.product_name}: {profile.one_liner}", "Tính năng (id | tên | demo_score):"]
-    lines += [f"- {f.id} | {f.name} | {f.demo_score}" for f in profile.features]
+    lines = [f"{profile.product_name}: {profile.one_liner}", "Tính năng (id | tên | demo_kind):"]
+    lines += [f"- {f.id} | {f.name} | {f.demo_kind or 'chưa kiểm chứng'}" for f in profile.features]
     return "\n".join(lines)
 
 

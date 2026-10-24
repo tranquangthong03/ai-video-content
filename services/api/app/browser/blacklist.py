@@ -1,4 +1,6 @@
-"""Click safety shared by explorer, verifier and proposal (see CLAUDE.md "An toàn").
+"""Click safety shared by every module that drives a browser (explorer, recorder).
+See CLAUDE.md "An toàn". The blacklist applies to elements that are clicked or hovered,
+never to text that is typed into a field.
 
 Matching is a case-insensitive substring test: it deliberately over-blocks (fail closed).
 """

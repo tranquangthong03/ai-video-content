@@ -70,6 +70,8 @@ class RequestGuard:
     allow_mutations: bool = False
     counts: Counter[str] = field(default_factory=Counter)
     blocked_urls: list[str] = field(default_factory=list)
+    # first URLs let through / faked per rule, so the report can be audited for wrong passes
+    passed_urls: dict[str, list[str]] = field(default_factory=dict)
 
     def _is_main_domain(self, url: str) -> bool:
         host, root = _host(url), _host(self.root_url)
@@ -113,15 +115,22 @@ class RequestGuard:
             route.continue_()
         elif self.allow_mutations or verdict == "continue":
             self.counts[f"allowed:{rule}"] += 1
+            self._remember(f"allowed:{rule}", request)
             route.continue_()
         elif verdict == "fake_204":
             self.counts[f"faked_204:{rule}"] += 1
+            self._remember(f"faked_204:{rule}", request)
             route.fulfill(status=204, body="")
         else:
             self.counts[f"blocked:{rule}"] += 1
             if len(self.blocked_urls) < 10:
                 self.blocked_urls.append(f"{request.method} {request.url[:200]}")
             route.abort("blockedbyclient")
+
+    def _remember(self, key: str, request: Any) -> None:
+        urls = self.passed_urls.setdefault(key, [])
+        if len(urls) < 10:
+            urls.append(f"{request.method} {request.url[:200]}")
 
     def report(self) -> dict[str, Any]:
         grouped: dict[str, dict[str, int]] = {"blocked": {}, "allowed": {}, "faked_204": {}}
@@ -132,4 +141,5 @@ class RequestGuard:
             "allow_mutations": self.allow_mutations,
             **grouped,
             "first_blocked_urls": self.blocked_urls,
+            "first_passed_urls": self.passed_urls,
         }

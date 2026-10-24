@@ -13,7 +13,8 @@ Người dùng nhập URL website (+ tài khoản demo tùy chọn). Hệ thốn
 
 ## Kiến trúc & quy tắc phụ thuộc
 - packages/script-schema/schemas/*.json là NGUỒN SỰ THẬT DUY NHẤT cho: Script, Theme, Scene, InteractionRequest, UserResponse, EditOp. Pydantic (services/api/app/schemas/generated) và Zod (apps/render/src/generated, apps/web/lib/generated) được SINH TỰ ĐỘNG bằng `make codegen`. KHÔNG sửa tay file generated.
-- Python: api routers → graph → domain modules (session, explorer, clarifier, script, media, recorder, producer) → core (core, llm, jobs, interaction). Domain module không import lẫn nhau; chỉ graph và producer được điều phối nhiều module. core không import domain.
+- Python: api routers → graph → domain modules (session, explorer, clarifier, script, media, recorder, producer) → core | browser | llm | jobs | interaction; browser chỉ phụ thuộc core (và app/schemas generated). Domain module không import lẫn nhau; chỉ graph và producer được điều phối nhiều module. core và browser không import domain.
+- app/browser là tầng hạ tầng trình duyệt dùng chung cho explorer và recorder: blacklist, request guard, session, page_utils (cookie banner, blocker), urls, locate (LocatorSpec + resolve), enter_policy. Không đặt logic trình duyệt dùng chung ở nơi khác.
 - Scene là discriminated union theo "type" (HookScene, FeatureDemoScene, BeforeAfterScene, CtaScene), additionalProperties:false. Field "feature" chỉ có ở feature_demo; before_text/after_text chỉ có (và bắt buộc) ở before_after.
 - LAYOUTS_BY_TYPE và FIELDS_BY_TYPE được sinh tự động từ scene.json; mọi kiểm tra layout/field theo type phải dùng bảng này, không hardcode.
 - `make codegen-check` phải pass trước khi commit; `make test` đã gọi nó.

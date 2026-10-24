@@ -5,6 +5,7 @@ export * from "./concept_set.js";
 export * from "./edit_op.js";
 export * from "./edit_plan.js";
 export * from "./interaction.js";
+export * from "./locator.js";
 export * from "./outline.js";
 export * from "./outline_edit_plan.js";
 export * from "./page_insight.js";

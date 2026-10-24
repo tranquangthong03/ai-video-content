@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>ImageTool - Nén ảnh</title>
+  <style>
+    .drop { border: 3px dashed #888; padding: 60px; margin: 20px; text-align: center; }
+    /* generated content counts toward the accessible name but not toward innerText */
+    .sample::after { content: " large photo"; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Nén ảnh ngay trên trình duyệt</h1>
+    <div class="drop" id="drop">
+      <label for="file">Kéo thả ảnh vào đây hoặc chọn tệp</label>
+      <input type="file" id="file" accept="image/*" hidden>
+    </div>
+    <div>
+      <button class="sample" id="s1">2.8MB</button>
+      <button class="sample" id="s2">1.6MB</button>
+      <a href="https://example.org/docs">Tài liệu</a>
+    </div>
+    <div id="result" hidden></div>
+  </main>
+  <script>
+    const show = (text) => {
+      const r = document.getElementById('result');
+      r.hidden = false;
+      r.innerHTML = '<h2>Kết quả</h2><p>' + text + '</p><ul><li>Bản nén 1</li><li>Bản nén 2</li></ul>';
+    };
+    document.getElementById('file').addEventListener('change', (e) => {
+      const f = e.target.files[0];
+      show('Đã nhận ' + f.name + ' (' + f.size + ' bytes)');
+    });
+    document.getElementById('s1').addEventListener('click', () => show('Ảnh mẫu 2.8MB'));
+  </script>
+</body>
+</html>

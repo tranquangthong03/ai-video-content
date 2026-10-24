@@ -9,9 +9,11 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from app.browser.enter_policy import Policy
+from app.browser.session import BrowserSession
+from app.browser.urls import path_prefix
 from app.core.usage import BudgetExceeded, UsageTracker
 from app.explorer.analyze import analyze_pages
-from app.explorer.browser import BrowserSession
 from app.explorer.classify import classify_site
 from app.explorer.mapper import (
     BlockedByChallenge,
@@ -55,6 +57,8 @@ class ExploreRunner:
         max_pages: int = 15,
         timeout_s: float = 300,
         allow_mutations: bool = False,
+        scope: str = "path",
+        enter_policy: Policy = "strict",
         progress: Progress | None = None,
     ) -> None:
         self.url = url
@@ -65,6 +69,10 @@ class ExploreRunner:
         self.storage_state = storage_state
         self.max_pages = max_pages
         self.allow_mutations = allow_mutations
+        self.scope = scope
+        self.enter_policy = enter_policy
+        # a start URL with a real path limits the crawl (and clicks) to that path
+        self.scope_prefix = path_prefix(normalize_url(url) or url) if scope == "path" else None
         self.deadline = Deadline(timeout_s)
         self.report = Report(url)
         self._load_report()
@@ -147,6 +155,7 @@ class ExploreRunner:
                         self.deadline,
                         max_pages=self.max_pages,
                         on_page=on_page,
+                        scope=self.scope,
                     )
             finally:
                 context.close()
@@ -194,6 +203,9 @@ class ExploreRunner:
                 self.state.insights,
                 self.report,
             )
+        question = self.report.data.get("scope_question")
+        if question and question not in profile.open_questions:
+            profile.open_questions.insert(0, question)  # asked at confirm_understanding
         profile_file.write_text(profile.model_dump_json(indent=2), encoding="utf-8")
         self.state.profile = profile
         self.save()
@@ -216,8 +228,11 @@ class ExploreRunner:
                 self.dir,
                 self.report,
                 self.deadline,
+                insights=self.state.insights,
+                enter_policy=self.enter_policy,
+                scope_prefix=self.scope_prefix,
                 on_feature=lambda i, n, f: self.progress(
-                    "verify", f"Kiểm chứng {i}/{n}: {f.name} → {f.demo_score}"
+                    "verify", f"Kiểm chứng {i}/{n}: {f.name} → {f.demo_kind} ({f.demo_score})"
                 ),
             )
         self.report.data["request_guard"] = session.guard.report()
@@ -293,7 +308,10 @@ class ExploreRunner:
                 self.dir,
                 self.report,
                 self.deadline,
+                insights=self.state.insights,
                 limit=3,
+                enter_policy=self.enter_policy,
+                scope_prefix=self.scope_prefix,
             )
         self.state.profile = merged
         known["visited"] = [p.url for p in self.state.pages]

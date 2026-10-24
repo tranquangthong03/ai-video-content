@@ -11,6 +11,7 @@ from typing import Any
 
 import pytest
 
+from app.browser.session import BrowserSession
 from app.llm.json_call import Completion
 
 SITE_DIR = Path(__file__).parent / "fixtures" / "site"
@@ -45,6 +46,17 @@ def site() -> Iterator[str]:
     thread.start()
     yield f"http://127.0.0.1:{server.server_address[1]}"
     server.shutdown()
+
+
+@pytest.fixture(scope="module")
+def browser_session(site: str) -> Iterator[BrowserSession]:
+    """One Chromium per test module, guard installed like in production.
+
+    Module scope (not session): the CLI tests start their own sync Playwright, and two sync
+    Playwright instances cannot be alive in one thread.
+    """
+    with BrowserSession(site) as s:
+        yield s
 
 
 @pytest.fixture
@@ -172,4 +184,8 @@ def scripted_handler(prompt: str) -> dict[str, Any]:
                 "ops": [{"op": "set", "beat_id": "b2", "text": "Tạo việc chỉ một cú nhấp"}],
             }
         return {"status": "ok", "ops": []}
+    if prompt.startswith("Bạn là biên tập viên rút gọn"):
+        lines = json.loads(_section(prompt, "lines"))
+        return {"lines": [{"id": x["id"], "text": " ".join(x["text"].split()[: x["max_words"] - 1])}
+                          for x in lines]}  # fmt: skip
     raise AssertionError(f"unexpected prompt: {prompt[:80]!r}")

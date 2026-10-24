@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>TaskFlow - Ghi chú</title></head>
+<body>
+  <main>
+    <h1>Ghi chú</h1>
+    <!-- a field whose own label is on the blacklist: nothing may be typed into it -->
+    <input id="send-msg" aria-label="Send message">
+    <!-- POST to another path: Enter would submit data, so the strict policy must refuse it -->
+    <form id="post-form" action="/submit-note" method="post">
+      <input id="note" aria-label="Your note" placeholder="Ghi chú">
+    </form>
+    <!-- GET search on the same page: harmless, Enter is allowed -->
+    <form id="search-form" action="/form.html" method="get">
+      <input id="find" name="q" aria-label="Search notes" placeholder="Tìm ghi chú">
+    </form>
+    <!-- several text inputs: Enter could submit a half-filled form -->
+    <form id="two-form" action="/form.html" method="get">
+      <input id="a" aria-label="First name">
+      <input id="b" aria-label="Last name">
+    </form>
+  </main>
+</body>
+</html>

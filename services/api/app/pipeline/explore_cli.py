@@ -48,6 +48,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument(
         "--allow-mutations", action="store_true", help="disable the request guard (not recommended)"
     )
+    p.add_argument(
+        "--scope", choices=["path", "domain"], default="path",
+        help="path: a start URL with a path only crawls links under that path (default)",
+    )  # fmt: skip
+    p.add_argument(
+        "--enter-policy", choices=["strict", "relaxed"], default="strict",
+        help="when Enter may be pressed after typing (see app/browser/enter_policy.py)",
+    )  # fmt: skip
     return p.parse_args(argv)
 
 
@@ -82,6 +90,7 @@ def write_summary(job_dir: Path, runner: ExploreRunner, concept_id: str, started
                 "id": f.id,
                 "name": f.name,
                 "importance": f.importance,
+                "demo_kind": f.demo_kind,
                 "demo_score": f.demo_score,
                 "verified": f.verified,
                 "thumbnail": f.thumbnail,
@@ -141,6 +150,8 @@ def main(argv: list[str] | None = None) -> int:
         max_pages=args.max_pages,
         timeout_s=args.timeout,
         allow_mutations=args.allow_mutations,
+        scope=args.scope,
+        enter_policy=args.enter_policy,
         progress=lambda step, msg: console.print(f"[cyan]\\[{step}][/] {msg}"),
     )
     console.print(f"[bold]Khám phá {args.url}[/]  → {job_dir}")

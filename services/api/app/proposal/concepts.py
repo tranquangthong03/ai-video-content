@@ -6,6 +6,7 @@ from typing import Literal
 from app.core.interaction import make_request
 from app.llm.json_call import JsonCaller
 from app.llm.prompts import render
+from app.proposal.wordlimit import enforce_concepts
 from app.schemas.generated.concept_set import ConceptSet
 from app.schemas.generated.interaction import InteractionRequest
 from app.schemas.generated.product_profile import ProductProfile
@@ -39,7 +40,10 @@ def normalize_concepts(concepts: list[VideoConcept], profile: ProductProfile) ->
 
 
 def propose_concepts(
-    caller: JsonCaller, profile: ProductProfile, notes: str = ""
+    caller: JsonCaller,
+    profile: ProductProfile,
+    notes: str = "",
+    warnings: list[str] | None = None,
 ) -> list[VideoConcept]:
     prompt = render(
         "concept_proposer",
@@ -47,7 +51,11 @@ def propose_concepts(
         user_notes_or_empty=notes,
     )
     result = caller.call("concepts", prompt, ConceptSet)
-    return normalize_concepts(result.concepts, profile)
+    concepts = normalize_concepts(result.concepts, profile)
+    found = enforce_concepts(caller, concepts)  # hook <= 12 words, beats <= 15
+    if warnings is not None:
+        warnings.extend(found)
+    return concepts
 
 
 def build_request(

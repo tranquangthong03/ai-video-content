@@ -6,9 +6,11 @@
   "additionalProperties": false,
   "required": ["do"],
   "properties": {
-    "do": { "enum": ["goto", "click", "type", "scroll", "wait", "hover"] },
+    "do": { "enum": ["goto", "click", "type", "scroll", "wait", "hover", "upload"] },
     "target": { "type": ["string", "null"], "default": null, "description": "Natural-language description of the element" },
     "selector": { "type": ["string", "null"], "default": null },
+    "locator": { "oneOf": [{ "$ref": "locator.json" }, { "type": "null" }], "default": null },
+    "file": { "type": ["string", "null"], "default": null, "description": "Sample file name for do=upload" },
     "url": { "type": ["string", "null"], "default": null },
     "text": { "type": ["string", "null"], "default": null },
     "ms": { "type": ["integer", "null"], "minimum": 0, "default": null },

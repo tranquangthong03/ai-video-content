@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "locator.json",
+  "title": "LocatorSpec",
+  "description": "Everything needed to find an element again. resolve() tries, in order: css (unique, nth null) -> role+name exact -> role+name partial -> text -> css+nth -> bbox (only if fingerprint matches).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "role": { "type": ["string", "null"], "default": null },
+    "name": { "type": ["string", "null"], "default": null, "description": "Accessible name as computed by the browser" },
+    "text": { "type": ["string", "null"], "default": null, "description": "innerText, at most 80 characters" },
+    "css": { "type": ["string", "null"], "default": null, "description": "A unique stable selector when nth is null, otherwise a query whose nth match is the element" },
+    "nth": { "type": ["integer", "null"], "minimum": 0, "default": null },
+    "tag": { "type": ["string", "null"], "default": null },
+    "fingerprint": { "type": ["string", "null"], "default": null, "description": "tag|normalized text|relative position" },
+    "bbox": {
+      "type": ["object", "null"],
+      "default": null,
+      "additionalProperties": false,
+      "required": ["x", "y", "w", "h"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "w": { "type": "number" },
+        "h": { "type": "number" }
+      }
+    }
+  }
+}

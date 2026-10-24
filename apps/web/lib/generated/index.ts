@@ -5,6 +5,7 @@ export * from "./concept_set";
 export * from "./edit_op";
 export * from "./edit_plan";
 export * from "./interaction";
+export * from "./locator";
 export * from "./outline";
 export * from "./outline_edit_plan";
 export * from "./page_insight";

@@ -3,11 +3,12 @@
 import json
 from pathlib import Path
 
-from app.core.safety import is_blocked, is_blocked_href
+from app.browser.blacklist import is_blocked, is_blocked_href
+from app.browser.urls import normalize_url, same_site
 from app.explorer.extract import describe_layout
-from app.explorer.mapper import normalize_url, same_site
 from app.explorer.models import Element, PageData
 from app.explorer.report import Report
+from app.explorer.samples import CATALOG, catalog_text, pick_sample
 from app.llm.json_call import JsonCaller
 from app.llm.prompts import render
 from app.schemas.generated.page_insight import PageInsight
@@ -15,7 +16,7 @@ from app.schemas.generated.product_profile import DemoStep, Feature, ProductProf
 
 MAX_FEATURES = 8
 MAX_STEPS = 5
-REF_STEPS = {"click", "type", "hover"}
+REF_STEPS = {"click", "type", "hover", "upload"}
 TEXT_ROLES = {"textbox", "searchbox", "combobox"}
 TYPE_WEIGHT = {"landing_hero": 3.0, "landing_features": 3.0, "pricing": 1.5}
 
@@ -71,6 +72,7 @@ def build_prompt(
         meta_description=first.meta_description,
         og_description=first.og_description,
         page_insights_json=json.dumps(slim, ensure_ascii=False, indent=1),
+        sample_files=catalog_text(),
     )
     if (
         with_layout_text
@@ -141,7 +143,13 @@ def _clean_steps(
         if step.do == "goto":
             current = normalize_url(step.url or "", root_url) or current
         if step.do in REF_STEPS:
-            step.url = lookup[normalize_url(step.url or current) or ""].url
+            page = lookup[normalize_url(step.url or current) or ""]
+            element = page.element(step.ref or "")
+            assert element is not None  # _step_problem checked it
+            step.url = page.url
+            step.locator = element.spec()  # the recorder resolves this first
+            if step.do == "upload" and step.file not in CATALOG:
+                step.file = pick_sample(element.accept, f"{feature.name} {element.name}")
         clean.append(step)
     return clean
 
@@ -163,8 +171,10 @@ def _step_problem(
     if element is None:
         return f"ref {step.ref} does not exist"
     # the blacklist applies to the element being operated on, not to sample text typed into it
-    if is_blocked(element.name, element.selector, element.locator_name, strict=True):
+    if is_blocked(element.name, element.text, element.selector, strict=True):
         return f"blacklisted element/text ({element.name!r})"
+    if step.do == "upload" and "upload" not in element.caps:
+        return f"{element.name!r} is not an upload field"
     if is_blocked_href(element.href):
         return f"blocked link target {element.href}"
     if step.do == "click" and is_submit(element):
