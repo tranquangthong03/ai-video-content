@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, Img } from "remotion";
-import { resolveAsset } from "../assets";
-import { useTheme } from "../theme/context";
+import { resolveAsset } from "../../assets";
+import { useTheme } from "../../theme/context";
 import { BigText, GradientBackdrop, usePop } from "./common";
 import type { SceneProps } from "./types";
 

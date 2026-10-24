@@ -5,8 +5,8 @@ import { ScriptSchema } from "./generated";
 import { LAYOUTS_BY_TYPE } from "./generated/layouts";
 import { coverFit, mapClipPoint } from "./geometry";
 import { InputPropsSchema } from "./props";
-import { FallbackScene, SCENES, resolveScene } from "./scenes";
-import { PHONE_SCREEN } from "./scenes/DemoPhone";
+import { FallbackScene, SCENES, resolveScene } from "./templates/PhoneShowcase";
+import { PHONE_SCREEN } from "./templates/PhoneShowcase/DemoPhone";
 import { captionsFromVoiceover, musicVolume, sceneDurationMs, totalFrames } from "./timing";
 
 const sample = ScriptSchema.parse(

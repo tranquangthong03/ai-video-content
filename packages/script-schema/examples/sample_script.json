@@ -3,6 +3,11 @@
   "goal": "conversion",
   "aspect_ratio": "9:16",
   "target_duration_s": 40,
+  "template": "desktop_showcase",
+  "capture": { "viewport": "desktop", "width": 1920, "height": 1080 },
+  "badge": "Quản lý dự án",
+  "headline": "Quản lý công việc nhanh gấp đôi",
+  "headline_highlight": "nhanh gấp đôi",
   "theme": {
     "primary": "#4F46E5",
     "accent": "#F59E0B",
@@ -21,6 +26,8 @@
       "layout": "big_text_over_blur",
       "voiceover": "Công việc chất đống mà không biết bắt đầu từ đâu?",
       "on_screen_text": "Quá nhiều task? 😵",
+      "key_point": "Việc chất đống, khó ưu tiên",
+      "icon": "sparkles",
       "visual": { "mode": "screenshot", "page": "/dashboard", "effect": "blur_zoom", "actions": [] }
     },
     {
@@ -30,6 +37,8 @@
       "feature": "Bảng Kanban kéo thả",
       "voiceover": "Với TaskFlow, bạn kéo thả công việc giữa các cột chỉ trong một giây.",
       "on_screen_text": "Kéo thả siêu nhanh",
+      "key_point": "Bảng Kanban kéo thả",
+      "icon": "check",
       "visual": {
         "mode": "recording",
         "page": "/board",
@@ -46,6 +55,8 @@
       "type": "before_after",
       "layout": "split_vertical",
       "voiceover": "Trước đây hay quên deadline, giờ mọi thứ đều được nhắc đúng lúc.",
+      "key_point": "Nhắc việc đúng hạn",
+      "icon": "bolt",
       "before_text": "Quên deadline, trễ việc",
       "after_text": "Nhắc việc tự động, đúng hạn",
       "visual": { "mode": "template", "page": null, "effect": "split_reveal", "actions": [] }
@@ -56,6 +67,8 @@
       "layout": "button_pulse",
       "voiceover": "Dùng thử TaskFlow miễn phí ngay hôm nay!",
       "on_screen_text": "Dùng thử miễn phí",
+      "key_point": "Dùng thử miễn phí",
+      "icon": "star",
       "visual": { "mode": "template", "page": null, "effect": null, "actions": [] }
     }
   ]

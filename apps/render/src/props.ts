@@ -1,12 +1,20 @@
 import { z } from "zod";
 import { ScriptSchema } from "./generated";
 
-export const ClickSchema = z.object({ t_ms: z.number(), x: z.number(), y: z.number() });
+export const ClickSchema = z.object({
+  t_ms: z.number(),
+  x: z.number(),
+  y: z.number(),
+  type: z.enum(["click", "dblclick", "scroll", "highlight"]).optional(),
+});
+
+export const WordSchema = z.object({ text: z.string(), start_ms: z.number(), end_ms: z.number() });
 
 export const CaptionSchema = z.object({
   text: z.string(),
   start_ms: z.number(),
   end_ms: z.number(),
+  words: z.array(WordSchema).optional(), // per-word timing, for karaoke highlighting
 });
 
 /** Per-scene media. URLs are absolute (http/data) or paths relative to the bundle's public dir. */

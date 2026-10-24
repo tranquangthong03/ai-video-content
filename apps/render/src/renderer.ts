@@ -1,11 +1,12 @@
 import { bundle } from "@remotion/bundler";
 import { ensureBrowser, renderMedia, selectComposition } from "@remotion/renderer";
-import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
+import { createHash, randomUUID } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { createServer } from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { COMPOSITION_ID } from "./compositionId";
+import { ensureYuv420p } from "./pixelFormat";
 import type { InputProps } from "./props";
 import { webpackOverride } from "./webpackOverride";
 
@@ -14,16 +15,57 @@ export const OUT_DIR = path.join(root, "out");
 
 let bundlePromise: Promise<string> | null = null;
 
-/** Bundles the Remotion project once; later renders reuse the same serve URL. */
+export const BUNDLE_CACHE_DIR = path.join(root, ".bundle-cache");
+
+function walk(dir: string): string[] {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]))
+    .sort();
+}
+
+/** Hash of everything the bundle is built from: src/, public/ and the files that configure it. */
+export function sourceHash(): string {
+  const hash = createHash("sha1");
+  const files = [...walk(path.join(root, "src")), ...walk(path.join(root, "public"))];
+  for (const extra of ["package.json", "remotion.config.ts", "tsconfig.json"]) {
+    files.push(path.join(root, extra));
+  }
+  for (const file of files) {
+    hash.update(path.relative(root, file).replaceAll("\\", "/"));
+    hash.update(readFileSync(file));
+  }
+  return hash.digest("hex").slice(0, 16);
+}
+
+/**
+ * Bundles the Remotion project, or reuses the bundle built from identical sources: it is stored in
+ * .bundle-cache/<hash> and rebuilt only when something in src/ or public/ changes. Within one process
+ * the result is also memoized.
+ */
 export function getBundle(): Promise<string> {
-  bundlePromise ??= bundle({
-    entryPoint: path.join(root, "src", "index.ts"),
-    publicDir: path.join(root, "public"),
-    webpackOverride,
-    onProgress: (p) => {
-      if (p % 25 === 0) console.log(`[bundle] ${p}%`);
-    },
-  }).catch((e) => {
+  bundlePromise ??= (async () => {
+    const outDir = path.join(BUNDLE_CACHE_DIR, sourceHash());
+    if (existsSync(path.join(outDir, "index.html"))) {
+      console.log(`[bundle] cache hit ${path.basename(outDir)}`);
+      return outDir;
+    }
+    console.log(`[bundle] cache miss, bundling to ${path.basename(outDir)}`);
+    rmSync(outDir, { recursive: true, force: true });
+    await bundle({
+      entryPoint: path.join(root, "src", "index.ts"),
+      publicDir: path.join(root, "public"),
+      outDir,
+      webpackOverride,
+      onProgress: (p) => {
+        if (p % 25 === 0) console.log(`[bundle] ${p}%`);
+      },
+    });
+    for (const old of readdirSync(BUNDLE_CACHE_DIR)) {
+      if (old !== path.basename(outDir)) rmSync(path.join(BUNDLE_CACHE_DIR, old), { recursive: true, force: true });
+    }
+    return outDir;
+  })().catch((e) => {
     bundlePromise = null; // allow a retry after a failed bundle
     throw e;
   });
@@ -95,6 +137,10 @@ export async function renderVideo(
       }
     },
   });
+
+  onStage("pixel_format");
+  const pixelFormat = ensureYuv420p(file);
+  console.log(`[render] pixel format: ${pixelFormat ?? "unknown (ffprobe not found)"}`);
 
   return {
     file,

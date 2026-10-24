@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import type { Scene } from "../generated";
+import type { Scene } from "../../generated";
 import { BigText, GradientBackdrop } from "./common";
 
 /** Text on the primary color: used for unknown layouts and for demo scenes without media. */

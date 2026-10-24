@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import { HEIGHT, WIDTH } from "../timing";
+import { HEIGHT, WIDTH } from "../../timing";
 import { TopLabel } from "./common";
 import { FallbackScene } from "./FallbackScene";
 import { SceneMedia, hasMedia, wantsZoom } from "./Media";

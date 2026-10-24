@@ -1,5 +1,5 @@
 import type React from "react";
-import type { LayoutOf } from "../generated/layouts";
+import type { LayoutOf } from "../../generated/layouts";
 import { BeforeAfterSplit } from "./BeforeAfterSplit";
 import { BeforeAfterSwipe } from "./BeforeAfterSwipe";
 import { CtaButtonPulse } from "./CtaButtonPulse";

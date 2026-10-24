@@ -16,7 +16,7 @@ class Theme(BaseModel):
     font: Annotated[str, Field(min_length=1)]
     logo_asset: str | None = None
     motion_preset: Literal['energetic', 'calm']
-    caption_style: Literal['tiktok_bounce', 'minimal']
+    caption_style: Literal['tiktok_bounce', 'minimal', 'karaoke']
     music_mood: Literal['energetic', 'upbeat', 'calm', 'corporate']
     voice_id: Annotated[str, Field(min_length=1)]
     language: Literal['vi', 'en']

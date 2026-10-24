@@ -8,6 +8,7 @@ export const HEIGHT = 1920;
 const WORDS_PER_SECOND = 2.5;
 const MIN_SCENE_MS = 2000;
 const CAPTION_WORDS = 3;
+export const KARAOKE_WORDS = 4;
 
 const words = (text: string) => text.trim().split(/\s+/).filter(Boolean);
 
@@ -39,17 +40,29 @@ export function sceneRanges(script: Pick<Script, "scenes">, fps = FPS) {
 }
 
 /** Fallback captions (no TTS word timestamps yet): even split of the voiceover over the scene. */
-export function captionsFromVoiceover(voiceover: string, durationMs: number): Caption[] {
+export function captionsFromVoiceover(
+  voiceover: string,
+  durationMs: number,
+  groupSize = CAPTION_WORDS,
+): Caption[] {
   const all = words(voiceover);
   if (all.length === 0) return [];
   const chunks: string[][] = [];
-  for (let i = 0; i < all.length; i += CAPTION_WORDS) chunks.push(all.slice(i, i + CAPTION_WORDS));
+  for (let i = 0; i < all.length; i += groupSize) chunks.push(all.slice(i, i + groupSize));
   const step = durationMs / all.length;
   let cursor = 0;
   return chunks.map((chunk) => {
-    const start = cursor;
-    cursor += step * chunk.length;
-    return { text: chunk.join(" "), start_ms: Math.round(start), end_ms: Math.round(cursor) };
+    const out = chunk.map((text) => {
+      const start = cursor;
+      cursor += step;
+      return { text, start_ms: Math.round(start), end_ms: Math.round(cursor) };
+    });
+    return {
+      text: chunk.join(" "),
+      start_ms: out[0].start_ms,
+      end_ms: out[out.length - 1].end_ms,
+      words: out,
+    };
   });
 }
 

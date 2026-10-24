@@ -31,6 +31,8 @@
         "layout": { "enum": ["big_text_over_blur", "emoji_pop"] },
         "voiceover": { "type": "string" },
         "on_screen_text": { "type": ["string", "null"], "default": null },
+        "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
+        "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },
         "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
       }
@@ -46,6 +48,8 @@
         "feature": { "type": "string", "minLength": 1 },
         "voiceover": { "type": "string" },
         "on_screen_text": { "type": ["string", "null"], "default": null },
+        "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
+        "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },
         "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
       }
@@ -62,6 +66,8 @@
         "after_text": { "type": "string", "minLength": 1 },
         "voiceover": { "type": "string" },
         "on_screen_text": { "type": ["string", "null"], "default": null },
+        "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
+        "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },
         "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
       }
@@ -76,6 +82,8 @@
         "layout": { "enum": ["logo_center", "button_pulse"] },
         "voiceover": { "type": "string" },
         "on_screen_text": { "type": ["string", "null"], "default": null },
+        "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
+        "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },
         "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
       }

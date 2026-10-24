@@ -4,12 +4,26 @@
   "title": "Script",
   "type": "object",
   "additionalProperties": false,
-  "required": ["title", "goal", "aspect_ratio", "target_duration_s", "theme", "scenes"],
+  "required": ["title", "goal", "aspect_ratio", "target_duration_s", "headline", "theme", "scenes"],
   "properties": {
     "title": { "type": "string", "minLength": 1 },
     "goal": { "enum": ["awareness", "conversion", "tutorial", "recruitment"] },
     "aspect_ratio": { "const": "9:16" },
     "target_duration_s": { "type": "integer", "minimum": 15, "maximum": 90 },
+    "template": { "enum": ["desktop_showcase", "phone_showcase"], "default": "desktop_showcase" },
+    "capture": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "viewport": { "enum": ["desktop", "mobile"], "default": "desktop" },
+        "width": { "type": "integer", "minimum": 320, "maximum": 3840, "default": 1920 },
+        "height": { "type": "integer", "minimum": 320, "maximum": 3840, "default": 1080 }
+      },
+      "default": { "viewport": "desktop", "width": 1920, "height": 1080 }
+    },
+    "badge": { "type": ["string", "null"], "maxLength": 24, "default": null },
+    "headline": { "type": "string", "minLength": 1, "maxLength": 40 },
+    "headline_highlight": { "type": ["string", "null"], "default": null },
     "theme": { "$ref": "theme.json" },
     "scenes": { "type": "array", "items": { "$ref": "scene.json" }, "minItems": 3, "maxItems": 6 }
   }

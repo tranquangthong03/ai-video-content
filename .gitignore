@@ -17,6 +17,7 @@ __pycache__/
 node_modules/
 .next/
 out/
+.bundle-cache/
 dist/
 build/
 .turbo/

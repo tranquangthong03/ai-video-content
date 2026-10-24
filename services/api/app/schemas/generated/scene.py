@@ -28,6 +28,26 @@ class HookScene(BaseModel):
     layout: Literal['big_text_over_blur', 'emoji_pop']
     voiceover: str
     on_screen_text: str | None = None
+    key_point: Annotated[str | None, Field(max_length=60)] = None
+    icon: (
+        Literal[
+            'check',
+            'globe',
+            'bolt',
+            'link',
+            'star',
+            'users',
+            'chart',
+            'lock',
+            'sparkles',
+            'code',
+            'image',
+            'edit',
+            'filter',
+            'upload',
+        ]
+        | None
+    ) = None
     visual: Visual
     duration_ms: Annotated[int | None, Field(ge=0)] = None
 
@@ -42,6 +62,26 @@ class FeatureDemoScene(BaseModel):
     feature: Annotated[str, Field(min_length=1)]
     voiceover: str
     on_screen_text: str | None = None
+    key_point: Annotated[str | None, Field(max_length=60)] = None
+    icon: (
+        Literal[
+            'check',
+            'globe',
+            'bolt',
+            'link',
+            'star',
+            'users',
+            'chart',
+            'lock',
+            'sparkles',
+            'code',
+            'image',
+            'edit',
+            'filter',
+            'upload',
+        ]
+        | None
+    ) = None
     visual: Visual
     duration_ms: Annotated[int | None, Field(ge=0)] = None
 
@@ -57,6 +97,26 @@ class BeforeAfterScene(BaseModel):
     after_text: Annotated[str, Field(min_length=1)]
     voiceover: str
     on_screen_text: str | None = None
+    key_point: Annotated[str | None, Field(max_length=60)] = None
+    icon: (
+        Literal[
+            'check',
+            'globe',
+            'bolt',
+            'link',
+            'star',
+            'users',
+            'chart',
+            'lock',
+            'sparkles',
+            'code',
+            'image',
+            'edit',
+            'filter',
+            'upload',
+        ]
+        | None
+    ) = None
     visual: Visual
     duration_ms: Annotated[int | None, Field(ge=0)] = None
 
@@ -70,6 +130,26 @@ class CtaScene(BaseModel):
     layout: Literal['logo_center', 'button_pulse']
     voiceover: str
     on_screen_text: str | None = None
+    key_point: Annotated[str | None, Field(max_length=60)] = None
+    icon: (
+        Literal[
+            'check',
+            'globe',
+            'bolt',
+            'link',
+            'star',
+            'users',
+            'chart',
+            'lock',
+            'sparkles',
+            'code',
+            'image',
+            'edit',
+            'filter',
+            'upload',
+        ]
+        | None
+    ) = None
     visual: Visual
     duration_ms: Annotated[int | None, Field(ge=0)] = None
 

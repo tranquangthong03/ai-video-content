@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import { useTheme } from "../theme/context";
+import { useTheme } from "../../theme/context";
 import { usePop } from "./common";
 import type { SceneProps } from "./types";
 

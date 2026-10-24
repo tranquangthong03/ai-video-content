@@ -11,7 +11,7 @@
     "font": { "type": "string", "minLength": 1 },
     "logo_asset": { "type": ["string", "null"], "default": null },
     "motion_preset": { "enum": ["energetic", "calm"] },
-    "caption_style": { "enum": ["tiktok_bounce", "minimal"] },
+    "caption_style": { "enum": ["tiktok_bounce", "minimal", "karaoke"] },
     "music_mood": { "enum": ["energetic", "upbeat", "calm", "corporate"] },
     "voice_id": { "type": "string", "minLength": 1 },
     "language": { "enum": ["vi", "en"] }

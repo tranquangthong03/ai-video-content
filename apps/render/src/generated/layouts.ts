@@ -26,6 +26,8 @@ export const FIELDS_BY_TYPE = {
     "layout",
     "voiceover",
     "on_screen_text",
+    "key_point",
+    "icon",
     "visual",
     "duration_ms"
   ],
@@ -36,6 +38,8 @@ export const FIELDS_BY_TYPE = {
     "feature",
     "voiceover",
     "on_screen_text",
+    "key_point",
+    "icon",
     "visual",
     "duration_ms"
   ],
@@ -47,6 +51,8 @@ export const FIELDS_BY_TYPE = {
     "after_text",
     "voiceover",
     "on_screen_text",
+    "key_point",
+    "icon",
     "visual",
     "duration_ms"
   ],
@@ -56,6 +62,8 @@ export const FIELDS_BY_TYPE = {
     "layout",
     "voiceover",
     "on_screen_text",
+    "key_point",
+    "icon",
     "visual",
     "duration_ms"
   ]

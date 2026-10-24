@@ -11,7 +11,7 @@ export type ThemeValue = {
   motion: MotionPreset;
 };
 
-export const FALLBACK_FONT = "Inter";
+export const FALLBACK_FONT = "Be Vietnam Pro";
 
 export const ThemeContext = createContext<ThemeValue>({
   primary: "#4F46E5",

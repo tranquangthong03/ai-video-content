@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { useTheme } from "../theme/context";
+import { useTheme } from "../../theme/context";
 
 /** 0 -> 1 spring using the theme's motion preset. */
 export function usePop(delayFrames = 0): number {

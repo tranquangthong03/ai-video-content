@@ -9,6 +9,8 @@ from app.schemas.generated.script import Script
 def validate_script(script: Script) -> list[str]:
     """Return semantic errors of a Script. Per-scene layout rules are enforced by the schema."""
     errors: list[str] = []
+    if script.headline_highlight and script.headline_highlight not in script.headline:
+        errors.append("headline_highlight must be a substring of headline")
     seen: set[str] = set()
     for scene in script.scenes:
         if scene.root.id in seen:

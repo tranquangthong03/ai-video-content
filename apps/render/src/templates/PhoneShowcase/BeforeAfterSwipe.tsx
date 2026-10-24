@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
-import { useTheme } from "../theme/context";
+import { useTheme } from "../../theme/context";
 import type { SceneProps } from "./types";
 
 /** "Before" fills the screen, then a wipe from the right reveals "after". */

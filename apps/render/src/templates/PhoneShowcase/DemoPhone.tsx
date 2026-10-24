@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import { useTheme } from "../theme/context";
+import { useTheme } from "../../theme/context";
 import { TopLabel, usePop } from "./common";
 import { FallbackScene } from "./FallbackScene";
 import { SceneMedia, hasMedia, wantsZoom } from "./Media";

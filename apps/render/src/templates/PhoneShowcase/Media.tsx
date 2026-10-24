@@ -7,10 +7,10 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { resolveAsset } from "../assets";
-import { mapClipPoint, type Box } from "../geometry";
-import type { SceneAssets } from "../props";
-import { useTheme } from "../theme/context";
+import { resolveAsset } from "../../assets";
+import { mapClipPoint, type Box } from "../../geometry";
+import type { SceneAssets } from "../../props";
+import { useTheme } from "../../theme/context";
 
 export const hasMedia = (a: SceneAssets | undefined): a is SceneAssets =>
   Boolean(a?.clip_url || a?.screenshot_url);

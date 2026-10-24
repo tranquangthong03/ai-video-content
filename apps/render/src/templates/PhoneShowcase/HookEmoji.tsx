@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import { HEIGHT, WIDTH } from "../timing";
+import { HEIGHT, WIDTH } from "../../timing";
 import { BigText, GradientBackdrop, usePop } from "./common";
 import { SceneMedia, hasMedia } from "./Media";
 import type { SceneProps } from "./types";

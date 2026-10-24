@@ -7,7 +7,7 @@
     "dev": "tsx watch src/server.ts",
     "dev:server": "tsx watch src/server.ts",
     "studio": "remotion studio src/index.ts",
-    "assets:dev": "tsx scripts/make-dev-assets.ts",
+    "assets:dev": "tsx scripts/make-dev-assets.ts && tsx scripts/make-desktop-assets.ts",
     "render:sample": "tsx scripts/render-sample.ts",
     "stills": "tsx scripts/render-stills.ts",
     "start": "tsx src/server.ts",

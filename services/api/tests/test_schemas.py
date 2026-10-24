@@ -84,6 +84,64 @@ def test_duplicate_scene_id_detected() -> None:
     assert validate_script(Script.model_validate(data))
 
 
+def test_template_fields_defaults_and_limits() -> None:
+    data = load("sample_script.json")
+    script = Script.model_validate(data)
+    assert script.template == "desktop_showcase" and script.badge == "Quản lý dự án"
+    assert script.capture.width == 1920 and script.capture.viewport == "desktop"
+    assert all(s.root.key_point and s.root.icon for s in script.scenes)
+    for key in ("template", "capture", "badge", "headline_highlight"):
+        data.pop(key)
+    bare = Script.model_validate(data)
+    assert bare.template == "desktop_showcase" and bare.badge is None
+    assert bare.capture.height == 1080 and bare.headline_highlight is None
+
+
+@pytest.mark.parametrize(
+    "patch",
+    [
+        {"headline": "x" * 41},
+        {"badge": "x" * 25},
+        {"template": "tablet_showcase"},
+        {"capture": {"viewport": "tv"}},
+        {"theme": {**load("sample_script.json")["theme"], "caption_style": "neon"}},
+    ],
+)
+def test_template_fields_reject_bad_values(patch: dict) -> None:  # type: ignore[type-arg]
+    with pytest.raises(ValidationError):
+        Script.model_validate({**load("sample_script.json"), **patch})
+
+
+def test_headline_is_required_and_karaoke_is_allowed() -> None:
+    data = load("sample_script.json")
+    del data["headline"]
+    with pytest.raises(ValidationError):
+        Script.model_validate(data)
+    ok = load("sample_script.json")
+    ok["theme"]["caption_style"] = "karaoke"
+    assert Script.model_validate(ok).theme.caption_style == "karaoke"
+
+
+def test_scene_key_point_and_icon_limits() -> None:
+    for patch in ({"key_point": "x" * 61}, {"icon": "rocket"}):
+        data = load("sample_script.json")
+        data["scenes"][0].update(patch)
+        with pytest.raises(ValidationError):
+            Script.model_validate(data)
+    data = load("sample_script.json")
+    data["scenes"][0].update(key_point=None, icon=None)
+    assert Script.model_validate(data).scenes[0].root.icon is None
+
+
+def test_headline_highlight_must_be_a_substring_of_the_headline() -> None:
+    data = load("sample_script.json")
+    assert validate_script(Script.model_validate(data)) == []
+    data["headline_highlight"] = "không có trong tiêu đề"
+    assert validate_script(Script.model_validate(data))
+    data["headline_highlight"] = None
+    assert validate_script(Script.model_validate(data)) == []
+
+
 def test_validate_edit_op_blocks_wrong_layout_and_unknown_scene() -> None:
     script = Script.model_validate(load("sample_script.json"))
     bad = EditOp.model_validate(
