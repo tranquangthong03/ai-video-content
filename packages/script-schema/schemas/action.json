@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["do"],
   "properties": {
-    "do": { "enum": ["goto", "click", "type", "scroll", "wait", "hover", "upload"] },
+    "do": { "enum": ["goto", "click", "type", "scroll", "wait", "hover", "upload", "dblclick", "right_click"] },
     "target": { "type": ["string", "null"], "default": null, "description": "Natural-language description of the element" },
     "selector": { "type": ["string", "null"], "default": null },
     "locator": { "oneOf": [{ "$ref": "locator.json" }, { "type": "null" }], "default": null },

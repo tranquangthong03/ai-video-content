@@ -40,6 +40,16 @@ def same_site(url: str, root: str) -> bool:
     return host(url) == host(root)
 
 
+def _registrable(hostname: str) -> str:
+    """Last two labels (plausible.io, example.com): good enough without a public-suffix list."""
+    return ".".join(hostname.split(".")[-2:])
+
+
+def related_domain(url: str, root: str) -> bool:
+    """Same site or a subdomain of the same root domain (demo.plausible.io for plausible.io)."""
+    return _registrable(host(url)) == _registrable(host(root))
+
+
 def anchor_of(url: str) -> str | None:
     """The plain-anchor part of a link (`#pricing` -> `pricing`), None for hash routes."""
     fragment = urlparse(url).fragment

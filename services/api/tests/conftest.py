@@ -4,6 +4,7 @@ import functools
 import json
 import re
 import threading
+import time
 from collections.abc import Callable, Iterator
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -15,6 +16,10 @@ from app.browser.session import BrowserSession
 from app.llm.json_call import Completion
 
 SITE_DIR = Path(__file__).parent / "fixtures" / "site"
+PNG_1X1 = bytes.fromhex(
+    "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489000000"
+    "0d49444154789c6360f8cfc0f01f0005000201a2cb3b3d0000000049454e44ae426082"
+)
 
 
 class SiteHandler(SimpleHTTPRequestHandler):
@@ -22,6 +27,13 @@ class SiteHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802 (http.server API)
         SiteHandler.hits.append(self.path)
+        if self.path.startswith("/slow-img.png"):  # an image that takes a while to arrive
+            time.sleep(0.8)
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.end_headers()
+            self.wfile.write(PNG_1X1)
+            return
         if self.path.startswith("/hit/"):
             self.send_response(204)
             self.end_headers()
@@ -117,6 +129,11 @@ def scripted_handler(prompt: str) -> dict[str, Any]:
             else [{"name": "Bảng Kanban", "quote": "Kéo thả công việc"}],
             "visual_quality": 0.8,
         }
+
+    if prompt.startswith("Bạn là product marketer") and "<state_delta>" in prompt:
+        # stateful discovery: nothing new to report
+        return {"site_type": "web_app", "product_name": "TaskFlow", "one_liner": "o",
+                "target_users": [], "features": [], "open_questions": []}  # fmt: skip
 
     if prompt.startswith("Bạn là product marketer"):
         insights = json.loads(_section(prompt, "pages"))

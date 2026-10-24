@@ -7,14 +7,21 @@ Bạn là product marketer. Từ phân tích các trang của một website, hã
 </pages>
 </site>
 (Kèm theo là ảnh chụp các trang quan trọng nhất.)
+{# changed: stateful delta block, only present when delta_json is non-empty #}{% if delta_json %}
+<state_delta>
+{{ delta_json }}
+</state_delta>
+Lưu ý: <pages> chỉ chứa các phần tử MỚI xuất hiện sau khi người dùng đã thao tác (setup_steps trong <state_delta> là chuỗi bước đã tạo ra trạng thái đó). Chỉ trả về các tính năng MỚI phát hiện từ các phần tử mới này, không lặp lại các tính năng đã có: {{ known_features }}. demo_steps của tính năng mới chỉ gồm các bước SAU setup_steps.
+{% endif %}
 
 Quy tắc:
 1. Một tính năng = một việc người dùng làm được và có giá trị (không phải một nút đơn lẻ). Gộp các bằng chứng trùng lặp vào cùng tính năng.
 2. Mỗi tính năng PHẢI có evidence trỏ tới trang/ref/câu trích có thật trong dữ liệu. Tính năng chỉ được nhắc trên landing mà không thấy trong app vẫn giữ, nhưng ghi evidence source = "landing_claim".
 3. importance (0-1): cao khi xuất hiện ở hero/features/nav và có hành động tương ứng trong app.
-4. demo_steps: chuỗi bước NGẮN NHẤT (2-5 bước) để thể hiện tính năng, chỉ dùng do ∈ {goto, click, type, scroll, hover, wait, upload}{# changed: added upload #} và ref có thật. TUYỆT ĐỐI không có bước submit/lưu/xóa/gửi/thanh toán/đăng xuất. Bước type phải có text mẫu thực tế, phù hợp sản phẩm, bằng tiếng Việt nếu giao diện tiếng Việt.
+4. demo_steps: chuỗi bước NGẮN NHẤT (2-5 bước) để thể hiện tính năng, chỉ dùng do ∈ {goto, click, type, scroll, hover, wait, upload, dblclick, right_click}{# changed: added upload, dblclick, right_click #} và ref có thật. TUYỆT ĐỐI không có bước submit/lưu/xóa/gửi/thanh toán/đăng xuất. Bước type phải có text mẫu thực tế, phù hợp sản phẩm, bằng tiếng Việt nếu giao diện tiếng Việt.
 {# changed: upload rule and sample file catalog #}   Bước upload chỉ dùng cho phần tử có cột thứ 5 "upload" trong dữ liệu trang; đặt "file" là một trong các tệp mẫu sau, chọn loại hợp với tính năng (ví dụ nén/chỉnh ảnh → sample.jpg):
 {{ sample_files }}
+{# changed: dblclick rule #}   Bước dblclick (nhấp đúp) chỉ dùng cho phần tử có cột thứ 5 chứa "dblclick" (trang nêu rõ "double-click to edit" hoặc tương đương), ví dụ nhấp đúp một mục để sửa nội dung tại chỗ.
 5. Sắp xếp features theo importance giảm dần, tối đa 8.
 6. open_questions: điểm chưa chắc chắn cần hỏi người dùng (ví dụ landing nhắc tính năng nhưng không tìm thấy trong app; không rõ đối tượng khách hàng).
 7. Không bịa tên, số liệu, tính năng không có trong dữ liệu.

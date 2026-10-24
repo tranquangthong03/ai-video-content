@@ -46,7 +46,8 @@ EXTRACT_JS = r"""
       return 'textbox';
     }
     if (el.isContentEditable) return 'textbox';
-    return 'button';
+    // plain text blocks (labels, list items) that only matter because they react to double-click
+    return (el.hasAttribute('onclick') || el.hasAttribute('tabindex')) ? 'button' : 'generic';
   };
   const nameOf = (el) => {
     const aria = el.getAttribute('aria-label');
@@ -76,9 +77,15 @@ EXTRACT_JS = r"""
     return null;
   };
 
-  const sel = 'a[href], button, input, select, textarea, summary, [role=button], [role=link], ' +
+  // "double-click to edit"-style hints: the page tells the user an element reacts to a double-click
+  const DBL = /double[- ]?click|nhấp đúp|bấm đúp|click đúp/i;
+  const dblHint = DBL.test(document.body ? document.body.innerText : '');
+  const DBL_TARGETS = 'li label, li > span, li > p, td';
+  const BASE_SEL = 'a[href], button, input, select, textarea, summary, [role=button], [role=link], ' +
     '[role=tab], [role=menuitem], [role=checkbox], [role=switch], [role=option], [contenteditable=""], ' +
-    '[contenteditable=true], [onclick]';
+    '[contenteditable=true], [onclick], [ondblclick]' + (dblHint ? ', ' + DBL_TARGETS : '');
+  // labels and drop zones are listed only when they front a file input (see the check in the loop)
+  const sel = BASE_SEL + ', label, [class*=drop], [class*=upload]';
   const REGION_ROOT = { nav: 'nav', aside: 'aside', header: 'header', footer: 'footer' };
   const hasMain = !!document.querySelector('main');
   const formOf = (el) => {
@@ -97,6 +104,10 @@ EXTRACT_JS = r"""
   document.querySelectorAll(sel).forEach((el, index) => {
     const isFile = el.tagName === 'INPUT' && (el.type || '').toLowerCase() === 'file';
     if (el.tagName === 'INPUT' && (el.type || '').toLowerCase() === 'hidden') return;
+    const fileLabel = el.tagName === 'LABEL' && !!el.control && el.control.type === 'file';
+    const fileZone = !isFile && /drop|upload/i.test(typeof el.className === 'string' ? el.className : '') &&
+      !!el.querySelector('input[type=file]');
+    if (!el.matches(BASE_SEL) && !fileLabel && !fileZone) return;
     // hidden file inputs (behind a button or drop zone) are the upload targets, so they are kept
     if (seen.has(el) || elements.length >= 600 || !(isFile || visible(el))) return;
     seen.add(el);
@@ -126,7 +137,12 @@ EXTRACT_JS = r"""
       input_type: el.tagName === 'INPUT' ? (el.type || 'text') : null,
       button_type: el.tagName === 'BUTTON' ? (el.getAttribute('type') || 'submit') : null,
       accept: isFile ? el.getAttribute('accept') : null,
-      caps: isFile ? ['upload'] : [],
+      caps: [
+        ...(isFile || fileLabel || fileZone ? ['upload'] : []),
+        ...(el.hasAttribute('ondblclick') || (dblHint && el.matches(DBL_TARGETS)) ||
+            DBL.test(el.getAttribute('title') || el.getAttribute('aria-label') || el.getAttribute('data-tooltip') || '')
+          ? ['dblclick'] : []),
+      ],
       in_form: !!el.closest('form'), form: formOf(el),
       fingerprint: `${tag}|${text.toLowerCase()}|${(cx / innerWidth).toFixed(2)},${(cy / Math.max(1, document.documentElement.scrollHeight)).toFixed(2)}`,
       bbox: [Math.round(r.x), Math.round(r.y + scrollY), Math.round(r.width), Math.round(r.height)],
@@ -190,6 +206,7 @@ EXTRACT_JS = r"""
     big_input: bigInputs,
     interactive: elements.length,
     canvas: document.querySelectorAll('canvas').length,
+    dblclick_hint: dblHint,
     text_length: body.length,
   };
   const layout = {
@@ -327,9 +344,19 @@ def describe_layout(layout: dict[str, Any]) -> str:
 
 
 def extract_page(
-    page: Page, n: int, out_dir: Path, *, depth: int = 0, score: float = 0.0
+    page: Page,
+    n: int,
+    out_dir: Path,
+    *,
+    depth: int = 0,
+    score: float = 0.0,
+    write_files: bool = True,
 ) -> PageData:
-    """Extract one loaded page; writes pages/<n>.json and pages/<n>.png under out_dir."""
+    """Extract one loaded page; writes pages/<n>.json and pages/<n>.png under out_dir.
+
+    write_files=False is for re-extracting a page in a different state (see stateful.py): the
+    result is only used in memory.
+    """
     settle(page)
     raw = page.evaluate(EXTRACT_JS)
     ax_names = accessible_names(page)
@@ -337,12 +364,14 @@ def extract_page(
         "document.querySelectorAll('[data-svai-i]').forEach((e) => e.removeAttribute('data-svai-i'))"
     )
     pages_dir = out_dir / "pages"
-    pages_dir.mkdir(parents=True, exist_ok=True)
-    screenshot = pages_dir / f"{n}.png"
-    try:
-        page.screenshot(path=str(screenshot))
-    except Exception:
-        screenshot = None  # type: ignore[assignment]
+    screenshot: Path | None = None
+    if write_files:
+        pages_dir.mkdir(parents=True, exist_ok=True)
+        screenshot = pages_dir / f"{n}.png"
+        try:
+            page.screenshot(path=str(screenshot))
+        except Exception:
+            screenshot = None
     data = PageData(
         n=n,
         url=page.url,
@@ -359,7 +388,8 @@ def extract_page(
         depth=depth,
         score=score,
     )
-    (pages_dir / f"{n}.json").write_text(
-        json.dumps(data.model_dump(), ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    if write_files:
+        (pages_dir / f"{n}.json").write_text(
+            json.dumps(data.model_dump(), ensure_ascii=False, indent=2), encoding="utf-8"
+        )
     return data

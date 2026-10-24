@@ -45,21 +45,32 @@ BLOCKED_PATH = re.compile(
 )
 
 
-def matched_term(texts: Iterable[str | None], extra: tuple[str, ...] = ()) -> str | None:
-    """First blacklisted term found in any of the texts, else None."""
+def matched_term(
+    texts: Iterable[str | None],
+    extra: tuple[str, ...] = (),
+    ignore: Iterable[str] = (),
+) -> str | None:
+    """First blacklisted term found in any of the texts, else None.
+
+    `ignore` holds texts the explorer typed itself (sample data such as "Mua sữa"): an element
+    whose text is exactly one of them is data, not a control label, and is not matched.
+    """
+    skip = {s.strip().lower() for s in ignore}
     for text in texts:
         if not text:
             continue
         low = text.lower()
+        if low.strip() in skip:
+            continue
         for term in (*BLACKLIST, *extra):
             if term in low:
                 return term
     return None
 
 
-def is_blocked(*texts: str | None, strict: bool = False) -> bool:
+def is_blocked(*texts: str | None, strict: bool = False, ignore: Iterable[str] = ()) -> bool:
     """True when the element must not be clicked. strict=True also covers submit/save intents."""
-    return matched_term(texts, SUBMIT_INTENTS if strict else ()) is not None
+    return matched_term(texts, SUBMIT_INTENTS if strict else (), ignore) is not None
 
 
 def is_blocked_href(href: str | None) -> bool:

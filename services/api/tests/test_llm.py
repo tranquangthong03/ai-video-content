@@ -29,7 +29,7 @@ def png(size: tuple[int, int], color: tuple[int, int, int] = (200, 30, 30)) -> b
 SAMPLE_VARS = {
     "page_analyzer": dict(url="u", title="t", headings="h", key_texts="k", elements="e1 | link | A | nav", signals="{}"),
     "product_synthesizer": dict(root_url="u", site_type="landing", title="t", meta_description="m",
-                                og_description="o", page_insights_json="[]", sample_files="- sample.jpg: ảnh"),
+                                og_description="o", page_insights_json="[]", sample_files="- sample.jpg: ảnh", delta_json="", known_features=""),
     "concept_proposer": dict(confirmed_product_profile_json="{}", user_notes_or_empty=""),
     "outline_editor": dict(confirmed_profile_summary="s", concept_json="{}", version=1,
                            outline_json="{}", instruction="sửa"),

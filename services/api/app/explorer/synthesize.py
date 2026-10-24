@@ -16,7 +16,8 @@ from app.schemas.generated.product_profile import DemoStep, Feature, ProductProf
 
 MAX_FEATURES = 8
 MAX_STEPS = 5
-REF_STEPS = {"click", "type", "hover", "upload"}
+REF_STEPS = {"click", "type", "hover", "upload", "dblclick", "right_click"}
+CLICK_LIKE = {"click", "dblclick", "right_click"}
 TEXT_ROLES = {"textbox", "searchbox", "combobox"}
 TYPE_WEIGHT = {"landing_hero": 3.0, "landing_features": 3.0, "pricing": 1.5}
 
@@ -56,6 +57,8 @@ def build_prompt(
     key_pages: list[PageData],
     *,
     with_layout_text: bool,
+    delta_json: str = "",
+    known_features: str = "",
 ) -> str:
     first = pages[0]
     slim = [
@@ -73,6 +76,8 @@ def build_prompt(
         og_description=first.og_description,
         page_insights_json=json.dumps(slim, ensure_ascii=False, indent=1),
         sample_files=catalog_text(),
+        delta_json=delta_json,
+        known_features=known_features,
     )
     if (
         with_layout_text
@@ -87,7 +92,10 @@ def _page_lookup(pages: list[PageData]) -> dict[str, PageData]:
 
 
 def sanitize_profile(
-    profile: ProductProfile, pages: list[PageData], root_url: str
+    profile: ProductProfile,
+    pages: list[PageData],
+    root_url: str,
+    typed: set[str] | None = None,
 ) -> tuple[ProductProfile, list[str]]:
     """Drop what the data does not support: unknown refs/pages and unsafe or invalid demo steps.
 
@@ -121,7 +129,7 @@ def sanitize_profile(
             continue
         feature.evidence = evidence
 
-        feature.demo_steps = _clean_steps(feature, lookup, root_url, notes)
+        feature.demo_steps = _clean_steps(feature, lookup, root_url, notes, set(typed or ()))
         kept.append(feature)
 
     profile.features = kept[:MAX_FEATURES]
@@ -129,14 +137,20 @@ def sanitize_profile(
 
 
 def _clean_steps(
-    feature: Feature, lookup: dict[str, PageData], root_url: str, notes: list[str]
+    feature: Feature,
+    lookup: dict[str, PageData],
+    root_url: str,
+    notes: list[str],
+    typed: set[str],
 ) -> list[DemoStep]:
     current = next(
         (e.url for e in feature.evidence if e.source == "app_action"), feature.evidence[0].url
     )
     clean: list[DemoStep] = []
     for i, step in enumerate(feature.demo_steps[:MAX_STEPS]):
-        problem = _step_problem(step, current, lookup, root_url)
+        problem = _step_problem(step, current, lookup, root_url, typed)
+        if step.do == "type" and step.text:
+            typed = typed | {step.text.strip().lower()}
         if problem:
             notes.append(f"{feature.id}: demo_steps truncated at step {i + 1}: {problem}")
             break
@@ -155,7 +169,11 @@ def _clean_steps(
 
 
 def _step_problem(
-    step: DemoStep, current: str, lookup: dict[str, PageData], root_url: str
+    step: DemoStep,
+    current: str,
+    lookup: dict[str, PageData],
+    root_url: str,
+    typed: set[str] = frozenset(),  # type: ignore[assignment]
 ) -> str | None:
     if step.do == "goto":
         target = normalize_url(step.url or "", root_url)
@@ -171,13 +189,13 @@ def _step_problem(
     if element is None:
         return f"ref {step.ref} does not exist"
     # the blacklist applies to the element being operated on, not to sample text typed into it
-    if is_blocked(element.name, element.text, element.selector, strict=True):
+    if is_blocked(element.name, element.text, element.selector, strict=True, ignore=typed):
         return f"blacklisted element/text ({element.name!r})"
     if step.do == "upload" and "upload" not in element.caps:
         return f"{element.name!r} is not an upload field"
     if is_blocked_href(element.href):
         return f"blocked link target {element.href}"
-    if step.do == "click" and is_submit(element):
+    if step.do in CLICK_LIKE and is_submit(element):
         return f"{element.name!r} would submit a form"
     if step.do == "type":
         if element.role not in TEXT_ROLES or element.input_type == "password" or not step.text:
@@ -190,6 +208,60 @@ def is_submit(element: Element) -> bool:
     if element.input_type in ("submit", "image"):
         return True
     return element.tag == "button" and element.in_form and element.button_type == "submit"
+
+
+def describe_steps(steps: list[DemoStep], page: PageData) -> list[dict[str, str | None]]:
+    """Human-readable steps (which element, what text/file) for prompts about a stateful page."""
+    out: list[dict[str, str | None]] = []
+    for s in steps:
+        element = page.element(s.ref or "")
+        out.append(
+            {"do": s.do, "url": s.url, "element": element.name if element else None,
+             "text": s.text, "file": s.file}
+        )  # fmt: skip
+    return out
+
+
+def synthesize_delta(
+    caller: JsonCaller,
+    root_url: str,
+    site_type: str,
+    pages: list[PageData],
+    page: PageData,
+    delta_insight: PageInsight,
+    new_elements_text: str,
+    setup_steps: list[DemoStep],
+    known_names: list[str],
+) -> list[Feature]:
+    """Features that only exist after `setup_steps` ran. Their demo_steps start with those steps."""
+    delta_json = json.dumps(
+        {
+            "url": page.url,
+            "setup_steps": describe_steps(setup_steps, page),
+            "new_elements": new_elements_text,
+        },
+        ensure_ascii=False,
+        indent=1,
+    )
+    prompt = build_prompt(
+        root_url,
+        site_type,
+        pages,  # pages[0] supplies the site title/description; `page` is among them
+        [delta_insight],
+        [],
+        with_layout_text=False,
+        delta_json=delta_json,
+        known_features="; ".join(known_names) or "(chưa có)",
+    )
+    profile = caller.call("delta", prompt, ProductProfile)
+    typed = {s.text.strip().lower() for s in setup_steps if s.do == "type" and s.text}
+    profile, _ = sanitize_profile(profile, pages, root_url, typed)  # `page` holds the delta
+    known = {n.strip().lower() for n in known_names}
+    fresh = [f for f in profile.features if f.name.strip().lower() not in known]
+    for feature in fresh:
+        feature.requires_setup = True
+        feature.demo_steps = [s.model_copy(deep=True) for s in setup_steps] + feature.demo_steps
+    return fresh
 
 
 def synthesize(

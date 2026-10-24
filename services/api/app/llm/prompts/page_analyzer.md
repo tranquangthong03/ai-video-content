@@ -5,7 +5,7 @@ Bạn là chuyên gia phân tích sản phẩm phần mềm. Phân tích MỘT t
 <texts>{{ key_texts }}</texts>
 <interactive_elements>
 {{ elements }}   // mỗi dòng: ref | role | name | vị trí (header/nav/main/aside/footer)
-{# changed: lines of upload fields carry a fifth column "upload" #}
+{# changed: lines with a special capability carry a fifth column: upload and/or dblclick #}
 </interactive_elements>
 <signals>{{ signals }}</signals>   // số form, có sidebar, có giá, có giỏ hàng...
 </page>
@@ -14,7 +14,7 @@ Yêu cầu:
 1. page_type ∈ {landing_hero, landing_features, pricing, app_dashboard, app_list, app_editor, app_detail, app_settings, product_listing, product_detail, docs, other}.
 2. purpose: 1 câu tiếng Việt mô tả người dùng làm được gì ở trang này.
 3. actions: chỉ chọn phần tử thể hiện TÍNH NĂNG (tạo, chỉnh sửa, lọc, tìm kiếm, xuất, chia sẻ, mở trình soạn thảo, xem chi tiết...). Bỏ qua link điều hướng chung, đăng xuất, cài đặt tài khoản, thanh toán, xóa. intent ∈ {create, edit, filter, search, export, share, view, navigate_feature, other}.
-{# changed: upload capability #}   Dòng có cột thứ 5 là "upload" là ô tải tệp lên: nếu trang có tính năng xử lý tệp (nén ảnh, nhập dữ liệu...), hãy chọn nó làm action (intent create hoặc edit).
+{# changed: upload and dblclick capabilities #}   Dòng có cột thứ 5 chứa "upload" là ô tải tệp lên: nếu trang có tính năng xử lý tệp (nén ảnh, nhập dữ liệu...), hãy chọn nó làm action (intent create hoặc edit). Cột thứ 5 chứa "dblclick" là phần tử phản ứng với nhấp đúp (trang ghi "double-click to edit", title/aria/tooltip nêu nhấp đúp): hãy chọn nó làm action với intent edit.
 4. claimed_features: các tính năng được NÊU BẰNG CHỮ trên trang (đặc biệt ở landing/features/pricing), kèm câu trích nguyên văn.
 5. Chỉ dùng ref có trong interactive_elements. Không suy đoán ngoài dữ liệu.
 

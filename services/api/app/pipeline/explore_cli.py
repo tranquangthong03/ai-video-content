@@ -27,7 +27,7 @@ from app.pipeline.proposal_run import Cancelled, ProposalRunner
 from app.proposal.understanding import score_dots
 
 EXIT_CANCELLED, EXIT_BLOCKED, EXIT_TOKENS, EXIT_TIMEOUT, EXIT_USAGE = 1, 2, 3, 4, 5
-STEPS = ("classify", "analyze", "synthesize", "verify", "concepts", "outline")
+STEPS = ("classify", "analyze", "synthesize", "verify", "delta", "concepts", "outline")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

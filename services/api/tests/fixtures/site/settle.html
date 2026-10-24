@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Settle</title></head>
+<body>
+  <main>
+    <button id="load-image">Tải ảnh</button>
+    <button id="burst">Cập nhật liên tục</button>
+    <button id="forever">Không bao giờ yên</button>
+    <div id="box"></div>
+  </main>
+  <script>
+    // the image takes ~800ms to arrive from the server (/slow-img.png)
+    document.getElementById('load-image').addEventListener('click', () => {
+      const img = document.createElement('img');
+      img.width = 200; img.height = 200; img.src = '/slow-img.png?' + Date.now();
+      document.getElementById('box').appendChild(img);
+    });
+    // DOM mutations for ~600ms, then silence
+    document.getElementById('burst').addEventListener('click', () => {
+      let n = 0;
+      const t = setInterval(() => { document.getElementById('box').append('x'); if (++n >= 6) clearInterval(t); }, 100);
+    });
+    // never settles
+    document.getElementById('forever').addEventListener('click', () => {
+      setInterval(() => document.getElementById('box').append('.'), 50);
+    });
+  </script>
+</body>
+</html>

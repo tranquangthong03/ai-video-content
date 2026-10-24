@@ -54,6 +54,7 @@ class Report:
             "anchor_sections": 0,
             "locate": {"strategies": {}, "failures": []},
             "step_errors": [],
+            "auto_upload": [],
             "enter": {"pressed": 0, "blocked": []},
             "warnings": [],
             "status": "running",

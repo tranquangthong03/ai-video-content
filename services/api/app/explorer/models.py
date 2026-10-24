@@ -5,6 +5,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from app.schemas.generated.locator import Bbox, LocatorSpec
+from app.schemas.generated.product_profile import DemoStep
 
 
 class FormData(BaseModel):
@@ -72,6 +73,8 @@ class PageData(BaseModel):
     screenshot: str | None = None
     depth: int = 0
     score: float = 0.0
+    # stateful pages: the steps that created the state whose new elements were added (refs sNeM)
+    setup_steps: list[DemoStep] = Field(default_factory=list)
 
     def element(self, ref: str) -> Element | None:
         return next((e for e in self.elements if e.ref == ref), None)

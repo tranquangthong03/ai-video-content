@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Todo</title></head>
+<body>
+  <main>
+    <h1>Việc cần làm</h1>
+    <input id="new" aria-label="New todo" placeholder="Cần làm gì?">
+    <ul id="items"></ul>
+    <!-- the filter bar only exists once there is at least one todo -->
+    <div id="filters" hidden>
+      <a href="#/all">All</a> <a href="#/active">Active</a> <a href="#/completed">Completed</a>
+    </div>
+  </main>
+  <script>
+    const items = document.getElementById('items');
+    document.getElementById('new').addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || !e.target.value) return;
+      const li = document.createElement('li');
+      li.innerHTML = '<input type="checkbox" aria-label="Done"> <label></label> <button aria-label="Remove item">x</button>';
+      li.querySelector('label').textContent = e.target.value;
+      items.appendChild(li);
+      e.target.value = '';
+      document.getElementById('filters').hidden = false;
+    });
+    const apply = () => {
+      const mode = location.hash.replace('#/', '');
+      items.querySelectorAll('li').forEach((li) => {
+        const done = li.querySelector('input').checked;
+        li.hidden = (mode === 'active' && done) || (mode === 'completed' && !done);
+      });
+    };
+    window.addEventListener('hashchange', apply);
+  </script>
+</body>
+</html>

@@ -239,7 +239,7 @@ def test_hidden_file_input_is_an_upload_target(
     browser_session: BrowserSession, site: str, tmp_path: Path
 ) -> None:
     data = page_of(browser_session, site, "/tool.html", tmp_path)
-    upload = [e for e in data.elements if "upload" in e.caps]
+    upload = [e for e in data.elements if "upload" in e.caps and e.tag == "input"]
     assert len(upload) == 1
     assert upload[0].role == "file" and upload[0].accept == "image/*"
     assert upload[0].selector == "#file"

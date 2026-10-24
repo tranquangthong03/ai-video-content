@@ -7,6 +7,7 @@ The blacklist is checked on the element that was actually resolved, not on store
 """
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -48,13 +49,32 @@ INFO_JS = r"""
     };
   }
   const type = tag === 'input' ? (el.type || 'text').toLowerCase() : null;
+  // the file input this element is, labels, contains, or belongs to a <label> of
+  const lab = el.closest ? el.closest('label') : null;
+  const fileInput = (tag === 'input' && type === 'file') ? el
+    : (el.control && el.control.type === 'file') ? el.control
+    : (el.querySelector && el.querySelector('input[type=file]'))
+    || (lab && lab.control && lab.control.type === 'file' ? lab.control : null);
   return {
+    file_input: !!fileInput, file_accept: fileInput ? fileInput.getAttribute('accept') : null,
     tag, texts, href: tag === 'a' ? el.href : null, input_type: type,
     button_type: tag === 'button' ? (el.getAttribute('type') || 'submit') : null,
     in_form: !!form, form: formInfo,
     is_text_input: tag === 'textarea' || (tag === 'input' && ['text', 'search', 'url', 'number'].includes(type)),
     text: clean(el.innerText).slice(0, 80),
   };
+}
+"""
+
+FILE_INPUT_JS = """
+(el) => {
+  const type = (el.type || '').toLowerCase();
+  if (el.tagName === 'INPUT' && type === 'file') return el;
+  if (el.control && el.control.type === 'file') return el.control;
+  const inner = el.querySelector ? el.querySelector('input[type=file]') : null;
+  if (inner) return inner;
+  const lab = el.closest ? el.closest('label') : null;
+  return lab && lab.control && lab.control.type === 'file' ? lab.control : null;
 }
 """
 
@@ -90,6 +110,8 @@ class ElementInfo:
     form: FormInfo | None
     is_text_input: bool
     text: str
+    file_input: bool = False  # is, labels, or contains an <input type=file>
+    file_accept: str | None = None
 
     @property
     def submits_form(self) -> bool:
@@ -124,6 +146,34 @@ class Target:
 
     def hover(self, timeout: float = 4000) -> None:
         self._obj.hover(timeout=timeout)
+
+    def dblclick(self, timeout: float = 4000) -> None:
+        self._obj.dblclick(timeout=timeout)
+
+    def right_click(self, timeout: float = 4000) -> None:
+        self._obj.click(button="right", timeout=timeout)
+
+    def file_input(self) -> ElementHandle | None:
+        """The <input type=file> behind this element (itself, its label's control, or a descendant)."""
+        return self._obj.evaluate_handle(FILE_INPUT_JS).as_element()
+
+    def click_catching_file_chooser(self, page: Page, timeout: float = 4000) -> Any:
+        """Click; return the FileChooser if the click opened one (it is intercepted, never shown)."""
+        caught: list[Any] = []
+
+        def handler(
+            chooser: Any,
+        ) -> None:  # a plain function: Playwright tags handlers with attributes
+            caught.append(chooser)
+
+        page.once("filechooser", handler)
+        try:
+            self._obj.click(timeout=timeout)
+            page.wait_for_timeout(300)  # the chooser event arrives shortly after the click
+        finally:
+            if not caught:
+                page.remove_listener("filechooser", handler)
+        return caught[0] if caught else None
 
     def scroll_into_view(self, timeout: float = 4000) -> None:
         self._obj.scroll_into_view_if_needed(timeout=timeout)
@@ -279,10 +329,19 @@ def resolve(page: Page, spec: LocatorSpec, *, retry: bool = True) -> Resolution:
 
 
 def check_clickable(
-    info: ElementInfo, root_url: str, *, scope_prefix: str | None = None, strict: bool = True
+    info: ElementInfo,
+    root_url: str,
+    *,
+    scope_prefix: str | None = None,
+    strict: bool = True,
+    ignore_texts: Iterable[str] = (),
 ) -> None:
-    """Raise Unsafe when clicking/hovering this element is forbidden."""
-    if is_blocked(*info.texts, strict=strict):
+    """Raise Unsafe when clicking/hovering this element is forbidden.
+
+    ignore_texts: sample data the explorer typed earlier; an element showing exactly that text
+    (a todo item) is data, not a control.
+    """
+    if is_blocked(*info.texts, strict=strict, ignore=ignore_texts):
         raise Unsafe("blacklist", f"matches blacklist: {info.texts[:2]}")
     if is_blocked_href(info.href):
         raise Unsafe("blacklist", f"blocked link {info.href}")

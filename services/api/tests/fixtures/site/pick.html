@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Chọn tệp</title></head>
+<body>
+  <main>
+    <h1>Ba cách chọn tệp</h1>
+    <!-- (a) a label for a hidden file input -->
+    <label for="f1" id="by-label">Chọn bằng label</label>
+    <input type="file" id="f1" accept="application/pdf" hidden>
+    <!-- (b) a drop zone containing the input -->
+    <div id="zone" class="dropzone"><input type="file" id="f2" accept=".csv" hidden><span id="zone-text">Thả CSV vào đây</span></div>
+    <!-- (c) a plain button that opens the file chooser from JavaScript -->
+    <button id="pick">Mở hộp chọn tệp</button>
+    <input type="file" id="f3" style="display:none">
+    <!-- an ordinary button must never be treated as an upload -->
+    <button id="plain">Nút thường</button>
+    <ul id="out"></ul>
+  </main>
+  <script>
+    const log = (text) => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      document.getElementById('out').appendChild(li);
+    };
+    for (const id of ['f1', 'f2', 'f3']) {
+      document.getElementById(id).addEventListener('change', (e) => log('Đã nhận ' + e.target.files[0].name));
+    }
+    document.getElementById('pick').addEventListener('click', () => document.getElementById('f3').click());
+    document.getElementById('plain').addEventListener('click', () => log('plain clicked'));
+  </script>
+</body>
+</html>

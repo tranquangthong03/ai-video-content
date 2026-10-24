@@ -27,6 +27,7 @@ from app.explorer.mapper import (
 )
 from app.explorer.models import PageData
 from app.explorer.report import Deadline, DeadlineExceeded, Report
+from app.explorer.stateful import run_stateful
 from app.explorer.synthesize import synthesize
 from app.explorer.verify import verify_features
 from app.llm.json_call import JsonCaller
@@ -109,6 +110,7 @@ class ExploreRunner:
                 self._analyze()
                 self._synthesize()
                 self._verify(session)
+                self._stateful(session)
             self.save("done")
         except BlockedByChallenge:
             self.save("blocked_by_challenge")
@@ -237,6 +239,41 @@ class ExploreRunner:
             )
         self.report.data["request_guard"] = session.guard.report()
         verified_file.write_text(self.state.profile.model_dump_json(indent=2), encoding="utf-8")
+        self.save()
+
+    def _stateful(self, session: BrowserSession) -> None:
+        """Features that only appear once data exists (see explorer/stateful.py)."""
+        marker = self.dir / "stateful.json"
+        if marker.is_file():
+            return
+        assert self.state.profile is not None
+        self.progress("stateful", "Tìm tính năng chỉ hiện sau khi đã có dữ liệu...")
+        with self.report.timed("stateful"):
+            added = run_stateful(
+                session,
+                self.state.profile,
+                self.state.pages,
+                self.state.insights,
+                root_url=self.url,
+                site_type=self.state.site_type,
+                caller=self.caller,
+                out_dir=self.dir,
+                report=self.report,
+                deadline=self.deadline,
+                enter_policy=self.enter_policy,
+                scope_prefix=self.scope_prefix,
+                progress=self.progress,
+            )
+        for page in self.state.pages:  # keep the delta refs (sNeM) resolvable after a resume
+            if page.setup_steps:
+                (self.dir / "pages" / f"{page.n}.json").write_text(
+                    json.dumps(page.model_dump(), ensure_ascii=False, indent=2), encoding="utf-8"
+                )
+        self.report.data["request_guard"] = session.guard.report()
+        (self.dir / "profile_verified.json").write_text(
+            self.state.profile.model_dump_json(indent=2), encoding="utf-8"
+        )
+        marker.write_text(json.dumps({"added": [f.id for f in added]}), encoding="utf-8")
         self.save()
 
     # --- explore_more ------------------------------------------------------------------------

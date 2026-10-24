@@ -16,12 +16,12 @@ PARALLEL = 4
 
 def format_elements(page: PageData) -> str:
     return "\n".join(
-        f"{e.ref} | {e.role} | {e.name} | {e.region}" + (" | upload" if "upload" in e.caps else "")
+        f"{e.ref} | {e.role} | {e.name} | {e.region}" + (f" | {','.join(e.caps)}" if e.caps else "")
         for e in page.elements
     )
 
 
-def analyze_page(caller: JsonCaller, page: PageData) -> PageInsight:
+def analyze_page(caller: JsonCaller, page: PageData, step: str = "analyze") -> PageInsight:
     prompt = render(
         "page_analyzer",
         url=page.url,
@@ -31,7 +31,7 @@ def analyze_page(caller: JsonCaller, page: PageData) -> PageInsight:
         elements=format_elements(page),
         signals=json.dumps(page.signals, ensure_ascii=False),
     )
-    insight = caller.call("analyze", prompt, PageInsight)
+    insight = caller.call(step, prompt, PageInsight)
     insight.url, insight.title = page.url, page.title
     known = {e.ref for e in page.elements}
     insight.actions = [

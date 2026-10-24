@@ -33,7 +33,7 @@
       "additionalProperties": false,
       "required": ["do"],
       "properties": {
-        "do": { "enum": ["goto", "click", "type", "scroll", "hover", "wait", "upload"] },
+        "do": { "enum": ["goto", "click", "type", "scroll", "hover", "wait", "upload", "dblclick", "right_click"] },
         "url": { "type": ["string", "null"], "default": null },
         "ref": { "type": ["string", "null"], "default": null },
         "text": { "type": ["string", "null"], "default": null },
@@ -85,6 +85,11 @@
         "demo_score": { "type": "number", "minimum": 0, "maximum": 1, "default": 0, "description": "Confidence of the demo_kind verdict" },
         "demo_evidence": { "oneOf": [{ "$ref": "#/$defs/DemoEvidence" }, { "type": "null" }], "default": null },
         "showcase_target": { "oneOf": [{ "$ref": "#/$defs/ShowcaseTarget" }, { "type": "null" }], "default": null },
+        "requires_setup": {
+          "type": "boolean",
+          "default": false,
+          "description": "Only visible after earlier steps created some data; demo_steps then start with those setup steps"
+        },
         "verified": { "type": "boolean", "default": false },
         "demo_note": { "type": ["string", "null"], "default": null },
         "thumbnail": { "type": ["string", "null"], "default": null },

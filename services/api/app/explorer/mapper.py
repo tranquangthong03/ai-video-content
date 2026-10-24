@@ -20,7 +20,14 @@ from playwright.sync_api import BrowserContext, Page
 from app.browser.blacklist import is_blocked, is_blocked_href
 from app.browser.locate import Unsafe, check_clickable, resolve
 from app.browser.page_utils import detect_blockers, dismiss_cookie_banner
-from app.browser.urls import anchor_of, in_scope, normalize_url, path_prefix, same_site
+from app.browser.urls import (
+    anchor_of,
+    in_scope,
+    normalize_url,
+    path_prefix,
+    related_domain,
+    same_site,
+)
 from app.explorer.extract import extract_page, settle
 from app.explorer.models import PageData
 from app.explorer.report import Deadline, Report
@@ -46,6 +53,10 @@ NEGATIVE_PATH = re.compile(
 DEMO_TEXT = re.compile(
     r"\b(demo|live demo|try|playground|get started|app|dashboard|dùng thử|trải nghiệm)\b", re.I
 )
+# Link text that points at the product itself: always kept, whatever region the link is in
+KEEP_TEXT = re.compile(r"\b(demo|live demo|try|playground|dùng thử|trải nghiệm)\b", re.I)
+# Login/registration pages are ordinary pages, never "demo" pages
+AUTH_PATH = re.compile(r"/(log-?in|sign-?in|register|sign-?up|auth)(/|$)", re.I)
 INFO_TEXT = re.compile(r"\b(pricing|features?|giá|bảng giá|tính năng)\b", re.I)
 
 LINKS_JS = r"""
@@ -78,8 +89,14 @@ class Candidate:
     demo: bool = False  # looks like the product itself (demo/app/dashboard link or path)
 
 
+def is_auth_url(url: str) -> bool:
+    return bool(AUTH_PATH.search(urlparse(url).path))
+
+
 def is_demo_like(url: str, text: str) -> bool:
     path = urlparse(url).path
+    if is_auth_url(url):
+        return False
     return bool(
         DEMO_TEXT.search(text) or re.search(r"/(demo|app|dashboard|playground)\b", path, re.I)
     )
@@ -101,7 +118,7 @@ def score_candidate(
         score += 2.0
     if NEGATIVE_PATH.search(path):
         score -= 4.0
-    if DEMO_TEXT.search(text):
+    if DEMO_TEXT.search(text) and not is_auth_url(url):
         score += 4.0
     elif INFO_TEXT.search(text):
         score += 2.5
@@ -197,11 +214,20 @@ def candidates_from_links(
     nav_like = [lk for lk in raw_links if lk["region"] != "main"]
     # Pages without nav/header/footer links (single-page apps, tools): fall back to in-page links
     pool = nav_like if len(nav_like) >= 3 else raw_links
+    # Links that point at the product itself (demo, try, playground...) are kept from any region
+    kept = [
+        lk for lk in raw_links if KEEP_TEXT.search(lk["text"]) and not any(lk is p for p in pool)
+    ]
     out: dict[str, Candidate] = {}
     here = normalize_url(page_url)
-    for link in pool:
+    for link in [*pool, *kept]:
         url = normalize_url(link["href"], page_url)
-        if not url or not same_site(url, root):
+        demo_text = bool(KEEP_TEXT.search(link["text"]))
+        # a demo link may live on a subdomain of the root domain (demo.example.com)
+        allowed_site = bool(url) and (
+            same_site(url, root) or (demo_text and related_domain(url, root))  # type: ignore[arg-type]
+        )
+        if not url or not allowed_site:
             continue
         if anchor_of(link["href"]) and url == here:
             report.data["anchor_sections"] += 1
@@ -209,7 +235,8 @@ def candidates_from_links(
         if is_blocked(link["text"]) or is_blocked_href(url):
             report.skip(url, f"blacklist: {link['text']!r} -> {url}")
             continue
-        if not in_scope(url, root, prefix):
+        subdomain_demo = demo_text and not same_site(url, root)
+        if not subdomain_demo and not in_scope(url, root, prefix):
             listed = report.data["out_of_scope"]
             if len(listed) < MAX_OUT_OF_SCOPE_LISTED and not any(x["url"] == url for x in listed):
                 listed.append({"url": url, "text": link["text"]})
@@ -357,7 +384,10 @@ def visit(
         report.skip(cand.url, f"http_error: {blockers['http_error']}")
         return None
     final = normalize_url(page.url)
-    if not final or not same_site(final, root):
+    on_site = bool(final) and (
+        same_site(final, root) or (cand.demo and related_domain(final, root))  # type: ignore[arg-type]
+    )
+    if not final or not on_site:
         report.skip(cand.url, f"redirected_off_site: {page.url}")
         return None
     if blockers["needs_login"]:

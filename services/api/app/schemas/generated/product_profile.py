@@ -31,7 +31,17 @@ class DemoStep(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    do: Literal['goto', 'click', 'type', 'scroll', 'hover', 'wait', 'upload']
+    do: Literal[
+        'goto',
+        'click',
+        'type',
+        'scroll',
+        'hover',
+        'wait',
+        'upload',
+        'dblclick',
+        'right_click',
+    ]
     url: str | None = None
     ref: str | None = None
     text: str | None = None
@@ -86,6 +96,12 @@ class Feature(BaseModel):
     ] = 0
     demo_evidence: DemoEvidence | None = None
     showcase_target: ShowcaseTarget | None = None
+    requires_setup: Annotated[
+        bool,
+        Field(
+            description='Only visible after earlier steps created some data; demo_steps then start with those setup steps'
+        ),
+    ] = False
     verified: bool = False
     demo_note: str | None = None
     thumbnail: str | None = None

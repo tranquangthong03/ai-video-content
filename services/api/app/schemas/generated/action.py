@@ -13,7 +13,17 @@ class BrowserAction(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    do: Literal['goto', 'click', 'type', 'scroll', 'wait', 'hover', 'upload']
+    do: Literal[
+        'goto',
+        'click',
+        'type',
+        'scroll',
+        'wait',
+        'hover',
+        'upload',
+        'dblclick',
+        'right_click',
+    ]
     target: Annotated[
         str | None, Field(description='Natural-language description of the element')
     ] = None

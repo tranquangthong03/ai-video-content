@@ -22,14 +22,21 @@ from playwright.sync_api import Page
 from playwright.sync_api import TimeoutError as PlaywrightTimeout
 
 from app.browser.enter_policy import Policy, enter_decision
-from app.browser.locate import Unsafe, check_clickable, check_typeable, resolve
-from app.browser.page_utils import dismiss_cookie_banner
+from app.browser.locate import (
+    ElementInfo,
+    Target,
+    Unsafe,
+    check_clickable,
+    check_typeable,
+    resolve,
+)
+from app.browser.page_utils import dismiss_cookie_banner, wait_for_settle
 from app.browser.session import BrowserSession
 from app.browser.urls import in_scope, normalize_url, same_site
 from app.explorer.extract import settle
 from app.explorer.models import Element, PageData
 from app.explorer.report import Deadline, Report
-from app.explorer.samples import pick_sample, sample_path
+from app.explorer.samples import CATALOG, pick_sample, sample_path
 from app.schemas.generated.page_insight import PageInsight
 from app.schemas.generated.product_profile import (
     DemoEvidence,
@@ -58,6 +65,11 @@ SIGNATURE_JS = """
     visible: [...document.querySelectorAll('a,button,input,select,textarea,[role=button]')].filter(vis).length,
     items: [...document.querySelectorAll('li,tr,[role=listitem],[role=row]')].filter(vis).length,
     scrollY: Math.round(scrollY),
+    editing: (() => {
+      const a = document.activeElement;
+      const editable = a && (['INPUT', 'TEXTAREA'].includes(a.tagName) || a.isContentEditable);
+      return editable ? a.tagName + '#' + (a.id || '') + '.' + (a.className || '') : null;
+    })(),
     box: bigMain
       ? { x, y, w: Math.max(1, Math.min(b.width, innerWidth - x)), h: Math.max(1, Math.min(b.height, innerHeight - y)) }
       : { x: 0, y: 0, w: innerWidth, h: innerHeight },
@@ -69,18 +81,41 @@ SIGNATURE_JS = """
 SHOWCASE_JS = r"""
 (tokens) => {
   const clean = (t) => (t || '').replace(/\s+/g, ' ').trim();
-  const vis = (e) => { const r = e.getBoundingClientRect(); return r.width > 1 && r.height > 1; };
-  let best = null;
-  document.querySelectorAll('section,article,li,div,p,h1,h2,h3,header,main').forEach((el) => {
-    if (!vis(el)) return;
+  // navigation-like blocks are never worth highlighting
+  const SKIP = 'nav,footer,[role=navigation],[role=contentinfo],#toc,#markdown-toc,[class*=toc],' +
+    '[class*=breadcrumb],[aria-label*=breadcrumb i],[class*=sidebar],[class*=menu]';
+  const sized = (el) => {
+    const r = el.getBoundingClientRect();
+    return r.height >= 120 && r.height <= 900 && r.width >= innerWidth * 0.4;
+  };
+  const usable = (el) => !el.closest(SKIP) && sized(el);
+  const fraction = (el) => {
     const text = clean(el.innerText).toLowerCase();
-    if (text.length < 10 || text.length > 1500) return;
-    const score = tokens.filter((w) => text.includes(w)).length / tokens.length;
-    if (score < 0.6) return;
-    if (!best || score > best.score + 0.05 || (Math.abs(score - best.score) <= 0.05 && text.length < best.len)) {
-      best = { el, score, len: text.length };
-    }
-  });
+    return text.length < 10 || text.length > 2000 ? 0 : tokens.filter((w) => text.includes(w)).length / tokens.length;
+  };
+  const hasHeadingAndText = (el) => !!el.querySelector('h1,h2,h3,h4') && !!el.querySelector('p');
+
+  let best = null;
+  const consider = (el, score) => {
+    if (score < 0.6 || !usable(el)) return;
+    const rank = [score >= 0.95 ? 1 : 0, hasHeadingAndText(el) ? 1 : 0];
+    const len = clean(el.innerText).length;
+    const better = !best || rank[0] > best.rank[0] || (rank[0] === best.rank[0] && (
+      rank[1] > best.rank[1] || (rank[1] === best.rank[1] && len < best.len)));
+    if (better) best = { el, score, rank, len };
+  };
+  document.querySelectorAll('section,article,div,main > *').forEach((el) => consider(el, fraction(el)));
+
+  if (!best) {
+    // only a small element (heading, paragraph) matches: take the block around it instead
+    document.querySelectorAll('h1,h2,h3,h4,p,li').forEach((el) => {
+      const score = fraction(el);
+      if (score < 0.6 || el.closest(SKIP)) return;
+      let block = el.closest('section,article') || el.parentElement;
+      while (block && !sized(block) && block.parentElement && block.tagName !== 'BODY') block = block.parentElement;
+      if (block && usable(block)) consider(block, Math.max(score, fraction(block)));
+    });
+  }
   if (!best) return null;
   const pathTo = (el) => {
     const parts = [];
@@ -92,7 +127,11 @@ SHOWCASE_JS = r"""
     return parts.join(' > ');
   };
   best.el.scrollIntoView({ block: 'center' });
-  return { selector: pathTo(best.el), score: best.score, snippet: clean(best.el.innerText).slice(0, 160) };
+  const h = best.el.querySelector('h1,h2,h3,h4');
+  return {
+    selector: pathTo(best.el), score: best.score,
+    snippet: clean((h ? h.innerText + ' - ' : '') + best.el.innerText).slice(0, 160),
+  };
 }
 """
 
@@ -107,11 +146,13 @@ class Evidence:
     new_dialog: bool = False
     new_list_items: int = 0
     visual_diff: float = 0.0
+    editing: bool = False  # a double-click turned an element into an input
     notes: list[str] = field(default_factory=list)
 
     def in_page_signals(self) -> int:
         return sum(
             [
+                self.editing,
                 self.new_dialog,
                 self.new_list_items > 0,
                 self.dom_delta >= 2,
@@ -121,7 +162,8 @@ class Evidence:
 
     def has_in_page_change(self) -> bool:
         return (
-            self.new_dialog
+            self.editing
+            or self.new_dialog
             or self.new_list_items > 0
             or self.dom_delta >= 2
             or self.visual_diff >= IN_PAGE_DIFF
@@ -218,6 +260,8 @@ class Context:
     feature_id: str
     enter_policy: Policy
     guard_on: bool
+    setup_len: int = 0  # leading steps that only recreate a state; their effects are not evidence
+    typed: set[str] = field(default_factory=set)  # sample texts typed so far (data, not labels)
 
 
 def perform_step(page: Page, step: DemoStep, ctx: Context) -> None:
@@ -264,11 +308,13 @@ def perform_step(page: Page, step: DemoStep, ctx: Context) -> None:
     target = resolution.target
     info = target.info()
     try:
-        if step.do in ("click", "hover"):
-            check_clickable(info, ctx.root_url, scope_prefix=ctx.scope_prefix)
+        if step.do in ("click", "dblclick", "right_click", "hover"):
+            check_clickable(
+                info, ctx.root_url, scope_prefix=ctx.scope_prefix, ignore_texts=ctx.typed
+            )
         elif step.do == "type":
             check_typeable(info)
-        elif step.do == "upload" and info.input_type != "file":
+        elif step.do == "upload" and not (info.input_type == "file" or info.file_input):
             raise Unsafe("other", "upload target is not a file input")
     except Unsafe as e:
         report.block("verify", name, e.reason, e.detail, feature=ctx.feature_id)
@@ -281,20 +327,70 @@ def perform_step(page: Page, step: DemoStep, ctx: Context) -> None:
         "name": name,
         "strategy": resolution.strategy,
     }
+    _act(page, step, ctx, target, info, element, name, record)
+    wait_for_settle(page)  # network idle + quiet DOM + viewport images loaded
+
+
+def _sample_for(
+    step: DemoStep, info: ElementInfo, element: Element | None, name: str
+) -> tuple[str, str]:
+    """(sample file name, absolute path) for an upload: the step's file, else chosen by `accept`."""
+    accept = info.file_accept or (element.accept if element else None)
+    file_name = step.file if step.file in CATALOG else pick_sample(accept, name)
+    return file_name, str(sample_path(file_name))
+
+
+def _auto_upload(ctx: Context, name: str, via: str, file_name: str, step: DemoStep) -> None:
+    ctx.report.data["auto_upload"].append(
+        {"feature": ctx.feature_id, "ref": step.ref, "name": name, "via": via, "file": file_name}
+    )
+
+
+def _act(
+    page: Page,
+    step: DemoStep,
+    ctx: Context,
+    target: Target,
+    info: ElementInfo,
+    element: Element | None,
+    name: str,
+    record: dict[str, Any],
+) -> None:
+    """Carry out a step on the resolved (and already safety-checked) element."""
+    report = ctx.report
     if step.do == "click":
         report.data["clicks"].append(record)
-        target.click()
+        if info.file_input:  # a file input, its label or its drop zone: never open a native dialog
+            handle = target.file_input()
+            if handle:
+                file_name, path = _sample_for(step, info, element, name)
+                handle.set_input_files(path)
+                _auto_upload(ctx, name, "direct", file_name, step)
+                return
+        chooser = target.click_catching_file_chooser(page)  # some buttons open a chooser via JS
+        if chooser:
+            file_name, path = _sample_for(step, info, element, name)
+            chooser.set_files(path)
+            _auto_upload(ctx, name, "chooser", file_name, step)
+    elif step.do == "dblclick":
+        report.data["clicks"].append({**record, "kind": "dblclick"})
+        target.dblclick()
+    elif step.do == "right_click":
+        report.data["clicks"].append({**record, "kind": "right_click"})
+        target.right_click()
     elif step.do == "hover":
         target.hover()
     elif step.do == "type":
         target.fill(step.text or "")  # typed text is never checked against the blacklist
+        if step.text:
+            ctx.typed.add(step.text.strip().lower())
         allowed, reason = enter_decision(
             info, page.url, guard_on=ctx.guard_on, policy=ctx.enter_policy
         )
         if allowed:
             target.press("Enter")
             report.data["enter"]["pressed"] += 1
-            page.wait_for_timeout(600)
+            wait_for_settle(page)
             if not same_site(page.url, ctx.root_url):  # Enter navigated away: come back
                 page.go_back()
         else:
@@ -304,11 +400,13 @@ def perform_step(page: Page, step: DemoStep, ctx: Context) -> None:
     elif step.do == "scroll":
         target.scroll_into_view()
     elif step.do == "upload":
-        file_name = step.file or pick_sample(element.accept if element else None, name)
-        target.set_input_files(str(sample_path(file_name)))
+        file_name, path = _sample_for(step, info, element, name)
+        handle = target.file_input()
+        if handle:
+            handle.set_input_files(path)
+        else:
+            target.set_input_files(path)
         report.data["clicks"].append({**record, "file": file_name})
-        page.wait_for_timeout(1500)  # results of an upload (previews, tables) take a moment
-    page.wait_for_timeout(500)
 
 
 def _fail(
@@ -333,7 +431,7 @@ def _fail(
 def run_feature(
     session: BrowserSession, feature: Feature, ctx: Context, out_dir: Path, deadline: Deadline
 ) -> FeatureRun:
-    run = FeatureRun(steps_total=len(feature.demo_steps))
+    run = FeatureRun(steps_total=len(feature.demo_steps) - ctx.setup_len)
     shots = out_dir / "verify" / re.sub(r"[^\w-]", "_", feature.id)
     context = session.new_context()
     try:
@@ -364,18 +462,24 @@ def run_feature(
             except Exception as e:
                 _fail(run, ctx, page, shots, k, step, e)
                 break
-            run.steps_done += 1
+            if k > ctx.setup_len:
+                run.steps_done += 1
             after = page.evaluate(SIGNATURE_JS)
             after_path = shots / f"step{k}_after.png"
             after_img = _snap(page, after_path)
             run.thumbnail = str(after_path)
             run.final_url = after["url"]
+            if k <= ctx.setup_len:
+                continue  # setup steps only recreate a state; their effects are not evidence
 
             if normalize_url(before["url"]) != normalize_url(after["url"]):
                 ev.url_changed = True
             if _path(before["url"]) != _path(after["url"]):
                 ev.path_changed = True
                 continue  # a new page: its pixels/elements say nothing about an in-page change
+            if step.do == "dblclick" and after["editing"] and after["editing"] != before["editing"]:
+                ev.editing = True
+                ev.notes.append("double-click turned the element into an input")
             ev.dom_delta += abs(after["visible"] - before["visible"])
             ev.new_dialog |= after["dialogs"] > before["dialogs"]
             ev.new_list_items += max(0, after["items"] - before["items"])
@@ -481,6 +585,8 @@ def judge_feature(
         target_type=insight.page_type if insight else None,
     )
     notes = list(run.evidence.notes)
+    if feature.requires_setup:
+        notes.append(f"requires setup: first {ctx.setup_len} steps recreate the state")
     if kind == "navigation" and not insight:
         notes.append(f"target page not analysed: {final}")
     feature.demo_evidence = DemoEvidence(
@@ -517,9 +623,14 @@ def verify_features(
     limit: int = MAX_FEATURES,
     enter_policy: Policy = "strict",
     scope_prefix: str | None = None,
+    setup_counts: dict[str, int] | None = None,
     on_feature: Any = None,
 ) -> None:
-    """Judge the `limit` most important features in place; the rest keep demo_kind = None."""
+    """Judge the `limit` most important features in place; the rest keep demo_kind = None.
+
+    setup_counts: feature id -> number of leading setup steps (stateful features), whose effects
+    are replayed but not counted as evidence.
+    """
     lookup = {u: p for p in pages if (u := normalize_url(p.url))}
     by_url = {u: i for i in (insights or []) if (u := normalize_url(i.url))}
     ranked = sorted(profile.features, key=lambda f: -f.importance)[:limit]
@@ -535,6 +646,7 @@ def verify_features(
             feature.id,
             enter_policy,
             guard_on=not session.guard.allow_mutations,
+            setup_len=(setup_counts or {}).get(feature.id, 0),
         )
         judge_feature(session, feature, ctx, out_dir, deadline, by_url)
         if on_feature:

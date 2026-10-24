@@ -1,4 +1,40 @@
-# Explorer benchmark: lần 1 vs lần 2
+# Explorer benchmark: lần 1 vs lần 2 vs lần 3
+
+> Mục 0 là lần 3 (vòng sửa cuối: auto_upload, wait_for_settle, link demo, showcase_target, dblclick, stateful delta). Các mục 1–7 bên dưới là phân tích lần 1 → lần 2 giữ nguyên. Dữ liệu thô: lần 1 `services/api/out/run1/`, lần 2 `out/run2/`, lần 3 `out/<site>/`. Nội dung site sống có thể đã đổi giữa các lần chạy; ba site chạy song song nên `llm-log.jsonl` của lần 3 gộp chung.
+
+## 0. Lần 3 (lần 1 → lần 2 → lần 3)
+
+| | plausible | todomvc | squoosh |
+|---|---|---|---|
+| Trang đã xem | 15 → 15 → 15 | 6 → 2 → 2 | 1 → 1 → 1 |
+| Số tính năng | 8 → 8 → 12 (4 từ delta) | 8 → 2 → 4 (1 từ delta) | 7 → 6 → 7 |
+| Kết luận demo | 6×1.0, 2×0 → null 2, showcase 6 → interaction 7, showcase 1, navigation 1, failed 1, null 2 | → interaction 1, showcase 1 → interaction 3, failed 1 | → failed 2, showcase 4 → showcase 4, interaction 1, failed 1, null 1 |
+| Click đã làm | 7 → 13 → 40 (1 bị chặn) | 4 → 1 → 6 | 0 → 2 → 1 |
+| Định vị | — → role_exact 11, css 2 → role_exact 17, role_partial 20, css 3 (1 lỗi) | — → css 2 → css 9, css_nth 1 | — → css_nth 1, role_exact 1 → giống |
+| auto_upload | — | — | 0 lần |
+| Stateful | — | 1 trang → `filter_todos` | không chạy |
+| Thời gian (s) | 99.5 → 109.3 → 216.8 | 94.7 → 38.5 → 107.4 | 60.5 → 63.6 → 63.6 |
+| Token | 81970 → 70735 → 87448 | 24559 → 11003 → 18455 | 13811 → 14401 → 16721 |
+
+Thời gian tăng chủ yếu vì bước `stateful` (84.6 s plausible, 50.4 s todomvc) và `wait_for_settle` sau mỗi bước.
+
+### Kỳ vọng so với kết quả lần 3
+
+| Kỳ vọng | Kết quả |
+|---|---|
+| todomvc: filter-views là interaction (requires_setup) | **Đạt.** `filter_todos` = interaction, `requires_setup=true`, steps `goto, click, type, goto, click, click`. Nhưng có 1 lỗi timeout ở bước 5 (click `footer a` nth 3 "Active" bị che/không nhấp được trong 4 s) nên chỉ một phần bước chạy tới nơi; kết luận dựa trên dom_delta=5 từ các bước trước. |
+| todomvc: toggle-complete là interaction | **Không đạt.** Không có tính năng toggle; synthesizer delta chỉ đề xuất `filter_todos`. |
+| todomvc: edit-todo là interaction qua dblclick | **Đạt một phần.** `edit-todo-inline` = interaction với bước `dblclick`, nhưng nó tự gồm cả `type` thay vì `requires_setup`, và bằng chứng new_list_items=4 đến từ bước thêm todo chứ không chỉ từ dblclick. |
+| squoosh: nén ảnh là interaction nhờ auto_upload | **Không đạt.** `compress-image` vẫn là showcase, `auto_upload` rỗng. LLM sinh `open-image-input` với bước `hover` lên `input[type=file]` ẩn → timeout 4 s (hover trên input ẩn không thể thực hiện), nên không bao giờ tới bước click. auto_upload chỉ chuyển đổi `click`, không chuyển `hover`. Stateful không chạy vì chưa có interaction nào tạo dữ liệu. |
+| plausible: trang live demo được phân tích | **Đạt.** Trang demo `https://plausible.io/plausible.io` nằm trong 15 trang; từ đó stateful sinh 4 tính năng (channel_breakdown, goals_conversions, realtime_visitors, browser_breakdown), 7 tính năng interaction trong tổng số. Còn 1 lỗi định vị (`AI Assistants`, step 7 của channel_breakdown: không tìm thấy bằng cả 5 chiến lược). |
+
+### Điểm còn tồn tại (chưa sửa, theo yêu cầu dừng sau vòng này)
+
+1. `hover`/bước khác lên `input[type=file]` ẩn nên được đổi thành upload (hoặc bị loại ở sanitize) như `click`; đây là nguyên nhân squoosh vẫn chưa upload được.
+2. Phần tử delta `AI Assistants` của plausible không định vị được sau khi tái hiện trạng thái (cả role/text/css_nth/bbox đều lệch); cần điều tra.
+3. Delta của todomvc thiếu toggle-complete: chưa kiểm chứng nguyên nhân (nghi ngờ: checkbox mới không được phân tích thành action riêng).
+4. Click `footer a` nth 3 trên todomvc bị timeout ở bước 5: Playwright báo "waiting ... attempting click" lặp lại; nguyên nhân chưa kiểm chứng (nghi ngờ phần tử bị che hoặc đang đổi vị trí).
+5. Thời gian chạy tăng gấp ~2 do stateful; giới hạn 3 trang/lần chạy đã áp dụng.
 
 Cùng cấu hình chạy cho cả hai lần: `uv run python -m app.pipeline.explore_cli --auto` với câu trả lời có sẵn (`services/api/tests/fixtures/answers/<site>.json`), cache LLM tắt, DeepSeek thật, Chromium 1920x1080, request guard bật.
 

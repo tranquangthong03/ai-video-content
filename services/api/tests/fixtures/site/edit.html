@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Sửa tại chỗ</title></head>
+<body>
+  <main>
+    <h1>Danh sách</h1>
+    <ul id="list">
+      <li><label id="item1">Tưới cây</label></li>
+      <li><label id="item2">Delete me</label></li>
+    </ul>
+    <p>Double-click to edit a todo</p>
+    <p id="rc">Chuột phải vào đây</p>
+    <div id="menu" hidden>
+      <button>Sao chép</button><button>Dán</button><button>Đổi tên</button>
+    </div>
+  </main>
+  <script>
+    // React-style: the handler is attached with addEventListener, there is no ondblclick attribute
+    document.querySelectorAll('#list label').forEach((label) => {
+      label.addEventListener('dblclick', () => {
+        if (label.textContent.includes('Delete')) { fetch('/hit/dbl-delete'); return; }
+        const input = document.createElement('input');
+        input.value = label.textContent;
+        label.replaceWith(input);
+        input.focus();
+      });
+    });
+    document.getElementById('rc').addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      document.getElementById('menu').hidden = false;
+    });
+  </script>
+</body>
+</html>
