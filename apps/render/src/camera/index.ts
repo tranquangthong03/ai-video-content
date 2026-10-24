@@ -175,3 +175,8 @@ export function cursorAt(tMs: number, clicks: ClipClick[], clip: Size, frame: Si
   }
   return { ...pos, opacity: Math.min(fadeIn, fadeOut), press, ripples };
 }
+
+// the focus-first camera (desktop_focus) and its knobs
+export * from "./focus";
+export { CAMERA_CONFIG } from "./config";
+export type { CameraConfig, FocusKind } from "./config";
