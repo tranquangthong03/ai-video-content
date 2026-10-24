@@ -9,7 +9,7 @@ from app.browser.session import BrowserSession
 def take_screenshot(
     session: BrowserSession, url: str, out_path: Path, viewport: dict[str, int] | None = None
 ) -> Path:
-    """PNG of `url` (viewport-sized, default 1920x1080) once it has settled and the cookie banner is gone."""
+    """Viewport-sized PNG (default 1920x1080) of `url` once settled, cookie banner gone."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
     context = session.new_context(viewport=viewport)
     try:

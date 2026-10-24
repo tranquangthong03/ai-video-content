@@ -47,8 +47,8 @@ class BrowserSession:
     ) -> BrowserContext:
         """Fresh context (clean storage apart from --storage-state) with the guard installed.
 
-        viewport: defaults to the explorer's 1920x1080; the recorder passes the script's capture size.
-        record_video_dir: record every page of the context as a webm of that size into the directory.
+        viewport: the explorer's 1920x1080 by default; the recorder passes the capture size.
+        record_video_dir: record every page as a webm of that size into the directory.
         """
         assert self.browser is not None, "use BrowserSession as a context manager"
         size = viewport or VIEWPORT

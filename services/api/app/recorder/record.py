@@ -151,10 +151,12 @@ SECTION_JS = """
 (el) => {
   const vw = innerWidth, vh = innerHeight;
   const rect = (e) => e.getBoundingClientRect();
-  const tags = new Set(['SECTION', 'ARTICLE', 'ASIDE', 'HEADER', 'FOOTER', 'NAV', 'FORM', 'LI', 'FIGURE']);
+  const tags = new Set(
+    ['SECTION', 'ARTICLE', 'ASIDE', 'HEADER', 'FOOTER', 'NAV', 'FORM', 'LI', 'FIGURE']);
   const base = rect(el);
   let pick = el;
-  for (let e = el.parentElement; e && e !== document.body && e !== document.documentElement; e = e.parentElement) {
+  const root = (e) => e === document.body || e === document.documentElement;
+  for (let e = el.parentElement; e && !root(e); e = e.parentElement) {
     const r = rect(e);
     if (r.height > vh * 0.9 || r.width < base.width * 0.9) break;
     const role = e.getAttribute('role');
@@ -174,10 +176,12 @@ CENTER_BLOCK_JS = """
   const vw = innerWidth, vh = innerHeight;
   const main = document.querySelector('main') || document.body;
   const stack = document.elementsFromPoint(vw / 2, vh / 2);
-  const el = stack.find((e) => main.contains(e) && e !== main && e !== document.body && e !== document.documentElement);
+  const isRoot = (e) => e === main || e === document.body || e === document.documentElement;
+  const el = stack.find((e) => main.contains(e) && !isRoot(e));
   if (!el) return null;
   let block = el;
-  while (block.parentElement && block.parentElement !== main && block.parentElement !== document.body) {
+  while (block.parentElement && block.parentElement !== main &&
+         block.parentElement !== document.body) {
     block = block.parentElement;
   }
   if (block.getBoundingClientRect().height > vh * 1.1) {
@@ -284,7 +288,7 @@ class _Recorder:
         )
 
     def sample_center(self) -> None:
-        """While scrolling: the block in the middle of the viewport is what the camera should show."""
+        """While scrolling the camera should show the block in the middle of the viewport."""
         try:
             self.focus("scroll", self.page.evaluate(CENTER_BLOCK_JS))
         except Exception:
