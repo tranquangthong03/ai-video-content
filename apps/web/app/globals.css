@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 99%;
+  --foreground: 224 30% 12%;
+  --card: 0 0% 100%;
+  --muted: 220 16% 95%;
+  --muted-foreground: 220 9% 40%;
+  --border: 220 14% 88%;
+  --primary: 243 75% 55%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 243 80% 96%;
+  --accent-foreground: 243 60% 35%;
+  --destructive: 0 72% 46%;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  font-family: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+}

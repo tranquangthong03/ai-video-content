@@ -1,0 +1,147 @@
+import type { InteractionRequest, UserResponse } from "./generated";
+
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+export type JobStatus = "queued" | "running" | "waiting" | "done" | "failed" | "cancelled";
+
+export interface JobState {
+  job_id: string;
+  url: string;
+  status: JobStatus;
+  step: string;
+  progress_text: string;
+  progress_pct: number;
+  latest_screenshot: string | null;
+  error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SceneView {
+  id: string;
+  type: string;
+  shot: string;
+  feature: string | null;
+  key_point: string | null;
+  voiceover: string | null;
+  on_screen_text: string | null;
+  estimated_ms: number;
+}
+
+export interface ScriptExtra {
+  version: number;
+  versions: number[];
+  title: string | null;
+  headline: string | null;
+  headline_highlight: string | null;
+  badge: string | null;
+  theme: { primary?: string; accent?: string } | null;
+  target_duration_s: number;
+  scenes: SceneView[];
+  estimated_ms: number;
+  footage_ratio: number | null;
+  footage_min: number | null;
+  recommended_duration_s: number | null;
+  warnings: string[];
+}
+
+export interface HistoryItem {
+  kind: string;
+  interaction_id: string;
+  action: string;
+  answers: Record<string, string | string[]> | null;
+  instruction: string | null;
+}
+
+export interface ReportScene {
+  id: string;
+  type: string;
+  kind: string;
+  speech_ms: number;
+  final_ms: number;
+  idle_max_ms: number | null;
+  warnings: string[];
+}
+
+export interface ReportSummary {
+  headline: string | null;
+  target_ms: number;
+  estimated_ms: number;
+  actual_ms: number;
+  footage_ratio: number | null;
+  idle_ok: boolean;
+  warnings: string[];
+  scenes: ReportScene[];
+  features: { id: string; name: string }[];
+}
+
+export interface JobDetail {
+  state: JobState;
+  steps: { id: string; label: string }[];
+  queue_position: number | null;
+  pending: InteractionRequest | null;
+  pending_extra: ScriptExtra | null;
+  history: HistoryItem[];
+  video_url: string | null;
+  report: ReportSummary | null;
+  can_resume: boolean;
+}
+
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, { cache: "no-store", ...init });
+  } catch {
+    throw new ApiError(0, "Không kết nối được máy chủ. Hãy kiểm tra API đã chạy chưa.");
+  }
+  if (!res.ok) {
+    let message = `Lỗi ${res.status}`;
+    try {
+      const body = await res.json();
+      if (typeof body.detail === "string") message = body.detail;
+    } catch {
+      /* keep the generic message */
+    }
+    throw new ApiError(res.status, message);
+  }
+  return (await res.json()) as T;
+}
+
+const json = (body: unknown): RequestInit => ({
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(body),
+});
+
+export const api = {
+  createJob(url: string, storageState?: File | null): Promise<JobDetail> {
+    const form = new FormData();
+    form.set("url", url);
+    if (storageState) form.set("storage_state", storageState);
+    return request("/api/jobs", { method: "POST", body: form });
+  },
+  listJobs: () => request<(JobState & { queue_position: number | null })[]>("/api/jobs"),
+  getJob: (id: string) => request<JobDetail>(`/api/jobs/${id}`),
+  respond: (id: string, body: UserResponse) => request<{ ok: boolean }>(`/api/jobs/${id}/respond`, json(body)),
+  cancel: (id: string) => request<JobDetail>(`/api/jobs/${id}/cancel`, { method: "POST" }),
+  resume: (id: string, redoScript = false) =>
+    request<JobDetail>(`/api/jobs/${id}/resume?redo_script=${redoScript}`, { method: "POST" }),
+};
+
+/** URL of a file inside a job dir (screenshots, thumbnails, the video). */
+export function fileUrl(jobId: string, relative: string): string {
+  return `${API_URL}/api/jobs/${jobId}/files/${relative.replace(/^\/+/, "")}`;
+}
+
+export function absoluteUrl(path: string): string {
+  return path.startsWith("http") ? path : `${API_URL}${path}`;
+}
