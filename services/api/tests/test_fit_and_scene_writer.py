@@ -4,8 +4,8 @@ from typing import Any
 
 import pytest
 
+from app.core.timing import estimate_speech_ms
 from app.llm.json_call import JsonCaller
-from app.media.timing import estimate_speech_ms
 from app.schemas.generated.script import Script
 from app.script.fit_duration import (
     TOLERANCE,

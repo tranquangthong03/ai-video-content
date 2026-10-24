@@ -33,10 +33,10 @@ from app.browser.locate import (
 from app.browser.page_utils import dismiss_cookie_banner, wait_for_settle
 from app.browser.session import BrowserSession
 from app.browser.urls import in_scope, normalize_url, same_site
+from app.core.samples import CATALOG, pick_sample, sample_path
 from app.explorer.extract import settle
 from app.explorer.models import Element, PageData
 from app.explorer.report import Deadline, Report
-from app.explorer.samples import CATALOG, pick_sample, sample_path
 from app.schemas.generated.page_insight import PageInsight
 from app.schemas.generated.product_profile import (
     DemoEvidence,
@@ -136,6 +136,28 @@ SHOWCASE_JS = r"""
 """
 
 
+EDITING_INSIDE_JS = """
+([container, el]) => {
+  const a = document.activeElement;
+  if (!a || !container || a === el) return false;  // an input that was already the target
+  const editable = ['INPUT', 'TEXTAREA'].includes(a.tagName) || a.isContentEditable;
+  return editable && container.contains(a);
+}
+"""
+
+
+def same_document(a: str | None, b: str | None) -> bool:
+    """Same loaded page: only the fragment (an SPA hash route) may differ, no reload needed."""
+    pa, pb = urlparse(a or ""), urlparse(b or "")
+    key = lambda p: (p.scheme, p.netloc, p.path.rstrip("/"), p.query)  # noqa: E731
+    return key(pa) == key(pb)
+
+
+def same_url(a: str | None, b: str | None) -> bool:
+    """Same page including the fragment: a hash route is a real step, a reload is not."""
+    return normalize_url(a or "", keep_anchor=True) == normalize_url(b or "", keep_anchor=True)
+
+
 @dataclass
 class Evidence:
     """What changed while a feature's steps ran. In-page signals come only from steps that stayed on one path."""
@@ -147,6 +169,7 @@ class Evidence:
     new_list_items: int = 0
     visual_diff: float = 0.0
     editing: bool = False  # a double-click turned an element into an input
+    edit_failed: bool = False  # a double-click did not open an edit field
     notes: list[str] = field(default_factory=list)
 
     def in_page_signals(self) -> int:
@@ -262,6 +285,7 @@ class Context:
     guard_on: bool
     setup_len: int = 0  # leading steps that only recreate a state; their effects are not evidence
     typed: set[str] = field(default_factory=set)  # sample texts typed so far (data, not labels)
+    dblclick_editing: bool | None = None  # set by a dblclick step: did it open an edit field?
 
 
 def perform_step(page: Page, step: DemoStep, ctx: Context) -> None:
@@ -291,7 +315,7 @@ def perform_step(page: Page, step: DemoStep, ctx: Context) -> None:
     spec = step.locator or (element.spec() if element else None)
     if spec is None:
         raise StepFailure("not_found", f"ref {step.ref} unknown on {step_url}")
-    if normalize_url(page.url) != step_url:  # the ref belongs to another page: go there first
+    if not same_document(page.url, step_url):  # the ref belongs to another page: go there first
         page.goto(step_url, wait_until="domcontentloaded")
         settle(page)
 
@@ -380,7 +404,10 @@ def _act(
             _auto_upload(ctx, name, "chooser", file_name, step)
     elif step.do == "dblclick":
         report.data["clicks"].append({**record, "kind": "dblclick"})
+        container, clicked = target.item_container(), target.handle()
         target.dblclick()
+        # success means an edit field is now focused inside the item that was double-clicked
+        ctx.dblclick_editing = bool(page.evaluate(EDITING_INSIDE_JS, [container, clicked]))
     elif step.do == "right_click":
         report.data["clicks"].append({**record, "kind": "right_click"})
         target.right_click()
@@ -459,14 +486,25 @@ def run_feature(
             if deadline.expired():
                 run.error = "time budget exhausted"
                 break
+            if ctx.setup_len and k == ctx.setup_len + 1 and step.do == "goto":
+                if same_url(step.url, page.url):  # a reload here would throw the setup state away
+                    run.steps_total -= 1
+                    ev.notes.append("skipped a reload that would lose the setup state")
+                    continue
             before = page.evaluate(SIGNATURE_JS)
             before_img = _snap(page, shots / f"step{k}_before.png")
             page.wait_for_timeout(350)
             noise = diff_fraction(before_img, page.screenshot(), before["box"])  # idle animation
+            ctx.dblclick_editing = None  # only a real double-click on an item sets it
             try:
                 perform_step(page, step, ctx)
             except Exception as e:
                 _fail(run, ctx, page, shots, k, step, e)
+                break
+            if step.do == "dblclick" and k > ctx.setup_len and ctx.dblclick_editing is False:
+                run.error = f"step {k} (dblclick) did not open an edit field"
+                ev.notes.append("double-click did not open an edit field in that item")
+                ev.edit_failed = True
                 break
             if k > ctx.setup_len:
                 run.steps_done += 1
@@ -483,7 +521,7 @@ def run_feature(
             if _path(before["url"]) != _path(after["url"]):
                 ev.path_changed = True
                 continue  # a new page: its pixels/elements say nothing about an in-page change
-            if step.do == "dblclick" and after["editing"] and after["editing"] != before["editing"]:
+            if step.do == "dblclick" and ctx.dblclick_editing:
                 ev.editing = True
                 ev.notes.append("double-click turned the element into an input")
             ev.dom_delta += abs(after["visible"] - before["visible"])
@@ -591,6 +629,9 @@ def judge_feature(
         target_type=insight.page_type if insight else None,
     )
     notes = list(run.evidence.notes)
+    if kind == "interaction" and run.evidence.edit_failed:
+        kind, score = None, 0.0  # changes from other steps do not prove the edit works
+        notes.append("double-click step never opened an edit field")
     if feature.requires_setup:
         notes.append(f"requires setup: first {ctx.setup_len} steps recreate the state")
     if kind == "navigation" and not insight:

@@ -5,10 +5,10 @@ from pathlib import Path
 
 from app.browser.blacklist import is_blocked, is_blocked_href
 from app.browser.urls import normalize_url, same_site
+from app.core.samples import CATALOG, catalog_text, pick_sample
 from app.explorer.extract import describe_layout
 from app.explorer.models import Element, PageData
 from app.explorer.report import Report
-from app.explorer.samples import CATALOG, catalog_text, pick_sample
 from app.llm.json_call import JsonCaller
 from app.llm.prompts import render
 from app.schemas.generated.page_insight import PageInsight
@@ -153,6 +153,9 @@ def _clean_steps(
             typed = typed | {step.text.strip().lower()}
         if problem:
             notes.append(f"{feature.id}: demo_steps truncated at step {i + 1}: {problem}")
+            if step.do == "dblclick":  # the steps before it show some other feature, not the edit
+                notes.append(f"{feature.id}: demo_steps cleared (the edit step was invalid)")
+                return []
             break
         if step.do == "goto":
             current = normalize_url(step.url or "", root_url) or current
@@ -197,10 +200,41 @@ def _step_problem(
         return f"blocked link target {element.href}"
     if step.do in CLICK_LIKE and is_submit(element):
         return f"{element.name!r} would submit a form"
+    if step.do == "dblclick" and not is_dblclick_target(element):
+        return f"{element.name!r} is not an item that can be edited by double-click"
     if step.do == "type":
         if element.role not in TEXT_ROLES or element.input_type == "password" or not step.text:
             return f"cannot type into {element.name!r}"
     return None
+
+
+DBLCLICK_NEVER_TAGS = ("input", "textarea", "button", "select")
+DBLCLICK_NEVER_ROLES = ("textbox", "searchbox", "button", "combobox", "checkbox", "file")
+DBLCLICK_ITEM_TAGS = ("li", "tr", "td")
+DBLCLICK_ITEM_ROLES = ("listitem", "row", "cell", "gridcell")
+
+
+def is_dblclick_target(element: Element) -> bool:
+    """Double-click edits an item (list entry, row, text marked for it), never a control."""
+    if element.tag in DBLCLICK_NEVER_TAGS or element.role in DBLCLICK_NEVER_ROLES:
+        return False
+    return (
+        "dblclick" in element.caps
+        or element.tag in DBLCLICK_ITEM_TAGS
+        or element.role in DBLCLICK_ITEM_ROLES
+    )
+
+
+def drop_redundant_goto(own: list[DemoStep], current_url: str) -> list[DemoStep]:
+    """A feature's own steps must not start by reloading the page the setup left us on.
+
+    The fragment counts: a goto to another hash route is a real step and is kept.
+    """
+    if own and own[0].do == "goto":
+        a = normalize_url(own[0].url or "", keep_anchor=True)
+        if a and a == normalize_url(current_url, keep_anchor=True):
+            return own[1:]
+    return own
 
 
 def is_submit(element: Element) -> bool:
@@ -260,7 +294,8 @@ def synthesize_delta(
     fresh = [f for f in profile.features if f.name.strip().lower() not in known]
     for feature in fresh:
         feature.requires_setup = True
-        feature.demo_steps = [s.model_copy(deep=True) for s in setup_steps] + feature.demo_steps
+        own = drop_redundant_goto(feature.demo_steps, page.url)
+        feature.demo_steps = [s.model_copy(deep=True) for s in setup_steps] + own
     return fresh
 
 

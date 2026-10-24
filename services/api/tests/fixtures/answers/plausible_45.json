@@ -1,0 +1,27 @@
+{
+  "confirm_understanding": [{ "action": "answer" }],
+  "choose_concept": [
+    {
+      "action": "answer",
+      "answers": {
+        "concept_id": "recommended",
+        "notes": "Video 45 giây: thao tác trên trang demo trực tiếp của dashboard, và một đoạn cuộn tới rồi làm nổi bật phần mô tả tính năng nổi bật của sản phẩm."
+      }
+    }
+  ],
+  "outline_review": [
+    {
+      "action": "edit",
+      "edit": {
+        "instruction": "Đặt thời lượng 45 giây. Dàn ý cần có một beat thao tác trên dashboard demo trực tiếp và một beat nhấn mạnh phần tính năng trên trang giới thiệu."
+      }
+    },
+    { "action": "edit", "edit": { "instruction": "Đổi câu mở đầu thành câu hỏi về việc theo dõi lượng truy cập website" } },
+    { "action": "approve" }
+  ],
+  "clarify": [{ "action": "answer", "answers": { "clarify": "b1" } }],
+  "script_review": [
+    { "action": "edit", "edit": { "instruction": "Scene 1: viết lại lời đọc ngắn gọn, vào thẳng vấn đề hơn" } },
+    { "action": "approve" }
+  ]
+}

@@ -129,6 +129,11 @@ class Unsafe(RuntimeError):
         self.detail = detail
 
 
+ITEM_CONTAINER_JS = (
+    "el => el.closest('li,tr,[role=listitem],[role=row],td,[role=cell]') || el.parentElement"
+)
+
+
 class Target:
     """A resolved element: either a Locator or an ElementHandle (bbox strategy), same actions."""
 
@@ -152,6 +157,20 @@ class Target:
 
     def right_click(self, timeout: float = 4000) -> None:
         self._obj.click(button="right", timeout=timeout)
+
+    def box(self) -> dict[str, float] | None:
+        """Bounding box in viewport pixels (None when not rendered)."""
+        return self._obj.bounding_box()
+
+    def scroll_into_view_if_needed(self, timeout: float = 4000) -> None:
+        self._obj.scroll_into_view_if_needed(timeout=timeout)
+
+    def handle(self) -> Any:
+        return self._obj.evaluate_handle("el => el")
+
+    def item_container(self) -> Any:
+        """Handle of the list item / row / cell around this element (else its parent)."""
+        return self._obj.evaluate_handle(ITEM_CONTAINER_JS)
 
     def file_input(self) -> ElementHandle | None:
         """The <input type=file> behind this element (itself, its label's control, or a descendant)."""

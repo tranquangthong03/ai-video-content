@@ -1,4 +1,4 @@
-from app.media.timing import (
+from app.core.timing import (
     EstimatedTimer,
     SpeechTimer,
     estimate_captions,

@@ -13,9 +13,9 @@ from typing import Any
 from pydantic import BaseModel
 
 from app.core.demo_steps import summarize_steps
+from app.core.timing import estimate_speech_ms
 from app.llm.json_call import JsonCaller, LLMCallError
 from app.llm.prompts import render
-from app.media.timing import estimate_speech_ms
 from app.schemas.generated.script import Script
 from app.script import catalog as cat
 from app.script.scene_writer import product_summary, write_scene

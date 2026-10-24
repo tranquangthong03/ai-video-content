@@ -2,7 +2,7 @@
 
 from rich.markup import escape
 
-from app.media.timing import estimate_speech_ms
+from app.core.timing import estimate_speech_ms
 from app.schemas.generated.script import Script
 from app.script.diff import THEME_LABELS
 from app.script.fit_duration import FitReport

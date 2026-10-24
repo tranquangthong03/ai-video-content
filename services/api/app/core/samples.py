@@ -1,7 +1,7 @@
 """Sample files for upload demos (generated on demand, also committed under assets/samples/).
 
 The files are harmless and self-made; an upload step only calls set_input_files with one of them.
-Run `uv run python -m app.explorer.samples` to (re)create them.
+Run `uv run python -m app.core.samples` to (re)create them.
 """
 
 import io
