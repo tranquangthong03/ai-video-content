@@ -329,7 +329,7 @@ def build_script(draft: DraftScript, ctx: WriterContext) -> tuple[Script, list[s
         "goal": ctx.outline.goal,
         "aspect_ratio": "9:16",
         "target_duration_s": ctx.outline.duration_s,
-        "template": "desktop_showcase",
+        "template": "desktop_focus",
         "badge": draft.badge,
         "headline": draft.headline.strip(),
         "headline_highlight": draft.headline_highlight or None,

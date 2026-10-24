@@ -4,7 +4,10 @@ import type { Caption } from "../../props";
 import { useTheme } from "../context";
 
 /** Active caption pops in with a spring bounce. Sits in the lower third, outlined for any background. */
-export const TikTokBounce: React.FC<{ captions: Caption[] }> = ({ captions }) => {
+export const TikTokBounce: React.FC<{ captions: Caption[]; paddingBottom?: number }> = ({
+  captions,
+  paddingBottom = 300,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { fontFamily, accent, motion } = useTheme();
@@ -17,7 +20,7 @@ export const TikTokBounce: React.FC<{ captions: Caption[] }> = ({ captions }) =>
   const pop = spring({ frame: local, fps, config: motion.spring, durationInFrames: 14 });
 
   return (
-    <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom: 300 }}>
+    <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom }}>
       <div
         style={{
           transform: `scale(${0.6 + 0.4 * pop})`,

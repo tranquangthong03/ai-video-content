@@ -280,7 +280,7 @@ def test_a_good_draft_becomes_a_script_with_code_made_visuals(tmp_path: Path) ->
     result = write_script(caller, ctx_for(setup={"filter": 2}))
     s = result.script
     assert result.attempts == 1 and len(llm.calls) == 1
-    assert s.template == "desktop_showcase" and s.goal == "awareness" and s.target_duration_s == 45
+    assert s.template == "desktop_focus" and s.goal == "awareness" and s.target_duration_s == 45
     assert s.theme.primary == "#4F46E5" and s.headline_highlight == "nhanh gấp đôi"
     assert [x.root.id for x in s.scenes] == ["s1", "s2", "s3", "s4", "s5"]
     assert [x.root.visual.mode for x in s.scenes] == [

@@ -27,7 +27,9 @@ class Script(BaseModel):
     goal: Literal['awareness', 'conversion', 'tutorial', 'recruitment']
     aspect_ratio: Literal['9:16']
     target_duration_s: Annotated[int, Field(ge=15, le=90)]
-    template: Literal['desktop_showcase', 'phone_showcase'] = 'desktop_showcase'
+    template: Literal['desktop_focus', 'desktop_showcase', 'phone_showcase'] = (
+        'desktop_focus'
+    )
     capture: Annotated[Capture, Field(validate_default=True)] = {
         'viewport': 'desktop',
         'width': 1440,

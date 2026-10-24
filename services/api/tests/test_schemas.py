@@ -93,7 +93,7 @@ def test_template_fields_defaults_and_limits() -> None:
     for key in ("template", "capture", "badge", "headline_highlight"):
         data.pop(key)
     bare = Script.model_validate(data)
-    assert bare.template == "desktop_showcase" and bare.badge is None
+    assert bare.template == "desktop_focus" and bare.badge is None
     assert bare.capture.height == 900 and bare.headline_highlight is None
 
 

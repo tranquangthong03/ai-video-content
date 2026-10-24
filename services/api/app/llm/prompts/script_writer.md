@@ -30,7 +30,7 @@ Thời lượng mục tiêu: {{ duration_s }} giây. Tổng số từ voiceover 
    Type "hook" CHỈ dùng cho scene đầu tiên; không dùng hook, before_after hay cta cho beat ở giữa video.
 {# changed: at most one before_after, not next to another scene without footage; no repeated feature #}3. Beat nói về so sánh trước/sau, cũ/mới, vấn đề/giải pháp và không gắn với tính năng → có thể dùng "before_after" (before_text, after_text ≤ 6 từ mỗi bên), nhưng TỐI ĐA 1 scene before_after mỗi video và không đặt liền kề scene khác không có cảnh quay (hook, cta, before_after). Mục tiêu: ít nhất một nửa thời lượng (30 giây: 40%) là cảnh quay thật (feature_demo). Không dùng cùng một feature cho hai scene; nếu buộc phải lặp, scene sau là bước tiếp nối (show_setup = false), không quay lại từ đầu.
 4. layout phải thuộc danh sách hợp lệ của type trong scene_catalog. Chỉ dùng field mà type đó cho phép.
-5. Cấp video: template = "desktop_showcase"; badge ≤ 24 ký tự (chủ đề ngắn, IN HOA không bắt buộc); headline ≤ 40 ký tự, hấp dẫn, nói được giá trị chính; headline_highlight là một CHUỖI CON có trong headline (2–4 từ đắt giá nhất) hoặc null.
+5. Cấp video: {# changed: new default template #}template = "desktop_focus"; badge ≤ 24 ký tự (chủ đề ngắn, IN HOA không bắt buộc); headline ≤ 40 ký tự, hấp dẫn, nói được giá trị chính; headline_highlight là một CHUỖI CON có trong headline (2–4 từ đắt giá nhất) hoặc null.
 6. Mỗi scene:
    - voiceover: tiếng Việt văn nói, tự nhiên, câu ngắn, 8–30 từ; nối mạch với scene trước; hook mở bằng câu hỏi hoặc nỗi đau trong ≤ 12 từ đầu; cta kết bằng lời kêu gọi rõ ràng lấy từ outline/product.
    - Voiceover của feature_demo phải mô tả đúng những gì người xem THẤY trên màn hình theo demo_steps của feature (ví dụ "gõ việc cần làm rồi nhấn Enter"), không mô tả thao tác không có.
@@ -48,7 +48,7 @@ Chỉ trả về json:
   "script": {
     "title": str,
     "goal": str,
-    "template": "desktop_showcase",
+    "template": "desktop_focus",
     "badge": str | null,
     "headline": str,
     "headline_highlight": str | null,

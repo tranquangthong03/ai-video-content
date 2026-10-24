@@ -6,9 +6,9 @@ import { Minimal } from "./Minimal";
 import { TikTokBounce } from "./TikTokBounce";
 
 /** Picks the caption renderer from theme.caption_style. */
-export const Captions: React.FC<{ captions: Caption[] }> = ({ captions }) => {
+export const Captions: React.FC<{ captions: Caption[]; paddingBottom?: number }> = ({ captions, paddingBottom }) => {
   const { captionStyle } = useTheme();
-  if (captionStyle === "tiktok_bounce") return <TikTokBounce captions={captions} />;
-  if (captionStyle === "karaoke") return <Karaoke captions={captions} />;
-  return <Minimal captions={captions} />;
+  if (captionStyle === "tiktok_bounce") return <TikTokBounce captions={captions} paddingBottom={paddingBottom} />;
+  if (captionStyle === "karaoke") return <Karaoke captions={captions} paddingBottom={paddingBottom} />;
+  return <Minimal captions={captions} paddingBottom={paddingBottom} />;
 };

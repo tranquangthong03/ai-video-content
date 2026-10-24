@@ -97,7 +97,7 @@ def test_approve_right_away_writes_version_report_and_approved_script(tmp_path: 
         tmp_path, {"script_review": [{"action": "approve"}]}
     )
     script = runner.run()
-    assert isinstance(script, Script) and script.template == "desktop_showcase"
+    assert isinstance(script, Script) and script.template == "desktop_focus"
     assert (job / "scripts" / "v1.json").is_file() and (job / "script_approved.json").is_file()
     assert (job / "theme.json").is_file() and theme_calls == [1]
     report = json.loads((job / "script_report.json").read_text(encoding="utf-8"))

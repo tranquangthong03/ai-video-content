@@ -21,6 +21,49 @@ export const DESKTOP_CLICK_LOG = [
 /** Scene durations of the desktop sample, in ms (hook, feature_demo, before_after, cta). */
 export const DESKTOP_DURATIONS_MS = [3000, 7500, 4000, 3000];
 
+/** Focus log of the same 1920x1080 dev clip: boxes the camera frames (clip pixels / clip time). */
+export const DESKTOP_FOCUS_LOG = [
+  { t_ms: 1200, bbox: { x: 1470, y: 125, w: 180, h: 70 }, kind: "click" as const, hold_ms: 1500 },
+  { t_ms: 3400, bbox: { x: 640, y: 262, w: 250, h: 76 }, kind: "click" as const, hold_ms: 900 },
+  { t_ms: 4300, bbox: { x: 920, y: 262, w: 250, h: 76 }, kind: "click" as const, hold_ms: 1500 },
+  { t_ms: 6200, bbox: { x: 480, y: 330, w: 960, h: 480 }, kind: "section" as const, hold_ms: 1500 },
+];
+
+/** The sample script as a desktop_focus video (same scenes, durations and captions). */
+export function focusSampleScript(base: Script): Script {
+  return { ...desktopSampleScript(base), template: "desktop_focus" };
+}
+
+/** desktop_focus assets: hook and CTA are product footage too, with focus boxes. */
+export function buildFocusProps(script: Script): InputPropsInput {
+  const [hook, demo, , cta] = script.scenes;
+  const clip = { clip_width: 1920, clip_height: 1080 };
+  return {
+    script,
+    assets: {
+      [hook.id]: {
+        screenshot_url: "dev-assets/web-1.png",
+        ...clip,
+        focus_log: [{ t_ms: 0, bbox: { x: 360, y: 180, w: 1200, h: 360 }, kind: "section" as const, hold_ms: 0 }],
+      },
+      [demo.id]: {
+        clip_url: "dev-assets/web-clip.mp4",
+        start_offset_ms: 0,
+        click_log: DESKTOP_CLICK_LOG,
+        focus_log: DESKTOP_FOCUS_LOG,
+        ...clip,
+        captions: captionsFromVoiceover(demo.voiceover, demo.duration_ms ?? 7500, KARAOKE_WORDS),
+      },
+      [cta.id]: {
+        clip_url: "dev-assets/web-clip.mp4",
+        start_offset_ms: 0,
+        focus_log: [{ t_ms: 0, bbox: { x: 1470, y: 125, w: 180, h: 70 }, kind: "highlight" as const, hold_ms: 1800 }],
+        ...clip,
+      },
+    },
+  };
+}
+
 /** The sample script as a desktop_showcase video: karaoke captions, fixed scene durations. */
 export function desktopSampleScript(base: Script): Script {
   return {

@@ -7,11 +7,29 @@
  */
 export type FocusKind = "click" | "dblclick" | "type" | "hover" | "highlight" | "section" | "scroll";
 
-export const CAMERA_CONFIG = {
-  minZoom: 1.0, // never below cover after the establishing shot
-  maxZoom: 1.4,
-  padding: 0.15, // each side of the target box, as a share of its size
+export interface CameraConfig {
+  minZoom: number; // never below cover after the establishing shot
+  maxZoom: number;
+  padding: number; // each side of the target box, as a share of its size
   /** Share of the view width the (padded) target should fill, by what is being shown. */
+  share: Record<FocusKind, number>;
+  establishingMs: number; // whole page (fit to width) at the start of every clip
+  transitionMs: number; // upper bound for the move from the establishing shot to the first target
+  leadMs: number; // the camera starts moving to a target this long before it happens
+  minSegmentMs: number; // targets closer together than this are merged into one move
+  spring: { damping: number; stiffness: number; mass: number };
+  /** Settled enough: the spring counts as arrived at this share of the way. */
+  arrived: number;
+  /** Size of the box assumed around a click when only click_log exists (clip pixels). */
+  fallbackBox: { w: number; h: number };
+  /** Establishing shot backdrop: the clip itself, enlarged, blurred and dimmed. */
+  backdrop: { blurPx: number; brightness: number };
+}
+
+export const CAMERA_CONFIG: CameraConfig = {
+  minZoom: 1.0,
+  maxZoom: 1.4,
+  padding: 0.15,
   share: {
     click: 0.7,
     dblclick: 0.7,
@@ -20,19 +38,13 @@ export const CAMERA_CONFIG = {
     section: 0.8,
     hover: 0.55, // hover and scroll never zoom harder than a click
     scroll: 0.5,
-  } as Record<FocusKind, number>,
-  establishingMs: 1000, // whole page (fit to width) at the start of every clip
-  transitionMs: 600, // upper bound for the move from the establishing shot to the first target
-  leadMs: 300, // the camera starts moving to a target this long before it happens
-  minSegmentMs: 150, // targets closer together than this are merged into one move
-  // critically damped, arrives in about 0.5 s
-  spring: { damping: 25, stiffness: 156, mass: 1 },
-  /** Settled enough: the spring counts as arrived at this share of the way. */
+  },
+  establishingMs: 1000,
+  transitionMs: 600,
+  leadMs: 300,
+  minSegmentMs: 150,
+  spring: { damping: 25, stiffness: 156, mass: 1 }, // critically damped, arrives in about 0.5 s
   arrived: 0.98,
-  /** Size of the box assumed around a click when only click_log exists (clip pixels). */
   fallbackBox: { w: 280, h: 140 },
-  /** Establishing shot backdrop: the clip itself, enlarged, blurred and dimmed. */
   backdrop: { blurPx: 24, brightness: 0.6 },
-} as const;
-
-export type CameraConfig = typeof CAMERA_CONFIG;
+};

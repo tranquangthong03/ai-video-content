@@ -2,7 +2,7 @@ import React from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { Icon, type IconName } from "../../icons";
 import { useTheme } from "../../theme/context";
-import { BULLET, BULLET_AREA_HEIGHT, HEADER, CANVAS, placeBullets, splitHeadline } from "./layout";
+import { BULLET, HEADER, CANVAS, placeBullets, splitHeadline } from "./layout";
 
 /** mulberry32: small seeded PRNG so the star field is identical on every render. */
 function rng(seed: number) {
@@ -63,11 +63,15 @@ export const Background: React.FC = () => {
 };
 
 /** Badge pill (optional) over the headline; pinned for the whole video, fades/slides in once. */
-export const Header: React.FC<{ badge: string | null; headline: string; highlight: string | null }> = ({
-  badge,
-  headline,
-  highlight,
-}) => {
+export type HeaderStyle = { band: { top: number; height: number }; headlineSize: number; badgeSize: number; gap: number };
+const SHOWCASE_HEADER: HeaderStyle = { band: HEADER, headlineSize: 60, badgeSize: 26, gap: 26 };
+
+export const Header: React.FC<{
+  badge: string | null;
+  headline: string;
+  highlight: string | null;
+  style?: HeaderStyle;
+}> = ({ badge, headline, highlight, style = SHOWCASE_HEADER }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { primary, highlight: markColor, fontFamily } = useTheme();
@@ -77,15 +81,15 @@ export const Header: React.FC<{ badge: string | null; headline: string; highligh
     <div
       style={{
         position: "absolute",
-        top: HEADER.top,
-        height: HEADER.height,
+        top: style.band.top,
+        height: style.band.height,
         left: 0,
         right: 0,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center", // no badge -> the headline settles in the middle of the band
-        gap: 26,
+        gap: style.gap,
         opacity: appear,
         transform: `translateY(${(1 - appear) * 12}px)`,
         fontFamily,
@@ -97,18 +101,18 @@ export const Header: React.FC<{ badge: string | null; headline: string; highligh
             display: "inline-flex",
             alignItems: "center",
             gap: 12,
-            padding: "12px 28px",
+            padding: `${Math.round(style.badgeSize * 0.46)}px ${Math.round(style.badgeSize * 1.08)}px`,
             borderRadius: 999,
             border: `1.5px solid ${primary}`,
             background: `${primary}1f`,
             color: "#E6EAF5",
-            fontSize: 26,
+            fontSize: style.badgeSize,
             fontWeight: 700,
             letterSpacing: "0.08em",
             textTransform: "uppercase",
           }}
         >
-          <Icon name="code" size={26} color={markColor} />
+          <Icon name="code" size={style.badgeSize} color={markColor} />
           {badge}
         </div>
       )}
@@ -117,7 +121,7 @@ export const Header: React.FC<{ badge: string | null; headline: string; highligh
           maxWidth: 940,
           textAlign: "center",
           color: "#fff",
-          fontSize: 60,
+          fontSize: style.headlineSize,
           fontWeight: 800,
           lineHeight: 1.2,
           textWrap: "balance",
@@ -132,23 +136,29 @@ export const Header: React.FC<{ badge: string | null; headline: string; highligh
 };
 
 /** key_point pills under the media frame: scenes so far, newest at the bottom, at most four. */
-export const Bullets: React.FC<{ items: { start: number; text: string; icon: IconName | null }[] }> = ({
-  items,
-}) => {
+export type BulletStyle = { top: number; pill: number; gap: number; maxLines: number; fontSize: number; iconSize: number };
+const SHOWCASE_BULLETS: BulletStyle = { ...BULLET, fontSize: 30, iconSize: 34 };
+
+export const Bullets: React.FC<{
+  items: { start: number; text: string; icon: IconName | null }[];
+  style?: BulletStyle;
+}> = ({ items, style = SHOWCASE_BULLETS }) => {
   const frame = useCurrentFrame();
   const { highlight, fontFamily } = useTheme();
   const placed = placeBullets(
     items.map((i) => i.start),
     frame,
+    style.maxLines,
   );
+  const areaHeight = style.maxLines * style.pill + (style.maxLines - 1) * style.gap;
   return (
     <div
       style={{
         position: "absolute",
         left: 60,
         right: 60,
-        top: BULLET.top,
-        height: BULLET_AREA_HEIGHT,
+        top: style.top,
+        height: areaHeight,
         overflow: "hidden",
       }}
     >
@@ -162,8 +172,8 @@ export const Bullets: React.FC<{ items: { start: number; text: string; icon: Ico
               left: 0,
               right: 0,
               top: 0,
-              height: BULLET.pill,
-              transform: `translateY(${p.slot * (BULLET.pill + BULLET.gap) + (1 - p.enter) * 28}px)`,
+              height: style.pill,
+              transform: `translateY(${p.slot * (style.pill + style.gap) + (1 - p.enter) * 28}px)`,
               opacity: p.opacity,
               display: "flex",
               alignItems: "center",
@@ -174,13 +184,13 @@ export const Bullets: React.FC<{ items: { start: number; text: string; icon: Ico
               border: "1px solid rgba(255,255,255,0.12)",
               color: "#fff",
               fontFamily,
-              fontSize: 30,
+              fontSize: style.fontSize,
               fontWeight: 500,
               whiteSpace: "nowrap",
             }}
           >
             {item.icon ? (
-              <Icon name={item.icon} size={34} color={highlight} />
+              <Icon name={item.icon} size={style.iconSize} color={highlight} />
             ) : (
               // no icon: a small dot keeps the text aligned with the other rows
               <div style={{ width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center" }}>

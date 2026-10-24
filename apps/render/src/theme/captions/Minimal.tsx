@@ -4,7 +4,7 @@ import type { Caption } from "../../props";
 import { useTheme } from "../context";
 
 /** Plain white caption with a soft fade, outlined and shadowed for readability. */
-export const Minimal: React.FC<{ captions: Caption[] }> = ({ captions }) => {
+export const Minimal: React.FC<{ captions: Caption[]; paddingBottom?: number }> = ({ captions, paddingBottom = 300 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { fontFamily } = useTheme();
@@ -21,7 +21,7 @@ export const Minimal: React.FC<{ captions: Caption[] }> = ({ captions }) => {
   });
 
   return (
-    <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom: 300 }}>
+    <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom }}>
       <div
         style={{
           opacity,

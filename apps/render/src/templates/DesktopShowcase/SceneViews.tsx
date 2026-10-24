@@ -10,13 +10,13 @@ import { MEDIA } from "./layout";
 
 const FRAME = { w: MEDIA.w, h: MEDIA.h };
 
-type ViewProps = { scene: Scene; assets: SceneAssets; durationInFrames: number; productName: string };
+export type ViewProps = { scene: Scene; assets: SceneAssets; durationInFrames: number; productName: string };
 
-const hasClip = (a: SceneAssets) => Boolean(a.clip_url);
-const hasShot = (a: SceneAssets) => Boolean(a.screenshot_url);
+export const hasClip = (a: SceneAssets) => Boolean(a.clip_url);
+export const hasShot = (a: SceneAssets) => Boolean(a.screenshot_url);
 
 /** White arrow with a black outline; the tip is at (0,0) of the returned box. */
-const Arrow: React.FC<{ press: number }> = ({ press }) => (
+export const Arrow: React.FC<{ press: number }> = ({ press }) => (
   <svg
     width={34}
     height={48}
@@ -119,7 +119,7 @@ const ShotView: React.FC<{ assets: SceneAssets; durationInFrames: number; blur?:
   );
 };
 
-const Backdrop: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+export const Backdrop: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { primary } = useTheme();
   return (
     <AbsoluteFill
@@ -134,14 +134,14 @@ const Backdrop: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   );
 };
 
-const usePop = (delay = 0) => {
+export const usePop = (delay = 0) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { motion } = useTheme();
   return spring({ frame: frame - delay, fps, config: motion.spring, durationInFrames: 18 });
 };
 
-const BigLine: React.FC<{ text: string; size?: number }> = ({ text, size = 58 }) => {
+export const BigLine: React.FC<{ text: string; size?: number }> = ({ text, size = 58 }) => {
   const { fontFamily } = useTheme();
   const pop = usePop();
   return (
@@ -202,7 +202,7 @@ const CtaView: React.FC<ViewProps> = ({ scene, productName }) => {
   );
 };
 
-const BeforeAfterView: React.FC<ViewProps> = ({ scene }) => {
+export const BeforeAfterView: React.FC<ViewProps> = ({ scene }) => {
   const { primary, fontFamily } = useTheme();
   const pop = usePop(4);
   if (scene.type !== "before_after") return null;
@@ -235,7 +235,7 @@ const BeforeAfterView: React.FC<ViewProps> = ({ scene }) => {
   );
 };
 
-const FeatureCard: React.FC<ViewProps> = ({ scene }) => (
+export const FeatureCard: React.FC<ViewProps> = ({ scene }) => (
   <Backdrop>
     <BigLine text={scene.on_screen_text ?? (scene.type === "feature_demo" ? scene.feature : scene.voiceover)} />
   </Backdrop>

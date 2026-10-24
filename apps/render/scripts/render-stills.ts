@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { renderStill, selectComposition } from "@remotion/renderer";
 import { COMPOSITION_ID } from "../src/compositionId";
-import { buildSampleProps, desktopSampleScript } from "../src/dev/sampleProps";
+import { buildFocusProps, buildSampleProps, desktopSampleScript, focusSampleScript } from "../src/dev/sampleProps";
 import { ScriptSchema } from "../src/generated";
 import { InputPropsSchema } from "../src/props";
 import { OUT_DIR, freePort, getBundle } from "../src/renderer";
@@ -38,6 +38,27 @@ for (const [name, frame] of stills) {
   const output = path.join(outDir, `${name}.png`);
   await renderStill({ composition, serveUrl, output, frame, inputProps: props, imageFormat: "png", port });
   console.log(`still ${name}: frame ${frame} -> ${output}`);
+}
+
+// desktop_focus (the default template): establishing shot, two focus moves, text over the hook, the CTA button
+{
+  const focusProps = InputPropsSchema.parse(buildFocusProps(focusSampleScript(base)));
+  const focusDir = path.join(OUT_DIR, "stills", "desktop_focus");
+  mkdirSync(focusDir, { recursive: true });
+  const [fHook, fDemo, , fCta] = sceneRanges(focusProps.script);
+  const focusStills: [string, number][] = [
+    ["01-establishing", at(fDemo.from, 0.5)],
+    ["02-focus-click", at(fDemo.from, 2.3)],
+    ["03-focus-section", at(fDemo.from, 7.0)],
+    ["04-hook-overlay", at(fHook.from, 1.5)],
+    ["05-cta-button", at(fCta.from, 2.6)],
+  ];
+  const focusComposition = await selectComposition({ serveUrl, id: COMPOSITION_ID, inputProps: focusProps, port });
+  for (const [name, frame] of focusStills) {
+    const output = path.join(focusDir, `${name}.png`);
+    await renderStill({ composition: focusComposition, serveUrl, output, frame, inputProps: focusProps, imageFormat: "png", port });
+    console.log(`still desktop_focus ${name}: frame ${frame} -> ${output}`);
+  }
 }
 
 // Optional fields left empty: no badge, no highlighted phrase, a bullet without an icon

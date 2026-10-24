@@ -49,7 +49,7 @@ export function establishingView(clip: Size, frame: Size): View {
 }
 
 /** Window inside the clip (never outside) for a given centre and zoom. */
-function insideClip(cx: number, cy: number, zoom: number, clip: Size, frame: Size): View {
+export function insideClip(cx: number, cy: number, zoom: number, clip: Size, frame: Size): View {
   const w = coverWidth(clip, frame) / zoom;
   const h = (w * frame.h) / frame.w;
   return {
@@ -96,7 +96,8 @@ export function focusFromClicks(
 }
 
 type Segment = { start: number; target: View };
-const lerpView = (a: View, b: View, u: number): View => {
+/** In-between of two views: width in log space (even-feeling zoom), centre linear. */
+export const lerpView = (a: View, b: View, u: number): View => {
   // zoom (width) in log space so it feels even; centre linear
   const w = Math.exp(lerp(Math.log(a.w), Math.log(b.w), u));
   const cx = lerp(a.x + a.w / 2, b.x + b.w / 2, u);
