@@ -3,41 +3,43 @@
 .env.*
 !.env.example
 
-# Python
+# Python (caches may appear in any directory)
 __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
-.cache/
 *.egg-info/
+/services/api/.cache/
 
 # Node / Next.js / Remotion
 node_modules/
-.next/
-out/
-.bundle-cache/
-dist/
-build/
+/apps/web/.next/
+/apps/web/out/
+/apps/web/build/
+/apps/web/dist/
+/apps/render/.bundle-cache/
+/apps/render/out/
+/apps/render/dist/
 .turbo/
 *.tsbuildinfo
 next-env.d.ts
 npm-debug.log*
 pnpm-debug.log*
 
-# Media / render output
-output/
-media/
-recordings/
-renders/
-*.mp4
-*.webm
-*.mp3
-*.wav
+# Job output and rendered media (anchored: a source folder must never match)
+/services/api/out/
+/services/api/.cache/
+/output/
+/media/
+/recordings/
+/renders/
+/apps/render/public/dev-assets/*.mp4
+/apps/render/public/dev-assets/*.webm
 
 # Local data volumes
-.data/
+/.data/
 
 # OS / editor
 .DS_Store
