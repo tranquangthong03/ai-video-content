@@ -52,6 +52,9 @@ SAMPLE_VARS = {
         next_scene_summary_or_none="none", goal="awareness", duration_s=30, headline="h",
         product_profile_summary="s", forced=False, scene_catalog_json="{}", allowed_icons="check",
     ),
+    "flow_discovery": dict(
+        product_profile_summary="p", pages_summary="pg", mode="propose", user_description_or_empty="",
+    ),
     "focus_planner": dict(
         phrases_json="[]", actions_json="[]", inventory_json="[]", scene_kind="feature_demo",
         feature_name="f", key_point="k",

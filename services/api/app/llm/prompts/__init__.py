@@ -23,6 +23,7 @@ PROMPTS = (
     "scene_writer",
     "edit_planner",
     "focus_planner",
+    "flow_discovery",
 )
 
 
