@@ -52,6 +52,10 @@ SAMPLE_VARS = {
         next_scene_summary_or_none="none", goal="awareness", duration_s=30, headline="h",
         product_profile_summary="s", forced=False, scene_catalog_json="{}", allowed_icons="check",
     ),
+    "focus_planner": dict(
+        phrases_json="[]", actions_json="[]", inventory_json="[]", scene_kind="feature_demo",
+        feature_name="f", key_point="k",
+    ),
     "edit_planner": dict(
         version=1, script_json="{}", product_profile_json="{}", targets_json="[]",
         instruction="sửa", layouts_by_type="{}",

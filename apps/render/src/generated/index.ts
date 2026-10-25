@@ -4,6 +4,7 @@ export * from "./beat_op.js";
 export * from "./concept_set.js";
 export * from "./edit_op.js";
 export * from "./edit_plan.js";
+export * from "./focus_plan.js";
 export * from "./interaction.js";
 export * from "./locator.js";
 export * from "./outline.js";

@@ -22,6 +22,7 @@ PROMPTS = (
     "duration_fit",
     "scene_writer",
     "edit_planner",
+    "focus_planner",
 )
 
 

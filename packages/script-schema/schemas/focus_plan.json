@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "focus_plan.json",
+  "title": "FocusPlan",
+  "description": "Output of the Focus Planner: which interface item the viewer should look at, per stretch of a scene's clip.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["plan"],
+  "properties": {
+    "plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from_ms", "to_ms", "framing"],
+        "properties": {
+          "from_ms": { "type": "integer", "minimum": 0 },
+          "to_ms": { "type": "integer", "minimum": 0 },
+          "item_id": { "type": ["string", "null"], "default": null },
+          "framing": { "enum": ["establish", "tight", "medium", "wide"] },
+          "reason": { "type": "string", "default": "" }
+        }
+      }
+    }
+  }
+}

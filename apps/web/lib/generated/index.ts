@@ -4,6 +4,7 @@ export * from "./beat_op";
 export * from "./concept_set";
 export * from "./edit_op";
 export * from "./edit_plan";
+export * from "./focus_plan";
 export * from "./interaction";
 export * from "./locator";
 export * from "./outline";
