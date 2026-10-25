@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>My work - TaskBoard</title>
+<style>.avatar{border-radius:50%;width:32px;height:32px}</style></head>
+<body>
+  <header>
+    <a href="/app">TaskBoard</a>
+    <nav><a href="/app">Items</a> <a href="/app/settings">Settings</a> <a href="/app/billing">Billing</a></nav>
+    <span id="user-email">{{email}}</span>
+    <button class="avatar" aria-label="Account menu">D</button>
+  </header>
+  <main>
+    <h1>My work</h1>
+    <p>Support line: 0901 234 567</p>
+    <ul id="items"><li>Write the weekly report</li><li>Review the roadmap</li></ul>
+    <button id="create" type="button">Create item</button>
+    <button id="invite" type="button">Invite member</button>
+  </main>
+  <script>
+    document.getElementById('create').addEventListener('click', () => {
+      const li = document.createElement('li'); li.textContent = 'New item';
+      document.getElementById('items').appendChild(li);
+    });
+  </script>
+</body></html>

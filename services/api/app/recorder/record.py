@@ -17,6 +17,7 @@ from typing import Any
 
 from playwright.sync_api import BrowserContext, Page
 
+from app.browser.auth_detect import LoginRequired, detect_login
 from app.browser.blacklist import is_blocked, is_blocked_href
 from app.browser.enter_policy import Policy, enter_decision
 from app.browser.locate import Target, Unsafe, check_clickable, resolve
@@ -243,6 +244,7 @@ class _Recorder:
         self.action_log: list[dict[str, Any]] = []
         self.last_handle: Any = None  # element of the latest action: always in the inventory
         self.last_snap = -INVENTORY_EVERY_MS
+        self.authenticated = session.storage_state is not None
         self.warnings: list[str] = []
         self.typed: set[str] = set()
         self.mouse = self.home
@@ -405,9 +407,18 @@ class _Recorder:
 
     def do_goto(self, a: Any, label: str) -> None:
         self.collect_activity()
-        self.page.goto(a.url, wait_until="domcontentloaded")
+        response = self.page.goto(a.url, wait_until="domcontentloaded")
         self.settle()
         dismiss_cookie_banner(self.page)
+        self.check_login(a.url, response.status if response else None)
+
+    def check_login(self, requested: str, status: int | None) -> None:
+        """With a session, a sign-in page means it has expired: stop the scene and ask again."""
+        if not self.authenticated:
+            return
+        signal = detect_login(self.page, requested, status)
+        if signal is not None:
+            raise LoginRequired(signal.login_url, "session_expired", target_url=requested)
 
     def do_wait(self, a: Any, label: str) -> None:
         self.page.wait_for_timeout(a.ms or 800)
@@ -554,6 +565,9 @@ class _Recorder:
         try:
             self.run(action, label)
             self.ok += 1
+            self.check_login(self.page.url, None)
+        except LoginRequired:
+            raise
         except Unsafe as e:
             self.failed += 1
             self.warnings.append(f"{label}: bị chặn vì an toàn ({e})")
@@ -689,10 +703,13 @@ def record_scene(
         )
         page.mouse.move(*rec.home)
         try:
-            page.goto(start_url, wait_until="domcontentloaded")
+            response = page.goto(start_url, wait_until="domcontentloaded")
             rec.settle()
             dismiss_cookie_banner(page)
             rec.settle()
+            rec.check_login(start_url, response.status if response else None)
+        except LoginRequired:
+            raise
         except Exception as e:
             rec.warnings.append(f"không mở được {start_url}: {type(e).__name__}")
         start_offset = rec.now()

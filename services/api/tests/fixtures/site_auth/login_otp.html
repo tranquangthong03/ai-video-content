@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Verify - TaskBoard</title></head>
+<body><main><h1>Two-step verification</h1>{{error}}
+  <form method="post" action="/login/otp">
+    <label for="otp">Verification code</label>
+    <input id="otp" name="otp" type="text" autocomplete="one-time-code" inputmode="numeric">
+    <button type="submit">Verify</button>
+  </form></main></body></html>

@@ -158,6 +158,7 @@ class ExploreRunner:
                         max_pages=self.max_pages,
                         on_page=on_page,
                         scope=self.scope,
+                        authenticated=self.storage_state is not None,
                     )
             finally:
                 context.close()

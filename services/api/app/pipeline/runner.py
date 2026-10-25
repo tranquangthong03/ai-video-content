@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, Protocol
 
+from app.browser.auth_detect import LoginRequired
 from app.browser.session import BrowserSession
 from app.core.usage import BudgetExceeded, UsageTracker
 from app.explorer.mapper import BlockedByChallenge
@@ -43,6 +44,7 @@ from app.script.writer import WriterError
 EXIT_OK = 0
 EXIT_CANCELLED, EXIT_BLOCKED, EXIT_TOKENS, EXIT_TIMEOUT, EXIT_USAGE, EXIT_SCRIPT = 1, 2, 3, 4, 5, 6
 EXIT_RENDER = 7
+EXIT_LOGIN = 8  # the site asks for a sign-in (the web UI asks the user; the CLI stops)
 STEPS = ("classify", "analyze", "synthesize", "verify", "delta", "concepts", "outline")
 SCRIPT_STEPS = ("beat_map", "script", "fit", "scene", "edit_plan")
 FROM_STEPS = ("explore", "script", "produce")
@@ -261,6 +263,13 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
         progress.set("explore", "Đang khám phá website", 2)
         try:
             runner.run()
+        except LoginRequired as e:
+            return _fail(
+                rep,
+                EXIT_LOGIN,
+                "failed",
+                f"[red]Trang cần đăng nhập ({e.reason}): {e.login_url}[/]",
+            )
         except BlockedByChallenge as e:
             return _fail(
                 rep, EXIT_BLOCKED, "failed",
@@ -437,6 +446,8 @@ def run_produce_step(
                 extra_report=extra,
                 focus_caller=caller,
             )
+    except LoginRequired as e:
+        return _fail(rep, EXIT_LOGIN, "failed", f"[red]Phiên đăng nhập hết hạn: {e.login_url}[/]")
     except RenderError as e:
         return _fail(rep, EXIT_RENDER, "failed", f"[red]{e}[/]")
     rep.produced(script, result, job_dir)

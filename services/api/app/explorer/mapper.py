@@ -17,6 +17,7 @@ from urllib.parse import urlparse
 
 from playwright.sync_api import BrowserContext, Page
 
+from app.browser.auth_detect import LoginRequired, detect_login
 from app.browser.blacklist import is_blocked, is_blocked_href
 from app.browser.locate import Unsafe, check_clickable, resolve
 from app.browser.page_utils import detect_blockers, dismiss_cookie_banner
@@ -369,9 +370,19 @@ def discover_spa_routes(
 
 
 def visit(
-    page: Page, cand: Candidate, n: int, out_dir: Path, report: Report, root: str
+    page: Page,
+    cand: Candidate,
+    n: int,
+    out_dir: Path,
+    report: Report,
+    root: str,
+    *,
+    authenticated: bool = False,
 ) -> PageData | None:
-    """Load and extract one candidate; None when it must be skipped."""
+    """Load and extract one candidate; None when it must be skipped.
+
+    Raises LoginRequired when the start page asks for a sign-in, or any page does while we hold a
+    session (it has expired)."""
     try:
         response = page.goto(cand.url, wait_until="domcontentloaded")
     except Exception as e:
@@ -382,6 +393,10 @@ def visit(
     if blockers["captcha"]:
         report.data["blockers"].append({"url": cand.url, **blockers})
         raise BlockedByChallenge(f"CAPTCHA/Cloudflare challenge at {cand.url}")
+    signal = detect_login(page, cand.url, response.status if response else None)
+    if signal is not None and (cand.origin == "root" or authenticated):
+        reason = "session_expired" if authenticated else signal.reason
+        raise LoginRequired(signal.login_url, reason, target_url=cand.url)
     if blockers["http_error"]:
         report.data["blockers"].append({"url": cand.url, **blockers})
         report.skip(cand.url, f"http_error: {blockers['http_error']}")
@@ -411,6 +426,7 @@ def crawl(
     max_pages: int = 15,
     on_page: Any = None,
     scope: str = "path",
+    authenticated: bool = False,
 ) -> tuple[list[PageData], Frontier]:
     """Best-first crawl: at most max_pages pages, depth <= 2, same domain (and path if scoped)."""
     root = normalize_url(root_url) or root_url
@@ -437,7 +453,7 @@ def crawl(
         cand = frontier.pop(prefer_demo=need_demo >= remaining and need_demo > 0)
         if cand is None:
             break
-        data = visit(page, cand, len(pages) + 1, out_dir, report, root)
+        data = visit(page, cand, len(pages) + 1, out_dir, report, root, authenticated=authenticated)
         if data is None:
             continue
         pages.append(data)
