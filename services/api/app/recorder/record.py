@@ -23,7 +23,7 @@ from app.browser.locate import Target, Unsafe, check_clickable, resolve
 from app.browser.page_utils import dismiss_cookie_banner, wait_for_settle
 from app.browser.session import BrowserSession
 from app.core.samples import CATALOG, pick_sample, sample_path
-from app.recorder import motion
+from app.recorder import inventory, motion
 from app.recorder.screenshot import take_screenshot
 from app.schemas.generated.locator import LocatorSpec
 from app.schemas.generated.scene import Scene
@@ -32,6 +32,7 @@ from app.script.lite import GROUP, is_lite
 TAIL_MS = 300  # keep recording a little after the last step (the hold after it comes first)
 HOLD_MS = 1500  # stay on the result of a main action so the viewer can read it
 FOCUS_SAMPLE_MS = 400  # while scrolling: log the block in the middle of the viewport this often
+INVENTORY_EVERY_MS = 1000  # scrolling, holding, filling: one frame_inventory snapshot a second
 FILL_THRESHOLD_MS = 2000  # shorter than this and the renderer just holds the last frame
 MAX_FILL_HOVERS = 3
 CAPTURE = {"width": 1440, "height": 900}  # same as the schema default of script.capture
@@ -210,6 +211,10 @@ class RecordResult:
     click_log: list[dict[str, Any]] = field(default_factory=list)
     # camera targets: {t_ms, bbox: {x, y, w, h} in clip pixels, kind, hold_ms}
     focus_log: list[dict[str, Any]] = field(default_factory=list)
+    # frame_inventory: [{t_ms, items: [{id, role, tag, text, bbox, kind, is_new, region}]}]
+    inventory: list[dict[str, Any]] = field(default_factory=list)
+    # what was done: [{t_ms, end_ms, do, target_text, item_id}], times on the clip axis
+    action_log: list[dict[str, Any]] = field(default_factory=list)
     width: int = 0  # clip size in pixels (the capture viewport)
     height: int = 0
     content_ms: int = 0  # length of the clip
@@ -241,6 +246,10 @@ class _Recorder:
         self.t0 = time.time()
         self.log: list[dict[str, Any]] = []
         self.focus_log: list[dict[str, Any]] = []
+        self.inventory: list[dict[str, Any]] = []
+        self.action_log: list[dict[str, Any]] = []
+        self.last_handle: Any = None  # element of the latest action: always in the inventory
+        self.last_snap = -INVENTORY_EVERY_MS
         self.warnings: list[str] = []
         self.typed: set[str] = set()
         self.mouse = self.home
@@ -285,6 +294,33 @@ class _Recorder:
                 "kind": kind,
                 "hold_ms": hold_ms,
             }
+        )
+
+    def snap(self) -> None:
+        """One frame_inventory snapshot of what is on screen now."""
+        self.last_snap = self.now()
+        items = inventory.snapshot(self.page, self.last_handle)
+        if items:
+            self.inventory.append({"t_ms": self.last_snap, "items": items})
+
+    def snap_every(self, ms: int = INVENTORY_EVERY_MS) -> None:
+        if self.now() - self.last_snap >= ms:
+            self.snap()
+
+    def note_action(self, do: str, target: Target | None) -> None:
+        """Log what is being done and to which element (its inventory id)."""
+        handle, text = None, ""
+        if target is not None:
+            try:
+                handle = target.handle()
+                text = (target.info().text or "")[:80]
+            except Exception:
+                pass
+        self.last_handle = handle
+        item_id = inventory.element_id(self.page, handle) if handle is not None else None
+        now = self.now()
+        self.action_log.append(
+            {"t_ms": now, "end_ms": now, "do": do, "target_text": text, "item_id": item_id}
         )
 
     def sample_center(self) -> None:
@@ -355,8 +391,14 @@ class _Recorder:
         if handler is None:
             raise RuntimeError(f"unsupported action {do}")
         before = len(self.focus_log)
+        acted = len(self.action_log)
+        self.last_handle = None
+        inventory.mark_baseline(self.page)
         handler(action, label)
+        if len(self.action_log) > acted:
+            self.action_log[-1]["end_ms"] = self.now()
         self.settle()
+        self.snap()
         self.hold(action, before)
 
     def hold(self, a: Any, focus_before: int) -> None:
@@ -367,7 +409,10 @@ class _Recorder:
             return
         own = a.ms if a.do in ("hover", "highlight") and a.ms else 0
         if not own:
-            self.page.wait_for_timeout(HOLD_MS)
+            for waited in range(0, HOLD_MS, INVENTORY_EVERY_MS):  # snapshot about once a second
+                self.page.wait_for_timeout(min(INVENTORY_EVERY_MS, HOLD_MS - waited))
+                if waited + INVENTORY_EVERY_MS < HOLD_MS:
+                    self.snap()
         if len(self.focus_log) > focus_before:
             self.focus_log[-1]["hold_ms"] = own or HOLD_MS
 
@@ -385,6 +430,7 @@ class _Recorder:
         self.safe(target)
         x, y = self.center_of(target)
         slow = kind == "hover" and bool(a.ms)  # showcase_lite: a slow, deliberate hover
+        self.note_action(kind, target)
         self.move_to(x, y, self.rng.randint(900, 1200) if slow else None)
         self.event(kind, x, y)
         self.focus(kind, target.box())
@@ -414,6 +460,7 @@ class _Recorder:
         target = self.target_of(a.locator, label)
         self.safe(target)
         x, y = self.center_of(target)
+        self.note_action("right_click", target)
         self.move_to(x, y)
         self.event("click", x, y)
         self.focus("click", target.box())
@@ -425,6 +472,7 @@ class _Recorder:
         if not info.is_text_input:
             raise RuntimeError(f"{label}: not a text field")
         x, y = self.center_of(target)
+        self.note_action("type", target)
         self.move_to(x, y)
         self.event("click", x, y)
         self.focus("type", target.box())
@@ -445,6 +493,7 @@ class _Recorder:
             self.page.keyboard.press("Enter")
 
     def do_scroll(self, a: Any, label: str) -> None:
+        self.note_action("scroll", None)
         self.event("scroll", self.mouse[0], self.mouse[1])
         self.sample_center()
         self.wheel(a.ms or 700)
@@ -460,6 +509,7 @@ class _Recorder:
             if self.now() - last >= FOCUS_SAMPLE_MS:
                 last = self.now()
                 self.sample_center()
+                self.snap_every()
 
     def _scroll_center(self, target: Target) -> tuple[float, float]:
         handle = target.handle()
@@ -475,6 +525,7 @@ class _Recorder:
 
     def do_scroll_to(self, a: Any, label: str) -> None:
         target = self.target_of(a.locator, label)
+        self.note_action("scroll_to", target)
         self.event("scroll", self.mouse[0], self.mouse[1])
         self.sample_center()
         self._scroll_center(target)
@@ -494,9 +545,11 @@ class _Recorder:
         if box is None:
             raise RuntimeError(f"{label}: element has no box")
         self.pointed += 1
+        self.note_action("highlight", None if group else target)
         self.page.evaluate(HIGHLIGHT_ON_JS, [box, self.color])
         self.event("highlight", box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
         self.focus("highlight", box if group else self.section_of(target))
+        self.snap()
         self.page.wait_for_timeout(a.ms or 1800)
         self.page.evaluate(HIGHLIGHT_OFF_JS)
 
@@ -504,6 +557,7 @@ class _Recorder:
         target = self.target_of(a.locator, label)
         info = target.info()
         name = a.file if a.file in CATALOG else pick_sample(info.file_accept, label)
+        self.note_action("upload", target)
         handle = target.file_input()
         if handle is None:
             raise RuntimeError(f"{label}: not a file input")
@@ -561,6 +615,7 @@ class _Recorder:
                 break
             self.move_to(c["x"], c["y"], self.rng.randint(800, 1200))
             self.event("hover", c["x"], c["y"])  # filler: the camera does not follow it
+            self.snap_every()
             self.page.wait_for_timeout(250)
         remaining = missing_ms - (self.now() - started)
         if remaining > 1200:
@@ -711,6 +766,8 @@ def record_scene(
         setup_end_ms=setup_end,
         click_log=rec.log,
         focus_log=rec.focus_log,
+        inventory=rec.inventory,
+        action_log=rec.action_log,
         width=viewport["width"],
         height=viewport["height"],
         content_ms=content_ms,

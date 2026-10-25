@@ -86,6 +86,8 @@ class SceneOutcome:
     )  # removed stretches, original clip time
     actions: int = 0  # things the viewer was shown (clicks, typing, highlights, sections)
     hold_avg_ms: int | None = None  # mean time kept on the result of those actions
+    inventory_snapshots: int = 0  # frame_inventory snapshots taken (items are in inventory_file)
+    inventory_file: str | None = None  # produce/inventory/<scene>.json: inventory + action_log
 
     def as_dict(self) -> dict[str, Any]:
         return self.__dict__.copy()
@@ -126,8 +128,23 @@ class ClipPlan:
     click_log: list[dict[str, Any]]
     focus_log: list[dict[str, Any]]
     activity_ms: list[float]  # times of anything happening, from the first shown moment
+    inventory: list[dict[str, Any]] = field(default_factory=list)  # frame_inventory snapshots
+    action_log: list[dict[str, Any]] = field(
+        default_factory=list
+    )  # what was done, and to which item
     trimmed_ms: int = 0
     cuts: list[dict[str, int]] = field(default_factory=list)
+
+
+def save_inventory(work: Path, scene_id: str, plan: "ClipPlan | None") -> str | None:
+    """Write a scene's frame_inventory and action log (clip time) next to the produce files."""
+    if plan is None or not plan.inventory:
+        return None
+    path = work / "inventory" / f"{scene_id}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"inventory": plan.inventory, "action_log": plan.action_log}
+    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    return str(path.relative_to(work.parent))
 
 
 def plan_clip(record: RecordResult, visual: Any, speech_ms: int, scene_id: str) -> ClipPlan:
@@ -146,6 +163,8 @@ def plan_clip(record: RecordResult, visual: Any, speech_ms: int, scene_id: str) 
         shown,
         focus,
         [t - lead for t in record.activity_ms if t >= lead],
+        [e for e in record.inventory if e["t_ms"] >= lead],
+        [e for e in record.action_log if e["t_ms"] >= lead],
     )
     if record.clip_path is None or plan.usable_ms <= speech_ms:
         return plan
@@ -159,6 +178,8 @@ def plan_clip(record: RecordResult, visual: Any, speech_ms: int, scene_id: str) 
             focus_log=record.focus_log,
             click_log=record.click_log,
             activity_ms=record.activity_ms,
+            inventory=record.inventory,
+            action_log=record.action_log,
         )
     except Exception as e:  # the clip as recorded is still usable
         record.warnings.append(f"{scene_id}: không cắt được đoạn chờ ({type(e).__name__})")
@@ -174,6 +195,8 @@ def plan_clip(record: RecordResult, visual: Any, speech_ms: int, scene_id: str) 
         cut.click_log,
         cut.focus_log,
         cut.activity_ms,
+        cut.inventory,
+        cut.action_log,
         cut.trimmed_ms,
         [{"from_ms": c.from_ms, "to_ms": c.to_ms} for c in cut.cuts],
     )
@@ -326,6 +349,7 @@ def produce(
                 bar = {"x": 0, "y": 0, "w": viewport["width"], "h": 140}
                 entry["focus_log"] = [{"t_ms": 0, "bbox": bar, "kind": "section", "hold_ms": 0}]
         assets[s.id] = entry
+        inventory_file = save_inventory(work, s.id, plan)
         outcomes.append(
             SceneOutcome(
                 id=s.id,
@@ -347,6 +371,8 @@ def produce(
                 cuts=plan.cuts if plan else [],
                 actions=len(shown),
                 hold_avg_ms=round(sum(holds) / len(holds)) if holds else None,
+                inventory_snapshots=len(plan.inventory) if plan else 0,
+                inventory_file=inventory_file,
             )
         )
     phases["record"] = round(time.monotonic() - started, 1)

@@ -9,7 +9,7 @@ stays next to it as <scene>_raw.mp4. Click and focus logs are shifted to the new
 
 import re
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -41,6 +41,8 @@ class TrimResult:
     click_log: list[dict[str, Any]]
     focus_log: list[dict[str, Any]]
     activity_ms: list[float]
+    inventory: list[dict[str, Any]] = field(default_factory=list)
+    action_log: list[dict[str, Any]] = field(default_factory=list)
 
 
 def detect_freezes(clip: Path, content_ms: int) -> list[tuple[float, float]]:
@@ -140,6 +142,18 @@ def shift_logs(entries: list[dict[str, Any]], cuts: list[Cut]) -> list[dict[str,
     return [{**e, "t_ms": round(shift_time(e["t_ms"], cuts))} for e in entries]
 
 
+def shift_actions(entries: list[dict[str, Any]], cuts: list[Cut]) -> list[dict[str, Any]]:
+    """Like shift_logs, and the end of each action (end_ms) moves with it."""
+    return [
+        {
+            **e,
+            "t_ms": round(shift_time(e["t_ms"], cuts)),
+            "end_ms": round(shift_time(e.get("end_ms", e["t_ms"]), cuts)),
+        }
+        for e in entries
+    ]
+
+
 def apply_cuts(raw: Path, out: Path, cuts: list[Cut]) -> None:
     """Re-encode `raw` without the cut stretches (exact to the frame), 30 fps yuv420p, no audio."""
     drop = "+".join(f"gte(t\\,{c.from_ms / 1000:.3f})*lt(t\\,{c.to_ms / 1000:.3f})" for c in cuts)
@@ -164,6 +178,8 @@ def trim_dead_time(
     focus_log: list[dict[str, Any]],
     click_log: list[dict[str, Any]],
     activity_ms: list[float],
+    inventory: list[dict[str, Any]] | None = None,
+    action_log: list[dict[str, Any]] | None = None,
 ) -> TrimResult | None:
     """Shorten `clip` toward `speech_ms` by cutting dead time; None when nothing can be cut.
 
@@ -200,4 +216,6 @@ def trim_dead_time(
         click_log=shift_logs(kept(click_log), all_cuts),
         focus_log=shift_logs(kept(focus_log), all_cuts),
         activity_ms=[shift_time(t, all_cuts) for t in activity_ms if t >= lead_ms],
+        inventory=shift_logs(kept(inventory or []), all_cuts),
+        action_log=shift_actions(kept(action_log or []), all_cuts),
     )

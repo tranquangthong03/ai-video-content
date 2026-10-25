@@ -39,6 +39,7 @@ target-version = "py312"
 "app/explorer/extract.py" = ["E501"]  # embedded JavaScript
 "app/explorer/verify.py" = ["E501"]  # embedded JavaScript
 "app/browser/locate.py" = ["E501"]  # embedded JavaScript
+"app/recorder/inventory.py" = ["E501"]  # embedded JavaScript
 "tests/**" = ["E501"]  # long fixture/data lines
 
 [tool.ruff.lint]
