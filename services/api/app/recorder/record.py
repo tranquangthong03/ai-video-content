@@ -147,56 +147,49 @@ NEARBY_JS = """
 
 SCROLLABLE_JS = "() => document.documentElement.scrollHeight - innerHeight"
 
-# the block around an element worth framing (a section/card/list item), clipped to the viewport
-SECTION_JS = """
+# the main content of a section: a heading and what sits right below it (not the whole,
+# often viewport-tall, section); any other element: its card / list item
+CONTENT_BLOCK_JS = """
 (el) => {
   const vw = innerWidth, vh = innerHeight;
   const rect = (e) => e.getBoundingClientRect();
-  const tags = new Set(
-    ['SECTION', 'ARTICLE', 'ASIDE', 'HEADER', 'FOOTER', 'NAV', 'FORM', 'LI', 'FIGURE']);
-  const base = rect(el);
-  let pick = el;
-  const root = (e) => e === document.body || e === document.documentElement;
-  for (let e = el.parentElement; e && !root(e); e = e.parentElement) {
-    const r = rect(e);
-    if (r.height > vh * 0.9 || r.width < base.width * 0.9) break;
-    const role = e.getAttribute('role');
-    if (tags.has(e.tagName) || role === 'region' || role === 'group') { pick = e; break; }
-    if (r.height >= base.height * 1.5 && r.width >= vw * 0.3) pick = e;
-  }
-  const r = rect(pick);
-  const x = Math.max(0, r.left), y = Math.max(0, r.top);
-  const w = Math.min(vw, r.right) - x, h = Math.min(vh, r.bottom) - y;
-  return w > 8 && h > 8 ? { x, y, width: w, height: h } : null;
-}
-"""
-
-# the large block of the page that is in the middle of the viewport right now (while scrolling)
-CENTER_BLOCK_JS = """
-() => {
-  const vw = innerWidth, vh = innerHeight;
-  const main = document.querySelector('main') || document.body;
-  const stack = document.elementsFromPoint(vw / 2, vh / 2);
-  const isRoot = (e) => e === main || e === document.body || e === document.documentElement;
-  const el = stack.find((e) => main.contains(e) && !isRoot(e));
-  if (!el) return null;
-  let block = el;
-  while (block.parentElement && block.parentElement !== main &&
-         block.parentElement !== document.body) {
-    block = block.parentElement;
-  }
-  if (block.getBoundingClientRect().height > vh * 1.1) {
-    let best = el;
-    for (let e = el; e && e !== block; e = e.parentElement) {
-      const r = e.getBoundingClientRect();
-      if (r.height <= vh && r.width >= 120) best = e;
+  // the extent of the text itself: a block-level heading spans the page, its words do not
+  const tight = (e) => {
+    const g = document.createRange();
+    g.selectNodeContents(e);
+    const r = g.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 ? r : rect(e);
+  };
+  const isHeading = (e) => /^H[1-6]$/.test(e.tagName);
+  const level = (e) => +e.tagName[1];
+  const boxes = [tight(el)];
+  if (isHeading(el)) {
+    const limit = rect(el).bottom + 360;
+    let node = el;
+    while (node.parentElement && !node.nextElementSibling && node.parentElement !== document.body
+           && rect(node.parentElement).height < vh * 0.9) node = node.parentElement;
+    const stops = (e) => (isHeading(e) && level(e) <= level(el)) ||
+      [...e.querySelectorAll('h1,h2,h3,h4,h5,h6')].some((h) => level(h) <= level(el));
+    for (let sib = node.nextElementSibling; sib && boxes.length < 6; sib = sib.nextElementSibling) {
+      const r = rect(sib);
+      if (r.height === 0 || getComputedStyle(sib).display === 'none') continue;
+      if (stops(sib) || r.top > limit) break;
+      const t = tight(sib);
+      boxes.push({ left: t.left, right: t.right, top: r.top, bottom: Math.min(r.bottom, limit) });
     }
-    block = best;
+  } else {
+    const tags = new Set(['LI', 'ARTICLE', 'FIGURE', 'TR', 'FORM']);
+    for (let e = el.parentElement; e && e !== document.body; e = e.parentElement) {
+      const r = rect(e);
+      if (r.height > vh * 0.6 || r.width > vw * 0.9) break;
+      if (tags.has(e.tagName) || e.getAttribute('role') === 'listitem') { boxes[0] = r; break; }
+    }
   }
-  const r = block.getBoundingClientRect();
-  const x = Math.max(0, r.left), y = Math.max(0, r.top);
-  const w = Math.min(vw, r.right) - x, h = Math.min(vh, r.bottom) - y;
-  return w > 8 && h > 8 ? { x, y, width: w, height: h } : null;
+  const x0 = Math.max(0, Math.min(...boxes.map((b) => b.left)));
+  const y0 = Math.max(0, Math.min(...boxes.map((b) => b.top)));
+  const x1 = Math.min(vw, Math.max(...boxes.map((b) => b.right)));
+  const y1 = Math.min(vh, Math.max(...boxes.map((b) => b.bottom)));
+  return x1 - x0 > 8 && y1 - y0 > 8 ? { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } : null;
 }
 """
 
@@ -323,16 +316,10 @@ class _Recorder:
             {"t_ms": now, "end_ms": now, "do": do, "target_text": text, "item_id": item_id}
         )
 
-    def sample_center(self) -> None:
-        """While scrolling the camera should show the block in the middle of the viewport."""
+    def content_block_of(self, target: Target) -> dict[str, float] | None:
+        """What to frame for a section: its heading and the content right below it."""
         try:
-            self.focus("scroll", self.page.evaluate(CENTER_BLOCK_JS))
-        except Exception:
-            pass
-
-    def section_of(self, target: Target) -> dict[str, float] | None:
-        try:
-            return self.page.evaluate(SECTION_JS, target.handle()) or target.box()
+            return self.page.evaluate(CONTENT_BLOCK_JS, target.handle()) or target.box()
         except Exception:
             return target.box()
 
@@ -495,9 +482,7 @@ class _Recorder:
     def do_scroll(self, a: Any, label: str) -> None:
         self.note_action("scroll", None)
         self.event("scroll", self.mouse[0], self.mouse[1])
-        self.sample_center()
         self.wheel(a.ms or 700)
-        self.sample_center()
 
     def wheel(self, total: float) -> None:
         """Scroll by `total` px in eased steps, logging the centre block every FOCUS_SAMPLE_MS."""
@@ -508,7 +493,6 @@ class _Recorder:
             self.page.wait_for_timeout(40)
             if self.now() - last >= FOCUS_SAMPLE_MS:
                 last = self.now()
-                self.sample_center()
                 self.snap_every()
 
     def _scroll_center(self, target: Target) -> tuple[float, float]:
@@ -527,9 +511,8 @@ class _Recorder:
         target = self.target_of(a.locator, label)
         self.note_action("scroll_to", target)
         self.event("scroll", self.mouse[0], self.mouse[1])
-        self.sample_center()
         self._scroll_center(target)
-        self.focus("section", self.section_of(target))
+        self.focus("section", self.content_block_of(target))
 
     def do_highlight(self, a: Any, label: str) -> None:
         group = a.text == GROUP and self.hover_boxes
@@ -548,7 +531,7 @@ class _Recorder:
         self.note_action("highlight", None if group else target)
         self.page.evaluate(HIGHLIGHT_ON_JS, [box, self.color])
         self.event("highlight", box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
-        self.focus("highlight", box if group else self.section_of(target))
+        self.focus("highlight", box if group else self.content_block_of(target))
         self.snap()
         self.page.wait_for_timeout(a.ms or 1800)
         self.page.evaluate(HIGHLIGHT_OFF_JS)
@@ -626,11 +609,9 @@ class _Recorder:
             if room > 200:
                 self.event("scroll", self.mouse[0], self.mouse[1])
                 self.wheel(min(320, room))
-                self.sample_center()
                 self.page.wait_for_timeout(500)
                 self.event("scroll", self.mouse[0], self.mouse[1])
                 self.wheel(-min(320, room))
-                self.sample_center()
         return self.now() - started
 
 

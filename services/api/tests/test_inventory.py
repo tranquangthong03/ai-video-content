@@ -70,3 +70,25 @@ def test_trim_moves_the_action_times_with_the_cuts() -> None:
     actions = [{"t_ms": 1500, "end_ms": 3500, "do": "type", "item_id": "e1"}]
     moved = shift_actions(actions, cuts)
     assert moved == [{"t_ms": 1000, "end_ms": 2000, "do": "type", "item_id": "e1"}]
+
+
+def test_scroll_to_and_highlight_frame_the_heading_and_its_content_not_the_whole_section(
+    browser_session: BrowserSession, site: str, tmp_path: Path
+) -> None:
+    heading = loc("#paths-title", text="Lộ trình học theo vai trò")
+    visual = {
+        "mode": "recording",
+        "actions": [
+            goto(site, "/sections.html"),
+            {"do": "scroll_to", "locator": heading},
+            {"do": "highlight", "locator": heading, "ms": 900},
+        ],
+    }
+    r = rec(browser_session, site, tmp_path, visual, speech_ms=1000)
+    assert r.warnings == [] and r.steps_ok == 2
+    section = next(f for f in r.focus_log if f["kind"] == "section")["bbox"]
+    # the section is 1000 px tall; the block is the heading plus the two paragraphs below it
+    assert 60 < section["h"] < 300 and section["w"] < 800
+    assert not any(
+        f["kind"] == "scroll" for f in r.focus_log
+    )  # no more "biggest block at the centre"
