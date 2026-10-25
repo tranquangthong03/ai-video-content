@@ -1,0 +1,270 @@
+{
+  "flow_id": "user_n_n_nh_m_u_v_so_s_nh_tr_",
+  "status": "reached_goal",
+  "steps": [
+    {
+      "i": 1,
+      "action": {
+        "do": "goto",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": "https://squoosh.app/",
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": null,
+      "url_after": "https://squoosh.app/",
+      "screenshot": "flow/steps/s1.jpg",
+      "note": "Mở trang bắt đầu",
+      "chapter_id": "c1",
+      "t_ms_hint": 0
+    },
+    {
+      "i": 2,
+      "action": {
+        "do": "click",
+        "target": "2.8MB",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "button",
+        "name": "2.8MB",
+        "text": "2.8MB",
+        "css": "button",
+        "nth": 2,
+        "tag": "button",
+        "fingerprint": "button|2.8mb|0.32,0.95",
+        "bbox": {
+          "x": 412.0,
+          "y": 784.0,
+          "w": 100.0,
+          "h": 139.0
+        }
+      },
+      "target_text": "2.8MB",
+      "value": null,
+      "url_before": "https://squoosh.app/",
+      "url_after": "https://squoosh.app/editor",
+      "screenshot": "flow/steps/s2.jpg",
+      "note": "Bấm vào ảnh mẫu 'Large photo' (2.8MB) để mở trong công cụ nén.",
+      "chapter_id": "c1",
+      "t_ms_hint": 2500
+    },
+    {
+      "i": 3,
+      "action": {
+        "do": "type",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "50",
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "textbox",
+        "name": null,
+        "text": null,
+        "css": "input",
+        "nth": 3,
+        "tag": "input",
+        "fingerprint": "input||0.97,0.82",
+        "bbox": {
+          "x": 1376.0,
+          "y": 728.0,
+          "w": 54.0,
+          "h": 23.0
+        }
+      },
+      "target_text": null,
+      "value": "50",
+      "url_before": "https://squoosh.app/editor",
+      "url_after": "https://squoosh.app/editor",
+      "screenshot": "flow/steps/s3.jpg",
+      "note": "Hạ chất lượng nén MozJPEG xuống 50 để thấy dung lượng ảnh giảm rõ rệt.",
+      "chapter_id": "c2",
+      "t_ms_hint": 5000
+    },
+    {
+      "i": 4,
+      "action": {
+        "do": "type",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "25",
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "textbox",
+        "name": null,
+        "text": null,
+        "css": "input",
+        "nth": 3,
+        "tag": "input",
+        "fingerprint": "input||0.97,0.82",
+        "bbox": {
+          "x": 1376.0,
+          "y": 728.0,
+          "w": 54.0,
+          "h": 23.0
+        }
+      },
+      "target_text": null,
+      "value": "25",
+      "url_before": "https://squoosh.app/editor",
+      "url_after": "https://squoosh.app/editor",
+      "screenshot": "flow/steps/s4.jpg",
+      "note": "Hạ chất lượng MozJPEG xuống 25 để giảm dung lượng ảnh sau nén nhiều hơn.",
+      "chapter_id": "c2",
+      "t_ms_hint": 7500
+    },
+    {
+      "i": 5,
+      "action": {
+        "do": "click",
+        "target": "Toggle background",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "button",
+        "name": "Toggle background",
+        "text": null,
+        "css": "button",
+        "nth": 4,
+        "tag": "button",
+        "fingerprint": "button||0.59,0.97",
+        "bbox": {
+          "x": 827.0,
+          "y": 852.0,
+          "w": 42.0,
+          "h": 39.0
+        }
+      },
+      "target_text": "Toggle background",
+      "value": null,
+      "url_before": "https://squoosh.app/editor",
+      "url_after": "https://squoosh.app/editor",
+      "screenshot": "flow/steps/s5.jpg",
+      "note": "Bật nền hiển thị để dễ đánh giá vùng trong suốt và chất lượng ảnh sau nén.",
+      "chapter_id": "c3",
+      "t_ms_hint": 10000
+    },
+    {
+      "i": 6,
+      "action": {
+        "do": "click",
+        "target": "Toggle smoothing",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "button",
+        "name": "Toggle smoothing",
+        "text": null,
+        "css": "button",
+        "nth": 3,
+        "tag": "button",
+        "fingerprint": "button||0.56,0.97",
+        "bbox": {
+          "x": 786.0,
+          "y": 852.0,
+          "w": 41.0,
+          "h": 39.0
+        }
+      },
+      "target_text": "Toggle smoothing",
+      "value": null,
+      "url_before": "https://squoosh.app/editor",
+      "url_after": "https://squoosh.app/editor",
+      "screenshot": "flow/steps/s6.jpg",
+      "note": "Bật chế độ làm mịn để dễ quan sát chi tiết ảnh sau nén so với ảnh gốc.",
+      "chapter_id": "c4",
+      "t_ms_hint": 12500
+    }
+  ],
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "Chọn ảnh mẫu",
+      "step_ids": [
+        1,
+        2
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c2",
+      "title": "Điều chỉnh thiết lập nén",
+      "step_ids": [
+        3,
+        4
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c3",
+      "title": "So sánh trước – sau",
+      "step_ids": [
+        5
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c4",
+      "title": "Đánh giá chất lượng",
+      "step_ids": [
+        6
+      ],
+      "value_line": null
+    }
+  ],
+  "sample_data": {
+    "sample_image": "Large photo 2.8MB",
+    "codec": "MozJPEG",
+    "quality": 25
+  },
+  "warnings": [],
+  "llm_calls": 6,
+  "submit_policy": "stop",
+  "stop_ref": null,
+  "report": {
+    "model": "deepseek-flash",
+    "used_images": true,
+    "llm_calls": 6,
+    "prompt_tokens": 15596,
+    "completion_tokens": 2027,
+    "seconds": 27.9,
+    "write_requests": [],
+    "invented_refs": 0,
+    "repeat_warnings": 0
+  }
+}

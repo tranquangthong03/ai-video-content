@@ -40,15 +40,14 @@ def test_orangehrm_describes_its_flow_then_picks_it_and_never_allows_submit(tmp_
     assert second.answers == {"selected_flows": ["user_x"]}  # no allow_submit on a shared site
 
 
-def test_todomvc_picks_the_proposed_task_list_flow_and_allows_submit(tmp_path: Path) -> None:
+def test_todomvc_describes_its_task_list_flow_and_allows_submit(tmp_path: Path) -> None:
     u = user("todomvc", tmp_path)
-    flows = [
-        flow("a", "Xóa việc đã xong", needs_submit=False),
-        flow("b", "Lên danh sách việc trong ngày"),
-    ]
-    req = build_request("j", flows, "https://todomvc.com/examples/react/dist/")
-    answers = u.ask(req).answers
-    assert answers == {"selected_flows": ["b"], "allow_submit": "true", "submit_confirmed": "true"}
+    url = "https://todomvc.com/examples/react/dist/"
+    first = u.ask(build_request("j", [flow("a", "Thêm việc cần làm mới")], url))
+    assert first.answers["flow_description"].startswith("Lên danh sách việc")  # type: ignore[index]
+    mine = flow("u", "Lên danh sách việc trong ngày", source="user")
+    answers = u.ask(build_request("j", [flow("a", "Thêm việc"), mine], url, default=["u"])).answers
+    assert answers == {"selected_flows": ["u"], "allow_submit": "true", "submit_confirmed": "true"}
 
 
 def test_a_site_without_a_matching_proposal_gets_its_flow_described(tmp_path: Path) -> None:
@@ -61,14 +60,14 @@ def test_a_site_without_a_matching_proposal_gets_its_flow_described(tmp_path: Pa
     assert u.ask(again).answers == {"selected_flows": ["u"]}
 
 
-def test_a_storyboard_that_missed_the_goal_is_rerun_once_then_approved_or_cancelled(
-    tmp_path: Path,
-) -> None:
+def test_a_storyboard_that_missed_the_goal_is_rerun_once_then_not_filmed(tmp_path: Path) -> None:
     u = user("squoosh", tmp_path)
     f = flow("leave", "x")
     partial = storyboard_request("j", f, make_run("partial"))
     assert u.ask(partial).action == "regenerate"
-    assert u.ask(partial).action == "approve"  # the rerun is only done once
+    assert (
+        u.ask(partial).action == "cancel"
+    )  # rerun once; a flow that did not get there is not filmed
     failed = storyboard_request("j", f, make_run("failed", tail=False))
     assert u.ask(failed).action == "cancel"
     assert u.ask(storyboard_request("j", f, make_run())).action == "approve"

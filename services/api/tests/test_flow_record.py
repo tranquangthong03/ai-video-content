@@ -194,3 +194,23 @@ def test_produce_films_the_flow_once_and_renders_its_chapters_as_scenes(
         ["ffprobe", "-v", "error", str(assets["s3"]["clip_url"])], capture_output=True
     )
     assert probe.returncode == 0
+
+
+def test_a_click_whose_target_is_gone_is_skipped_and_the_film_goes_on(
+    browser_session: BrowserSession, site: str, agent_job: tuple[Path, FlowRun], tmp_path: Path
+) -> None:
+    job, run = agent_job
+    broken = FlowRun.model_validate_json(run.model_dump_json())
+    pointing = next(s for s in broken.steps if s.action.do == "hover")
+    spec = pointing.locator
+    assert spec is not None
+    spec.css, spec.name, spec.text = "#nope", "Nothing", "Nothing"
+    spec.bbox = spec.fingerprint = spec.nth = None
+    pointing.target_text = "Nothing at all"
+    recorder = FlowRecorder(broken, job)
+    recorder._record(browser_session, tmp_path, {"root_url": site})
+    rec = recorder.recording
+    assert rec is not None and rec.failed_at is None
+    assert [m.i for m in rec.marks if m.skipped] == [pointing.i]
+    assert rec.marks[-1].i == broken.steps[-1].i and rec.marks[-1].ok  # the highlight still ran
+    assert any("bị bỏ qua" in w for w in rec.warnings)

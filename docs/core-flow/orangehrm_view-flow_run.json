@@ -1,0 +1,162 @@
+{
+  "flow_id": "user_nh_n_vi_n_xem_danh_s_ch_",
+  "status": "reached_goal",
+  "steps": [
+    {
+      "i": 1,
+      "action": {
+        "do": "goto",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": null,
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+      "screenshot": "flow/steps/s1.jpg",
+      "note": "Mở trang bắt đầu",
+      "chapter_id": "c1",
+      "t_ms_hint": 0
+    },
+    {
+      "i": 2,
+      "action": {
+        "do": "click",
+        "target": "Leave",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "link",
+        "name": "Leave",
+        "text": "Leave",
+        "css": "nav a",
+        "nth": 3,
+        "tag": "a",
+        "fingerprint": "a|leave|0.09,0.18",
+        "bbox": {
+          "x": 0.0,
+          "y": 234.0,
+          "w": 246.0,
+          "h": 38.0
+        }
+      },
+      "target_text": "Leave",
+      "value": null,
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveList",
+      "screenshot": "flow/steps/s2.jpg",
+      "note": "Mở menu Leave ở thanh điều hướng bên trái để vào khu vực nghỉ phép.",
+      "chapter_id": "c1",
+      "t_ms_hint": 2500
+    },
+    {
+      "i": 3,
+      "action": {
+        "do": "scroll",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": 600,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveList",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveList",
+      "screenshot": "flow/steps/s3.jpg",
+      "note": "Trang đang tải, cuộn xuống để xem nội dung danh sách nghỉ phép.",
+      "chapter_id": "c2",
+      "t_ms_hint": 5000
+    },
+    {
+      "i": 4,
+      "action": {
+        "do": "click",
+        "target": "My Leave",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "link",
+        "name": "My Leave",
+        "text": "My Leave",
+        "css": "nav a",
+        "nth": 14,
+        "tag": "a",
+        "fingerprint": "a|my leave|0.29,0.19",
+        "bbox": {
+          "x": 387.0,
+          "y": 184.0,
+          "w": 51.0,
+          "h": 16.0
+        }
+      },
+      "target_text": "My Leave",
+      "value": null,
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveList",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewMyLeaveList",
+      "screenshot": "flow/steps/s4.jpg",
+      "note": "Chuyển sang tab My Leave để xem danh sách đơn nghỉ phép cá nhân.",
+      "chapter_id": "c2",
+      "t_ms_hint": 7500
+    }
+  ],
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "Mở menu Leave",
+      "step_ids": [
+        1,
+        2
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c2",
+      "title": "Mở My Leave",
+      "step_ids": [
+        3,
+        4
+      ],
+      "value_line": null
+    }
+  ],
+  "sample_data": {},
+  "warnings": [],
+  "llm_calls": 4,
+  "submit_policy": "stop",
+  "stop_ref": null,
+  "report": {
+    "model": "deepseek-flash",
+    "used_images": true,
+    "llm_calls": 4,
+    "prompt_tokens": 9490,
+    "completion_tokens": 479,
+    "seconds": 25.1,
+    "write_requests": [],
+    "invented_refs": 0,
+    "repeat_warnings": 0
+  }
+}

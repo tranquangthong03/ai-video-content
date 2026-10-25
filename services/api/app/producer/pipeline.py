@@ -362,6 +362,7 @@ def flow_report(recorder: FlowRecorder, session: BrowserSession) -> dict[str, An
         "steps": len(recorder.run.steps),
         "replayed": sum(1 for m in rec.marks if m.ok) if rec else 0,
         "replay_failed_at": rec.failed_at if rec else None,
+        "skipped_steps": [m.i for m in rec.marks if m.skipped] if rec else [],
         "clip_ms": rec.content_ms if rec else 0,
         "notes": recorder.notes,
         "write_requests": list(session.guard.write_log),

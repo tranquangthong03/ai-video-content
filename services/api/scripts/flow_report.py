@@ -114,6 +114,7 @@ def build(job: Path, out_dir: Path, name: str) -> dict[str, Any]:
         "repeat_warnings": agent.get("repeat_warnings"),
         "replayed": flow_info.get("replayed"),
         "replay_failed_at": flow_info.get("replay_failed_at"),
+        "skipped_steps": flow_info.get("skipped_steps", []),
         "write_requests": writes["total"], "video_ms": report.get("actual_ms"),
         "footage_ratio": report.get("footage_ratio"), "shared_demo_site": shared,
         "writes_ok": (writes["total"] == 0) if shared or run["submit_policy"] == "stop" else True,
@@ -129,7 +130,8 @@ def build(job: Path, out_dir: Path, name: str) -> dict[str, Any]:
         f"{numbers['agent_tokens']} token; ref bịa bị từ chối: {numbers['invented_refs']}; "
         f"cảnh báo lặp: {numbers['repeat_warnings']}",
         f"- Phát lại khi quay: {numbers['replayed']}/{len(run['steps']) - 1} bước"
-        + (f", dừng ở bước {numbers['replay_failed_at']}" if numbers["replay_failed_at"] else ""),
+        + (f", dừng ở bước {numbers['replay_failed_at']}" if numbers["replay_failed_at"] else "")
+        + (f", bỏ qua bước {numbers['skipped_steps']}" if numbers["skipped_steps"] else ""),
         f"- **Request ghi dữ liệu: {writes['total']}** (agent {len(writes['agent'])}, quay "
         f"{len(writes['film'])})" + (" ✔" if numbers["writes_ok"] else " ✘ PHẢI LÀ 0"),
         f"- Video: {numbers['video_ms']} ms, tỉ lệ cảnh quay {numbers['footage_ratio']}",

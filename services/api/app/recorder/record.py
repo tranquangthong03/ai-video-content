@@ -581,7 +581,8 @@ class _Recorder:
     def do_scroll(self, a: Any, label: str) -> None:
         self.note_action("scroll", None)
         self.event("scroll", self.mouse[0], self.mouse[1])
-        self.wheel(a.ms or 700)
+        up = a.text == "up"  # a flow step that scrolled back up (ms stays positive)
+        self.wheel(-(a.ms or 700) if up else (a.ms or 700))
 
     def wheel(self, total: float) -> None:
         """Scroll by `total` px in eased steps, logging the centre block every FOCUS_SAMPLE_MS."""

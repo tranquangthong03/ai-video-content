@@ -40,6 +40,11 @@ from app.schemas.generated.locator import LocatorSpec
 from app.schemas.generated.scene import Scene
 
 HERO_MS = 2000  # the hook shows this much of the flow around its most telling moment
+# A click whose target is gone is often the agent's second click on something that was still
+# loading: the replay skips up to MAX_SKIPS of them and goes on. Typing, choosing and dates are
+# never skipped (the steps after them depend on what they entered).
+SKIPPABLE = ("click", "navigate", "hover", "highlight", "scroll", "check")
+MAX_SKIPS = 2
 
 
 @dataclass
@@ -50,6 +55,7 @@ class StepMark:
     end_ms: int
     ok: bool
     warnings: list[str] = field(default_factory=list)
+    skipped: bool = False  # failed, but the film goes on without it
 
 
 @dataclass
@@ -69,7 +75,7 @@ class FlowRecording:
 
     @property
     def failed_at(self) -> int | None:
-        return next((m.i for m in self.marks if not m.ok), None)
+        return next((m.i for m in self.marks if not m.ok and not m.skipped), None)
 
 
 # --- filming -------------------------------------------------------------------------------------
@@ -154,14 +160,22 @@ def record_flow(
         except Exception as e:
             rec.warnings.append(f"không mở được {start_url}: {type(e).__name__}")
         start_offset = rec.now()
+        skips = 0
         for step in run.steps:
             if step.action.do == "goto":
                 continue  # the page load above
             started, mark = rec.now(), len(rec.warnings)
             ok = _replay_step(rec, step)
+            refused = any("bị chặn" in w or "không được ghi" in w for w in rec.warnings[mark:])
+            # a step the safety layer refused is never "skipped past": the film stops there
+            skip = not ok and not refused and step.action.do in SKIPPABLE and skips < MAX_SKIPS
             marks.append(
-                StepMark(step.i, step.chapter_id, started, rec.now(), ok, rec.warnings[mark:])
+                StepMark(step.i, step.chapter_id, started, rec.now(), ok, rec.warnings[mark:], skip)
             )
+            if skip:
+                skips += 1
+                rec.warnings.append(f"bước {step.i} bị bỏ qua (không còn phần tử), quay tiếp")
+                continue
             if not ok:
                 break
         page.wait_for_timeout(TAIL_MS)

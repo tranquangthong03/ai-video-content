@@ -56,17 +56,24 @@ SITES = {
         requires_login=True,
         credentials=("Admin", "admin123"),
     ),
+    "orangehrm_view": Site(
+        "https://opensource-demo.orangehrmlive.com/",
+        "Nhân viên xem danh sách đơn nghỉ phép của mình (My Leave) rồi xem lịch nghỉ",
+        describe_only=True,
+        requires_login=True,
+        credentials=("Admin", "admin123"),
+    ),
     "todomvc": Site(
         "https://todomvc.com/examples/react/dist/",
         "Lên danh sách việc trong ngày: thêm 3 việc, đánh dấu xong 1 việc rồi lọc việc còn lại "
         "(Active)",
-        keywords=["danh sach viec", "viec trong ngay", "todo", "cong viec"],
+        describe_only=True,
         allow_submit=True,
     ),
     "squoosh": Site(
         "https://squoosh.app/",
         "Nén một ảnh mẫu rồi so sánh ảnh trước và sau khi nén",
-        keywords=["nen anh", "compress", "so sanh"],
+        describe_only=True,
     ),
 }
 
@@ -154,7 +161,8 @@ class FlowUser(ScriptedFrontend):
             self.regenerated = True
             self.note("regenerate")
             return make_response(request, "regenerate")
-        action = "approve" if run.status != "failed" and len(run.steps) >= 2 else "cancel"
+        done = run.status in ("reached_goal", "stopped_before_submit") and len(run.steps) >= 2
+        action = "approve" if done else "cancel"  # a flow that did not get there is not filmed
         self.note(action)
         return make_response(request, action)
 

@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -239,3 +240,43 @@ def test_the_recorder_replays_navigate_across_pages(
     assert r.warnings == [] and r.steps_ok == 2  # the goto is not counted
     texts = [(i["kind"], i["text"]) for s in r.inventory for i in s["items"]]
     assert ("heading", "My Leave") in texts, texts[-12:]
+
+
+def test_typing_presses_enter_when_the_recorder_would_so_the_agent_sees_the_item(
+    browser_session: BrowserSession, site: str
+) -> None:
+    context = browser_session.new_context()
+    page = context.new_page()
+    page.goto(site + "/todo.html")
+    runner = ActionRunner(page, site, guard=browser_session.guard)
+    result = act(page, runner, "New todo", do="type", value="Mua sữa")
+    assert result.pressed_enter and page.locator("#items li").count() == 1
+    page.goto(site + "/flow_apply.html")  # a form with several fields: never submitted this way
+    again = act(page, runner, "Comment", do="type", value="Family event")
+    assert not again.pressed_enter and page.input_value("#comment") == "Family event"
+    context.close()
+
+
+def test_a_render_that_fails_once_is_tried_again(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    import subprocess
+
+    from app.producer import render as render_mod
+
+    calls: list[int] = []
+    out = json.dumps(str(tmp_path / "v.mp4"))
+
+    def fake_run(*_a: Any, **_k: Any) -> Any:
+        calls.append(1)
+        done = f'RESULT {{"ok":true,"file":{out},"duration_ms":1000,"render_ms":5}}'
+        failing = len(calls) == 1
+        return subprocess.CompletedProcess([], 1 if failing else 0, "" if failing else done, "boom")
+
+    monkeypatch.setattr(render_mod.subprocess, "run", fake_run)
+    outcome = render_mod.render_props({"a": 1}, tmp_path / "v.mp4", tmp_path / "w")
+    assert len(calls) == 2 and outcome.duration_ms == 1000
+    monkeypatch.setattr(render_mod, "RENDER_ATTEMPTS", 1)
+    calls.clear()
+    with pytest.raises(render_mod.RenderError, match="boom"):
+        render_mod.render_props({"a": 1}, tmp_path / "v.mp4", tmp_path / "w")

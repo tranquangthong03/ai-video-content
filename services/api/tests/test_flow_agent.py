@@ -300,3 +300,27 @@ def test_more_than_four_chapters_are_joined_and_one_long_chapter_is_split() -> N
     split = group_chapters(long)
     assert [c.title for c in split] == ["Điền", "Hoàn tất"] and split[0].step_ids == [1, 2, 3]
     assert len(group_chapters(names(("click", "A"), ("click", "A")))) == 1  # too short to split
+
+
+def test_scrolling_back_up_is_a_valid_step_that_the_recorder_can_repeat(
+    session: BrowserSession, site: str, tmp_path: Path
+) -> None:
+    from tests.test_recorder import goto, rec
+
+    plan = [step("scroll", direction="down"), step("scroll", direction="up"), step("finish")]
+    run = agent(session, site, tmp_path, plan, flow=flow_for(site, start_url=site + "/tall.html"))[
+        0
+    ].run()
+    scrolls = [s for s in run.steps if s.action.do == "scroll"]
+    assert [(s.action.ms, s.action.text) for s in scrolls] == [(600, None), (600, "up")]
+    assert run.status == "reached_goal"
+    visual = {
+        "mode": "recording",
+        "actions": [
+            goto(site, "/tall.html"),
+            {"do": "scroll", "ms": 600},
+            {"do": "scroll", "ms": 600, "text": "up"},
+        ],
+    }
+    r = rec(session, site, tmp_path / "rec", visual, speech_ms=1000)
+    assert r.warnings == [] and r.steps_ok == 2

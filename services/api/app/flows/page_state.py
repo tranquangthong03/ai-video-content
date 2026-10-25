@@ -85,6 +85,12 @@ STATE_JS = r"""
     if (el.labels && el.labels.length) { const t = clean(el.labels[0].innerText); if (t) return t; }
     const field = tag === 'input' || tag === 'textarea' || tag === 'select' || el.getAttribute('role') === 'combobox';
     if (field) { const t = labelNear(el); if (t) return t; }
+    if (tag === 'input' && ['checkbox', 'radio'].includes(type)) {
+      // a tick box of a list item has no label of its own: it is named by its row
+      const row = el.closest('li,tr,[role=row],[role=listitem]');
+      const t = row ? clean(row.innerText).slice(0, 60) : '';
+      if (t) return t;
+    }
     const txt = clean(el.innerText || el.textContent);
     if (txt) return txt;
     const img = el.querySelector('img[alt]');
@@ -127,7 +133,9 @@ STATE_JS = r"""
     const type = tag === 'input' ? (el.type || 'text').toLowerCase() : '';
     if (type === 'hidden' || type === 'password') return;
     const isFile = type === 'file';
-    if (!(isFile || visible(el))) return;
+    // a styled tick box is often drawn by its label while the input itself is transparent
+    const tickBox = tag === 'input' && ['checkbox', 'radio'].includes(type) && el.getBoundingClientRect().width > 1;
+    if (!(isFile || tickBox || visible(el))) return;
     const r = el.getBoundingClientRect();
     if (r.bottom < -vh * nearFactor || r.top > vh * (1 + nearFactor)) return;
     seen.add(el);
@@ -157,6 +165,8 @@ STATE_JS = r"""
     const cx = r.x + r.width / 2, cy = r.y + scrollY + r.height / 2;
     elements.push({
       index, role, tag, name, text, value, options, region,
+      // named by the list item it sits in: that text is the user's data, not a label to judge
+      row_named: tag === 'input' && ['checkbox', 'radio'].includes(type) && !el.getAttribute('aria-label') && !(el.labels && el.labels.length),
       placeholder: clean(el.getAttribute('placeholder')).slice(0, 60),
       input_type: type || null,
       disabled: !!el.disabled || el.getAttribute('aria-disabled') === 'true',
@@ -246,7 +256,8 @@ class PageState:
 def _listed(raw: dict[str, Any]) -> bool:
     """False for what the agent must never be offered."""
     name, role = raw["name"], raw["role"]
-    if is_blocked(name, raw["text"], interactive=role not in ("textbox", "heading")):
+    texts = [] if raw.get("row_named") else [name, raw["text"]]
+    if is_blocked(*texts, interactive=role not in ("textbox", "heading")):
         return False
     href = raw["href"]
     if href and (is_blocked_href(href) or is_logout_url(href)):

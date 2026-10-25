@@ -147,3 +147,21 @@ def test_the_prompt_lines_and_messages_format() -> None:
         == "e1 | combobox | Type | pick | A | A/B | disabled,offscreen | main"
     )
     assert format_messages([]) == "không có" and format_messages(["a", "b"]) == "a; b"
+
+
+def test_a_transparent_tick_box_drawn_by_its_label_is_listed_and_named_by_its_row(
+    browser_session: BrowserSession, site: str
+) -> None:
+    from app.flows.actions import ActionRunner, FlowAction
+
+    context = browser_session.new_context()
+    page = context.new_page()
+    page.goto(site + "/todo_styled.html")
+    state = capture_state(page)
+    boxes = [e for e in state.elements if e.role == "checkbox"]
+    assert [e.name for e in boxes] == ["Mua sữa", "Gọi cho mẹ"]
+    runner = ActionRunner(page, site, guard=browser_session.guard)
+    runner.run(state, FlowAction(do="check", ref=boxes[1].ref))
+    assert page.locator("input.toggle").nth(1).is_checked()
+    assert not page.locator("input.toggle").nth(0).is_checked()
+    context.close()

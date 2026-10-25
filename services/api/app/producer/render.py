@@ -38,23 +38,30 @@ def probe(video: Path) -> dict[str, Any]:
     return {**stream, "duration_ms": round(float(data["format"]["duration"]) * 1000)}
 
 
+RENDER_ATTEMPTS = 2  # a render can time out on a busy machine (frames wait for their clips)
+
+
 def render_props(props: dict[str, Any], out_file: Path, work_dir: Path) -> RenderOutcome:
     """Render `props` (InputProps as a dict) to out_file with apps/render/scripts/render-job.ts."""
     work_dir.mkdir(parents=True, exist_ok=True)
     props_file = work_dir / "render_props.json"
     props_file.write_text(json.dumps(props, ensure_ascii=False, indent=1), encoding="utf-8")
     pnpm = shutil.which("pnpm") or "pnpm"
-    done = subprocess.run(
-        [pnpm, "exec", "tsx", "scripts/render-job.ts", str(props_file), str(out_file)],
-        cwd=RENDER_DIR,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
-    result = next((ln for ln in done.stdout.splitlines() if ln.startswith("RESULT ")), None)
-    if done.returncode != 0 or result is None:
-        tail = (done.stderr or done.stdout)[-600:]
-        raise RenderError(f"render failed (exit {done.returncode}): {tail}")
+    for attempt in range(RENDER_ATTEMPTS):
+        done = subprocess.run(
+            [pnpm, "exec", "tsx", "scripts/render-job.ts", str(props_file), str(out_file)],
+            cwd=RENDER_DIR,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        result = next((ln for ln in done.stdout.splitlines() if ln.startswith("RESULT ")), None)
+        if done.returncode == 0 and result is not None:
+            break
+        if attempt == RENDER_ATTEMPTS - 1:
+            tail = (done.stderr or done.stdout)[-600:]
+            raise RenderError(f"render failed (exit {done.returncode}): {tail}")
+    assert result is not None
     data = json.loads(result.removeprefix("RESULT "))
     return RenderOutcome(Path(data["file"]), int(data["duration_ms"]), int(data["render_ms"]))

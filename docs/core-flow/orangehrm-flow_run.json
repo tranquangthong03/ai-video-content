@@ -1,0 +1,413 @@
+{
+  "flow_id": "user_nh_n_vi_n_xin_ngh_ph_p_v",
+  "status": "partial",
+  "steps": [
+    {
+      "i": 1,
+      "action": {
+        "do": "goto",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": null,
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+      "screenshot": "flow/steps/s1.jpg",
+      "note": "Mở trang bắt đầu",
+      "chapter_id": "c1",
+      "t_ms_hint": 0
+    },
+    {
+      "i": 2,
+      "action": {
+        "do": "click",
+        "target": "Leave",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "link",
+        "name": "Leave",
+        "text": "Leave",
+        "css": "nav a",
+        "nth": 3,
+        "tag": "a",
+        "fingerprint": "a|leave|0.09,0.18",
+        "bbox": {
+          "x": 0.0,
+          "y": 234.0,
+          "w": 246.0,
+          "h": 38.0
+        }
+      },
+      "target_text": "Leave",
+      "value": null,
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveList",
+      "screenshot": "flow/steps/s2.jpg",
+      "note": "Từ Dashboard, tôi mở menu 'Leave' trên thanh điều hướng bên trái để vào phân hệ nghỉ phép.",
+      "chapter_id": "c1",
+      "t_ms_hint": 2500
+    },
+    {
+      "i": 3,
+      "action": {
+        "do": "navigate",
+        "target": "Apply",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "link",
+        "name": "Apply",
+        "text": "Apply",
+        "css": "nav a",
+        "nth": 13,
+        "tag": "a",
+        "fingerprint": "a|apply|0.23,0.09",
+        "bbox": {
+          "x": 316.0,
+          "y": 84.0,
+          "w": 32.0,
+          "h": 16.0
+        }
+      },
+      "target_text": "Apply",
+      "value": null,
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveList",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "screenshot": "flow/steps/s3.jpg",
+      "note": "Mở tab Apply để bắt đầu tạo đơn xin nghỉ phép.",
+      "chapter_id": "c2",
+      "t_ms_hint": 5000
+    },
+    {
+      "i": 4,
+      "action": {
+        "do": "pick_date",
+        "target": "yyyy-dd-mm",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "2026-03-02",
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "textbox",
+        "name": "yyyy-dd-mm",
+        "text": null,
+        "css": "input",
+        "nth": 1,
+        "tag": "input",
+        "fingerprint": "input||0.31,0.35",
+        "bbox": {
+          "x": 331.0,
+          "y": 326.0,
+          "w": 241.0,
+          "h": 45.0
+        }
+      },
+      "target_text": "yyyy-dd-mm",
+      "value": "2026-03-02",
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "screenshot": "flow/steps/s4.jpg",
+      "note": "Chọn ngày bắt đầu nghỉ phép là 02/03/2026.",
+      "chapter_id": "c3",
+      "t_ms_hint": 7500
+    },
+    {
+      "i": 5,
+      "action": {
+        "do": "pick_date",
+        "target": "yyyy-dd-mm",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "2026-03-03",
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "textbox",
+        "name": "yyyy-dd-mm",
+        "text": null,
+        "css": "input",
+        "nth": 2,
+        "tag": "input",
+        "fingerprint": "input||0.50,0.35",
+        "bbox": {
+          "x": 596.0,
+          "y": 326.0,
+          "w": 241.0,
+          "h": 45.0
+        }
+      },
+      "target_text": "yyyy-dd-mm",
+      "value": "2026-03-03",
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "screenshot": "flow/steps/s5.jpg",
+      "note": "Cập nhật ngày kết thúc (To Date) thành 03/03/2026 để đơn nghỉ kéo dài đúng 2 ngày.",
+      "chapter_id": "c3",
+      "t_ms_hint": 10000
+    },
+    {
+      "i": 6,
+      "action": {
+        "do": "pick_date",
+        "target": "yyyy-dd-mm",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "2026-03-02",
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "textbox",
+        "name": "yyyy-dd-mm",
+        "text": null,
+        "css": "input",
+        "nth": 1,
+        "tag": "input",
+        "fingerprint": "input||0.31,0.35",
+        "bbox": {
+          "x": 331.0,
+          "y": 326.0,
+          "w": 241.0,
+          "h": 45.0
+        }
+      },
+      "target_text": "yyyy-dd-mm",
+      "value": "2026-03-02",
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "screenshot": "flow/steps/s6.jpg",
+      "note": "Chỉnh lại ngày bắt đầu nghỉ phép thành 02/03/2026.",
+      "chapter_id": "c3",
+      "t_ms_hint": 12500
+    },
+    {
+      "i": 7,
+      "action": {
+        "do": "scroll",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "up",
+        "ms": 600,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "screenshot": "flow/steps/s7.jpg",
+      "note": "Cuộn lên để hiển thị đầy đủ trường chọn loại nghỉ phép.",
+      "chapter_id": "c3",
+      "t_ms_hint": 15000
+    },
+    {
+      "i": 8,
+      "action": {
+        "do": "pick_date",
+        "target": "yyyy-dd-mm",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "2026-03-02",
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "textbox",
+        "name": "yyyy-dd-mm",
+        "text": null,
+        "css": "input",
+        "nth": 1,
+        "tag": "input",
+        "fingerprint": "input||0.31,0.35",
+        "bbox": {
+          "x": 331.0,
+          "y": 326.0,
+          "w": 241.0,
+          "h": 45.0
+        }
+      },
+      "target_text": "yyyy-dd-mm",
+      "value": "2026-03-02",
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "screenshot": "flow/steps/s8.jpg",
+      "note": "Chỉnh lại ngày bắt đầu nghỉ phép thành 02/03/2026.",
+      "chapter_id": "c3",
+      "t_ms_hint": 17500
+    },
+    {
+      "i": 9,
+      "action": {
+        "do": "scroll",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "up",
+        "ms": 600,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "screenshot": "flow/steps/s9.jpg",
+      "note": "Cuộn lên để hiển thị lại ô chọn Loại nghỉ phép ở đầu biểu mẫu.",
+      "chapter_id": "c3",
+      "t_ms_hint": 20000
+    },
+    {
+      "i": 10,
+      "action": {
+        "do": "type",
+        "target": "yyyy-dd-mm",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "2026-03-02",
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "textbox",
+        "name": "yyyy-dd-mm",
+        "text": null,
+        "css": "input",
+        "nth": 1,
+        "tag": "input",
+        "fingerprint": "input||0.31,0.35",
+        "bbox": {
+          "x": 331.0,
+          "y": 326.0,
+          "w": 241.0,
+          "h": 45.0
+        }
+      },
+      "target_text": "yyyy-dd-mm",
+      "value": "2026-03-02",
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "screenshot": "flow/steps/s10.jpg",
+      "note": "Sửa lại ngày bắt đầu nghỉ thành 02/03/2026.",
+      "chapter_id": "c3",
+      "t_ms_hint": 22500
+    },
+    {
+      "i": 11,
+      "action": {
+        "do": "scroll",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": 600,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "screenshot": "flow/steps/s11.jpg",
+      "note": "Cuộn xuống để tìm ô chọn loại nghỉ phép còn thiếu trong danh sách phần tử.",
+      "chapter_id": "c3",
+      "t_ms_hint": 25000
+    }
+  ],
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "Mở menu Leave",
+      "step_ids": [
+        1,
+        2
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c2",
+      "title": "Mở form",
+      "step_ids": [
+        3
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c3",
+      "title": "Điền thông tin",
+      "step_ids": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "value_line": null
+    }
+  ],
+  "sample_data": {
+    "from_date": "2026-03-02",
+    "to_date": "2026-03-03",
+    "leave_type": "Annual Leave"
+  },
+  "warnings": [
+    "Dừng: «scroll:» lặp 3 lần mà trang không đổi."
+  ],
+  "llm_calls": 10,
+  "submit_policy": "stop",
+  "stop_ref": null,
+  "report": {
+    "model": "deepseek-flash",
+    "used_images": true,
+    "llm_calls": 10,
+    "prompt_tokens": 26682,
+    "completion_tokens": 8411,
+    "seconds": 74.8,
+    "write_requests": [],
+    "invented_refs": 0,
+    "repeat_warnings": 2
+  }
+}

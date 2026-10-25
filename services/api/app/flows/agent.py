@@ -264,7 +264,7 @@ class FlowAgent:
                 do=do,  # type: ignore[arg-type]
                 ref=None if do == "scroll" else "r",
                 value=old.action.text,
-                direction="up" if (old.action.ms or 0) < 0 else "down",
+                direction="up" if old.action.text == "up" else "down",
             )
             element = PageElement(
                 ref="r", role=(old.locator.role if old.locator else None) or "button",
@@ -389,7 +389,9 @@ class FlowAgent:
         if action.do in ("type", "select", "pick_date"):
             recorded["text"] = action.value
         if action.do == "scroll":
-            recorded["do"], recorded["ms"] = "scroll", 600 if action.direction == "down" else -600
+            recorded["ms"] = 600  # pixels; BrowserAction.ms is never negative: "up" goes in text
+            if action.direction == "up":
+                recorded["text"] = "up"
         return _Step(
             action=recorded,
             locator=result.locator.model_dump() if result.locator else None,
@@ -405,6 +407,8 @@ class FlowAgent:
         what = f"{result.do} «{result.target_text}»" + (
             f" = {result.value}" if result.value else ""
         )
+        if result.pressed_enter:
+            what += " (đã nhấn Enter)"
         return f"{n}. {what} → {result.url_after}"
 
     def _failed(self, run: _Run, action: FlowAction, name: str, why: str) -> None:

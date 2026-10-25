@@ -13,6 +13,7 @@ from playwright.sync_api import Page
 from pydantic import BaseModel, model_validator
 
 from app.browser import form_actions
+from app.browser.enter_policy import enter_decision
 from app.browser.form_actions import SUBMIT_NAME, ActionFailed, Ops, check_submit_click
 from app.browser.guard import MAX_WRITE_WINDOWS, RequestGuard, WritesNotAllowed
 from app.browser.locate import ElementInfo, Target, Unsafe, check_clickable, check_typeable, resolve
@@ -60,6 +61,7 @@ class StepResult:
     url_before: str = ""
     url_after: str = ""
     submitted: bool = False
+    pressed_enter: bool = False  # typed, then Enter (the page may have added the item)
 
 
 def is_submit_target(element: PageElement) -> bool:
@@ -127,6 +129,7 @@ class ActionRunner:
             check_typeable(info)
             self.ops.type_text(target, action.value or "")
             self.typed.add((action.value or "").strip().lower())
+            self._enter(info, result)
         elif do == "select":
             check_clickable(target.info(), self.root_url, scope_prefix=None, strict=False)
             form_actions.select_option(
@@ -140,6 +143,16 @@ class ActionRunner:
             form_actions.pick_date(self.page, target, action.value or "", self.ops)
         else:
             raise ActionFailed(f"{do} không phải thao tác trên phần tử")
+
+    def _enter(self, info: ElementInfo, result: StepResult) -> None:
+        """Enter after typing, when the recorder's policy would press it too (a todo list adds the
+        item on Enter; a form with several fields or another target is never submitted this way)."""
+        guard_on = not (self.guard.allow_mutations if self.guard else False)
+        allowed, _ = enter_decision(info, self.page.url, guard_on=guard_on)
+        if allowed:
+            self.page.wait_for_timeout(250)
+            self.page.keyboard.press("Enter")
+            result.pressed_enter = True
 
     def _click(self, element: PageElement, target: Target, result: StepResult) -> None:
         info = target.info()
