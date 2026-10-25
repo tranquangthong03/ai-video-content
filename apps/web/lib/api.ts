@@ -123,15 +123,29 @@ const json = (body: unknown): RequestInit => ({
 });
 
 export const api = {
-  createJob(url: string, storageState?: File | null): Promise<JobDetail> {
+  createJob(url: string, storageState?: File | null, requiresLogin = false): Promise<JobDetail> {
     const form = new FormData();
     form.set("url", url);
     if (storageState) form.set("storage_state", storageState);
+    if (requiresLogin) form.set("requires_login", "true");
     return request("/api/jobs", { method: "POST", body: form });
   },
   listJobs: () => request<(JobState & { queue_position: number | null })[]>("/api/jobs"),
   getJob: (id: string) => request<JobDetail>(`/api/jobs/${id}`),
   respond: (id: string, body: UserResponse) => request<{ ok: boolean }>(`/api/jobs/${id}/respond`, json(body)),
+  /** Way A: opens a Chromium window on the computer that runs the API (local demo). */
+  openLoginBrowser: (id: string, loginUrl?: string | null) =>
+    request<{ status: string; login_url: string }>(`/api/jobs/${id}/login/browser`, json({ login_url: loginUrl ?? null })),
+  loginBrowserStatus: (id: string) => request<{ status: string }>(`/api/jobs/${id}/login/browser`),
+  /** Way B: the demo account is encrypted by the server; it is never sent back. */
+  saveLoginCredentials: (id: string, username: string, password: string) =>
+    request<{ status: string }>(`/api/jobs/${id}/login/credentials`, json({ username, password })),
+  /** Way C: an auth.json made with playwright codegen. */
+  uploadLoginState(id: string, file: File): Promise<{ status: string }> {
+    const form = new FormData();
+    form.set("storage_state", file);
+    return request(`/api/jobs/${id}/login/state`, { method: "POST", body: form });
+  },
   cancel: (id: string) => request<JobDetail>(`/api/jobs/${id}/cancel`, { method: "POST" }),
   resume: (id: string, redoScript = false) =>
     request<JobDetail>(`/api/jobs/${id}/resume?redo_script=${redoScript}`, { method: "POST" }),

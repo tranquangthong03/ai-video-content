@@ -28,6 +28,10 @@ export function summarize(h: HistoryItem): string {
     const a = h.answers ?? {};
     return h.action === "regenerate" ? "Đề xuất lại" : `Hướng «${String(a.concept_id ?? "")}»${a.notes ? ` · ${String(a.notes)}` : ""}`;
   }
+  if (h.kind === "login_required") {
+    if (h.action === "login_done") return "Đã đăng nhập";
+    return (h.answers ?? {}).login_method === "credentials" ? "Đăng nhập bằng tài khoản demo" : "Đã nhập địa chỉ trang đăng nhập";
+  }
   if (h.kind === "select_features") {
     if (h.action === "explore_more") return "Thêm tính năng mới";
     const n = ((h.answers ?? {}).selected_features as string[] | undefined)?.length ?? 0;

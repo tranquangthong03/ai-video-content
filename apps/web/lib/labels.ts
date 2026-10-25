@@ -26,6 +26,7 @@ export const STATUS_LABEL: Record<string, string> = {
 
 export const KIND_TITLE: Record<string, string> = {
   confirm_understanding: "Xác nhận hiểu biết về sản phẩm",
+  login_required: "Cần đăng nhập",
   select_features: "Chọn tính năng để review",
   choose_concept: "Chọn hướng video",
   outline_review: "Duyệt dàn ý",

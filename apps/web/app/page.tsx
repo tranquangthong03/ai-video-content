@@ -26,6 +26,7 @@ export default function Home() {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [behindLogin, setBehindLogin] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [jobs, setJobs] = useState<Row[]>([]);
@@ -50,7 +51,7 @@ export default function Home() {
     setError(null);
     setBusy(true);
     try {
-      const job = await api.createJob(url.trim(), file);
+      const job = await api.createJob(url.trim(), file, behindLogin);
       router.push(`/jobs/${job.state.job_id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Không tạo được công việc");
@@ -93,6 +94,15 @@ export default function Home() {
               {error}
             </p>
           )}
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" checked={behindLogin} onChange={(e) => setBehindLogin(e.target.checked)} className="mt-0.5" />
+            <span>
+              Tính năng chính nằm sau đăng nhập
+              <span className="block text-xs text-muted-foreground">
+                Hoặc cứ nhập URL — hệ thống sẽ hỏi khi cần đăng nhập.
+              </span>
+            </span>
+          </label>
           <details className="group rounded-lg border border-border bg-card p-3 text-sm">
             <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
               Website cần đăng nhập?

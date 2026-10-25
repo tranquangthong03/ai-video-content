@@ -4,6 +4,7 @@ import { use, useState } from "react";
 import { api } from "@/lib/api";
 import { useJob } from "@/lib/use-job";
 import { Button } from "@/components/ui/button";
+import { LoginCard } from "@/components/job/login-card";
 import { ClarifyCard, ConceptCard, ConfirmCard, OutlineCard, SelectFeaturesCard } from "@/components/job/proposal-cards";
 import { FailedPanel, RunningPanel, Sidebar, StatusBadge, VideoPanel } from "@/components/job/panels";
 import { ScriptCard } from "@/components/job/script-card";
@@ -40,7 +41,8 @@ export default function JobPage({ params }: { params: Promise<{ id: string }> })
   if (state.status === "done") body = <VideoPanel ctx={ctx} />;
   else if (state.status === "failed" || state.status === "cancelled") body = <FailedPanel ctx={ctx} />;
   else if (state.status === "waiting" && pending) {
-    if (pending.kind === "confirm_understanding" && pending.profile) body = <ConfirmCard key={pending.interaction_id} ctx={ctx} pending={pending} />;
+    if (pending.kind === "login_required" && pending.login) body = <LoginCard key={pending.interaction_id} ctx={ctx} pending={pending} />;
+    else if (pending.kind === "confirm_understanding" && pending.profile) body = <ConfirmCard key={pending.interaction_id} ctx={ctx} pending={pending} />;
     else if (pending.kind === "select_features" && pending.profile) body = <SelectFeaturesCard key={pending.interaction_id} ctx={ctx} pending={pending} />;
     else if (pending.kind === "choose_concept") body = <ConceptCard key={pending.interaction_id} ctx={ctx} pending={pending} />;
     else if (pending.kind === "outline_review" && pending.outline) body = <OutlineCard key={pending.interaction_id} ctx={ctx} pending={pending} />;

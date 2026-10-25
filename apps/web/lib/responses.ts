@@ -72,3 +72,15 @@ export function exploreFields(description: string, url: string): Fields {
   const d = description.trim();
   return { explore: { urls: u ? [u] : [], description: d || null } };
 }
+
+/** login_required → "login_done": the session is saved (window, upload); nothing secret travels here. */
+export const loginDoneFields = (): Fields => ({});
+
+/** login_required → "answer" with a demo account: only the method (and the login address) is sent;
+ *  the account itself goes to POST /login/credentials, which encrypts it. */
+export function loginCredentialsFields(loginUrl: string | null): Fields {
+  return { answers: { login_method: "credentials", ...(loginUrl ? { login_url: loginUrl } : {}) } };
+}
+
+/** login_required → "answer" with just the address of the sign-in page. */
+export const loginUrlFields = (loginUrl: string): Fields => ({ answers: { login_url: loginUrl } });
