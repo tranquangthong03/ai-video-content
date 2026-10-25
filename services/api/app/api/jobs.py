@@ -1,6 +1,7 @@
 """REST endpoints for jobs. Everything is read from (and answers are written to) the job dir."""
 
 import json
+import os
 import re
 import shutil
 import uuid
@@ -10,17 +11,29 @@ from urllib.parse import urlparse
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 
 from app.api.worker import JOB_FILE, JobRunner
 from app.core.timing import estimate_speech_ms
 from app.pipeline.file_frontend import PENDING, RESPONSES, write_json_atomic
 from app.pipeline.state import IO_LOCK, STEP_LABELS, read_state
 from app.schemas.generated.user_response import UserResponse
+from app.session.browser_login import STATUS_TIMEOUT, LoginWindows
 
 router = APIRouter(prefix="/api")
 MAX_AUTH_BYTES = 2_000_000
 ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 FINAL_STATUSES = ("done", "failed", "cancelled")
+
+
+def windows_of(request: Request) -> LoginWindows:
+    """The login windows (way A); the browser thread starts the first time one is needed."""
+    state = request.app.state
+    if state.login_windows is None:
+        headless = os.environ.get("LOGIN_BROWSER_HEADLESS") == "1"
+        state.login_windows = LoginWindows(headless=headless)
+    windows: LoginWindows = state.login_windows
+    return windows
 
 
 def runner_of(request: Request) -> JobRunner:
@@ -282,6 +295,13 @@ def respond(request: Request, job_id: str, response: UserResponse) -> dict[str, 
     directory = job_dir_of(request, job_id)
     pending = read_json(directory / PENDING)
     check_answer(pending, response, job_id)
+    if pending and pending.get("kind") == "login_required" and response.action == "login_done":
+        windows = windows_of(request)
+        if windows.status(job_id) == STATUS_TIMEOUT:
+            raise HTTPException(
+                409, "Cửa sổ đăng nhập đã đóng vì quá 10 phút. Hãy mở lại cửa sổ rồi đăng nhập."
+            )
+        windows.finish(job_id, directory)  # saves the session of the open window, if there is one
     write_json_atomic(
         directory / RESPONSES / f"{response.interaction_id}.json",
         response.model_dump(mode="json", exclude_none=True),
@@ -298,6 +318,8 @@ def cancel(request: Request, job_id: str) -> dict[str, Any]:
     if state.status in FINAL_STATUSES:
         raise HTTPException(409, "Công việc này đã kết thúc")
     runner.cancel(job_id)
+    if request.app.state.login_windows is not None:
+        request.app.state.login_windows.close(job_id)
     return detail(runner, job_id)
 
 
@@ -322,6 +344,33 @@ def resume(request: Request, job_id: str, redo_script: bool = False) -> dict[str
         raise HTTPException(409, "Thiếu thông tin công việc, hãy tạo công việc mới")
     runner.submit(job_id, resume=True, from_step=from_step)
     return detail(runner, job_id)
+
+
+class LoginBrowserBody(BaseModel):
+    login_url: str | None = None
+
+
+@router.post("/jobs/{job_id}/login/browser")
+def open_login_browser(
+    request: Request, job_id: str, body: LoginBrowserBody | None = None
+) -> dict[str, Any]:
+    """Way A: open a Chromium window on this computer at the login page (local demo only)."""
+    directory = job_dir_of(request, job_id)
+    pending = read_json(directory / PENDING)
+    if not pending or pending.get("kind") != "login_required":
+        raise HTTPException(409, "Công việc này không đang chờ đăng nhập")
+    login = pending.get("login") or {}
+    url = (body.login_url if body and body.login_url else None) or login.get("login_url")
+    if not url:
+        raise HTTPException(422, "Chưa có địa chỉ trang đăng nhập")
+    windows_of(request).open(job_id, valid_url(url), directory / "login_profile")
+    return {"status": "browser_open", "login_url": url}
+
+
+@router.get("/jobs/{job_id}/login/browser")
+def login_browser_status(request: Request, job_id: str) -> dict[str, Any]:
+    job_dir_of(request, job_id)
+    return {"status": windows_of(request).status(job_id)}
 
 
 @router.post("/jobs/{job_id}/login/state")

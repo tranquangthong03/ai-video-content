@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.jobs import router
 from app.api.worker import JobRunner, Pipeline, default_pipeline
+from app.session.browser_login import LoginWindows
 
 DEFAULT_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000"
 
@@ -23,14 +24,21 @@ def allowed_origins() -> list[str]:
     ]
 
 
-def create_app(root: Path | None = None, pipeline: Pipeline = default_pipeline) -> FastAPI:
+def create_app(
+    root: Path | None = None,
+    pipeline: Pipeline = default_pipeline,
+    login_windows: LoginWindows | None = None,
+) -> FastAPI:
     jobs_dir = root or Path(os.environ.get("JOBS_DIR", "out/jobs"))
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.runner = JobRunner(jobs_dir, pipeline)
+        app.state.login_windows = login_windows  # opened on first use when None
         yield
         app.state.runner.stop()
+        if app.state.login_windows is not None:
+            app.state.login_windows.shutdown()
 
     app = FastAPI(title="Short Video AI", lifespan=lifespan)
     app.add_middleware(
