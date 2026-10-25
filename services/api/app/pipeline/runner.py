@@ -289,6 +289,8 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
         try:
             progress.set("confirm", "Xác nhận hiểu biết về sản phẩm", 46)
             profile, notes = proposal.confirm_understanding(runner.state.profile)
+            progress.set("select", "Chọn tính năng để review", 47)
+            profile, selected = proposal.select_features(profile)
             progress.set("concept", "Chọn hướng video", 48)
             concept, concept_notes = proposal.choose_concept(profile, notes)
             progress.set("outline", "Duyệt dàn ý", 50)

@@ -9,12 +9,14 @@ import json
 from collections.abc import Callable
 from pathlib import Path
 
+from app.core.features import default_selection, merge_duplicates
 from app.core.interaction import check_response, make_request
 from app.llm.json_call import JsonCaller, LLMCallError
 from app.pipeline.frontend import Frontend
 from app.proposal import beat_mapper
 from app.proposal import concepts as concepts_mod
 from app.proposal import outline as outline_mod
+from app.proposal import selection as selection_mod
 from app.proposal import understanding as understanding_mod
 from app.proposal.wordlimit import enforce_outline
 from app.schemas.generated.interaction import InteractionRequest
@@ -46,6 +48,7 @@ class ProposalRunner:
         self.frontend = frontend
         self.explore_more = explore_more
         self.warnings: list[str] = []  # word-limit cuts etc., saved with the approved outline
+        self.known_ids: set[str] = set()  # feature ids the user has already seen
         self.beat_mappings: list[dict] = []  # type: ignore[type-arg]  # beat_feature_mapper decisions
 
     # --- interaction plumbing ----------------------------------------------------------------
@@ -84,6 +87,7 @@ class ProposalRunner:
             )
         edits = understanding_mod.ProfileEdits()
         notice = ""
+        self.known_ids = {f.id for f in base.features}
         for round_no in range(1, 30):
             profile = understanding_mod.apply_edits(base, edits)
             response = self._ask(
@@ -97,6 +101,7 @@ class ProposalRunner:
                 base = self.explore_more(
                     query.urls if query else [], query.description if query else None
                 )
+                self.known_ids |= {f.id for f in base.features}
                 notice = f"Đã xem thêm trang: có {len(base.features) - before} tính năng mới."
                 continue
             understanding_mod.merge_response(edits, response)
@@ -108,6 +113,63 @@ class ProposalRunner:
                 return confirmed, notes
             notice = "Đã cập nhật theo yêu cầu của bạn."
         raise RuntimeError("too many confirm_understanding rounds")
+
+    # --- 1b. feature selection ---------------------------------------------------------------
+
+    def select_features(self, profile: ProductProfile) -> tuple[ProductProfile, list[str]]:
+        """Returns (profile with duplicates merged and features found on request, ordered ids).
+
+        The video shows only the selected features. "explore_more" looks at more pages and asks
+        again, with what it found marked as new.
+        """
+        done = self.dir / "selected_features.json"
+        if done.is_file():
+            saved = json.loads(done.read_text(encoding="utf-8"))
+            return ProductProfile.model_validate(saved["profile"]), saved["selected"]
+        profile, dropped = merge_duplicates(profile)
+        if dropped:
+            self.warnings.append(
+                "Đã gộp tính năng trùng ý định: " + ", ".join(f"{a}→{b}" for a, b in dropped)
+            )
+        self.known_ids |= {f.id for f in profile.features}
+        default = default_selection(profile)
+        new_ids: list[str] = []
+        notice = ""
+        for _ in range(30):
+            response = self._ask(
+                selection_mod.build_request(
+                    self.job_id, profile, default, new_ids=new_ids, notice=notice
+                )
+            )
+            if response.action == "explore_more":
+                query = response.explore
+                fresh = self.explore_more(
+                    query.urls if query else [], query.description if query else None
+                )
+                found = [f for f in fresh.features if f.id not in self.known_ids]
+                self.known_ids |= {f.id for f in fresh.features}
+                profile, merged = merge_duplicates(
+                    profile.model_copy(update={"features": [*profile.features, *found]})
+                )
+                gone = {a for a, _ in merged}
+                new_ids = [f.id for f in found if f.id not in gone]
+                notice = (
+                    f"Đã xem thêm trang: có {len(new_ids)} tính năng mới."
+                    if new_ids
+                    else "Đã xem thêm nhưng không thấy tính năng mới."
+                )
+                continue
+            selected = list((response.answers or {})["selected_features"])
+            done.write_text(
+                json.dumps(
+                    {"selected": selected, "profile": profile.model_dump(mode="json")},
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            return profile, selected
+        raise RuntimeError("too many select_features rounds")
 
     # --- 2. concepts -------------------------------------------------------------------------
 

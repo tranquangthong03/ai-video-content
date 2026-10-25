@@ -50,6 +50,9 @@ class ScriptedFrontend:
         queue = self.queues.get(request.kind, [])
         if queue:
             fields = queue.pop(0)
+        elif request.kind == "select_features" and request.selection:
+            picks = request.selection.default
+            fields = {"action": "answer", "answers": {"selected_features": picks}}
         else:
             action, extra = DEFAULT_ACTION.get(request.kind, ("cancel", {}))
             fields = {"action": action, **extra}
@@ -140,6 +143,8 @@ class TerminalFrontend:
         if kind == "confirm_understanding":
             self._show_profile(request)
             return self._ask_understanding(request, questionary)
+        if kind == "select_features":
+            return self._ask_selection(request, questionary)
         if kind == "choose_concept":
             self._show_concepts(request)
             concepts = request.concepts or []
@@ -187,6 +192,25 @@ class TerminalFrontend:
                 return make_response(request, "cancel")
             return make_response(request, "answer", answers={q.id: pick})
         raise ValueError(f"TerminalFrontend cannot render {kind}")
+
+    def _ask_selection(self, request: InteractionRequest, questionary: Any) -> UserResponse:
+        profile, sel = request.profile, request.selection
+        assert profile is not None and sel is not None
+        self.console.print(Panel(request.message, title="Chọn tính năng", border_style="cyan"))
+        picks = questionary.checkbox(
+            "Chọn tính năng (thứ tự bạn chọn là thứ tự ưu tiên):",
+            choices=[
+                questionary.Choice(
+                    f"{f.name} — {score_dots(f)}" + (" [mới]" if f.id in sel.new_ids else ""),
+                    f.id,
+                    checked=f.id in sel.default,
+                )
+                for f in profile.features
+            ],
+        ).ask()
+        if picks is None:
+            return make_response(request, "cancel")
+        return make_response(request, "answer", answers={"selected_features": picks})
 
     def _ask_script_review(self, request: InteractionRequest, questionary: Any) -> UserResponse:
         version = request.script_version

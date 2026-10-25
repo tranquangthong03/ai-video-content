@@ -86,7 +86,7 @@ def test_auto_run_produces_an_approved_outline_after_edits(
         json.loads(line)["request"]["kind"]
         for line in (job / "interactions.jsonl").read_text(encoding="utf-8").splitlines()
     ]
-    assert kinds == ["confirm_understanding", "confirm_understanding", "choose_concept",
+    assert kinds == ["confirm_understanding", "confirm_understanding", "select_features", "choose_concept",
                      "outline_review", "outline_review", "clarify", "outline_review"]  # fmt: skip
 
 
