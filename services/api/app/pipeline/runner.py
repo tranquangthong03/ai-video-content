@@ -279,6 +279,8 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
     def sign_in(need: LoginRequired) -> LoginOutcome:
         """Ask the user to sign in; from then on every step uses the new session."""
         update_state(job_dir, progress_text="Chờ bạn đăng nhập")
+        if not need.login_url and cfg.login_url:
+            need.login_url = cfg.login_url  # the sign-in page learnt earlier
         outcome = gate.ask(need)
         cfg.storage_state = outcome.storage_state
         if need.reason not in EXPIRED:  # a new sign-in tells where the app starts
@@ -331,7 +333,7 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
                     break
                 except LoginRequired as e:
                     outcome = sign_in(e)
-                    expired = e.reason == "session_expired"
+                    expired = e.reason in EXPIRED
                     cfg.url = cfg.url if expired else outcome.url
                     runner.use_session(outcome.storage_state, cfg.url)
             else:
@@ -544,7 +546,15 @@ def run_produce_step(
                 on_login=on_login,
             )
     except LoginRequired as e:
-        return _fail(rep, EXIT_LOGIN, "failed", f"[red]Phiên đăng nhập hết hạn: {e.login_url}[/]")
+        where = f" (scene {e.scene_id})" if e.scene_id else ""
+        return _fail(
+            rep,
+            EXIT_LOGIN,
+            "failed",
+            "[red]Không quay được các tính năng sau đăng nhập: phiên đăng nhập không còn hiệu lực"
+            f"{where}. Video không được xuất. Hãy thử «Mở cửa sổ đăng nhập» hoặc dùng file "
+            "phiên đăng nhập mới (auth.json), rồi bấm «Chạy tiếp».[/]",
+        )
     except RenderError as e:
         return _fail(rep, EXIT_RENDER, "failed", f"[red]{e}[/]")
     rep.produced(script, result, job_dir)

@@ -239,3 +239,111 @@ def test_produce_adds_a_focus_track_planned_by_the_model_and_corrected_by_the_ru
         render=render, profile=make_profile(), recorder=recorder,
     )  # fmt: skip
     assert renders[0]["assets"]["s2"]["focus_track"][0]["framing"] == "establish"
+
+
+# --- the quality gate: a clip of the sign-in page is never rendered ----------------------------------
+
+
+def snaps(flags: list[bool]) -> list[dict[str, Any]]:
+    return [{"t_ms": i * 1000, "items": [], "login_page": f} for i, f in enumerate(flags)]
+
+
+def test_two_of_three_moments_on_the_sign_in_page_make_a_login_scene() -> None:
+    from app.producer.pipeline import shows_login_page
+
+    assert shows_login_page(snaps([True, True, True, True, True]))
+    assert shows_login_page(snaps([True, False, True]))  # start and end
+    assert not shows_login_page(
+        snaps([False, True, True, True, False])
+    )  # only the middle one counts
+    assert not shows_login_page(snaps([True, False, False, False, False]))  # signed in, then a blip
+    assert not shows_login_page(snaps([False, False, False]))
+    assert not shows_login_page([])
+    assert shows_login_page(snaps([True, True]))  # short clips: the moments there are
+
+
+def test_a_scene_that_ends_up_on_the_login_page_stops_the_job_before_rendering(
+    tmp_path: Path,
+) -> None:
+    import pytest
+
+    from app.browser.auth_detect import LoginRequired
+
+    script, _ = make_script(tmp_path, 45)
+    recorded: list[str] = []
+    renders: list[Any] = []
+
+    def recorder(
+        session: Any, scene: Any, out_dir: Path, speech_ms: int, **kw: Any
+    ) -> RecordResult:
+        s = scene.root
+        if s.visual.mode == "screenshot":
+            img = out_dir / f"{s.id}.png"
+            img.parent.mkdir(parents=True, exist_ok=True)
+            img.write_bytes(b"png")
+            return RecordResult(kind="screenshot", image_path=img)
+        if s.visual.mode != "recording":
+            return RecordResult(kind="template")
+        recorded.append(s.id)
+        flags = [True, True, True] if s.id == "s3" else [False, False, False]
+        return RecordResult(
+            kind="recording", clip_path=tiny_mp4(out_dir / f"{s.id}.mp4"), start_offset_ms=500,
+            setup_end_ms=500, content_ms=9000, steps_ok=1, inventory=snaps(flags),
+        )  # fmt: skip
+
+    def render(props: dict[str, Any], out: Path, work: Path) -> Any:
+        renders.append(props)
+        tiny_mp4(out)
+        return type("R", (), {"render_ms": 1})()
+
+    with pytest.raises(LoginRequired) as e:  # nobody to sign in again: it must not go on
+        produce(
+            script, url="https://x.example/", job_dir=tmp_path / "job", session=None,  # type: ignore[arg-type]
+            render=render, profile=make_profile(), recorder=recorder,
+        )  # fmt: skip
+    assert e.value.reason == "login_page" and e.value.scene_id == "s3" and renders == []
+
+
+def test_after_signing_in_again_the_scene_is_recorded_once_more_and_the_job_goes_on(
+    tmp_path: Path,
+) -> None:
+    script, _ = make_script(tmp_path, 45)
+    attempts: dict[str, int] = {}
+    logins: list[str] = []
+
+    def recorder(
+        session: Any, scene: Any, out_dir: Path, speech_ms: int, **kw: Any
+    ) -> RecordResult:
+        s = scene.root
+        if s.visual.mode == "screenshot":
+            img = out_dir / f"{s.id}.png"
+            img.parent.mkdir(parents=True, exist_ok=True)
+            img.write_bytes(b"png")
+            return RecordResult(kind="screenshot", image_path=img)
+        if s.visual.mode != "recording":
+            return RecordResult(kind="template")
+        attempts[s.id] = attempts.get(s.id, 0) + 1
+        bad = s.id == "s3" and attempts[s.id] == 1
+        return RecordResult(
+            kind="recording", clip_path=tiny_mp4(out_dir / f"{s.id}.mp4"), start_offset_ms=500,
+            setup_end_ms=500, content_ms=9000, steps_ok=1, inventory=snaps([bad] * 3),
+        )  # fmt: skip
+
+    from app.browser.auth_detect import LoginRequired
+
+    def on_login(need: LoginRequired) -> Path:
+        logins.append(need.reason)
+        return tmp_path / "new.json"
+
+    class Session:
+        storage_state: Path | None = tmp_path / "old.json"
+
+    def render(props: dict[str, Any], out: Path, work: Path) -> Any:
+        tiny_mp4(out)
+        return type("R", (), {"render_ms": 1})()
+
+    produce(
+        script, url="https://x.example/", job_dir=tmp_path / "job", session=Session(),  # type: ignore[arg-type]
+        render=render, profile=make_profile(), recorder=recorder, on_login=on_login,
+    )  # fmt: skip
+    assert logins == ["login_page"] and attempts["s3"] == 2

@@ -220,6 +220,17 @@ def focus_for_scene(
     return built.track, summary, str(path.relative_to(work.parent))
 
 
+def shows_login_page(inventory: list[dict[str, Any]]) -> bool:
+    """True when at least 2 of 3 moments of a clip (start, middle, end) are the sign-in page."""
+    if not inventory:
+        return False
+    picks = [inventory[0], inventory[len(inventory) // 2], inventory[-1]]
+    if len(inventory) < 3:
+        picks = inventory[:3]
+    login = sum(1 for snap in picks if snap.get("login_page"))
+    return login * 3 >= len(picks) * 2 if len(picks) >= 2 else login == 1
+
+
 def plan_clip(record: RecordResult, visual: Any, speech_ms: int, scene_id: str) -> ClipPlan:
     """Hide the loading phase and hidden setup; a clip longer than the speech loses dead time."""
     lead = record.start_offset_ms
@@ -386,8 +397,12 @@ def produce(
                     recorder, session, scene, work, speech_ms, url, color, viewport, dedupe,
                     can_drop=len(script.scenes) - len(dropped) > MIN_SCENES,
                 )  # fmt: skip
+                if recorded is not None and shows_login_page(recorded[1].inventory):
+                    # quality gate: a clip of the sign-in page is never rendered
+                    raise LoginRequired("", "login_page", target_url=url, scene_id=scene.root.id)
                 break
             except LoginRequired as e:  # the session ran out: sign in again, redo this scene
+                e.scene_id = e.scene_id or scene.root.id
                 if on_login is None or attempt == MAX_LOGIN_RETRIES:
                     raise
                 session.storage_state = on_login(e)

@@ -17,7 +17,7 @@ from typing import Any
 
 from playwright.sync_api import BrowserContext, Page
 
-from app.browser.auth_detect import LoginRequired, detect_login, is_logout_url
+from app.browser.auth_detect import LoginRequired, detect_login, is_logout_url, on_login_page
 from app.browser.blacklist import is_blocked, is_blocked_href
 from app.browser.enter_policy import Policy, enter_decision
 from app.browser.locate import Target, Unsafe, check_clickable, resolve
@@ -295,8 +295,10 @@ class _Recorder:
         """One frame_inventory snapshot of what is on screen now."""
         self.last_snap = self.now()
         items = inventory.snapshot(self.page, self.last_handle)
-        if items:
-            self.inventory.append({"t_ms": self.last_snap, "items": items})
+        if items:  # login_page: what the quality gate looks at before anything is rendered
+            self.inventory.append(
+                {"t_ms": self.last_snap, "items": items, "login_page": on_login_page(self.page)}
+            )
 
     def snap_every(self, ms: int = INVENTORY_EVERY_MS) -> None:
         if self.now() - self.last_snap >= ms:

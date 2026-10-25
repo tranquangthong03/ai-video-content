@@ -33,11 +33,14 @@ class LoginSignal:
 class LoginRequired(RuntimeError):
     """The page needs a signed-in visitor. Raised by the explorer and the recorder."""
 
-    def __init__(self, login_url: str, reason: str, *, target_url: str = "") -> None:
+    def __init__(
+        self, login_url: str, reason: str, *, target_url: str = "", scene_id: str | None = None
+    ) -> None:
         super().__init__(f"login required ({reason}) at {login_url}")
         self.login_url = login_url
         self.reason = reason
         self.target_url = target_url or login_url
+        self.scene_id = scene_id  # the scene that was being recorded, when known
 
 
 def is_login_path(url: str) -> bool:
@@ -46,6 +49,16 @@ def is_login_path(url: str) -> bool:
 
 def is_logout_url(url: str) -> bool:
     return bool(LOGOUT_PATH.search(urlparse(url).path or "/"))
+
+
+def on_login_page(page: Page) -> bool:
+    """Cheap check used for samples: a visible password field or a login-looking URL."""
+    try:
+        if page.locator("input[type=password]:visible").count() > 0:
+            return True
+    except Exception:
+        pass
+    return is_login_path(page.url)
 
 
 def detect_login(page: Page, requested_url: str, status: int | None) -> LoginSignal | None:

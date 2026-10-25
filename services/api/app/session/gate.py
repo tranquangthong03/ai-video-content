@@ -31,10 +31,12 @@ REASONS = {
     "http_status": "Trang này trả về lỗi 401/403 (cần đăng nhập).",
     "session_expired": "Phiên đăng nhập đã hết hạn.",
     "requested": "Bạn đã báo tính năng chính nằm sau đăng nhập.",
+    "login_page": "Các cảnh quay ra trang đăng nhập: phiên đăng nhập không còn hiệu lực. "
+    "Vui lòng đăng nhập lại.",
     "session_expired_review": "Phiên đăng nhập đã hết hạn trong lúc bạn duyệt kịch bản, "
     "vui lòng đăng nhập lại để quay video.",
 }
-EXPIRED = ("session_expired", "session_expired_review")
+EXPIRED = ("session_expired", "session_expired_review", "login_page")
 NOT_INSIDE = "Chưa vào được trang bên trong, vui lòng thử lại."
 HINT = "Chỉ dùng tài khoản demo, không dùng tài khoản thật có dữ liệu quan trọng."
 
