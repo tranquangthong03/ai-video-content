@@ -80,6 +80,17 @@ class ExploreRunner:
         self.progress = progress or (lambda step, msg: None)
         self.state = ExploreState(url)
 
+    def use_session(self, storage_state: Path | None, url: str | None = None) -> None:
+        """After a (new) sign-in: explore with that session, from `url` when it changed."""
+        self.storage_state = storage_state
+        if url and url != self.url:
+            self.url = url
+            self.state.url = url
+            self.report.data["start_url"] = url
+            self.scope_prefix = (
+                path_prefix(normalize_url(url) or url) if self.scope == "path" else None
+            )
+
     # --- persistence -------------------------------------------------------------------------
 
     def _load_report(self) -> None:

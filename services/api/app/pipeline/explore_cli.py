@@ -62,6 +62,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="when Enter may be pressed after typing (see app/browser/enter_policy.py)",
     )  # fmt: skip
     p.add_argument(
+        "--requires-login", action="store_true",
+        help="the main features are behind a sign-in: ask for it right away",
+    )  # fmt: skip
+    p.add_argument("--login-url", help="where to sign in (otherwise the login link is searched)")
+    p.add_argument(
         "--capture", metavar="WxH", help="recording size, e.g. 1280x800 (default 1440x900)"
     )
     return p.parse_args(argv)
@@ -169,6 +174,8 @@ def main(argv: list[str] | None = None) -> int:
         stop_after=args.stop_after,
         from_step=args.from_step,
         capture=parse_capture(args.capture),
+        requires_login=args.requires_login,
+        login_url=args.login_url,
     )
     frontend = ScriptedFrontend.from_file(args.answers) if args.auto else TerminalFrontend(console)
     return run_job(cfg, frontend, ConsoleReporter(console)).exit_code

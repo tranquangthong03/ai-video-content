@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from app.browser.auth_detect import LoginRequired
 from app.browser.session import BrowserSession
 from app.core.timing import PAUSE_MS, EstimatedTimer, estimate_captions
 from app.llm.json_call import JsonCaller
@@ -337,6 +338,9 @@ def record_unique(
     return scene, record
 
 
+MAX_LOGIN_RETRIES = 2  # sign-ins asked for one scene before giving up
+
+
 def produce(
     script: Script,
     *,
@@ -350,6 +354,7 @@ def produce(
     token_usage: dict[str, Any] | None = None,
     extra_report: dict[str, Any] | None = None,
     focus_caller: JsonCaller | None = None,
+    on_login: Callable[[LoginRequired], Path] | None = None,
 ) -> ProduceResult:
     """Record every scene in order, fit the timeline, render, and write report.json."""
     say = progress or (lambda msg: None)
@@ -375,10 +380,17 @@ def produce(
         timing = speech[s.id]
         speech_ms = timing.duration_ms
         say(f"[record] scene {i + 1}/{len(script.scenes)} {s.id} ({s.type}) ...")
-        recorded = record_unique(
-            recorder, session, scene, work, speech_ms, url, color, viewport, dedupe,
-            can_drop=len(script.scenes) - len(dropped) > MIN_SCENES,
-        )  # fmt: skip
+        for attempt in range(MAX_LOGIN_RETRIES + 1):
+            try:
+                recorded = record_unique(
+                    recorder, session, scene, work, speech_ms, url, color, viewport, dedupe,
+                    can_drop=len(script.scenes) - len(dropped) > MIN_SCENES,
+                )  # fmt: skip
+                break
+            except LoginRequired as e:  # the session ran out: sign in again, redo this scene
+                if on_login is None or attempt == MAX_LOGIN_RETRIES:
+                    raise
+                session.storage_state = on_login(e)
         if recorded is None:
             dropped.add(i)
             continue

@@ -145,6 +145,8 @@ class TerminalFrontend:
             return self._ask_understanding(request, questionary)
         if kind == "select_features":
             return self._ask_selection(request, questionary)
+        if kind == "login_required":
+            return self._ask_login(request, questionary)
         if kind == "choose_concept":
             self._show_concepts(request)
             concepts = request.concepts or []
@@ -192,6 +194,32 @@ class TerminalFrontend:
                 return make_response(request, "cancel")
             return make_response(request, "answer", answers={q.id: pick})
         raise ValueError(f"TerminalFrontend cannot render {kind}")
+
+    def _ask_login(self, request: InteractionRequest, questionary: Any) -> UserResponse:
+        login = request.login
+        assert login is not None
+        self.console.print(Panel(request.message, title="Cần đăng nhập", border_style="yellow"))
+        if login.failure:
+            self.console.print(f"[red]{login.failure}[/]")
+        where = login.login_url or "<url đăng nhập>"
+        self.console.print(
+            "Đăng nhập rồi lưu phiên bằng lệnh (xong, mở lại job-dir/storage_state.json):\n"
+            f"  uv run playwright codegen --save-storage=<job-dir>/storage_state.json {where}"
+        )
+        pick = questionary.select(
+            "Bạn muốn làm gì?",
+            choices=[
+                questionary.Choice("Đã lưu storage_state.json, tiếp tục", "done"),
+                questionary.Choice("Nhập URL đăng nhập", "url"),
+                questionary.Choice("Hủy", "cancel"),
+            ],
+        ).ask()
+        if pick == "done":
+            return make_response(request, "login_done")
+        if pick == "url":
+            text = questionary.text("URL trang đăng nhập:").ask() or ""
+            return make_response(request, "answer", answers={"login_url": text})
+        return make_response(request, "cancel")
 
     def _ask_selection(self, request: InteractionRequest, questionary: Any) -> UserResponse:
         profile, sel = request.profile, request.selection

@@ -207,8 +207,15 @@ async def create_job(
     request: Request,
     url: Annotated[str, Form()],
     storage_state: Annotated[UploadFile | None, File()] = None,
+    requires_login: Annotated[bool, Form()] = False,
+    login_url: Annotated[str | None, Form()] = None,
 ) -> dict[str, Any]:
     url = valid_url(url)
+    if login_url and login_url.strip():
+        login_url = login_url.strip()
+        login_url = valid_url(login_url if "://" in login_url else "https://" + login_url)
+    else:
+        login_url = None
     runner = runner_of(request)
     auth_bytes: bytes | None = None
     if storage_state is not None and storage_state.filename:
@@ -220,7 +227,13 @@ async def create_job(
         if not ok:
             raise HTTPException(422, "File đăng nhập phải là JSON (auth.json) hợp lệ, dưới 2 MB")
     job_id = f"j{uuid.uuid4().hex[:10]}"
-    directory = runner.create(job_id, url, has_auth=auth_bytes is not None)
+    directory = runner.create(
+        job_id,
+        url,
+        has_auth=auth_bytes is not None,
+        requires_login=requires_login,
+        login_url=login_url,
+    )
     if auth_bytes is not None:
         (directory / "storage_state.json").write_bytes(auth_bytes)
     runner.submit(job_id)
@@ -309,6 +322,23 @@ def resume(request: Request, job_id: str, redo_script: bool = False) -> dict[str
         raise HTTPException(409, "Thiếu thông tin công việc, hãy tạo công việc mới")
     runner.submit(job_id, resume=True, from_step=from_step)
     return detail(runner, job_id)
+
+
+@router.post("/jobs/{job_id}/login/state")
+async def upload_login_state(
+    request: Request, job_id: str, storage_state: Annotated[UploadFile, File()]
+) -> dict[str, Any]:
+    """Way C while a job waits for a sign-in: the user's auth.json becomes the job's session."""
+    directory = job_dir_of(request, job_id)
+    data = await storage_state.read(MAX_AUTH_BYTES + 1)
+    try:
+        ok = len(data) <= MAX_AUTH_BYTES and isinstance(json.loads(data), dict)
+    except ValueError:
+        ok = False
+    if not ok:
+        raise HTTPException(422, "File đăng nhập phải là JSON (auth.json) hợp lệ, dưới 2 MB")
+    (directory / "storage_state.json").write_bytes(data)
+    return {"status": "saved"}
 
 
 @router.get("/jobs/{job_id}/files/{path:path}")

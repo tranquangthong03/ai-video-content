@@ -9,6 +9,7 @@ from app.schemas.generated.user_response import UserResponse
 
 ALLOWED_ACTIONS: dict[str, list[str]] = {
     "confirm_understanding": ["answer", "edit", "explore_more", "cancel"],
+    "login_required": ["login_done", "answer", "cancel"],
     "select_features": ["answer", "explore_more", "cancel"],
     "choose_concept": ["answer", "regenerate", "cancel"],
     "outline_review": ["approve", "edit", "regenerate", "cancel"],

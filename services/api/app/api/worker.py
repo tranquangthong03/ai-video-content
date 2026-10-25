@@ -55,10 +55,23 @@ class JobRunner:
     def job_dir(self, job_id: str) -> Path:
         return self.root / job_id
 
-    def create(self, job_id: str, url: str, *, has_auth: bool) -> Path:
+    def create(
+        self,
+        job_id: str,
+        url: str,
+        *,
+        has_auth: bool,
+        requires_login: bool = False,
+        login_url: str | None = None,
+    ) -> Path:
         directory = self.job_dir(job_id)
         directory.mkdir(parents=True, exist_ok=False)
-        spec = {"url": url, "storage_state": "storage_state.json" if has_auth else None}
+        spec = {
+            "url": url,
+            "storage_state": "storage_state.json" if has_auth else None,
+            "requires_login": requires_login,
+            "login_url": login_url,
+        }
         (directory / JOB_FILE).write_text(json.dumps(spec), encoding="utf-8")
         write_state(directory, JobState(job_id=job_id, url=url, status="queued"))
         return directory
@@ -144,6 +157,8 @@ class JobRunner:
                 storage_state=directory / auth if auth else None,
                 resume=bool(spec.get("resume")),
                 from_step=spec.get("from_step", "explore"),
+                requires_login=bool(spec.get("requires_login")),
+                login_url=spec.get("login_url"),
                 should_stop=cancel.is_set,
             )
             update_state(directory, status="running", error=None)

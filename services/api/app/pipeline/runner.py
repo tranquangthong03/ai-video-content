@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Literal, Protocol
 
 from app.browser.auth_detect import LoginRequired
+from app.browser.login_find import find_login_url
 from app.browser.session import BrowserSession
 from app.core.usage import BudgetExceeded, UsageTracker
 from app.explorer.mapper import BlockedByChallenge
@@ -40,10 +41,12 @@ from app.schemas.generated.product_profile import ProductProfile
 from app.schemas.generated.script import Script
 from app.script.theme import ThemeResult, derive_theme
 from app.script.writer import WriterError
+from app.session.gate import LoginGate, LoginOutcome
 
 EXIT_OK = 0
 EXIT_CANCELLED, EXIT_BLOCKED, EXIT_TOKENS, EXIT_TIMEOUT, EXIT_USAGE, EXIT_SCRIPT = 1, 2, 3, 4, 5, 6
 EXIT_RENDER = 7
+MAX_SIGN_INS = 3  # sign-ins asked during one step before the job gives up
 EXIT_LOGIN = 8  # the site asks for a sign-in (the web UI asks the user; the CLI stops)
 STEPS = ("classify", "analyze", "synthesize", "verify", "delta", "concepts", "outline")
 SCRIPT_STEPS = ("beat_map", "script", "fit", "scene", "edit_plan")
@@ -72,6 +75,8 @@ class JobConfig:
     # polled while a step reports progress: True makes the job stop with Cancelled (web: Hủy)
     should_stop: Callable[[], bool] | None = None
     capture: tuple[int, int] | None = None  # recording size (width, height); None = 1440x900
+    requires_login: bool = False  # the user says the main features are behind a sign-in
+    login_url: str | None = None  # where to sign in, when the user knows
 
 
 @dataclass
@@ -118,6 +123,17 @@ def make_caller(cfg: JobConfig) -> tuple[JsonCaller, UsageTracker]:
         cache_dir=settings.cache_dir,
     )
     return caller, tracker
+
+
+def remember_session(job_dir: Path) -> None:
+    """Write the new session into job.json, so a resumed job (web: "Chạy tiếp") keeps using it."""
+    spec_file = job_dir / "job.json"
+    if not spec_file.is_file():
+        return
+    spec = json.loads(spec_file.read_text(encoding="utf-8"))
+    spec["storage_state"] = "storage_state.json"
+    spec["requires_login"] = False
+    spec_file.write_text(json.dumps(spec), encoding="utf-8")
 
 
 def load_saved(job_dir: Path) -> tuple[ProductProfile, Outline]:
@@ -242,6 +258,20 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
     caller, tracker = make_caller(cfg)
     runner: ExploreRunner | None = None
     concept_id = ""
+    gate = LoginGate(job_dir.name, job_dir, frontend)
+
+    def sign_in(need: LoginRequired) -> LoginOutcome:
+        """Ask the user to sign in; from then on every step uses the new session."""
+        update_state(job_dir, progress_text="Chờ bạn đăng nhập")
+        outcome = gate.ask(need)
+        cfg.storage_state = outcome.storage_state
+        remember_session(job_dir)
+        return outcome
+
+    if cfg.from_step == "explore" and cfg.requires_login and cfg.storage_state is None:
+        # the user knows the main features are behind a sign-in: find where, ask right away
+        login_url = cfg.login_url or find_login_url(cfg.url)
+        cfg.url = sign_in(LoginRequired(login_url or "", "requested", target_url=cfg.url)).url
     if cfg.from_step == "explore":
         runner = ExploreRunner(
             cfg.url,
@@ -262,7 +292,17 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
         rep.say(f"[bold]Khám phá {cfg.url}[/]  → {job_dir}")
         progress.set("explore", "Đang khám phá website", 2)
         try:
-            runner.run()
+            for _ in range(MAX_SIGN_INS + 1):
+                try:
+                    runner.run()
+                    break
+                except LoginRequired as e:
+                    outcome = sign_in(e)
+                    expired = e.reason == "session_expired"
+                    cfg.url = cfg.url if expired else outcome.url
+                    runner.use_session(outcome.storage_state, cfg.url)
+            else:
+                raise RuntimeError("quá nhiều lần yêu cầu đăng nhập")
         except LoginRequired as e:
             return _fail(
                 rep,
@@ -291,8 +331,17 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
             )
         rep.features(runner)
 
+        def explore_more(urls: list[str], description: str | None) -> ProductProfile:
+            assert runner is not None
+            for _ in range(MAX_SIGN_INS):
+                try:
+                    return runner.explore_more(urls, description)
+                except LoginRequired as e:
+                    runner.use_session(sign_in(e).storage_state)
+            return runner.explore_more(urls, description)
+
         proposal = ProposalRunner(
-            job_dir.name, job_dir, caller, frontend, explore_more=runner.explore_more
+            job_dir.name, job_dir, caller, frontend, explore_more=explore_more
         )
         assert runner.state.profile is not None
         try:
@@ -359,7 +408,9 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
         if cfg.stop_after == "script":
             return JobResult(EXIT_OK, "done")
 
-    return run_produce_step(cfg, rep, progress, tracker, profile, script, caller)
+    return run_produce_step(
+        cfg, rep, progress, tracker, profile, script, caller, lambda e: sign_in(e).storage_state
+    )
 
 
 def run_script_step(
@@ -404,6 +455,7 @@ def run_produce_step(
     profile: ProductProfile,
     script: Script,
     caller: JsonCaller | None = None,
+    on_login: Callable[[LoginRequired], Path] | None = None,
 ) -> JobResult:
     """Record every scene, fit the timeline, render the mp4 and write report.json."""
     job_dir = cfg.job_dir
@@ -445,6 +497,7 @@ def run_produce_step(
                 token_usage=tracker.to_dict(),
                 extra_report=extra,
                 focus_caller=caller,
+                on_login=on_login,
             )
     except LoginRequired as e:
         return _fail(rep, EXIT_LOGIN, "failed", f"[red]Phiên đăng nhập hết hạn: {e.login_url}[/]")

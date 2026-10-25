@@ -69,6 +69,30 @@
       "default": null
     },
     "outline": { "oneOf": [{ "$ref": "outline.json" }, { "type": "null" }], "default": null },
+    "login": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "login_required: where the sign-in page is, why we ask and how the user can answer.",
+          "required": ["reason", "methods"],
+          "properties": {
+            "login_url": { "type": ["string", "null"], "default": null },
+            "target_url": { "type": ["string", "null"], "default": null },
+            "reason": { "type": "string" },
+            "methods": {
+              "type": "array",
+              "items": { "enum": ["browser_window", "credentials", "upload_state"] }
+            },
+            "can_enter_url": { "type": "boolean", "default": false },
+            "failure": { "type": ["string", "null"], "default": null },
+            "hint": { "type": ["string", "null"], "default": null }
+          }
+        },
+        { "type": "null" }
+      ],
+      "default": null
+    },
     "selection": {
       "oneOf": [
         {

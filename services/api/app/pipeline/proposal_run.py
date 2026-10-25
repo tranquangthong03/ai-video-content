@@ -10,8 +10,10 @@ from collections.abc import Callable
 from pathlib import Path
 
 from app.core.features import default_selection, merge_duplicates, restrict_profile
-from app.core.interaction import check_response, make_request
+from app.core.interaction import make_request
 from app.llm.json_call import JsonCaller, LLMCallError
+from app.pipeline.asker import Cancelled as Cancelled  # re-exported: callers import it from here
+from app.pipeline.asker import ask as ask_user
 from app.pipeline.frontend import Frontend
 from app.proposal import beat_mapper
 from app.proposal import concepts as concepts_mod
@@ -26,10 +28,6 @@ from app.schemas.generated.user_response import UserResponse
 from app.schemas.generated.video_concept import VideoConcept
 
 MAX_CLARIFY_ROUNDS = 2
-
-
-class Cancelled(RuntimeError):
-    """The user chose cancel."""
 
 
 class ProposalRunner:
@@ -55,26 +53,7 @@ class ProposalRunner:
     # --- interaction plumbing ----------------------------------------------------------------
 
     def _ask(self, request: InteractionRequest) -> UserResponse:
-        while True:
-            response = self.frontend.ask(request)
-            errors = check_response(request, response)
-            if not errors:
-                break
-            self.frontend.info(f"[red]Phản hồi không hợp lệ: {'; '.join(errors)}[/]")
-        with (self.dir / "interactions.jsonl").open("a", encoding="utf-8") as f:
-            f.write(
-                json.dumps(
-                    {
-                        "request": request.model_dump(mode="json", exclude_none=True),
-                        "response": response.model_dump(mode="json", exclude_none=True),
-                    },
-                    ensure_ascii=False,
-                )
-                + "\n"
-            )
-        if response.action == "cancel":
-            raise Cancelled(request.kind)
-        return response
+        return ask_user(self.frontend, self.dir, request)
 
     # --- 1. understanding --------------------------------------------------------------------
 

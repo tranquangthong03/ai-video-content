@@ -38,6 +38,19 @@ class SummaryItem(BaseModel):
     one_liner: str
 
 
+class Login(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    login_url: str | None = None
+    target_url: str | None = None
+    reason: str
+    methods: list[Literal['browser_window', 'credentials', 'upload_state']]
+    can_enter_url: bool = False
+    failure: str | None = None
+    hint: str | None = None
+
+
 class Selection(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -76,4 +89,5 @@ class InteractionRequest(BaseModel):
     profile: product_profile.ProductProfile | None = None
     concepts: list[video_concept.VideoConcept] | None = None
     outline: outline_1.Outline | None = None
+    login: Login | None = None
     selection: Selection | None = None

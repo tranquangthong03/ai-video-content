@@ -261,3 +261,38 @@ def test_after_a_restart_running_and_waiting_jobs_are_failed_and_can_resume(tmp_
             "waiting",
         )
         assert d is not None
+
+
+def test_requires_login_and_the_login_url_are_kept_for_the_pipeline(
+    client: TestClient, tmp_path: Path
+) -> None:
+    r = client.post(
+        "/api/jobs",
+        data={
+            "url": "https://example.com/",
+            "requires_login": "true",
+            "login_url": "example.com/login",
+        },
+    )
+    assert r.status_code == 201
+    job_id = r.json()["state"]["job_id"]
+    spec = json.loads((tmp_path / "jobs" / job_id / "job.json").read_text(encoding="utf-8"))
+    assert spec["requires_login"] is True and spec["login_url"] == "https://example.com/login"
+
+
+def test_a_session_file_can_be_uploaded_while_the_job_waits_for_a_login(
+    client: TestClient, tmp_path: Path
+) -> None:
+    job_id = create(client)
+    ok = client.post(
+        f"/api/jobs/{job_id}/login/state",
+        files={"storage_state": ("auth.json", b'{"cookies": [], "origins": []}')},
+    )
+    assert ok.status_code == 200
+    saved = tmp_path / "jobs" / job_id / "storage_state.json"
+    assert json.loads(saved.read_text(encoding="utf-8")) == {"cookies": [], "origins": []}
+    bad = client.post(
+        f"/api/jobs/{job_id}/login/state", files={"storage_state": ("auth.json", b"not json")}
+    )
+    assert bad.status_code == 422
+    assert client.get(f"/api/jobs/{job_id}/files/storage_state.json").status_code == 404
