@@ -216,7 +216,14 @@ def _step_problem(
     if element is None:
         return f"ref {step.ref} does not exist"
     # the blacklist applies to the element being operated on, not to sample text typed into it
-    if is_blocked(element.name, element.text, element.selector, strict=True, ignore=typed):
+    if is_blocked(
+        element.name,
+        element.text,
+        element.selector,
+        strict=True,
+        ignore=typed,
+        interactive=element.role in CONTROL_ROLES,
+    ):
         return f"blacklisted element/text ({element.name!r})"
     if step.do == "upload" and "upload" not in element.caps:
         return f"{element.name!r} is not an upload field"
@@ -232,6 +239,7 @@ def _step_problem(
     return None
 
 
+CONTROL_ROLES = ("link", "button", "tab", "menuitem", "option", "checkbox", "radio", "switch")
 DBLCLICK_NEVER_TAGS = ("input", "textarea", "button", "select")
 DBLCLICK_NEVER_ROLES = ("textbox", "searchbox", "button", "combobox", "checkbox", "file")
 DBLCLICK_ITEM_TAGS = ("li", "tr", "td")

@@ -97,7 +97,9 @@ def usable(element: dict[str, Any]) -> bool:
     if element.get("role") not in (*INTERACTIVE, "heading") or not name.strip():
         return False
     href = element.get("href")
-    if is_blocked(name) or (href and (is_blocked_href(href) or is_logout_url(href))):
+    if is_blocked(name, interactive=element.get("role") != "heading") or (
+        href and (is_blocked_href(href) or is_logout_url(href))
+    ):
         return False
     return not (href and (is_subpage(href) or is_sensitive(href)))
 

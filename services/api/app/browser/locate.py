@@ -62,6 +62,8 @@ INFO_JS = r"""
     in_form: !!form, form: formInfo,
     is_text_input: tag === 'textarea' || (tag === 'input' && ['text', 'search', 'url', 'number'].includes(type)),
     text: clean(el.innerText).slice(0, 80),
+    role: el.getAttribute('role'),
+    operable: el.hasAttribute('onclick') || (el.tabIndex >= 0 && !['input', 'textarea', 'select'].includes(tag)),
   };
 }
 """
@@ -99,6 +101,9 @@ class FormInfo:
     sensitive: bool
 
 
+INTERACTIVE_ROLES = ("button", "link", "menuitem", "tab", "menuitemcheckbox", "option")
+
+
 @dataclass
 class ElementInfo:
     tag: str
@@ -112,6 +117,17 @@ class ElementInfo:
     text: str
     file_input: bool = False  # is, labels, or contains an <input type=file>
     file_accept: str | None = None
+    role: str | None = None
+    operable: bool = False  # onclick / tabindex: a div that acts as a button
+
+    @property
+    def interactive(self) -> bool:
+        """A control the visitor operates (button, link, menu item...), not data or a text field."""
+        if self.tag in ("a", "button", "summary") or self.role in INTERACTIVE_ROLES:
+            return True
+        if self.tag == "input":
+            return self.input_type in ("button", "submit", "reset", "image")
+        return self.operable
 
     @property
     def submits_form(self) -> bool:
@@ -360,7 +376,7 @@ def check_clickable(
     ignore_texts: sample data the explorer typed earlier; an element showing exactly that text
     (a todo item) is data, not a control.
     """
-    if is_blocked(*info.texts, strict=strict, ignore=ignore_texts):
+    if is_blocked(*info.texts, strict=strict, ignore=ignore_texts, interactive=info.interactive):
         raise Unsafe("blacklist", f"matches blacklist: {info.texts[:2]}")
     if is_blocked_href(info.href):
         raise Unsafe("blacklist", f"blocked link {info.href}")
@@ -376,7 +392,7 @@ def check_clickable(
 def check_typeable(info: ElementInfo) -> None:
     """Typing is allowed anywhere except password fields and fields whose own name is blacklisted.
     The typed text itself is never checked."""
-    if is_blocked(*info.texts, strict=True):
+    if is_blocked(*info.texts, strict=True, interactive=False):  # a field is not a control
         raise Unsafe("blacklist", f"field matches blacklist: {info.texts[:2]}")
     if info.input_type == "password":
         raise Unsafe("other", "never type into password fields")

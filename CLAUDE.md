@@ -62,6 +62,7 @@ Người dùng nhập URL website (+ tài khoản demo tùy chọn). Hệ thốn
 - Ba cách: A cửa sổ Chromium thật (`app/session/browser_login.py`, `POST /api/jobs/{id}/login/browser`; **chỉ dùng được khi API chạy cùng máy với người dùng — bản demo local**; `LOGIN_BROWSER_HEADLESS=1` chỉ cho test), B tài khoản demo (`app/browser/login.py`, mã hóa Fernet bằng `CREDENTIAL_ENCRYPTION_KEY`, `credentials.enc`), C upload `auth.json`. Mọi phiên đều được kiểm tra bằng context headless mới (`app/session/gate.py`).
 - Credential không bao giờ ghi vào log/report/state/history (`pipeline/asker.py` che các trường bí mật); `storage_state.json`, `credentials.enc`, `login_profile/` không phục vụ qua `/files` và bị xóa khi job kết thúc (job cũ hơn 24 giờ: dọn khi API khởi động).
 - Guard: POST chỉ được phép trong pha đăng nhập (`guard.allow_login_posts()`) tới domain gốc, subdomain auth./login./accounts. và nhà cung cấp xác thực phổ biến.
+- Blacklist: các từ gốc (xóa, delete, pay, buy...) khớp chuỗi con; nhóm hành động tài khoản (invite/mời + đối tượng người, upgrade/nâng cấp, revoke/thu hồi, share access, generate key...) khớp theo từ/cụm và chỉ áp cho phần tử tương tác (`ElementInfo.interactive`), nên CTA «Mời bạn dùng thử» và tiêu đề «Upgrade your workflow» không bị chặn nhầm.
 - Khi có phiên: làm mờ email/số điện thoại/avatar (`app/browser/privacy.py`, tắt bằng `BLUR_PERSONAL_DATA=0`), không khám phá/quay trang settings/billing/admin..., không `goto` trang logout.
 
 ## Ngôn ngữ làm việc

@@ -28,7 +28,7 @@ def enter_decision(
         return False, "not_a_text_input"
     if info.input_type == "password":
         return False, "password_field"
-    if is_blocked(*info.texts, strict=True):
+    if is_blocked(*info.texts, strict=True, interactive=False):
         return False, "blacklisted_field"
     if policy == "relaxed":
         return True, "ok"

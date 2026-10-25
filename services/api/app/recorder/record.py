@@ -141,6 +141,8 @@ NEARBY_JS = """
       texts: [el.innerText, el.getAttribute('aria-label'), el.getAttribute('title')]
         .map((t) => (t || '').trim()),
       href: el.getAttribute('href'),
+      interactive: ['A', 'BUTTON', 'SUMMARY'].includes(el.tagName) ||
+        ['button', 'tab', 'link', 'menuitem'].includes(el.getAttribute('role')),
     });
   }
   return out.sort((a, b) => a.d - b.d).slice(0, 14);
@@ -619,7 +621,9 @@ class _Recorder:
         safe = [
             c
             for c in candidates
-            if not is_blocked(*c["texts"], strict=True, ignore=self.typed)
+            if not is_blocked(
+                *c["texts"], strict=True, ignore=self.typed, interactive=bool(c.get("interactive"))
+            )
             and not is_blocked_href(c.get("href"))
         ]
         for c in safe[:MAX_FILL_HOVERS]:
