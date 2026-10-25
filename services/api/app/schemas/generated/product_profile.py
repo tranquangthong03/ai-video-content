@@ -106,6 +106,12 @@ class Feature(BaseModel):
     demo_note: str | None = None
     thumbnail: str | None = None
     source: Literal['site', 'user'] = 'site'
+    intent_key: Annotated[
+        str | None,
+        Field(
+            description='Short snake_case English key of what the user does (create_item, edit_item). Features sharing a key are the same intent and get merged.'
+        ),
+    ] = None
 
 
 class ProductProfile(BaseModel):

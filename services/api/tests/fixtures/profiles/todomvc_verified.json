@@ -1,0 +1,365 @@
+{
+  "site_type": "tool",
+  "product_name": "TodoMVC: React",
+  "one_liner": "Ứng dụng todo tối giản viết bằng React, cho phép nhập việc cần làm và chỉnh sửa nhanh bằng nhấp đúp.",
+  "target_users": [
+    "Lập trình viên front-end đang đánh giá TodoMVC với React",
+    "Người dùng cá nhân cần danh sách việc cần làm đơn giản"
+  ],
+  "value_props": [
+    "Tạo việc cần làm ngay từ ô nhập duy nhất",
+    "Chỉnh sửa todo nhanh bằng nhấp đúp",
+    "Giao diện todo tối giản theo chuẩn TodoMVC"
+  ],
+  "features": [
+    {
+      "id": "create_todo",
+      "name": "Tạo việc cần làm mới",
+      "description": "Nhập nội dung vào ô New Todo Input để thêm việc cần làm vào danh sách.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "e11",
+          "quote": null
+        }
+      ],
+      "importance": 0.95,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "e11",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "textbox",
+            "name": "New Todo Input",
+            "text": null,
+            "css": "[data-testid=\"text-input\"]",
+            "nth": null,
+            "tag": "input",
+            "fingerprint": "input||0.58,0.15",
+            "bbox": {
+              "x": 835.0,
+              "y": 130.0,
+              "w": 550.0,
+              "h": 65.0
+            }
+          }
+        },
+        {
+          "do": "type",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "e11",
+          "text": "Mua sữa",
+          "file": null,
+          "locator": {
+            "role": "textbox",
+            "name": "New Todo Input",
+            "text": null,
+            "css": "[data-testid=\"text-input\"]",
+            "nth": null,
+            "tag": "input",
+            "fingerprint": "input||0.58,0.15",
+            "bbox": {
+              "x": 835.0,
+              "y": 130.0,
+              "w": 550.0,
+              "h": 65.0
+            }
+          }
+        }
+      ],
+      "demo_kind": "interaction",
+      "demo_score": 0.75,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 5,
+        "new_dialog": false,
+        "new_list_items": 4,
+        "visual_diff": 0.0047,
+        "target_page_type": "app_editor",
+        "notes": ""
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\todomvc-45\\explore\\verify\\create_todo\\step3_after.png",
+      "source": "site"
+    },
+    {
+      "id": "edit_todo_dblclick",
+      "name": "Chỉnh sửa todo bằng nhấp đúp",
+      "description": "Nhấp đúp vào một todo để chỉnh sửa nội dung tại chỗ.",
+      "evidence": [
+        {
+          "source": "landing_claim",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": null,
+          "quote": "Double-click to edit a todo"
+        }
+      ],
+      "importance": 0.65,
+      "demo_steps": [],
+      "demo_kind": "failed",
+      "demo_score": 0.0,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": null,
+        "notes": ""
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": "no demo steps",
+      "thumbnail": null,
+      "source": "site"
+    },
+    {
+      "id": "edit_todo",
+      "name": "Chỉnh sửa việc cần làm tại chỗ",
+      "description": "Người dùng nhấp đúp vào một việc cần làm trong danh sách để chỉnh sửa nội dung ngay tại chỗ.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "s1e1",
+          "quote": "Mua sữa"
+        }
+      ],
+      "importance": 0.8,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "e11",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "textbox",
+            "name": "New Todo Input",
+            "text": null,
+            "css": "[data-testid=\"text-input\"]",
+            "nth": null,
+            "tag": "input",
+            "fingerprint": "input||0.58,0.15",
+            "bbox": {
+              "x": 835.0,
+              "y": 130.0,
+              "w": 550.0,
+              "h": 65.0
+            }
+          }
+        },
+        {
+          "do": "type",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "e11",
+          "text": "Mua sữa",
+          "file": null,
+          "locator": {
+            "role": "textbox",
+            "name": "New Todo Input",
+            "text": null,
+            "css": "[data-testid=\"text-input\"]",
+            "nth": null,
+            "tag": "input",
+            "fingerprint": "input||0.58,0.15",
+            "bbox": {
+              "x": 835.0,
+              "y": 130.0,
+              "w": 550.0,
+              "h": 65.0
+            }
+          }
+        },
+        {
+          "do": "dblclick",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "s1e1",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "generic",
+            "name": "Mua sữa",
+            "text": "Mua sữa",
+            "css": "[data-testid=\"todo-item-label\"]",
+            "nth": null,
+            "tag": "label",
+            "fingerprint": "label|mua sữa|0.58,0.21",
+            "bbox": {
+              "x": 835.0,
+              "y": 196.0,
+              "w": 550.0,
+              "h": 59.0
+            }
+          }
+        }
+      ],
+      "demo_kind": "interaction",
+      "demo_score": 0.65,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0037,
+        "target_page_type": "app_editor",
+        "notes": "double-click turned the element into an input; requires setup: first 3 steps recreate the state"
+      },
+      "showcase_target": null,
+      "requires_setup": true,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\todomvc-45\\explore\\verify\\edit_todo\\step4_after.png",
+      "source": "site"
+    },
+    {
+      "id": "filter_todos",
+      "name": "Lọc việc cần làm theo trạng thái",
+      "description": "Người dùng có thể lọc danh sách việc cần làm theo ba trạng thái: Tất cả, Đang làm và Đã xong.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "s1e2",
+          "quote": "All"
+        },
+        {
+          "source": "app_action",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "s1e3",
+          "quote": "Active"
+        },
+        {
+          "source": "app_action",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "s1e4",
+          "quote": "Completed"
+        }
+      ],
+      "importance": 0.7,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "e11",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "textbox",
+            "name": "New Todo Input",
+            "text": null,
+            "css": "[data-testid=\"text-input\"]",
+            "nth": null,
+            "tag": "input",
+            "fingerprint": "input||0.58,0.15",
+            "bbox": {
+              "x": 835.0,
+              "y": 130.0,
+              "w": 550.0,
+              "h": 65.0
+            }
+          }
+        },
+        {
+          "do": "type",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "e11",
+          "text": "Mua sữa",
+          "file": null,
+          "locator": {
+            "role": "textbox",
+            "name": "New Todo Input",
+            "text": null,
+            "css": "[data-testid=\"text-input\"]",
+            "nth": null,
+            "tag": "input",
+            "fingerprint": "input||0.58,0.15",
+            "bbox": {
+              "x": 835.0,
+              "y": 130.0,
+              "w": 550.0,
+              "h": 65.0
+            }
+          }
+        },
+        {
+          "do": "click",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "ref": "s1e2",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "link",
+            "name": "All",
+            "text": "All",
+            "css": "footer a",
+            "nth": 2,
+            "tag": "a",
+            "fingerprint": "a|all|0.54,0.25",
+            "bbox": {
+              "x": 1015.0,
+              "y": 263.0,
+              "w": 33.0,
+              "h": 25.0
+            }
+          }
+        }
+      ],
+      "demo_kind": "failed",
+      "demo_score": 0.0,
+      "demo_evidence": {
+        "url_changed": true,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0015,
+        "target_page_type": "app_editor",
+        "notes": "requires setup: first 3 steps recreate the state"
+      },
+      "showcase_target": null,
+      "requires_setup": true,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": null,
+      "source": "site"
+    }
+  ],
+  "open_questions": [
+    "Bạn muốn làm video cho ứng dụng tại /examples/react/dist hay cho toàn bộ todomvc.com? (trang chủ todomvc.com mô tả: «TodoMVC»)",
+    "Không có ref cho mục todo sau khi tạo, nên chưa thể dựng bước nhấp đúp để chỉnh sửa trong video demo.",
+    "Chưa rõ đối tượng chính là lập trình viên đánh giá React hay người dùng cuối dùng ứng dụng todo.",
+    "Dữ liệu trang không thể hiện các tính năng như đánh dấu hoàn thành hoặc lọc todo dù đây là các thành phần thường có trong TodoMVC."
+  ]
+}

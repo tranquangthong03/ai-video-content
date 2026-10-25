@@ -3,11 +3,13 @@
 import uuid
 from typing import Any
 
+from app.core.features import check_selection
 from app.schemas.generated.interaction import InteractionRequest
 from app.schemas.generated.user_response import UserResponse
 
 ALLOWED_ACTIONS: dict[str, list[str]] = {
     "confirm_understanding": ["answer", "edit", "explore_more", "cancel"],
+    "select_features": ["answer", "explore_more", "cancel"],
     "choose_concept": ["answer", "regenerate", "cancel"],
     "outline_review": ["approve", "edit", "regenerate", "cancel"],
     "script_review": ["approve", "edit", "regenerate", "revert", "cancel"],
@@ -49,4 +51,7 @@ def check_response(request: InteractionRequest, response: UserResponse) -> list[
             f"action '{response.action}' not allowed for {request.kind} "
             f"(allowed: {', '.join(request.allowed_actions)})"
         )
+    if request.kind == "select_features" and response.action == "answer" and request.profile:
+        selected = (response.answers or {}).get("selected_features")
+        errors += check_selection(request.profile, selected)
     return errors

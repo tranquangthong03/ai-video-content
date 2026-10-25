@@ -93,7 +93,12 @@
         "verified": { "type": "boolean", "default": false },
         "demo_note": { "type": ["string", "null"], "default": null },
         "thumbnail": { "type": ["string", "null"], "default": null },
-        "source": { "enum": ["site", "user"], "default": "site" }
+        "source": { "enum": ["site", "user"], "default": "site" },
+        "intent_key": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Short snake_case English key of what the user does (create_item, edit_item). Features sharing a key are the same intent and get merged."
+        }
       }
     }
   }

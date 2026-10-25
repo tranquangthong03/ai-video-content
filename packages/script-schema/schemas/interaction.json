@@ -11,7 +11,7 @@
     "kind": {
       "enum": [
         "clarify", "login_required", "script_review", "video_review",
-        "confirm_understanding", "choose_concept", "outline_review"
+        "confirm_understanding", "select_features", "choose_concept", "outline_review"
       ]
     },
     "message": { "type": "string" },
@@ -68,6 +68,25 @@
       "items": { "$ref": "video_concept.json" },
       "default": null
     },
-    "outline": { "oneOf": [{ "$ref": "outline.json" }, { "type": "null" }], "default": null }
+    "outline": { "oneOf": [{ "$ref": "outline.json" }, { "type": "null" }], "default": null },
+    "selection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "select_features: the profile's features are the choices; answers.selected_features is the ordered id list.",
+          "required": ["min", "max", "default"],
+          "properties": {
+            "min": { "type": "integer" },
+            "max": { "type": "integer" },
+            "recommended_max": { "type": "integer", "default": 3 },
+            "default": { "type": "array", "items": { "type": "string" } },
+            "new_ids": { "type": "array", "items": { "type": "string" }, "default": [] }
+          }
+        },
+        { "type": "null" }
+      ],
+      "default": null
+    }
   }
 }

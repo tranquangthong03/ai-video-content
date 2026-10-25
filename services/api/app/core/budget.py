@@ -61,3 +61,11 @@ def oversize_warning(requested_s: int, budget: Budget) -> str | None:
         f"Sản phẩm có {budget.demonstrable} tính năng trình diễn được, video {requested_s}s "
         f"sẽ có nhiều cảnh không quay thao tác (đề xuất {budget.recommended_duration_s}s)."
     )
+
+
+def budget_for_selected(profile: ProductProfile, selected_ids: list[str]) -> Budget:
+    """Budget of only the features the user picked (the video shows nothing else)."""
+    chosen = profile.model_copy(
+        update={"features": [f for f in profile.features if f.id in set(selected_ids)]}
+    )
+    return budget_for(chosen)

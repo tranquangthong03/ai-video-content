@@ -216,6 +216,7 @@ def test_read_decision_variants() -> None:
 def test_allowed_actions_per_kind_and_response_checks() -> None:
     assert ALLOWED_ACTIONS == {
         "confirm_understanding": ["answer", "edit", "explore_more", "cancel"],
+        "select_features": ["answer", "explore_more", "cancel"],
         "choose_concept": ["answer", "regenerate", "cancel"],
         "outline_review": ["approve", "edit", "regenerate", "cancel"],
         "script_review": ["approve", "edit", "regenerate", "revert", "cancel"],

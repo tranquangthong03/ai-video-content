@@ -38,6 +38,17 @@ class SummaryItem(BaseModel):
     one_liner: str
 
 
+class Selection(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    min: int
+    max: int
+    recommended_max: int = 3
+    default: list[str]
+    new_ids: list[str] = []
+
+
 class InteractionRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -50,6 +61,7 @@ class InteractionRequest(BaseModel):
         'script_review',
         'video_review',
         'confirm_understanding',
+        'select_features',
         'choose_concept',
         'outline_review',
     ]
@@ -64,3 +76,4 @@ class InteractionRequest(BaseModel):
     profile: product_profile.ProductProfile | None = None
     concepts: list[video_concept.VideoConcept] | None = None
     outline: outline_1.Outline | None = None
+    selection: Selection | None = None
