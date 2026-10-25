@@ -13,7 +13,7 @@ from app.core import flow_choice
 from app.core.features import default_selection, merge_duplicates, restrict_profile
 from app.core.flow_choice import FlowSelection
 from app.core.interaction import make_request
-from app.flows import discovery
+from app.flows import discovery, storyboard
 from app.llm.json_call import JsonCaller, LLMCallError
 from app.pipeline.asker import Cancelled as Cancelled  # re-exported: callers import it from here
 from app.pipeline.asker import ask as ask_user
@@ -25,6 +25,7 @@ from app.proposal import selection as selection_mod
 from app.proposal import understanding as understanding_mod
 from app.proposal.wordlimit import enforce_outline
 from app.schemas.generated.core_flow import CoreFlow
+from app.schemas.generated.flow_run import FlowRun
 from app.schemas.generated.interaction import InteractionRequest
 from app.schemas.generated.outline import Outline
 from app.schemas.generated.product_profile import ProductProfile
@@ -242,6 +243,59 @@ class ProposalRunner:
             )
             return selection
         raise RuntimeError("too many select_flow rounds")
+
+    # --- 1d. storyboard review of the flow the agent ran ---------------------------------------
+
+    def review_storyboard(
+        self,
+        flow: CoreFlow,
+        run_flow: Callable[[str, FlowRun | None, int], FlowRun],
+        *,
+        max_rounds: int = 10,
+    ) -> FlowRun:
+        """Show what the agent did and loop until the user approves.
+
+        run_flow(notes, previous, keep) runs the agent: notes are every change asked so far,
+        previous/keep are the earlier run and how many of its leading steps are repeated as they
+        are (0 = start over). The approved run is saved to flow/flow_approved.json."""
+        approved = self.dir / "flow" / "flow_approved.json"
+        if approved.is_file():
+            return FlowRun.model_validate_json(approved.read_text(encoding="utf-8"))
+        notes: list[str] = []
+        run = run_flow("", None, 0)
+        notice = ""
+        for version in range(1, max_rounds + 1):
+            versions = self.dir / "flow" / "versions"
+            versions.mkdir(parents=True, exist_ok=True)
+            (versions / f"v{version}.json").write_text(
+                run.model_dump_json(indent=2), encoding="utf-8"
+            )
+            response = self._ask(
+                storyboard.build_request(self.job_id, flow, run, notice=notice, version=version)
+            )
+            if response.action == "approve":
+                if run.status == "failed" or len(run.steps) < 2:
+                    notice = "Luồng chưa có bước nào để quay; hãy sửa hoặc chạy lại."
+                    continue
+                approved.write_text(run.model_dump_json(indent=2), encoding="utf-8")
+                return run
+            if response.action == "regenerate":
+                notes.clear()
+                run, notice = run_flow("", None, 0), "Đã chạy lại luồng từ đầu."
+                continue
+            instruction = ((response.edit.instruction if response.edit else "") or "").strip()
+            if not instruction:
+                notice = "Bạn chưa nhập yêu cầu sửa."
+                continue
+            notes.append(instruction)
+            keep = storyboard.keep_prefix(run, instruction)
+            run = run_flow("\n".join(notes), run, keep)
+            notice = (
+                f"Đã chạy lại theo yêu cầu, giữ {max(0, keep - 1)} bước đầu."
+                if keep > 1
+                else "Đã chạy lại theo yêu cầu từ đầu."
+            )
+        raise RuntimeError("too many flow_storyboard_review rounds")
 
     # --- 2. concepts -------------------------------------------------------------------------
 

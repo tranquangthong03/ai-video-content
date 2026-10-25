@@ -19,6 +19,7 @@ DEFAULT_ACTION = {
     "choose_concept": ("answer", {"answers": {"concept_id": "recommended"}}),
     "outline_review": ("approve", {}),
     "script_review": ("approve", {}),
+    "flow_storyboard_review": ("approve", {}),
     "clarify": ("cancel", {}),
 }
 
@@ -150,6 +151,8 @@ class TerminalFrontend:
             return self._ask_selection(request, questionary)
         if kind == "select_flow":
             return self._ask_flow(request, questionary)
+        if kind == "flow_storyboard_review":
+            return self._ask_storyboard(request, questionary)
         if kind == "login_required":
             return self._ask_login(request, questionary)
         if kind == "choose_concept":
@@ -267,6 +270,36 @@ class TerminalFrontend:
                 f"[dim]Thấy khi xong: {f.success_signal}\nGiá trị: {f.value}[/]"
             )
             self.console.print(Panel(body, title=f.id, border_style="green"))
+
+    def _ask_storyboard(self, request: InteractionRequest, questionary: Any) -> UserResponse:
+        run = request.flow_review
+        assert run is not None
+        self.console.print(Panel(request.message, title="Storyboard luồng", border_style="cyan"))
+        chapters = {s: c.title for c in run.chapters for s in c.step_ids}
+        table = Table(show_lines=False)
+        for col in ("#", "Chương", "Ghi chú", "Trang"):
+            table.add_column(col)
+        for s in run.steps:
+            table.add_row(str(s.i), chapters.get(s.i, ""), s.note, (s.url_after or "")[-48:])
+        self.console.print(table)
+        for w in run.warnings:
+            self.console.print(f"[yellow]⚠ {w}[/]")
+        shots = [s.screenshot for s in run.steps if s.screenshot]
+        if shots:
+            self.console.print(f"[dim]Ảnh từng bước: {Path(shots[0]).parent} ({len(shots)} ảnh)[/]")
+        action = questionary.select(
+            "Bạn muốn làm gì?",
+            choices=[
+                questionary.Choice("Duyệt luồng này", "approve"),
+                questionary.Choice("Sửa bằng một câu", "edit"),
+                questionary.Choice("Chạy lại từ đầu", "regenerate"),
+                questionary.Choice("Hủy", "cancel"),
+            ],
+        ).ask()
+        if action == "edit":
+            text = questionary.text("Yêu cầu sửa:").ask() or ""
+            return make_response(request, "edit", edit={"instruction": text})
+        return make_response(request, action or "cancel")
 
     def _ask_flow(self, request: InteractionRequest, questionary: Any) -> UserResponse:
         sel = request.flow_select

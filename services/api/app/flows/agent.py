@@ -27,11 +27,18 @@ from app.browser.session import BrowserSession
 from app.core.usage import BudgetExceeded
 from app.flows.actions import ActionRunner, FlowAction, StepResult, is_submit_target
 from app.flows.chapters import chapter_ids, group_chapters
-from app.flows.page_state import PageState, capture_state, format_elements, format_messages
+from app.flows.page_state import (
+    PageElement,
+    PageState,
+    capture_state,
+    format_elements,
+    format_messages,
+)
 from app.llm.json_call import JsonCaller, LLMCallError, VisionUnavailable
 from app.llm.prompts import render
 from app.schemas.generated.core_flow import CoreFlow
 from app.schemas.generated.flow_run import FlowRun
+from app.schemas.generated.locator import LocatorSpec
 
 ROLE = "flow_agent"
 FLOW_DIR = "flow"
@@ -108,6 +115,8 @@ class FlowAgent:
         use_images: bool | None = None,
         limits: Limits | None = None,
         use_cache: bool | None = None,
+        previous: FlowRun | None = None,
+        keep: int = 0,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self.session = session
@@ -122,6 +131,8 @@ class FlowAgent:
         self.limits = limits or Limits()
         self.use_cache = caller.cache_enabled if use_cache is None else use_cache
         self.clock = clock
+        self.previous = previous  # earlier run: its first `keep` steps are repeated, not asked
+        self.keep = keep
         self.images_sent = False
         self._calls0 = 0
         self.flow_dir = job_dir / FLOW_DIR
@@ -129,7 +140,7 @@ class FlowAgent:
     # --- entry point -----------------------------------------------------------------------
 
     def run(self) -> FlowRun:
-        cached = self._from_cache()
+        cached = None if self.previous else self._from_cache()
         if cached is not None:
             return cached
         started = self.clock()
@@ -179,6 +190,8 @@ class FlowAgent:
         pending_sig = ""
         shot = self._shot(page, run, 1)
         run.steps.append(self._goto_step(page))
+        if self.previous is not None and self.keep > 1:
+            shot = self._replay(page, runner, run) or shot
         while True:
             state = capture_state(page)
             sig = signature(state)
@@ -236,6 +249,52 @@ class FlowAgent:
             if len([s for s in run.steps if s.action["do"] != "goto"]) >= self.limits.max_actions:
                 run.warnings.append(f"Dừng: đã đủ {self.limits.max_actions} hành động.")
                 return
+
+    def _replay(self, page: Page, runner: ActionRunner, run: _Run) -> bytes | None:
+        """Repeat the kept steps of the previous run from their locators, without asking the model.
+        A step that no longer works ends the replay; the agent carries on from there."""
+        prev = self.previous
+        assert prev is not None
+        titles = {c.id: c.title for c in prev.chapters}
+        run.sample_data = dict(prev.sample_data)
+        shot: bytes | None = None
+        for old in prev.steps[1 : self.keep]:
+            do = old.action.do
+            action = FlowAction(
+                do=do,  # type: ignore[arg-type]
+                ref=None if do == "scroll" else "r",
+                value=old.action.text,
+                direction="up" if (old.action.ms or 0) < 0 else "down",
+            )
+            element = PageElement(
+                ref="r", role=(old.locator.role if old.locator else None) or "button",
+                tag=(old.locator.tag if old.locator else None) or "", name=old.target_text or "",
+                locator=old.locator or LocatorSpec(),
+            )  # fmt: skip
+            state = PageState(page.url, "", "", [], [element])
+            try:
+                result = runner.run(state, action)
+            except Exception as e:
+                run.warnings.append(
+                    f"Không lặp lại được bước {old.i} ({str(e).splitlines()[0][:100]}); "
+                    "agent làm tiếp từ đây."
+                )
+                break
+            shot = self._shot(page, run, len(run.steps) + 1)
+            run.steps.append(
+                _Step(
+                    action=old.action.model_dump(exclude_none=True),
+                    locator=old.locator.model_dump() if old.locator else None,
+                    target_text=old.target_text or "",
+                    value=old.value,
+                    url_before=result.url_before,
+                    url_after=result.url_after,
+                    note=old.note,
+                    chapter=titles.get(old.chapter_id or "", ""),
+                )  # fmt: skip
+            )
+            run.history.append(self._history_line(len(run.steps), result))
+        return shot
 
     def _limit_reached(self, run: _Run, started: float) -> str | None:
         if self.clock() - started > self.limits.timeout_s:
