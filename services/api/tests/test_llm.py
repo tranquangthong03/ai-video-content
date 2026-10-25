@@ -40,7 +40,7 @@ SAMPLE_VARS = {
     "beat_feature_mapper": dict(outline_json="{}", features_json="[]"),
     "script_writer": dict(
         product_profile_json="{}", outline_json="{}", theme_json="{}", scene_catalog_json="{}",
-        allowed_icons="check, globe", duration_s=45, target_words=110,
+        allowed_icons="check, globe", duration_s=45, target_words=110, flow_json="",
     ),
     "duration_fit": dict(
         direction="ngắn hơn", target_words=110, current_words=80, script_json="{}",

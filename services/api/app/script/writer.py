@@ -14,6 +14,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from app.core.demo_steps import summarize_steps
+from app.core.flow_ctx import FlowCtx
 from app.llm.json_call import JsonCaller
 from app.llm.prompts import render
 from app.schemas.generated.layouts import LAYOUTS_BY_TYPE
@@ -82,6 +83,7 @@ class WriterContext:
     setup_counts: dict[str, int] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)  # tone / audience given by the user (set_global)
     lite: LiteContext | None = None  # lets failed/unverified features be pointed at (showcase_lite)
+    flow: FlowCtx | None = None  # flow mode: each chapter is a pseudo-feature with its own visual
 
     # the video is longer than the product can fill with real footage and the user insisted
     forced: bool = False
@@ -153,6 +155,7 @@ def build_prompt(ctx: WriterContext) -> str:
         allowed_icons=", ".join(cat.ICONS),
         duration_s=outline.duration_s,
         target_words=target_words(outline.duration_s, len(outline.beats)),
+        flow_json=ctx.flow.prompt_json() if ctx.flow else "",
     )
     if ctx.notes:  # appended after the template so the template itself stays as agreed
         listed = "\n".join(f"- {n}" for n in ctx.notes)
@@ -303,6 +306,20 @@ def soft_issues(draft: DraftScript, ctx: WriterContext) -> list[str]:
 # --- building -------------------------------------------------------------------------------------
 
 
+def flow_visual_for(s: DraftScene, ctx: WriterContext) -> dict[str, Any] | None:
+    """Flow mode: the scene shows its chapter of the flow (or the opening / closing page)."""
+    flow = ctx.flow
+    if flow is None:
+        return None
+    if s.type == "feature_demo":
+        return flow.visuals.get(s.feature or "")
+    if s.type == "hook":
+        return flow.hook_visual or None
+    if s.type == "cta":
+        return flow.cta_visual or None
+    return None
+
+
 def scene_dict(
     s: DraftScene,
     scene_id: str,
@@ -310,9 +327,10 @@ def scene_dict(
     warnings: list[str],
     used: set[str] | None = None,
 ) -> dict[str, Any]:
+    flow_visual = flow_visual_for(s, ctx)
     feature = ctx.features.get(s.feature) if s.feature else None
     again = bool(used is not None and s.feature in used)  # a repeat continues the earlier scene
-    visual = visual_for_scene(
+    visual = flow_visual or visual_for_scene(
         s.type,
         feature,
         ctx.home_url,
@@ -324,7 +342,7 @@ def scene_dict(
     )
     if used is not None and s.feature:
         used.add(s.feature)
-    warnings += visual.warnings
+    warnings += [] if flow_visual else visual.warnings
     out: dict[str, Any] = {
         "id": scene_id,
         "type": s.type,
@@ -333,10 +351,12 @@ def scene_dict(
         "on_screen_text": (s.on_screen_text or None) and s.on_screen_text.strip(),
         "key_point": s.key_point.strip() if s.key_point else None,
         "icon": s.icon,
-        "visual": visual.visual,
+        "visual": visual if flow_visual else visual.visual,
     }
     if s.type == "feature_demo":
         out["feature"] = s.feature
+        if ctx.flow is not None and s.feature in ctx.flow.visuals:
+            out["chapter_id"] = s.feature
     if s.type == "before_after":
         out["before_text"] = (s.before_text or "").strip()
         out["after_text"] = (s.after_text or "").strip()
@@ -359,6 +379,8 @@ def build_script(draft: DraftScript, ctx: WriterContext) -> tuple[Script, list[s
         "theme": ctx.theme.model_dump(),
         "scenes": scenes,
     }
+    if ctx.flow is not None:
+        data["flow_id"] = ctx.flow.flow_id
     if ctx.capture is not None:
         data["capture"] = {"viewport": "desktop", "width": ctx.capture[0], "height": ctx.capture[1]}
     try:

@@ -18,12 +18,14 @@ from app.browser.auth_detect import LoginRequired
 from app.browser.login_find import find_login_url
 from app.browser.session import BrowserSession
 from app.core.credentials import CredentialStore, cleanup_job_secrets
+from app.core.flow_ctx import FlowCtx
 from app.core.usage import BudgetExceeded, UsageTracker
 from app.explorer.mapper import BlockedByChallenge
 from app.explorer.report import DeadlineExceeded
 from app.llm.client import load_settings
 from app.llm.json_call import JsonCaller, OpenAIChat
 from app.pipeline.explore_run import ExploreRunner
+from app.pipeline.flow_run import FlowJob, page_summaries, run_core_flow
 from app.pipeline.frontend import Frontend
 from app.pipeline.proposal_run import Cancelled, ProposalRunner
 from app.pipeline.script_run import ScriptRunner
@@ -37,6 +39,7 @@ from app.pipeline.state import (
 )
 from app.producer.pipeline import ProduceResult, produce
 from app.producer.render import RenderError, render_props
+from app.proposal.flow_outline import flow_profile
 from app.schemas.generated.outline import Outline
 from app.schemas.generated.product_profile import ProductProfile
 from app.schemas.generated.script import Script
@@ -81,6 +84,7 @@ class JobConfig:
     requires_login: bool = False  # the user says the main features are behind a sign-in
     login_url: str | None = None  # where to sign in, when the user knows
     app_home_url: str | None = None  # the app's main page after the sign-in (not the landing)
+    core_flow: bool = False  # film one core flow (chapters) instead of separate features
 
 
 @dataclass
@@ -396,13 +400,31 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
         try:
             progress.set("confirm", "Xác nhận hiểu biết về sản phẩm", 46)
             profile, notes = proposal.confirm_understanding(runner.state.profile)
-            progress.set("select", "Chọn tính năng để review", 47)
-            profile, selected = proposal.select_features(profile)
-            progress.set("concept", "Chọn hướng video", 48)
-            concept, concept_notes = proposal.choose_concept(profile, notes)
-            progress.set("outline", "Duyệt dàn ý", 50)
-            outline = proposal.review_outline(profile, concept, concept_notes)
-            concept_id = concept.id
+            flow_result = None
+            if cfg.core_flow:
+                progress.set("flow", "Chọn luồng chức năng chính", 47)
+                flow_result = run_core_flow(
+                    FlowJob(
+                        job_dir, cfg.url, cfg.app_home_url or cfg.url, cfg.storage_state,
+                        cfg.capture, lambda e: sign_in(e).storage_state,
+                    ),
+                    proposal,
+                    caller,
+                    profile,
+                    page_summaries(runner.state.insights, runner.state.pages),
+                    say=rep.say,
+                )  # fmt: skip
+            if flow_result is not None:
+                profile, outline = flow_result.profile, flow_result.outline
+                concept_id = outline.concept_id
+            else:  # the old route: pick features, then a concept, then review the outline
+                progress.set("select", "Chọn tính năng để review", 47)
+                profile, selected = proposal.select_features(profile)
+                progress.set("concept", "Chọn hướng video", 48)
+                concept, concept_notes = proposal.choose_concept(profile, notes)
+                progress.set("outline", "Duyệt dàn ý", 50)
+                outline = proposal.review_outline(profile, concept, concept_notes)
+                concept_id = concept.id
         except Cancelled as e:
             runner.save("cancelled")
             return _fail(rep, EXIT_CANCELLED, "cancelled", f"[yellow]Đã hủy ở bước {e}.[/]")
@@ -425,6 +447,9 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
             profile, outline = load_saved(job_dir)
         except FileNotFoundError as e:
             return _fail(rep, EXIT_USAGE, "failed", f"[red]{e}. Chạy bước explore trước.[/]")
+        saved_flow = FlowCtx.load(job_dir)
+        if saved_flow is not None:  # a flow job: the chapters are the features
+            profile = flow_profile(profile, saved_flow)
 
     approved_file = job_dir / "script_approved.json"
     if cfg.from_step == "produce":
@@ -437,7 +462,9 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
     else:
         progress.set("script", "Đang viết kịch bản", 56)
         try:
-            script = run_script_step(cfg, rep, caller, frontend, profile, outline)
+            script = run_script_step(
+                cfg, rep, caller, frontend, profile, outline, FlowCtx.load(job_dir)
+            )
         except Cancelled as e:
             return _fail(rep, EXIT_CANCELLED, "cancelled", f"[yellow]Đã hủy ở bước {e}.[/]")
         except BudgetExceeded as e:
@@ -470,6 +497,7 @@ def run_script_step(
     frontend: Frontend,
     profile: ProductProfile,
     outline: Outline,
+    flow: FlowCtx | None = None,
 ) -> Script:
     """Theme, Script Writer, duration fit and script_review; returns the approved script."""
 
@@ -493,6 +521,7 @@ def run_script_step(
         cfg.url,
         theme_fn=derive,
         capture=cfg.capture,
+        flow=flow,
     )
     return runner.run()
 

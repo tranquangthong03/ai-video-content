@@ -12,6 +12,7 @@ from typing import Any
 from rich.markup import escape
 
 from app.core.budget import budget_for, oversize_warning
+from app.core.flow_ctx import FlowCtx
 from app.core.interaction import check_response, make_request
 from app.llm.json_call import JsonCaller, LLMCallError
 from app.pipeline.frontend import Frontend
@@ -76,7 +77,9 @@ class ScriptRunner:
         *,
         theme_fn: Callable[[], ThemeResult],
         capture: tuple[int, int] | None = None,
+        flow: FlowCtx | None = None,
     ) -> None:
+        self.flow = flow  # flow mode: the chapters are the features, the outline is already linked
         self.job_id, self.dir, self.caller, self.frontend = job_id, job_dir, caller, frontend
         self.profile, self.outline, self.url = profile, outline, url
         self.theme_fn = theme_fn
@@ -143,7 +146,7 @@ class ScriptRunner:
 
     def prepare(self) -> WriterContext:
         theme = self._theme()
-        outline = self._link_beats()
+        outline = self.outline if self.flow else self._link_beats()
         self.ctx = WriterContext(
             self.profile,
             outline,
@@ -152,7 +155,11 @@ class ScriptRunner:
             load_setup_counts(self.dir / "explore", self.profile),
         )
         self.ctx.capture = self.capture
-        self.ctx.lite = LiteContext(self.profile, load_page_index(self.dir / "explore"), self.url)
+        self.ctx.flow = self.flow
+        if self.flow is None:
+            self.ctx.lite = LiteContext(
+                self.profile, load_page_index(self.dir / "explore"), self.url
+            )
         budget = budget_for(self.profile)
         self.report.update(
             content_budget_s=budget.content_budget_s,

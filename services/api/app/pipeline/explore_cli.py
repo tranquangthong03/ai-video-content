@@ -65,6 +65,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--requires-login", action="store_true",
         help="the main features are behind a sign-in: ask for it right away",
     )  # fmt: skip
+    p.add_argument(
+        "--core-flow", action="store_true",
+        help="film one core flow (chapters) chosen by the user instead of separate features",
+    )  # fmt: skip
     p.add_argument("--login-url", help="where to sign in (otherwise the login link is searched)")
     p.add_argument(
         "--capture", metavar="WxH", help="recording size, e.g. 1280x800 (default 1440x900)"
@@ -175,6 +179,7 @@ def main(argv: list[str] | None = None) -> int:
         from_step=args.from_step,
         capture=parse_capture(args.capture),
         requires_login=args.requires_login,
+        core_flow=args.core_flow,
         login_url=args.login_url,
     )
     frontend = ScriptedFrontend.from_file(args.answers) if args.auto else TerminalFrontend(console)
