@@ -31,15 +31,16 @@ STOP_WORDS = {
 def build_request(
     job_id: str, flow: CoreFlow, run: FlowRun, *, notice: str = "", version: int = 1
 ) -> InteractionRequest:
-    lines = [
-        f"Luồng «{flow.title}» — {STATUS_TEXT.get(run.status, run.status)} (bản {version}).",
+    # the web shows every line but the last as a notice: only the server's notice goes before it
+    text = (
+        f"Luồng «{flow.title}»: {STATUS_TEXT.get(run.status, run.status)} (bản {version}). "
         "Xem từng bước bên dưới. Bạn có thể duyệt, sửa bằng một câu "
         "(ví dụ «bỏ bước 3», «chọn loại nghỉ Annual thay vì Personal», «thêm bước xem My Leave»), "
-        "chạy lại từ đầu hoặc hủy.",
-    ]
+        "chạy lại từ đầu hoặc hủy."
+    )
     if run.status in ("partial", "failed"):
-        lines.append("Luồng chưa trọn: bạn nên sửa hoặc chạy lại trước khi duyệt.")
-    message = "\n".join(([notice] if notice else []) + lines)
+        text += " Luồng chưa trọn: bạn nên sửa hoặc chạy lại trước khi duyệt."
+    message = "\n".join(([notice] if notice else []) + [text])
     return make_request(
         job_id,
         "flow_storyboard_review",

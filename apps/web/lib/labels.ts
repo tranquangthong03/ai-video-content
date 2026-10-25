@@ -28,6 +28,8 @@ export const KIND_TITLE: Record<string, string> = {
   confirm_understanding: "Xác nhận hiểu biết về sản phẩm",
   login_required: "Cần đăng nhập",
   select_features: "Chọn tính năng để review",
+  select_flow: "Chọn luồng chính để quay",
+  flow_storyboard_review: "Duyệt storyboard luồng",
   choose_concept: "Chọn hướng video",
   outline_review: "Duyệt dàn ý",
   script_review: "Duyệt kịch bản",

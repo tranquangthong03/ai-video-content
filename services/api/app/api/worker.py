@@ -163,7 +163,7 @@ class JobRunner:
                 login_url=spec.get("login_url"),
                 app_home_url=spec.get("app_home_url"),
                 should_stop=cancel.is_set,
-                core_flow=False,  # the web cards for flows (select_flow, storyboard) come with C11
+                core_flow=bool(spec.get("core_flow", True)),  # "core_flow": false = the old route
             )
             update_state(directory, status="running", error=None)
             result = self.pipeline(cfg, FileFrontend(directory, cancel, self.poll_s))
