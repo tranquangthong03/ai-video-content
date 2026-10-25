@@ -17,9 +17,11 @@ from typing import Any
 
 from playwright.sync_api import BrowserContext, Page
 
+from app.browser import form_actions
 from app.browser.auth_detect import LoginRequired, detect_login, is_logout_url, on_login_page
 from app.browser.blacklist import is_blocked, is_blocked_href
 from app.browser.enter_policy import Policy, enter_decision
+from app.browser.form_actions import Ops
 from app.browser.locate import Target, Unsafe, check_clickable, resolve
 from app.browser.page_utils import dismiss_cookie_banner, wait_for_settle
 from app.browser.session import BrowserSession
@@ -40,6 +42,10 @@ MAX_FILL_HOVERS = 3
 CAPTURE = {"width": 1440, "height": 900}  # same as the schema default of script.capture
 HOME_FRACTION = (0.5, 0.57)  # where the real mouse rests before the first move
 HOLD_ACTIONS = (
+    "select",
+    "check",
+    "pick_date",
+    "navigate",
     "click",
     "dblclick",
     "right_click",
@@ -298,6 +304,10 @@ class _Recorder:
         """One frame_inventory snapshot of what is on screen now."""
         self.last_snap = self.now()
         items = inventory.snapshot(self.page, self.last_handle)
+        if not items and self.last_handle is not None:
+            # a click that changed the page left a stale handle: list the new page without it
+            self.last_handle = None
+            items = inventory.snapshot(self.page)
         if items:  # login_page: what the quality gate looks at before anything is rendered
             self.inventory.append(
                 {
@@ -506,6 +516,59 @@ class _Recorder:
         if allowed:
             self.page.wait_for_timeout(250)
             self.page.keyboard.press("Enter")
+
+    # --- form actions (core flows): the same visible pointer and slow typing as click / type ---
+
+    def _visible_ops(self) -> Ops:
+        def click(target: Target) -> None:
+            x, y = self.center_of(target)
+            self.move_to(x, y)
+            self.event("click", x, y)
+            self.focus("click", target.box())
+            target.click()
+
+        def type_text(target: Target, text: str) -> None:
+            x, y = self.center_of(target)
+            self.move_to(x, y)
+            self.event("click", x, y)
+            self.focus("type", target.box())
+            target.click()
+            target.fill("")
+            for ch, delay in zip(text, motion.typing_delays(text, self.rng), strict=True):
+                self.mark()
+                self.page.keyboard.type(ch)
+                self.page.wait_for_timeout(delay)
+            if text:
+                self.typed.add(text.strip().lower())
+
+        return Ops(click=click, type_text=type_text)
+
+    def do_select(self, a: Any, label: str) -> None:
+        target = self.target_of(a.locator, label)
+        self.safe(target)
+        self.note_action("select", target)
+        form_actions.select_option(
+            self.page, target, a.text or "", self.root_url, self._visible_ops()
+        )
+
+    def do_check(self, a: Any, label: str) -> None:
+        target = self.target_of(a.locator, label)
+        self.safe(target)
+        self.note_action("check", target)
+        form_actions.check(target, self._visible_ops())
+
+    def do_pick_date(self, a: Any, label: str) -> None:
+        target = self.target_of(a.locator, label)
+        self.note_action("pick_date", target)
+        form_actions.pick_date(self.page, target, a.text or "", self._visible_ops())
+
+    def do_navigate(self, a: Any, label: str) -> None:
+        self.collect_activity()
+        self._pointer_action(a, label, "click")
+        self.settle()
+        if is_logout_url(self.page.url):
+            raise Unsafe("blacklist", f"navigation reached a sign-out page {self.page.url}")
+        self.check_login(self.page.url, None)
 
     def do_scroll(self, a: Any, label: str) -> None:
         self.note_action("scroll", None)

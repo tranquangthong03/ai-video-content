@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>HR - Apply Leave</title>
+<style>
+  body{font:14px sans-serif;margin:0} nav{background:#eee;padding:8px} nav a{margin-right:12px}
+  .row{margin:10px 0} .menu{display:none;border:1px solid #999;width:220px;background:#fff}
+  .menu.open{display:block} .menu div{padding:4px} .menu div:hover{background:#def}
+  .err{color:#b00} .ok{color:#070;border:1px solid #070;padding:6px}
+  .calendar{display:none;border:1px solid #666;width:240px;padding:6px;background:#fff}
+  .calendar.open{display:block} .calendar button{width:30px}
+  .calendar .days button{margin:1px}
+</style></head>
+<body>
+  <header><nav>
+    <a href="/flow_home.html">Dashboard</a><a href="/flow_apply.html">Leave</a>
+    <a href="/flow_myleave.html">My Leave</a>
+  </nav></header>
+  <main>
+    <h1>Apply Leave</h1>
+    <form id="leave" onsubmit="return false">
+      <div class="row"><label for="kind">Leave Type</label><br>
+        <select id="kind"><option>-- Select --</option><option>Annual</option><option>Sick</option></select></div>
+      <div class="row"><div>Reason category</div>
+        <div id="cat" role="combobox" tabindex="0"
+             onclick="document.getElementById('catmenu').classList.toggle('open')">-- Select --</div>
+        <div id="catmenu" class="menu options">
+          <div onclick="pickCat(this)">Family</div><div onclick="pickCat(this)">Medical</div>
+          <div onclick="pickCat(this)">Travel</div>
+        </div></div>
+      <div class="row"><label for="from">From Date</label><br>
+        <input id="from" type="text" placeholder="dd/mm/yyyy"></div>
+      <div class="row"><label for="to">To Date</label><br>
+        <input id="to" type="text" readonly placeholder="Select date" onclick="openCal()"></div>
+      <div id="cal" class="calendar">
+        <div><button type="button" aria-label="Previous month" onclick="shift(-1)">‹</button>
+          <span id="calhead"></span>
+          <button type="button" aria-label="Next month" onclick="shift(1)">›</button></div>
+        <div id="days" class="days"></div>
+      </div>
+      <div class="row"><label for="comment">Comment</label><br>
+        <textarea id="comment"></textarea><div id="commenterr" class="err"></div></div>
+      <div class="row"><input id="half" type="checkbox"><label for="half">Half day</label></div>
+      <button type="submit" id="apply" onclick="applyLeave()">Apply</button>
+    </form>
+    <div id="result"></div>
+  </main>
+<script>
+  const NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let view = new Date(); view.setDate(1);
+  function pickCat(el){ document.getElementById('cat').textContent = el.textContent;
+    document.getElementById('catmenu').classList.remove('open'); }
+  function openCal(){ document.getElementById('cal').classList.toggle('open'); draw(); }
+  function shift(n){ view.setMonth(view.getMonth()+n); draw(); }
+  function draw(){
+    document.getElementById('calhead').textContent = NAMES[view.getMonth()] + ' ' + view.getFullYear();
+    const days = new Date(view.getFullYear(), view.getMonth()+1, 0).getDate();
+    const box = document.getElementById('days'); box.innerHTML = '';
+    for (let d=1; d<=days; d++){
+      const b = document.createElement('button'); b.type='button'; b.textContent = d; b.setAttribute('role','gridcell');
+      b.onclick = () => { const p = n => String(n).padStart(2,'0');
+        document.getElementById('to').value = p(d)+'/'+p(view.getMonth()+1)+'/'+view.getFullYear();
+        document.getElementById('cal').classList.remove('open'); };
+      box.appendChild(b);
+    }
+  }
+  function applyLeave(){
+    const comment = document.getElementById('comment');
+    const err = document.getElementById('commenterr');
+    err.textContent = ''; comment.removeAttribute('aria-invalid');
+    const missing = [];
+    if (document.getElementById('kind').selectedIndex < 1) missing.push('Leave Type');
+    if (!document.getElementById('from').value) missing.push('From Date');
+    if (!document.getElementById('to').value) missing.push('To Date');
+    if (comment.value.trim().length < 5) { err.textContent = 'Comment is too short';
+      comment.setAttribute('aria-invalid','true'); missing.push('Comment'); }
+    const result = document.getElementById('result');
+    result.innerHTML = missing.length
+      ? '<div class="err" role="alert">Required: ' + missing.join(', ') + '</div>'
+      : '<div class="ok" role="status">Leave request submitted</div>';
+  }
+</script>
+</body>
+</html>

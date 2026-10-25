@@ -219,6 +219,12 @@ class Target:
     def press(self, key: str, timeout: float = 4000) -> None:
         self._obj.press(key, timeout=timeout)
 
+    def select_label(self, label: str, timeout: float = 4000) -> None:
+        self._obj.select_option(label=label, timeout=timeout)
+
+    def evaluate(self, script: str) -> Any:
+        return self._obj.evaluate(script)
+
     def info(self) -> ElementInfo:
         raw = self._obj.evaluate(INFO_JS)
         form = FormInfo(**raw["form"]) if raw["form"] else None
