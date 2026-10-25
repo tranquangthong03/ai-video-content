@@ -6,6 +6,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from . import core_flow, flow_run
 from . import outline as outline_1
 from . import product_profile, video_concept
 
@@ -51,6 +52,20 @@ class Login(BaseModel):
     hint: str | None = None
 
 
+class FlowSelect(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    max: int
+    default: list[str]
+    submit_blocked_reason: Annotated[
+        str | None,
+        Field(
+            description='Set when the site is a shared demo: allowing submit is refused'
+        ),
+    ] = None
+
+
 class Selection(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -77,6 +92,8 @@ class InteractionRequest(BaseModel):
         'select_features',
         'choose_concept',
         'outline_review',
+        'select_flow',
+        'flow_storyboard_review',
     ]
     message: str
     questions: Annotated[list[Question], Field(validate_default=True)] = []
@@ -90,4 +107,17 @@ class InteractionRequest(BaseModel):
     concepts: list[video_concept.VideoConcept] | None = None
     outline: outline_1.Outline | None = None
     login: Login | None = None
+    flows: Annotated[
+        list[core_flow.CoreFlow] | None,
+        Field(
+            description='select_flow: the proposed flows; answers.selected_flows is the ordered id list'
+        ),
+    ] = None
+    flow_select: FlowSelect | None = None
+    flow_review: Annotated[
+        flow_run.FlowRun | None,
+        Field(
+            description='flow_storyboard_review: the run to look at (steps carry screenshot paths)'
+        ),
+    ] = None
     selection: Selection | None = None

@@ -25,6 +25,10 @@ class BrowserAction(BaseModel):
         'right_click',
         'scroll_to',
         'highlight',
+        'select',
+        'check',
+        'pick_date',
+        'navigate',
     ]
     target: Annotated[
         str | None, Field(description='Natural-language description of the element')

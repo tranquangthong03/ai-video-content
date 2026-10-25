@@ -29,7 +29,8 @@ export const FIELDS_BY_TYPE = {
     "key_point",
     "icon",
     "visual",
-    "duration_ms"
+    "duration_ms",
+    "chapter_id"
   ],
   "feature_demo": [
     "id",
@@ -41,7 +42,8 @@ export const FIELDS_BY_TYPE = {
     "key_point",
     "icon",
     "visual",
-    "duration_ms"
+    "duration_ms",
+    "chapter_id"
   ],
   "before_after": [
     "id",
@@ -54,7 +56,8 @@ export const FIELDS_BY_TYPE = {
     "key_point",
     "icon",
     "visual",
-    "duration_ms"
+    "duration_ms",
+    "chapter_id"
   ],
   "cta": [
     "id",
@@ -65,7 +68,8 @@ export const FIELDS_BY_TYPE = {
     "key_point",
     "icon",
     "visual",
-    "duration_ms"
+    "duration_ms",
+    "chapter_id"
   ]
 } as const;
 

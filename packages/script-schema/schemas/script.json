@@ -21,6 +21,7 @@
       },
       "default": { "viewport": "desktop", "width": 1440, "height": 900 }
     },
+    "flow_id": { "type": ["string", "null"], "default": null },
     "badge": { "type": ["string", "null"], "maxLength": 24, "default": null },
     "headline": { "type": "string", "minLength": 1, "maxLength": 40 },
     "headline_highlight": { "type": ["string", "null"], "default": null },

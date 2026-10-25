@@ -36,7 +36,8 @@
         "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
         "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },
-        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
+        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null },
+        "chapter_id": { "type": ["string", "null"], "default": null, "description": "Core-flow mode: the chapter of the flow run this scene shows" }
       }
     },
     "FeatureDemoScene": {
@@ -53,7 +54,8 @@
         "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
         "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },
-        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
+        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null },
+        "chapter_id": { "type": ["string", "null"], "default": null, "description": "Core-flow mode: the chapter of the flow run this scene shows" }
       }
     },
     "BeforeAfterScene": {
@@ -71,7 +73,8 @@
         "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
         "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },
-        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
+        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null },
+        "chapter_id": { "type": ["string", "null"], "default": null, "description": "Core-flow mode: the chapter of the flow run this scene shows" }
       }
     },
     "CtaScene": {
@@ -87,7 +90,8 @@
         "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
         "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },
-        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null }
+        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "default": null },
+        "chapter_id": { "type": ["string", "null"], "default": null, "description": "Core-flow mode: the chapter of the flow run this scene shows" }
       }
     }
   }

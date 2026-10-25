@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "core_flow.json",
+  "title": "CoreFlow",
+  "description": "A whole task a real user does with the product (several steps, maybe several pages), not a single button.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "persona", "goal", "start_url", "expected_steps", "success_signal", "needs_submit", "value"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "persona": { "type": "string" },
+    "goal": { "type": "string" },
+    "start_url": { "type": "string" },
+    "expected_steps": { "type": "array", "items": { "type": "string" }, "minItems": 1, "maxItems": 12 },
+    "success_signal": { "type": "string" },
+    "needs_submit": { "type": "boolean" },
+    "value": { "type": "string", "description": "One-sentence benefit for the persona" },
+    "related_feature_ids": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "source": { "enum": ["proposed", "user"], "default": "proposed" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.7 },
+    "notes": { "type": ["string", "null"], "default": null }
+  }
+}

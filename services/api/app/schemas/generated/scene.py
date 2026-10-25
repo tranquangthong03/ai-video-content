@@ -60,6 +60,12 @@ class HookScene(BaseModel):
     ) = None
     visual: Visual
     duration_ms: Annotated[int | None, Field(ge=0)] = None
+    chapter_id: Annotated[
+        str | None,
+        Field(
+            description='Core-flow mode: the chapter of the flow run this scene shows'
+        ),
+    ] = None
 
 
 class FeatureDemoScene(BaseModel):
@@ -94,6 +100,12 @@ class FeatureDemoScene(BaseModel):
     ) = None
     visual: Visual
     duration_ms: Annotated[int | None, Field(ge=0)] = None
+    chapter_id: Annotated[
+        str | None,
+        Field(
+            description='Core-flow mode: the chapter of the flow run this scene shows'
+        ),
+    ] = None
 
 
 class BeforeAfterScene(BaseModel):
@@ -129,6 +141,12 @@ class BeforeAfterScene(BaseModel):
     ) = None
     visual: Visual
     duration_ms: Annotated[int | None, Field(ge=0)] = None
+    chapter_id: Annotated[
+        str | None,
+        Field(
+            description='Core-flow mode: the chapter of the flow run this scene shows'
+        ),
+    ] = None
 
 
 class CtaScene(BaseModel):
@@ -162,6 +180,12 @@ class CtaScene(BaseModel):
     ) = None
     visual: Visual
     duration_ms: Annotated[int | None, Field(ge=0)] = None
+    chapter_id: Annotated[
+        str | None,
+        Field(
+            description='Core-flow mode: the chapter of the flow run this scene shows'
+        ),
+    ] = None
 
 
 class Scene(RootModel[HookScene | FeatureDemoScene | BeforeAfterScene | CtaScene]):

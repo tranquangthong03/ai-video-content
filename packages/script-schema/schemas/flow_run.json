@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "flow_run.json",
+  "title": "FlowRun",
+  "description": "What the Flow Agent did for one CoreFlow: replayable steps (resolved locators), chapters and the sample data it used.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["flow_id", "status", "steps", "chapters"],
+  "properties": {
+    "flow_id": { "type": "string" },
+    "status": { "enum": ["reached_goal", "stopped_before_submit", "partial", "failed"] },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["i", "action"],
+        "properties": {
+          "i": { "type": "integer", "minimum": 1 },
+          "action": { "$ref": "action.json" },
+          "locator": { "oneOf": [{ "$ref": "locator.json" }, { "type": "null" }], "default": null, "description": "The spec that resolved when the agent acted; replay copies it into action.locator" },
+          "target_text": { "type": ["string", "null"], "default": null },
+          "value": { "type": ["string", "null"], "default": null },
+          "url_before": { "type": ["string", "null"], "default": null },
+          "url_after": { "type": ["string", "null"], "default": null },
+          "screenshot": { "type": ["string", "null"], "default": null, "description": "Path (relative to the job dir) of the viewport after the step" },
+          "note": { "type": "string", "default": "", "description": "One Vietnamese sentence for the viewer" },
+          "chapter_id": { "type": ["string", "null"], "default": null },
+          "t_ms_hint": { "type": ["integer", "null"], "minimum": 0, "default": null }
+        }
+      }
+    },
+    "chapters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "step_ids"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "step_ids": { "type": "array", "items": { "type": "integer" } },
+          "value_line": { "type": ["string", "null"], "default": null }
+        }
+      }
+    },
+    "sample_data": { "type": "object", "default": {} },
+    "warnings": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "llm_calls": { "type": "integer", "minimum": 0, "default": 0 },
+    "submit_policy": { "enum": ["stop", "allow"], "default": "stop" },
+    "stop_ref": { "type": ["string", "null"], "default": null, "description": "stopped_before_submit: the button the agent stopped at (step index of its hover)" },
+    "report": {
+      "type": ["object", "null"],
+      "default": null,
+      "additionalProperties": false,
+      "description": "How the run went: model, images, calls, tokens, seconds, write requests",
+      "properties": {
+        "model": { "type": ["string", "null"], "default": null },
+        "used_images": { "type": "boolean", "default": false },
+        "llm_calls": { "type": "integer", "default": 0 },
+        "prompt_tokens": { "type": "integer", "default": 0 },
+        "completion_tokens": { "type": "integer", "default": 0 },
+        "seconds": { "type": "number", "default": 0 },
+        "write_requests": { "type": "array", "items": { "type": "string" }, "default": [] }
+      }
+    }
+  }
+}

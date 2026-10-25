@@ -1,3 +1,4 @@
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -16,7 +17,7 @@ class Answer(BaseModel):
 def settings(vision: str | None = "deepseek-flash") -> LLMSettings:
     return LLMSettings(
         base_url="http://x", api_key="k", model="deepseek-chat", vision_model=vision,
-        cache_enabled=False, cache_dir=Path(".cache-test"),
+        cache_enabled=False, cache_dir=Path(tempfile.gettempdir()) / "svai-router-test",
     )  # fmt: skip
 
 

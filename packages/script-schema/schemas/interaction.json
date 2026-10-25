@@ -11,7 +11,8 @@
     "kind": {
       "enum": [
         "clarify", "login_required", "script_review", "video_review",
-        "confirm_understanding", "select_features", "choose_concept", "outline_review"
+        "confirm_understanding", "select_features", "choose_concept", "outline_review",
+        "select_flow", "flow_storyboard_review"
       ]
     },
     "message": { "type": "string" },
@@ -92,6 +93,33 @@
         { "type": "null" }
       ],
       "default": null
+    },
+    "flows": {
+      "type": ["array", "null"],
+      "items": { "$ref": "core_flow.json" },
+      "default": null,
+      "description": "select_flow: the proposed flows; answers.selected_flows is the ordered id list"
+    },
+    "flow_select": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max", "default"],
+          "properties": {
+            "max": { "type": "integer" },
+            "default": { "type": "array", "items": { "type": "string" } },
+            "submit_blocked_reason": { "type": ["string", "null"], "default": null, "description": "Set when the site is a shared demo: allowing submit is refused" }
+          }
+        },
+        { "type": "null" }
+      ],
+      "default": null
+    },
+    "flow_review": {
+      "oneOf": [{ "$ref": "flow_run.json" }, { "type": "null" }],
+      "default": null,
+      "description": "flow_storyboard_review: the run to look at (steps carry screenshot paths)"
     },
     "selection": {
       "oneOf": [

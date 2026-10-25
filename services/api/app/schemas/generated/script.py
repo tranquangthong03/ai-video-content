@@ -35,6 +35,7 @@ class Script(BaseModel):
         'width': 1440,
         'height': 900,
     }
+    flow_id: str | None = None
     badge: Annotated[str | None, Field(max_length=24)] = None
     headline: Annotated[str, Field(max_length=40, min_length=1)]
     headline_highlight: str | None = None
