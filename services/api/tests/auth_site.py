@@ -94,6 +94,10 @@ class Handler(BaseHTTPRequestHandler):
             error = (query.get("error") or [""])[0]
             err = f'<p class="error" role="alert">{error}</p>' if error else ""
             mode = self.server.mode
+            if mode == "social":
+                return self.send(200, page("login_social.html"))
+            if mode == "captcha":
+                return self.send(200, page("login_captcha.html", error=err))
             if mode == "one_step":
                 return self.send(200, page("login_one.html", error=err))
             if step == "otp":
@@ -101,6 +105,8 @@ class Handler(BaseHTTPRequestHandler):
             if step == "2":
                 return self.send(200, page("login_password.html", error=err))
             return self.send(200, page("login_email.html", error=err))
+        if path.startswith("/recaptcha/"):
+            return self.send(200, b"<html><body>I am not a robot</body></html>")
         if path == "/expire":
             self.server.sessions.clear()
             return self.send(200, b"expired")
@@ -130,6 +136,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.redirect("/login?step=2")
             return self.redirect("/login?error=We couldn't find your account")
         if path == "/login/password" or path == "/login/both":
+            if mode == "captcha" and path == "/login/both":
+                return self.redirect("/login?error=Please complete the captcha")
             if mode != "one_step" and path == "/login/both":
                 return self.send(400)
             if path == "/login/both" and data.get("email") != EMAIL:

@@ -1,5 +1,8 @@
 """Request guard: stops the explorer from changing data on the target site.
 
+While a sign-in is being performed (allow_login_posts) POSTs to the site's own domain and to a
+few well-known authentication providers pass too; nothing else does.
+
 Rules (see decide()): PUT/PATCH/DELETE and document POSTs (form submits) are always blocked.
 Other POSTs pass only for GraphQL queries, telemetry/font calls (fake 204),
 or read-like paths (search|query|list|filter|graphql without create|update|delete|save|...).
@@ -8,6 +11,8 @@ or read-like paths (search|query|list|filter|graphql without create|update|delet
 import json
 import re
 from collections import Counter
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Any, Literal
 from urllib.parse import urlparse
@@ -60,6 +65,30 @@ def _is_graphql_query(body: Any) -> bool:
     return True
 
 
+# Identity providers a site's own sign-in form may post to (host suffix; supabase only under /auth/)
+AUTH_PROVIDERS = (
+    "auth0.com",
+    "clerk.com",
+    "clerk.accounts.dev",
+    "amazoncognito.com",
+    "firebaseapp.com",
+    "identitytoolkit.googleapis.com",
+    "securetoken.googleapis.com",
+    "okta.com",
+    "supabase.co",
+)
+AUTH_SUBDOMAINS = ("auth", "login", "accounts", "sso", "id", "signin")
+SECOND_LEVEL = {"com", "co", "org", "net", "gov", "edu", "ac"}
+
+
+def registrable(host: str) -> str:
+    """example.com for app.example.com; example.com.vn for app.example.com.vn."""
+    labels = host.split(".")
+    if len(labels) >= 3 and labels[-2] in SECOND_LEVEL and len(labels[-1]) == 2:
+        return ".".join(labels[-3:])
+    return ".".join(labels[-2:])
+
+
 def _host(url: str) -> str:
     return (urlparse(url).hostname or "").removeprefix("www.")
 
@@ -72,10 +101,35 @@ class RequestGuard:
     blocked_urls: list[str] = field(default_factory=list)
     # first URLs let through / faked per rule, so the report can be audited for wrong passes
     passed_urls: dict[str, list[str]] = field(default_factory=dict)
+    login_phase: bool = False
+    login_hosts: Counter[str] = field(default_factory=Counter)  # POSTs let through while signing in
+    login_blocked_hosts: Counter[str] = field(default_factory=Counter)  # and the ones refused
 
     def _is_main_domain(self, url: str) -> bool:
         host, root = _host(url), _host(self.root_url)
         return host == root or host.endswith("." + root)
+
+    @contextmanager
+    def allow_login_posts(self) -> Iterator[None]:
+        """Within this block the sign-in's own POSTs pass (see login_post_allowed)."""
+        self.login_phase = True
+        try:
+            yield
+        finally:
+            self.login_phase = False
+
+    def login_post_allowed(self, url: str) -> bool:
+        host, root = _host(url), _host(self.root_url)
+        if (
+            self._is_main_domain(url)
+            or registrable(host) == registrable(root)
+            and (host == registrable(root) or host.split(".")[0] in AUTH_SUBDOMAINS)
+        ):
+            return True
+        for provider in AUTH_PROVIDERS:
+            if host == provider or host.endswith("." + provider):
+                return provider != "supabase.co" or "/auth/" in urlparse(url).path
+        return False
 
     def decide(
         self, method: str, url: str, resource_type: str, post_data: str | None
@@ -87,6 +141,11 @@ class RequestGuard:
         if method in ALWAYS_BLOCKED:
             return "abort", f"method_{method.lower()}"
         # POST from here on
+        if self.login_phase:
+            if self.login_post_allowed(url):
+                self.login_hosts[_host(url)] += 1
+                return "continue", "login_post"
+            self.login_blocked_hosts[_host(url)] += 1
         if resource_type == "document":
             return "abort", "document_post"
         body: Any = None
@@ -140,6 +199,10 @@ class RequestGuard:
         return {
             "allow_mutations": self.allow_mutations,
             **grouped,
+            "login_phase": {
+                "posts_allowed": dict(self.login_hosts),
+                "hosts_refused": dict(self.login_blocked_hosts),
+            },
             "first_blocked_urls": self.blocked_urls,
             "first_passed_urls": self.passed_urls,
         }

@@ -223,7 +223,7 @@ def scripted_handler(prompt: str) -> dict[str, Any]:
 SLOW_FIXTURES = {"browser_session", "site", "hits"}
 SLOW_MODULES = {
     "test_recorder", "test_producer", "test_trim", "test_visual_v2", "test_e2e_explore",
-    "test_login_detect", "test_login_gate", "test_login_window",
+    "test_login_detect", "test_login_gate", "test_login_window", "test_login_form",
 }  # fmt: skip
 
 
