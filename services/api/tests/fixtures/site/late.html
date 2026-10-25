@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Late widgets</title></head>
+<body><main><h1>Dashboard</h1><div id="panel"><span class="spinner">loading</span></div></main>
+<script>
+  // a single-page app: the widget arrives a few seconds after the page "settled"
+  setTimeout(() => {
+    const b = document.createElement('button');
+    b.textContent = 'Apply Leave';
+    document.getElementById('panel').replaceChildren(b);
+  }, 3500);
+</script></body></html>

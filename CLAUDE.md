@@ -1,3 +1,4 @@
+**NGÔN NGỮ: Mọi tin nhắn, báo cáo, kể cả tin báo trạng thái ngắn, đều viết bằng tiếng Việt.**
 # Short Video AI — URL-to-Marketing-Video
 
 ## Sản phẩm

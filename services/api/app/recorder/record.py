@@ -34,6 +34,7 @@ TAIL_MS = 300  # keep recording a little after the last step (the hold after it 
 HOLD_MS = 1500  # stay on the result of a main action so the viewer can read it
 FOCUS_SAMPLE_MS = 400  # while scrolling: log the block in the middle of the viewport this often
 INVENTORY_EVERY_MS = 1000  # scrolling, holding, filling: one frame_inventory snapshot a second
+TARGET_WAIT_S = 10  # how long an element may take to show up (widgets loading after the settle)
 FILL_THRESHOLD_MS = 2000  # shorter than this and the renderer just holds the last frame
 MAX_FILL_HOVERS = 3
 CAPTURE = {"width": 1440, "height": 900}  # same as the schema default of script.capture
@@ -297,7 +298,12 @@ class _Recorder:
         items = inventory.snapshot(self.page, self.last_handle)
         if items:  # login_page: what the quality gate looks at before anything is rendered
             self.inventory.append(
-                {"t_ms": self.last_snap, "items": items, "login_page": on_login_page(self.page)}
+                {
+                    "t_ms": self.last_snap,
+                    "items": items,
+                    "login_page": on_login_page(self.page),
+                    "url": self.page.url,
+                }
             )
 
     def snap_every(self, ms: int = INVENTORY_EVERY_MS) -> None:
@@ -355,7 +361,12 @@ class _Recorder:
     def target_of(self, spec: LocatorSpec | None, label: str) -> Target:
         if spec is None:
             raise RuntimeError(f"{label}: no locator")
+        deadline = time.monotonic() + TARGET_WAIT_S
         found = resolve(self.page, spec)
+        while found.target is None and time.monotonic() < deadline:
+            # single-page apps fill their widgets in after the page "settled": give them a moment
+            self.page.wait_for_timeout(500)
+            found = resolve(self.page, spec)
         if found.target is None:
             raise RuntimeError(f"{label}: element not found ({'; '.join(found.tried)[:160]})")
         return found.target

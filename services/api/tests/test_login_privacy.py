@@ -157,6 +157,7 @@ def test_email_phone_and_the_account_menu_are_blurred_and_the_text_is_unchanged(
         ctx.close()
     texts = [b[0] for b in blurred]
     assert EMAIL in texts and "0901 234 567" in texts and "D" in texts  # e-mail, phone, avatar
+    assert "Bilol Abdurasul" in texts  # the name in the user dropdown of the header
     assert all("blur(6px)" in b[1] for b in blurred)
     assert "late@example.com" in late and "+84 912 345 678" in late
     assert text_before.replace(" ", "") in text_after.replace(" ", "")  # nothing was removed

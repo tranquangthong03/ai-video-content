@@ -22,7 +22,7 @@ BLUR_JS = """
   const BLUR = 'blur(6px)';
   const EMAIL = new RegExp('%EMAIL%', 'g');
   const PHONE = new RegExp('(?<![\\\\w@])%PHONE%(?![\\\\w@])', 'g');
-  const AREA = /avatar|account|profile|user-?menu/i;
+  const AREA = /avatar|account|profile|user-?menu|user-?dropdown|user-?name|user-?info/i;
   const digits = (s) => (s.match(/\\d/g) || []).length;
   const isPhone = (s) => digits(s) >= 9 && digits(s) <= 15 && /^[+0(]/.test(s.trim());
   const blur = (el) => { el.style.setProperty('filter', BLUR, 'important'); el.dataset.piiBlur = '1'; };

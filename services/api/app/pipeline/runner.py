@@ -559,6 +559,13 @@ def run_produce_step(
                 focus_caller=caller,
                 on_login=on_login,
             )
+            report_file = job_dir / "report.json"
+            if report_file.is_file():  # what the browser was allowed to send while recording
+                data = json.loads(report_file.read_text(encoding="utf-8"))
+                data["request_guard"] = session.guard.report()
+                report_file.write_text(
+                    json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
     except LoginRequired as e:
         where = f" (scene {e.scene_id})" if e.scene_id else ""
         return _fail(

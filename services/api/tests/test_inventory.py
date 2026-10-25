@@ -92,3 +92,17 @@ def test_scroll_to_and_highlight_frame_the_heading_and_its_content_not_the_whole
     assert not any(
         f["kind"] == "scroll" for f in r.focus_log
     )  # no more "biggest block at the centre"
+
+
+def test_an_element_that_arrives_a_few_seconds_late_is_waited_for(
+    browser_session: BrowserSession, site: str, tmp_path: Path
+) -> None:
+    visual = {
+        "mode": "recording",
+        "actions": [
+            goto(site, "/late.html"),
+            {"do": "hover", "locator": loc(None, role="button", name="Apply Leave")},
+        ],
+    }
+    r = rec(browser_session, site, tmp_path, visual, speech_ms=1000)
+    assert r.warnings == [] and r.steps_ok == 1 and r.kind == "recording"
