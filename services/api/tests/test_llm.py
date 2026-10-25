@@ -52,6 +52,12 @@ SAMPLE_VARS = {
         next_scene_summary_or_none="none", goal="awareness", duration_s=30, headline="h",
         product_profile_summary="s", forced=False, scene_catalog_json="{}", allowed_icons="check",
     ),
+    "flow_agent": dict(
+        title="t", persona="p", goal="g", expected_steps="a; b", success_signal="s",
+        submit_policy="stop", user_notes_or_none="không có", sample_data_json_or_empty="{}",
+        steps_so_far="(chưa có)", url="https://x.test/", page_title="T", main_heading="H",
+        messages="không có", elements="e1 | button | Apply | - | - | - | - | main", warnings="",
+    ),
     "flow_discovery": dict(
         product_profile_summary="p", pages_summary="pg", mode="propose", user_description_or_empty="",
     ),

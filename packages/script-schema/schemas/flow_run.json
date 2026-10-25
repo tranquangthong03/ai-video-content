@@ -61,7 +61,9 @@
         "prompt_tokens": { "type": "integer", "default": 0 },
         "completion_tokens": { "type": "integer", "default": 0 },
         "seconds": { "type": "number", "default": 0 },
-        "write_requests": { "type": "array", "items": { "type": "string" }, "default": [] }
+        "write_requests": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "invented_refs": { "type": "integer", "default": 0, "description": "Actions that named a ref not in the list" },
+        "repeat_warnings": { "type": "integer", "default": 0 }
       }
     }
   }

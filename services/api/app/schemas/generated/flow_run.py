@@ -31,6 +31,10 @@ class Report(BaseModel):
     completion_tokens: int = 0
     seconds: float = 0
     write_requests: list[str] = []
+    invented_refs: Annotated[
+        int, Field(description='Actions that named a ref not in the list')
+    ] = 0
+    repeat_warnings: int = 0
 
 
 class Step(BaseModel):

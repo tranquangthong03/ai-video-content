@@ -24,6 +24,7 @@ PROMPTS = (
     "edit_planner",
     "focus_planner",
     "flow_discovery",
+    "flow_agent",
 )
 
 
