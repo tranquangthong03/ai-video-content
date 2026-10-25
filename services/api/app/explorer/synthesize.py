@@ -60,6 +60,7 @@ def build_prompt(
     with_layout_text: bool,
     delta_json: str = "",
     known_features: str = "",
+    known_intents: str = "",
 ) -> str:
     first = pages[0]
     slim = [
@@ -79,6 +80,7 @@ def build_prompt(
         sample_files=catalog_text(),
         delta_json=delta_json,
         known_features=known_features,
+        known_intents=known_intents,
     )
     if (
         with_layout_text
@@ -317,7 +319,11 @@ def synthesize(
     pages: list[PageData],
     insights: list[PageInsight],
     report: Report,
+    *,
+    existing: ProductProfile | None = None,
 ) -> ProductProfile:
+    """Product profile from page insights. With `existing`, `pages`/`insights` hold only the NEW
+    part: the model is told which features (and intent keys) exist and should reuse the keys."""
     key_pages = select_key_pages(pages, insights)
     images = [
         Path(p.screenshot) for p in key_pages if p.screenshot and Path(p.screenshot).is_file()
@@ -327,8 +333,19 @@ def synthesize(
         report.warn(
             "no vision model configured: layout described from the DOM instead of screenshots"
         )
+    known = (
+        "; ".join(f"{f.name} [{f.intent_key or '-'}]" for f in existing.features)
+        if existing
+        else ""
+    )
     prompt = build_prompt(
-        root_url, site_type, pages, insights, key_pages, with_layout_text=not use_images
+        root_url,
+        site_type,
+        pages,
+        insights,
+        key_pages,
+        with_layout_text=not use_images,
+        known_intents=known,
     )
     profile = caller.call("synthesize", prompt, ProductProfile, images=images if use_images else ())
     profile, notes = sanitize_profile(profile, pages, root_url)

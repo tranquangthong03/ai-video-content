@@ -26,6 +26,13 @@ Quy tắc:
 5. Sắp xếp features theo importance giảm dần, tối đa 8.
 6. open_questions: điểm chưa chắc chắn cần hỏi người dùng (ví dụ landing nhắc tính năng nhưng không tìm thấy trong app; không rõ đối tượng khách hàng).
 7. Không bịa tên, số liệu, tính năng không có trong dữ liệu.
+{# changed: intent_key for merging features with the same intent #}8. intent_key: khóa snake_case ngắn bằng tiếng Anh cho việc người dùng làm (ví dụ create_item, edit_item, filter_list, role_learning_paths). Hai tính năng cùng ý định PHẢI dùng cùng một khóa.
+{% if known_intents %}{# changed: explore_more adds only the new part #}
+<existing_features>
+{{ known_intents }}
+</existing_features>
+Các trang trong <pages> là trang MỚI xem thêm. Chỉ trả về tính năng MỚI từ các trang này, không lặp lại tính năng đã liệt kê trong <existing_features>. Nếu một tính năng trùng ý định với tính năng đã có, dùng lại đúng intent_key đã ghi trong ngoặc vuông (nếu ghi "-" thì tự đặt khóa).
+{% endif %}
 
 Chỉ trả về json:
 {
@@ -37,7 +44,7 @@ Chỉ trả về json:
   "features": [{
     "id": string, "name": string, "description": string,
     "evidence": [{"source": "landing_hero"|"landing_features"|"pricing"|"nav"|"app_action"|"docs"|"landing_claim", "url": string, "ref": string|null, "quote": string|null}],
-    "importance": number,
+    "importance": number, "intent_key": string,
     "demo_steps": [{"do": string, "url": string|null, "ref": string|null, "text": string|null, "file": string|null}]{# changed: file for upload steps #}
   }],
   "open_questions": [string]

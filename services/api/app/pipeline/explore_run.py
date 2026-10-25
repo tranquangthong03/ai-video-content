@@ -12,18 +12,18 @@ from pathlib import Path
 from app.browser.enter_policy import Policy
 from app.browser.session import BrowserSession
 from app.browser.urls import path_prefix
+from app.core.features import NAME_SIMILARITY, name_similarity
 from app.core.usage import BudgetExceeded, UsageTracker
 from app.explorer.analyze import analyze_pages
 from app.explorer.classify import classify_site
 from app.explorer.mapper import (
     BlockedByChallenge,
-    Candidate,
     crawl,
+    explore_targeted,
     normalize_url,
     pick_candidates_by_description,
     same_site,
     save_map,
-    visit,
 )
 from app.explorer.models import PageData
 from app.explorer.report import Deadline, DeadlineExceeded, Report
@@ -295,25 +295,22 @@ class ExploreRunner:
             return self.state.profile
 
         self.deadline = Deadline(self.deadline.seconds)  # fresh budget for this interactive step
-        new_pages: list[PageData] = []
         with BrowserSession(
             self.url, storage_state=self.storage_state, allow_mutations=self.allow_mutations
         ) as s:
             context = s.new_context()
             page = context.new_page()
-            for url in targets[:3]:
-                n = len(self.state.pages) + len(new_pages) + 1
-                self.progress("map", f"Xem thêm: {url}")
-                data = visit(
-                    page,
-                    Candidate(url, "", "main", 1, 5.0, "user"),
-                    n,
-                    self.dir,
-                    self.report,
-                    self.url,
-                )
-                if data:
-                    new_pages.append(data)
+            self.progress("map", f"Xem thêm: {targets[0]}")
+            new_pages = explore_targeted(
+                page,
+                targets,
+                self.url,
+                self.dir,
+                self.report,
+                first_n=len(self.state.pages) + 1,
+                description=description,
+                visited=known["visited"],
+            )
             context.close()
             if not new_pages:
                 return self.state.profile
@@ -325,9 +322,10 @@ class ExploreRunner:
                 self.caller,
                 self.url,
                 self.state.site_type,
-                self.state.pages,
-                self.state.insights,
+                new_pages,
+                new_insights,
                 self.report,
+                existing=self.state.profile,
             )
             merged = merge_profiles(self.state.profile, fresh)
             added = [
@@ -362,13 +360,21 @@ class ExploreRunner:
         return merged
 
 
+def same_feature(new: Feature, old: Feature) -> bool:
+    """Same name, same intent key or a near-identical name (accents and case ignored)."""
+    if new.name.strip().lower() == old.name.strip().lower():
+        return True
+    if new.intent_key and new.intent_key == old.intent_key:
+        return True
+    return name_similarity(new.name, old.name) >= NAME_SIMILARITY
+
+
 def merge_profiles(old: ProductProfile, new: ProductProfile) -> ProductProfile:
     """Keep every old feature (with its demo_score); append features only the new run found."""
     merged = old.model_copy(deep=True)
-    names = {f.name.strip().lower() for f in merged.features}
     ids = {f.id for f in merged.features}
     for feature in new.features:
-        if feature.name.strip().lower() in names:
+        if any(same_feature(feature, old) for old in merged.features):
             continue
         copy: Feature = feature.model_copy(deep=True)
         while copy.id in ids:

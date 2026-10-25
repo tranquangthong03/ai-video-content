@@ -11,6 +11,7 @@ import itertools
 import json
 import re
 from dataclasses import asdict, dataclass
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -28,6 +29,8 @@ from app.browser.urls import (
     related_domain,
     same_site,
 )
+from app.core.features import fold
+from app.core.subpages import is_subpage, is_subpage_text
 from app.explorer.extract import extract_page, settle
 from app.explorer.models import PageData
 from app.explorer.report import Deadline, Report
@@ -41,6 +44,7 @@ MAX_PER_GROUP = 2
 MIN_GROUP_SIZE = 3  # a "template group" needs at least this many known URLs
 MIN_DEMO_PAGES = 3
 MAX_OUT_OF_SCOPE_LISTED = 50
+MAX_TARGETED_PAGES = 3  # pages looked at for one "explore more" request
 
 POSITIVE_PATH = re.compile(
     r"features?|dashboard|create|new|editor|app|product|solutions?|use-?cases?|tools?|pricing", re.I
@@ -470,17 +474,98 @@ def save_map(path: Path, frontier: Frontier, pages: list[PageData]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+# Words that say nothing about which page a description points at (Vietnamese and English)
+STOPWORDS = {
+    "theo", "cho", "cac", "cua", "voi", "trang", "xem", "them", "tinh", "nang", "the", "and",
+    "for", "page", "with", "from", "this", "that",
+}  # fmt: skip
+
+
+def description_words(text: str) -> set[str]:
+    """Accent-free lower-case words (3+ letters) of a description, without filler words."""
+    return {w for w in re.findall(r"[a-z0-9]{3,}", fold(text)) if w not in STOPWORDS}
+
+
+def words_match(a: str, b: str) -> bool:
+    """Same word, or close enough (learning ~ learn, paths ~ path, typo of one letter)."""
+    if a == b:
+        return True
+    stem = min(len(a), len(b))
+    if stem >= 4 and (a.startswith(b) or b.startswith(a)):
+        return True
+    return stem >= 6 and SequenceMatcher(None, a, b).ratio() >= 0.88
+
+
+def relevance(description: str, text: str, url: str) -> int:
+    """How many words of the description appear (fuzzily) in the link text or the URL path."""
+    wanted = description_words(description)
+    hay = description_words(text + " " + re.sub(r"[-_/.]+", " ", urlparse(url).path))
+    return sum(1 for w in wanted if any(words_match(w, h) for h in hay))
+
+
 def pick_candidates_by_description(
-    candidates: list[dict[str, Any]], visited: list[str], description: str, limit: int = 2
+    candidates: list[dict[str, Any]], visited: list[str], description: str, limit: int = 3
 ) -> list[str]:
-    """Unvisited known URLs whose text/path share the most words with a free-text description."""
-    words = {w for w in re.findall(r"\w{3,}", description.lower())}
+    """Unvisited, non-side-page known URLs whose link text/path best match a description."""
     scored = []
     for c in candidates:
-        if c["url"] in visited:
+        if c["url"] in visited or is_auth_url(c["url"]):
             continue
-        hay = set(re.findall(r"\w{3,}", (c["text"] + " " + urlparse(c["url"]).path).lower()))
-        overlap = len(words & hay)
+        if is_subpage(c["url"]) or is_subpage_text(c["text"]):
+            continue
+        overlap = relevance(description, c["text"], c["url"])
         if overlap:
             scored.append((overlap, c["score"], c["url"]))
     return [u for _, _, u in sorted(scored, reverse=True)[:limit]]
+
+
+def explore_targeted(
+    page: Page,
+    seeds: list[str],
+    root: str,
+    out_dir: Path,
+    report: Report,
+    *,
+    first_n: int,
+    description: str | None = None,
+    visited: list[str] | None = None,
+    max_pages: int = MAX_TARGETED_PAGES,
+) -> list[PageData]:
+    """Look at the pages a user asked for: the seeds first, then links next to them.
+
+    At most max_pages pages in all, all under the path prefix of the first seed; side pages
+    (sign in, checkout...) are never visited. With a description, follow-up links are ranked by
+    how well they match it.
+    """
+    seen = set(visited or [])
+    prefix = path_prefix(seeds[0]) if seeds else None
+    queue = [Candidate(u, "", "main", 1, 5.0, "user") for u in seeds]
+    pages: list[PageData] = []
+    while queue and len(pages) < max_pages:
+        cand = queue.pop(0)
+        if cand.url in seen:
+            continue
+        seen.add(cand.url)
+        data = visit(page, cand, first_n + len(pages), out_dir, report, root)
+        if data is None:
+            continue
+        if is_subpage(data.url, data.title):
+            report.skip(cand.url, "side page (sign in / checkout...)")
+            continue
+        pages.append(data)
+        found = candidates_from_links(
+            page.evaluate(LINKS_JS), page.url, root, 2, report, prefix=prefix
+        )
+        found = [
+            c
+            for c in found
+            if c.url not in seen
+            and not is_auth_url(c.url)
+            and not is_subpage(c.url)
+            and not is_subpage_text(c.text)
+        ]
+        found.sort(
+            key=lambda c: (-relevance(description or "", c.text, c.url), -c.score),
+        )
+        queue += found
+    return pages
