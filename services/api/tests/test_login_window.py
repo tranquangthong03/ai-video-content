@@ -26,6 +26,7 @@ def sign_in_pipeline(site: AuthSite) -> Callable[[JobConfig, FileFrontend], JobR
         gate = LoginGate(cfg.job_dir.name, cfg.job_dir, frontend)
         outcome = gate.ask(LoginRequired(site.base + "/login", "requested", target_url=site.base))
         OUTCOME[cfg.job_dir.name] = outcome
+        OUTCOME[cfg.job_dir.name + ":saved"] = outcome.storage_state.is_file()
         update_state(cfg.job_dir, status="done", step="done", progress_pct=100)
         return JobResult(0, "done")
 
@@ -103,7 +104,8 @@ def test_the_user_signs_in_in_a_window_and_the_job_goes_on(tmp_path: Path, site:
         assert answer(c, card).status_code == 200  # "Tôi đã đăng nhập xong"
         until(lambda: c.get(f"/api/jobs/{job_id}").json()["state"]["status"] == "done")
         directory = tmp_path / "jobs" / job_id
-        assert (directory / "storage_state.json").is_file()
+        assert OUTCOME[job_id + ":saved"]  # the session existed while the job ran ...
+        assert not (directory / "storage_state.json").exists()  # ... and goes with the job
         assert OUTCOME[job_id].url == site.base + "/app"  # where the window ended
         assert windows.status(job_id) == "closed"  # the window was closed
         assert c.get(f"/api/jobs/{job_id}/files/storage_state.json").status_code == 404
