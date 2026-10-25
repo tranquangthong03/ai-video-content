@@ -218,6 +218,8 @@ def test_allowed_actions_per_kind_and_response_checks() -> None:
         "confirm_understanding": ["answer", "edit", "explore_more", "cancel"],
         "login_required": ["login_done", "answer", "cancel"],
         "select_features": ["answer", "explore_more", "cancel"],
+        "select_flow": ["answer", "cancel"],
+        "flow_storyboard_review": ["approve", "edit", "regenerate", "cancel"],
         "choose_concept": ["answer", "regenerate", "cancel"],
         "outline_review": ["approve", "edit", "regenerate", "cancel"],
         "script_review": ["approve", "edit", "regenerate", "revert", "cancel"],

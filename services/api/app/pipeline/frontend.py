@@ -53,6 +53,9 @@ class ScriptedFrontend:
         elif request.kind == "select_features" and request.selection:
             picks = request.selection.default
             fields = {"action": "answer", "answers": {"selected_features": picks}}
+        elif request.kind == "select_flow" and request.flow_select:
+            picks = request.flow_select.default
+            fields = {"action": "answer", "answers": {"selected_flows": picks}}
         else:
             action, extra = DEFAULT_ACTION.get(request.kind, ("cancel", {}))
             fields = {"action": action, **extra}
@@ -145,6 +148,8 @@ class TerminalFrontend:
             return self._ask_understanding(request, questionary)
         if kind == "select_features":
             return self._ask_selection(request, questionary)
+        if kind == "select_flow":
+            return self._ask_flow(request, questionary)
         if kind == "login_required":
             return self._ask_login(request, questionary)
         if kind == "choose_concept":
@@ -251,6 +256,48 @@ class TerminalFrontend:
             ordered.append(first)
             rest.remove(first)
         return make_response(request, "answer", answers={"selected_features": ordered + rest})
+
+    def _show_flows(self, request: InteractionRequest) -> None:
+        self.console.print(Panel(request.message, title="Chọn luồng chính", border_style="cyan"))
+        for f in request.flows or []:
+            steps = "\n".join(f"  • {s}" for s in f.expected_steps)
+            submit = "  [yellow]\\[cần gửi dữ liệu][/]" if f.needs_submit else ""
+            body = (
+                f"[bold]{f.title}[/]{submit}\n{f.persona} · {f.goal}\n{steps}\n"
+                f"[dim]Thấy khi xong: {f.success_signal}\nGiá trị: {f.value}[/]"
+            )
+            self.console.print(Panel(body, title=f.id, border_style="green"))
+
+    def _ask_flow(self, request: InteractionRequest, questionary: Any) -> UserResponse:
+        sel = request.flow_select
+        assert sel is not None
+        self._show_flows(request)
+        picks = questionary.checkbox(
+            f"Chọn luồng (khoảng trắng để chọn, tối đa {sel.max}):",
+            choices=[
+                questionary.Choice(f"{f.title} — {f.persona}", f.id, checked=f.id in sel.default)
+                for f in request.flows or []
+            ],
+        ).ask()
+        if picks is None:
+            return make_response(request, "cancel")
+        description = questionary.text("Tự mô tả luồng muốn quay (Enter để bỏ qua):").ask() or ""
+        answers: dict[str, Any] = {"selected_flows": list(picks)}
+        if description.strip():
+            answers["flow_description"] = description.strip()
+        if any(f.needs_submit for f in request.flows or []):
+            if sel.submit_blocked_reason:
+                self.console.print(f"[yellow]{sel.submit_blocked_reason}[/]")
+            elif questionary.confirm(
+                "Cho phép hệ thống bấm Gửi/Lưu trong luồng này? (mặc định: không)", default=False
+            ).ask():
+                self.console.print("[red]Cảnh báo: hệ thống sẽ tạo dữ liệu thật trên site.[/]")
+                if questionary.confirm(
+                    "Đây là tài khoản thử nghiệm của tôi, được phép tạo dữ liệu", default=False
+                ).ask():
+                    answers["allow_submit"] = "true"
+                    answers["submit_confirmed"] = "true"
+        return make_response(request, "answer", answers=answers)
 
     def _ask_script_review(self, request: InteractionRequest, questionary: Any) -> UserResponse:
         version = request.script_version

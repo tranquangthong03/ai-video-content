@@ -9,8 +9,11 @@ import json
 from collections.abc import Callable
 from pathlib import Path
 
+from app.core import flow_choice
 from app.core.features import default_selection, merge_duplicates, restrict_profile
+from app.core.flow_choice import FlowSelection
 from app.core.interaction import make_request
+from app.flows import discovery
 from app.llm.json_call import JsonCaller, LLMCallError
 from app.pipeline.asker import Cancelled as Cancelled  # re-exported: callers import it from here
 from app.pipeline.asker import ask as ask_user
@@ -21,6 +24,7 @@ from app.proposal import outline as outline_mod
 from app.proposal import selection as selection_mod
 from app.proposal import understanding as understanding_mod
 from app.proposal.wordlimit import enforce_outline
+from app.schemas.generated.core_flow import CoreFlow
 from app.schemas.generated.interaction import InteractionRequest
 from app.schemas.generated.outline import Outline
 from app.schemas.generated.product_profile import ProductProfile
@@ -39,12 +43,14 @@ class ProposalRunner:
         frontend: Frontend,
         *,
         explore_more: Callable[[list[str], str | None], ProductProfile],
+        flow_caller: JsonCaller | None = None,
     ) -> None:
         self.job_id = job_id
         self.dir = job_dir
         self.caller = caller
         self.frontend = frontend
         self.explore_more = explore_more
+        self.flow_caller = flow_caller or caller  # the flow_discovery role (see llm/router)
         self.warnings: list[str] = []  # word-limit cuts etc., saved with the approved outline
         self.unselected_names: list[str] = []  # features the user left out of the video
         self.known_ids: set[str] = set()  # feature ids the user has already seen
@@ -164,6 +170,78 @@ class ProposalRunner:
                 restricted.model_dump_json(indent=2), encoding="utf-8"
             )
         return restricted, selected
+
+    # --- 1c. core flow selection (replaces 1b when the job runs in flow mode) ----------------
+
+    def select_flow(
+        self, profile: ProductProfile, pages: list[discovery.PageSummary], root_url: str
+    ) -> FlowSelection | None:
+        """The flows the video shows, or None when discovery found nothing usable (the caller then
+        falls back to select_features). Asks again after a self-described flow was added."""
+        done = self.dir / "selected_flow.json"
+        if done.is_file():
+            saved = json.loads(done.read_text(encoding="utf-8"))
+            return FlowSelection(
+                flows=[CoreFlow.model_validate(f) for f in saved["flows"]],
+                submit_policy=saved["submit_policy"],
+                warnings=saved.get("warnings", []),
+            )
+        try:
+            flows = discovery.propose_flows(self.flow_caller, profile, pages)
+        except LLMCallError as e:
+            self.warnings.append(
+                f"Không xác định được luồng chính ({e}); chuyển sang chọn tính năng."
+            )
+            return None
+        if not flows:
+            self.warnings.append("Không tìm thấy luồng chính; chuyển sang chọn tính năng.")
+            return None
+        (self.dir / "flows_proposed.json").write_text(
+            json.dumps([f.model_dump() for f in flows], ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        default = flow_choice.default_flow_ids(flows)
+        notice = ""
+        for _ in range(8):
+            response = self._ask(
+                flow_choice.build_request(
+                    self.job_id, flows, root_url, default=default, notice=notice
+                )
+            )
+            answer = flow_choice.read_answer(response)
+            if answer.description:
+                own = discovery.normalize_flow(self.flow_caller, profile, pages, answer.description)
+                if own is None:
+                    notice, default = (
+                        "Chưa hiểu mô tả của bạn, hãy thử viết cụ thể hơn.",
+                        answer.selected,
+                    )
+                    continue
+                flows = [f for f in flows if f.id != own.id] + [own]
+                keep = [i for i in answer.selected if i != own.id][
+                    : flow_choice.MAX_SELECTED_FLOWS - 1
+                ]
+                default = [own.id, *keep]
+                notice = "Đã thêm luồng bạn mô tả (đã chọn sẵn)."
+                continue
+            by_id = {f.id: f for f in flows}
+            chosen = [by_id[i] for i in answer.selected]
+            policy, refused = flow_choice.resolve_submit_policy(root_url, chosen, answer)
+            selection = FlowSelection(chosen, policy, [refused] if refused else [])
+            done.write_text(
+                json.dumps(
+                    {
+                        "flows": [f.model_dump() for f in chosen],
+                        "submit_policy": policy,
+                        "warnings": selection.warnings,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            return selection
+        raise RuntimeError("too many select_flow rounds")
 
     # --- 2. concepts -------------------------------------------------------------------------
 
