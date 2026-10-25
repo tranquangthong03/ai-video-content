@@ -525,7 +525,11 @@ def run_produce_step(
     if ensure_session is not None:
         ensure_session()  # may ask for a new sign-in: the browser below then uses the new session
     try:
-        with BrowserSession(cfg.url, storage_state=cfg.storage_state) as session:
+        with BrowserSession(
+            cfg.url,
+            storage_state=cfg.storage_state,
+            expect_session=cfg.app_home_url is not None,
+        ) as session:
             result = produce(
                 script,
                 url=cfg.url,

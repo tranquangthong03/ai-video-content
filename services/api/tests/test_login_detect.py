@@ -151,3 +151,31 @@ def test_the_recorder_records_a_signed_in_scene_normally(tmp_path: Path, site: A
     with BrowserSession(site.base, storage_state=state_file(tmp_path, site, sid)) as s:
         r = rec(s, site.base, tmp_path / "out", visual)
     assert r.kind == "recording" and r.warnings == []
+
+
+def test_a_signed_in_job_without_its_session_file_still_stops_on_a_login_page(
+    tmp_path: Path, site: AuthSite
+) -> None:
+    visual = {"mode": "recording", "actions": [goto(site.base, "/app")]}
+    with BrowserSession(
+        site.base, expect_session=True
+    ) as s:  # job.json said "signed in", file gone
+        with pytest.raises(LoginRequired) as e:
+            rec(s, site.base, tmp_path / "out", visual)
+    assert e.value.login_url.endswith("/login")
+
+
+def test_a_photo_of_a_page_is_never_a_photo_of_the_login_page(
+    tmp_path: Path, site: AuthSite
+) -> None:
+    from app.recorder.screenshot import take_screenshot
+
+    with BrowserSession(site.base, expect_session=True) as s:
+        with pytest.raises(LoginRequired):
+            take_screenshot(s, site.base + "/app", tmp_path / "s.png")
+        assert not (tmp_path / "s.png").exists()
+    sid = site.new_session()
+    with BrowserSession(site.base, storage_state=state_file(tmp_path, site, sid)) as s:
+        assert take_screenshot(s, site.base + "/app", tmp_path / "ok.png").is_file()
+    with BrowserSession(site.base) as s:  # a public visit: whatever the page is, it is photographed
+        assert take_screenshot(s, site.base + "/login", tmp_path / "pub.png").is_file()

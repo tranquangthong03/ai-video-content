@@ -244,7 +244,7 @@ class _Recorder:
         self.action_log: list[dict[str, Any]] = []
         self.last_handle: Any = None  # element of the latest action: always in the inventory
         self.last_snap = -INVENTORY_EVERY_MS
-        self.authenticated = session.storage_state is not None
+        self.authenticated = session.signed_in_job
         self.warnings: list[str] = []
         self.typed: set[str] = set()
         self.mouse = self.home

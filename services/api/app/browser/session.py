@@ -21,13 +21,20 @@ class BrowserSession:
         headless: bool = True,
         allow_mutations: bool = False,
         blur_personal: bool | None = None,
+        expect_session: bool = False,
     ) -> None:
         self.storage_state = storage_state
+        # the job is a signed-in one: a login page is then a failure, even when the file is gone
+        self.expect_session = expect_session
         self.blur_personal = blur_personal  # None: blur when a session is held (BLUR_PERSONAL_DATA)
         self.headless = headless
         self.guard = RequestGuard(root_url, allow_mutations=allow_mutations)
         self._pw: Playwright | None = None
         self.browser: Browser | None = None
+
+    @property
+    def signed_in_job(self) -> bool:
+        return self.storage_state is not None or self.expect_session
 
     def __enter__(self) -> "BrowserSession":
         self._pw = sync_playwright().start()
