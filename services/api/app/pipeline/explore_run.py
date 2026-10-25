@@ -87,9 +87,8 @@ class ExploreRunner:
             self.url = url
             self.state.url = url
             self.report.data["start_url"] = url
-            self.scope_prefix = (
-                path_prefix(normalize_url(url) or url) if self.scope == "path" else None
-            )
+            self.scope = "domain"  # after a sign-in the app is wider than the page it opened on
+            self.scope_prefix = None
 
     # --- persistence -------------------------------------------------------------------------
 

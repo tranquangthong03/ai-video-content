@@ -17,6 +17,7 @@ from app.core.subpages import is_subpage
 from app.schemas.generated.product_profile import DemoStep, Feature, ProductProfile
 from app.script.home import cta_actions, cta_button, hero_locator, hook_actions
 from app.script.lite import (
+    MAX_ELEMENTS,
     LiteContext,
     lite_actions,
     needs_data,
@@ -25,6 +26,7 @@ from app.script.lite import (
     pick_setup,
     retext,
 )
+from app.script.targets import nav_target, resolve_by_text
 
 HIGHLIGHT_MS = 1800
 ZOOM_STEPS = ("click", "dblclick")
@@ -205,7 +207,7 @@ def _lite_visual(feature: Feature, lite: LiteContext, scene_id: str) -> VisualRe
     """showcase_lite: hover slowly over the feature's elements and outline them; never click."""
     elements, page_url = pick_elements(feature, lite)
     steps: list[DemoStep] | None = None
-    if not any(e["ref"] for e in elements):  # nothing the explorer saw: use the steps it tried
+    if not elements:  # nothing the explorer saw by ref: use the steps it tried
         own = own_pointing(feature)
         if own is not None:
             elements, prep, own_page = own
@@ -213,8 +215,15 @@ def _lite_visual(feature: Feature, lite: LiteContext, scene_id: str) -> VisualRe
             steps = retext(prep, lite) if prep else None
     elif needs_data(elements) and page_url is not None:
         steps = pick_setup(page_url, lite)
+    if not elements:  # the words the page itself uses: quotes, element names, the menu
+        found = resolve_by_text(feature, lite.pages.pages, lite.home_url, page_url)
+        if found is not None:
+            elements, page_url = found.elements[:MAX_ELEMENTS], found.page_url
     if not elements or page_url is None:
         return None
+    target = nav_target(elements[0], page_url, lite.home_url)
+    if target is not None:  # a plain link to another page of the app: go there through the menu
+        return _nav_visual(feature, elements[0], page_url, target, scene_id)
     warnings: list[str] = []
     setup: list[dict[str, Any]] = []
     if steps:
@@ -229,6 +238,32 @@ def _lite_visual(feature: Feature, lite: LiteContext, scene_id: str) -> VisualRe
         "actions": lite_actions(elements, page_url, with_goto=not setup),
     }
     return VisualResult(visual, warnings)
+
+
+def _nav_visual(
+    feature: Feature, link: dict[str, Any], page_url: str, target: str, scene_id: str
+) -> VisualResult:
+    """demo_kind navigation without steps of its own: click the menu entry, wait for the page."""
+    name = link.get("name") or link.get("text")
+    visual = {
+        "mode": "recording",
+        "page": page_url,
+        "setup": [],
+        "show_setup": False,
+        "actions": [
+            {"do": "goto", "url": page_url},
+            {
+                "do": "click",
+                "url": page_url,
+                "locator": link["locator"],
+                "target": name,
+                "zoom": True,
+            },  # fmt: skip
+            {"do": "wait", "url": target, "ms": 1500},
+        ],
+    }
+    note = f"{scene_id}: «{feature.id}» quay bằng menu điều hướng «{name}» → {target}"
+    return VisualResult(visual, [note])
 
 
 def subpage_index(feature: Feature) -> int | None:
@@ -352,7 +387,10 @@ def demo_visual(
             return found
     return VisualResult(
         screenshot_visual(home_url),
-        [f"{scene_id}: «{feature.id}» có demo_kind {kind}, không quay được nên dùng ảnh trang chủ"],
+        [
+            f"no_target: {scene_id} «{feature.id}» có demo_kind {kind}, không tìm được phần tử "
+            "hợp lệ, không quay được nên dùng ảnh trang chủ"
+        ],
     )
 
 

@@ -137,8 +137,17 @@ def lite_ctx(index: PageIndex | None = None) -> LiteContext:
 
 
 def test_a_failed_feature_is_pointed_at_with_hovers_and_one_outline_but_no_click() -> None:
+    profile = make_profile()
+    broken = profile.features[4]
+    broken.evidence[0].quote = "Broken report"  # what the page itself calls it
+    element = {
+        "ref": "e7", "role": "button", "name": "Broken report", "text": "Broken report",
+        "region": "main", "href": None,
+        "locator": {"role": "button", "name": "Broken report", "css": "button"},
+    }  # fmt: skip
+    index = PageIndex({PageIndex.key(HOME): {"url": HOME, "elements": [element], "headings": []}})
     result = visual_for_scene(
-        "feature_demo", make_profile().features[4], HOME, scene_id="s3", lite=lite_ctx()
+        "feature_demo", broken, HOME, scene_id="s3", lite=LiteContext(profile, index, HOME)
     )
     visual = result.visual
     kinds = [a["do"] for a in visual["actions"]]

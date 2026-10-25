@@ -181,7 +181,7 @@ def test_requires_login_asks_first_and_explores_from_the_app_page(
         def __init__(
             self, url: str, job_dir: Path, *a: Any, storage_state: Path | None = None, **k: Any
         ):
-            seen["url"], seen["storage"] = url, storage_state
+            seen["url"], seen["storage"], seen["scope"] = url, storage_state, k.get("scope")
 
         def run(self) -> None:
             raise StopHere

@@ -102,17 +102,12 @@ def pick_elements(feature: Feature, ctx: LiteContext) -> tuple[list[dict[str, An
         page_url = page_url or ev.url
     if found:
         return found[:MAX_ELEMENTS], page_url
+    # nothing the explorer verified: the callers go on with the feature's own steps, then with the
+    # words the page itself uses (script/targets.py) - never with loose words of its name
     page_url = next((e.url for e in feature.evidence if e.source == "app_action"), None) or (
         feature.evidence[0].url if feature.evidence else ctx.home_url
     )
-    words = keywords(feature.name)
-    return (
-        [
-            {"ref": None, "name": w, "text": w, "locator": {"name": w, "text": w}, "role": "link"}
-            for w in words
-        ],
-        page_url,
-    )
+    return [], page_url
 
 
 POINT_STEPS = ("click", "dblclick", "hover")  # steps of a failed feature that name a control

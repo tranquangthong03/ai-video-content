@@ -318,6 +318,9 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
         # the user knows the main features are behind a sign-in: find where, ask right away
         login_url = cfg.login_url or find_login_url(cfg.url)
         cfg.url = sign_in(LoginRequired(login_url or "", "requested", target_url=cfg.url)).url
+        cfg.scope = (
+            "domain"  # the app (e.g. /web/index.php/<module>/...) is wider than its first page
+        )
     if cfg.from_step == "explore":
         runner = ExploreRunner(
             cfg.url,
