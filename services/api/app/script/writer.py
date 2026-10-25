@@ -22,6 +22,7 @@ from app.schemas.generated.product_profile import Feature, ProductProfile
 from app.schemas.generated.script import Script
 from app.schemas.generated.theme import Theme
 from app.script import catalog as cat
+from app.script.autotrim import trim_draft
 from app.script.footage import SceneFacts, structure_issues
 from app.script.lite import MIN_WORDS as MIN_LITE_WORDS
 from app.script.lite import LiteContext
@@ -167,8 +168,12 @@ def check_scene(
     label: str,
     features: dict[str, Feature],
     demo_max: int = cat.VOICEOVER_MAX_WORDS,
+    *,
+    strict_min: bool = True,
 ) -> list[str]:
-    """Limits that hold for every scene, whoever wrote it (writer, scene writer, user edit)."""
+    """Limits that hold for every scene, whoever wrote it (writer, scene writer, user edit).
+
+    strict_min=False: a voiceover that is too short is not an error (it cannot be fixed by code)."""
     errors: list[str] = []
     max_words = demo_max if s.type == "feature_demo" else cat.VOICEOVER_MAX_WORDS
     if s.layout not in LAYOUTS_BY_TYPE[s.type]:
@@ -177,7 +182,7 @@ def check_scene(
             f"(chọn một trong {', '.join(LAYOUTS_BY_TYPE[s.type])})"
         )
     words = cat.word_count(s.voiceover)
-    if not cat.VOICEOVER_MIN_WORDS <= words <= max_words:
+    if words > max_words or (strict_min and words < cat.VOICEOVER_MIN_WORDS):
         errors.append(
             f"{label}: voiceover có {words} từ, cần {cat.VOICEOVER_MIN_WORDS}–{max_words}"
         )
@@ -214,7 +219,7 @@ def check_scene(
     return errors
 
 
-def check_draft(draft: DraftScript, ctx: WriterContext) -> list[str]:
+def check_draft(draft: DraftScript, ctx: WriterContext, *, strict_min: bool = True) -> list[str]:
     """Everything wrong with a draft, as sentences the LLM can act on."""
     errors: list[str] = []
     features = ctx.features
@@ -238,7 +243,7 @@ def check_draft(draft: DraftScript, ctx: WriterContext) -> list[str]:
     seen: dict[str, str] = {}
     for i, scene in enumerate(scenes):
         label = f"scene {i + 1}"
-        errors += check_scene(scene, label, features, ctx.demo_max_words)
+        errors += check_scene(scene, label, features, ctx.demo_max_words, strict_min=strict_min)
         beat = beats[i] if i < len(beats) else None
         if beat and beat.feature_id:
             feature = features.get(beat.feature_id)
@@ -429,4 +434,21 @@ def write_script(caller: JsonCaller, ctx: WriterContext) -> WriterResult:
             attempt,
             history,
         )
-    raise WriterError(history[-1])
+    # the repairs are used up: formal limits are fixed by code, only structure can still fail
+    assert output is not None
+    fixed, trims = trim_draft(output.script, ctx)
+    errors = check_draft(fixed, ctx, strict_min=False)
+    if not errors:
+        try:
+            script, warnings = build_script(fixed, ctx)
+        except WriterError as e:
+            errors = e.errors
+        else:
+            return WriterResult(
+                script,
+                summary_for(script, output.summary),
+                [*output.warnings, *warnings, *trims],
+                MAX_REPAIRS + 1,
+                history,
+            )
+    raise WriterError(errors)

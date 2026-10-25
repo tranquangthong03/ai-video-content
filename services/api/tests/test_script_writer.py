@@ -339,13 +339,14 @@ def test_a_draft_over_the_limits_is_sent_back_with_the_errors_and_fixed_on_the_s
     assert [len(h) > 0 for h in result.errors_history] == [True, False]
 
 
-def test_it_gives_up_after_two_repairs(tmp_path: Path) -> None:
-    bad = good_output(headline="x" * 50)
+def test_it_gives_up_after_two_repairs_only_for_structure_errors(tmp_path: Path) -> None:
+    bad = good_output()
+    bad["script"]["scenes"][1]["layout"] = "no_such_layout"  # structure: not fixable by code
     caller, llm = caller_for(bad, tmp_path=tmp_path)
     with pytest.raises(WriterError) as e:
         write_script(caller, ctx_for())
     assert len(llm.calls) == MAX_REPAIRS + 1
-    assert any("headline" in x for x in e.value.errors)
+    assert any("layout" in x for x in e.value.errors)
 
 
 def test_a_demoable_beat_must_become_a_feature_demo_of_its_feature() -> None:

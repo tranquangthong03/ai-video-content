@@ -16,6 +16,7 @@ from app.llm.prompts import render
 from app.schemas.generated.scene import Scene
 from app.schemas.generated.script import Script
 from app.script import catalog as cat
+from app.script.autotrim import trim_scene
 from app.script.writer import (
     MAX_REPAIRS,
     DraftScene,
@@ -180,4 +181,11 @@ def write_scene(
             f"Scene trên còn lỗi, hãy sửa đúng các lỗi này và trả lại json đầy đủ cùng cấu trúc:\n"
             f"{listed}"
         )
-    raise WriterError(errors)
+    # the repairs are used up: formal limits are fixed by code, structure errors still fail
+    fixed, trims = trim_scene(draft, "scene", ctx.demo_max_words)
+    errors = check_scene(fixed, "scene", ctx.features, ctx.demo_max_words, strict_min=False)
+    if errors:
+        raise WriterError(errors)
+    warnings = list(trims)
+    data = scene_dict(fixed, new_id, ctx, warnings)
+    return SceneResult(Scene.model_validate(data), warnings, MAX_REPAIRS + 1)

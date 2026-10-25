@@ -425,3 +425,69 @@ def test_cli_produce_step_is_not_available_yet(tmp_path: Path) -> None:
         main(["--url", "https://x.example/", "--job-dir", str(tmp_path), "--from-step", "produce"])
         == 5
     )
+
+
+def test_a_badge_over_the_limit_does_not_fail_the_script_step_and_is_reported(
+    tmp_path: Path,
+) -> None:
+    handler = Handler()
+    original = handler.__call__
+
+    def long_badge(prompt: str) -> dict[str, Any]:
+        out = original(prompt)
+        if "script" in out:
+            out["script"]["badge"] = "Tiết kiệm thời gian ngay!"  # 25 characters, every time
+        return out
+
+    runner, _, _, job, _ = build(tmp_path, {"script_review": [{"action": "approve"}]}, handler)
+    runner.caller.llm.handler = long_badge  # type: ignore[attr-defined]
+    script = runner.run()
+    assert script.badge == "Tiết kiệm thời gian ngay"
+    report = json.loads((job / "script_report.json").read_text(encoding="utf-8"))
+    assert any(w.startswith("auto_trimmed: badge") for w in report["warnings"])
+
+
+def test_a_structure_error_offers_regenerate_instead_of_failing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.pipeline import script_run
+    from app.script.writer import WriterError
+
+    real = script_run.write_script
+    calls: list[int] = []
+
+    def flaky(caller: Any, ctx: Any) -> Any:
+        calls.append(1)
+        if len(calls) == 1:
+            raise WriterError(["scene 2: layout «x» không hợp lệ cho feature_demo"])
+        return real(caller, ctx)
+
+    monkeypatch.setattr(script_run, "write_script", flaky)
+    runner, _, frontend, job, _ = build(
+        tmp_path,
+        {
+            "clarify": [{"action": "answer", "answers": {"clarify": "regenerate"}}],
+            "script_review": [{"action": "approve"}],
+        },
+    )
+    runner.run()
+    assert len(calls) == 2  # asked "Sinh lại", wrote again, no failure
+    first = requests(job)[0]["request"]
+    assert first["kind"] == "clarify" and "Sinh lại" in first["message"]
+    assert first["questions"][0]["options"][0]["label"] == "Sinh lại"
+    assert "layout" in first["message"]  # the reason, in plain words
+
+
+def test_cancelling_at_the_regenerate_question_cancels_the_job(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.pipeline import script_run
+    from app.script.writer import WriterError
+
+    def always(caller: Any, ctx: Any) -> Any:
+        raise WriterError(["scene 1: thiếu feature"])
+
+    monkeypatch.setattr(script_run, "write_script", always)
+    runner, _, _, _, _ = build(tmp_path, {"clarify": [{"action": "cancel"}]})
+    with pytest.raises(Cancelled):
+        runner.run()

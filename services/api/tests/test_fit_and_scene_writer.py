@@ -284,16 +284,21 @@ def test_unknown_scene_and_giving_up(tmp_path: Path) -> None:
     caller, _ = fit_caller(
         scene_handler(good_scene(2, "feature_demo", feature="create", voiceover="ngắn")), tmp_path
     )
+    # a voiceover that stays too short cannot be fixed by code: it is kept, with the form check relaxed
+    short = write_scene(
+        caller, ctx, script, task="rewrite", instruction="i", fields=["voiceover"], scene_id="s2"
+    )
+    assert short.scene.root.voiceover == "ngắn"
+    # structure (a feature the product does not have) still fails
+    wrong, _ = fit_caller(
+        scene_handler(good_scene(2, "feature_demo", feature="no_such", voiceover=words(20, "ok"))),
+        tmp_path,
+    )
     with pytest.raises(WriterError):
         write_scene(
-            caller,
-            ctx,
-            script,
-            task="rewrite",
-            instruction="i",
-            fields=["voiceover"],
-            scene_id="s2",
-        )
+            wrong, ctx, script, task="insert", instruction="i", scene_type="feature_demo",
+            after_scene_id="s2",
+        )  # fmt: skip
     with pytest.raises(WriterError, match="không có scene s9"):
         write_scene(
             caller,

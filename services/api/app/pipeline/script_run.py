@@ -32,9 +32,10 @@ from app.script.theme import ThemeResult
 from app.script.versions import ScriptStore
 from app.script.view import one_liners, render_script
 from app.script.visuals import load_setup_counts
-from app.script.writer import WriterContext, WriterResult, write_script
+from app.script.writer import WriterContext, WriterError, WriterResult, write_script
 
 MAX_ROUNDS = 30
+MAX_REGENERATE_ASKS = 3  # "Sinh lại" offered this many times before the failure is reported
 MAX_CLARIFY_ROUNDS = 2
 SCRIPT_REVIEW_ACTIONS = ["approve", "edit", "regenerate", "revert", "cancel"]
 
@@ -166,6 +167,36 @@ class ScriptRunner:
 
     # --- generation ----------------------------------------------------------------------------
 
+    def _generate_or_ask(self) -> Script:
+        """Write the script; when the writer cannot get the STRUCTURE right (scene type, layout,
+        feature...) say so in plain words and offer "Sinh lại" instead of failing the job."""
+        for _ in range(MAX_REGENERATE_ASKS):
+            try:
+                return self._generate()
+            except WriterError as e:
+                reasons = "; ".join(e.errors[:3])
+                question = (
+                    "AI chưa viết được kịch bản đúng cấu trúc (" + reasons + "). "
+                    "Bạn có thể bấm «Sinh lại» để thử lại."
+                )
+                request = make_request(
+                    self.job_id,
+                    "clarify",
+                    question,
+                    allowed_actions=["answer", "cancel"],
+                    questions=[
+                        {
+                            "id": "clarify",
+                            "text": question,
+                            "type": "single",
+                            "options": [{"id": "regenerate", "label": "Sinh lại"}],
+                            "allow_custom": False,
+                        }
+                    ],
+                )
+                self._ask(request)  # "cancel" raises Cancelled; any answer means: try again
+        return self._generate()  # the last try may raise: the runner reports it
+
     def _generate(self) -> Script:
         assert self.ctx is not None
         written = write_script(self.caller, self.ctx)
@@ -285,7 +316,7 @@ class ScriptRunner:
         ctx = self.prepare()
         latest = self.store.latest()
         if latest is None:
-            script = self._generate()
+            script = self._generate_or_ask()
             version = self.store.save(script)
         else:  # resume: continue from the newest version
             script = self.store.load(latest)
@@ -312,7 +343,7 @@ class ScriptRunner:
                 return script
             previous = script
             if response.action == "regenerate":
-                script = self._generate()
+                script = self._generate_or_ask()
             elif response.action == "revert":
                 target = response.revert_to if response.revert_to is not None else version - 1
                 try:
@@ -340,7 +371,7 @@ class ScriptRunner:
                     self.ctx, extra = apply_global(ctx, outcome.global_ops)
                     ctx = self.ctx
                     notice = "\n".join(x for x in [notice, *[f"Lưu ý: {w}" for w in extra]] if x)
-                    script = self._generate()
+                    script = self._generate_or_ask()
                 else:
                     script = outcome.script
                 if script != previous:
