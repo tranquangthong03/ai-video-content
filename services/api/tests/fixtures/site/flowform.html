@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>HR - Apply Leave</title>
+<style>
+  body { font: 14px sans-serif; margin: 0; }
+  nav a { margin: 0 8px; }
+  .row { margin: 8px 0; }
+  .menu { display: none; border: 1px solid #999; width: 200px; }
+  .menu.open { display: block; }
+  .menu div { padding: 4px; }
+  .error { color: #b00; }
+  .far { margin-top: 3000px; }
+</style></head>
+<body>
+  <header><nav>
+    <a href="/app.html">Dashboard</a>
+    <a href="/app.html#leave">Leave</a>
+    <a href="/settings.html">Settings</a>
+    <a href="/logout">Logout</a>
+  </nav></header>
+  <main>
+    <h1>Apply Leave</h1>
+    <div role="alert" id="msg" class="error">Leave type is required</div>
+    <form id="leave" action="/apply" method="post">
+      <div class="row"><label for="type">Leave type</label>
+        <select id="type"><option>-- Select --</option><option>Annual</option><option>Personal</option><option>Sick</option></select></div>
+      <div class="row"><div>Reason category</div>
+        <div id="cat" role="combobox" tabindex="0" onclick="document.getElementById('catmenu').classList.toggle('open')">-- Select --</div>
+        <div id="catmenu" class="menu dropdown-menu">
+          <div>Family</div><div>Medical</div><div>Travel</div>
+        </div></div>
+      <div class="row"><label for="from">From date</label><input id="from" type="text" placeholder="yyyy-mm-dd"></div>
+      <div class="row"><label for="to">To date</label><input id="to" type="date"></div>
+      <div class="row"><label for="note">Comment</label><textarea id="note" aria-invalid="true" aria-describedby="noteerr"></textarea>
+        <span id="noteerr" class="error">Comment is too short</span></div>
+      <div class="row"><input id="half" type="checkbox"><label for="half">Half day</label></div>
+      <div class="row"><label for="pw">Password</label><input id="pw" type="password" value="secret"></div>
+      <button type="submit" id="apply">Apply</button>
+      <button type="button" id="cancel" disabled>Cancel request</button>
+      <button type="button" id="del">Delete draft</button>
+    </form>
+    <div class="far"><a href="/far.html">Far away link</a><button>Way down</button></div>
+  </main>
+</body>
+</html>

@@ -42,6 +42,7 @@ target-version = "py312"
 "app/browser/locate.py" = ["E501"]  # embedded JavaScript
 "app/recorder/inventory.py" = ["E501"]  # embedded JavaScript
 "app/browser/privacy.py" = ["E501"]  # embedded JavaScript
+"app/flows/page_state.py" = ["E501"]  # embedded JavaScript
 "tests/**" = ["E501"]  # long fixture/data lines
 
 [tool.ruff.lint]
