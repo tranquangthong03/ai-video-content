@@ -56,5 +56,12 @@ Người dùng nhập URL website (+ tài khoản demo tùy chọn). Hệ thốn
 - Pipeline URL → video (không TTS), trong services/api: `uv run python -m app.pipeline.explore_cli --url <url> --job-dir out/<job> [--auto --answers tests/fixtures/answers/<x>.json] [--from-step explore|script|produce] [--stop-after outline|script|produce]`. Sinh `outline_approved.json`, `scripts/v{n}.json`, `script_approved.json`, `video.mp4`, `report.json` trong job-dir (`out/` bị gitignore).
 - Render: `pnpm --filter render render:sample` (mẫu), `scripts/render-job.ts <props.json> <out.mp4>` (do producer gọi; asset là file local, phục vụ qua http cục bộ).
 
+## Đăng nhập (web)
+- Phát hiện cần đăng nhập (`app/browser/auth_detect.py`): ô password hiển thị, redirect tới path login, HTTP 401/403 → `InteractionRequest` kind `login_required` (payload `login`: login_url, reason, methods). Khi phiên hết hạn giữa chừng chỉ làm lại đúng bước/scene đang dở. Người dùng có thể báo trước bằng checkbox «Tính năng chính nằm sau đăng nhập» / `--requires-login`.
+- Ba cách: A cửa sổ Chromium thật (`app/session/browser_login.py`, `POST /api/jobs/{id}/login/browser`; **chỉ dùng được khi API chạy cùng máy với người dùng — bản demo local**; `LOGIN_BROWSER_HEADLESS=1` chỉ cho test), B tài khoản demo (`app/browser/login.py`, mã hóa Fernet bằng `CREDENTIAL_ENCRYPTION_KEY`, `credentials.enc`), C upload `auth.json`. Mọi phiên đều được kiểm tra bằng context headless mới (`app/session/gate.py`).
+- Credential không bao giờ ghi vào log/report/state/history (`pipeline/asker.py` che các trường bí mật); `storage_state.json`, `credentials.enc`, `login_profile/` không phục vụ qua `/files` và bị xóa khi job kết thúc (job cũ hơn 24 giờ: dọn khi API khởi động).
+- Guard: POST chỉ được phép trong pha đăng nhập (`guard.allow_login_posts()`) tới domain gốc, subdomain auth./login./accounts. và nhà cung cấp xác thực phổ biến.
+- Khi có phiên: làm mờ email/số điện thoại/avatar (`app/browser/privacy.py`, tắt bằng `BLUR_PERSONAL_DATA=0`), không khám phá/quay trang settings/billing/admin..., không `goto` trang logout.
+
 ## Ngôn ngữ làm việc
 Luôn trả lời và viết báo cáo bằng tiếng Việt.

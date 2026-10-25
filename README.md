@@ -47,7 +47,11 @@ Mở http://localhost:3000. Hoặc chạy riêng: `cd services/api && uv run uvi
 
 - Mỗi lúc chỉ chạy 1 công việc, các công việc khác xếp hàng. Dữ liệu ở `services/api/out/jobs/<id>/` (đổi bằng biến `JOBS_DIR`).
 - `NEXT_PUBLIC_API_URL` (mặc định `http://localhost:8000`) trỏ web tới API.
-- Website cần đăng nhập: tạo `auth.json` bằng `uv run playwright codegen --save-storage=auth.json <url>` rồi tải lên ở trang chủ. Chỉ dùng tài khoản demo.
+- Website cần đăng nhập: cứ nhập URL, hệ thống tự phát hiện và hiện thẻ «Cần đăng nhập» với 3 cách (hoặc tick «Tính năng chính nằm sau đăng nhập» ở trang chủ):
+  - **Mở cửa sổ đăng nhập** (khuyến nghị): một cửa sổ Chromium thật hiện ra để bạn tự đăng nhập. **Chỉ dùng được khi API chạy cùng máy với bạn (bản demo local).** Hướng dẫn kiểm thử: `docs/manual-test-login.md`.
+  - **Tài khoản demo**: nhập email/mật khẩu; mã hóa Fernet (`CREDENTIAL_ENCRYPTION_KEY` trong `.env`), xóa khi job kết thúc. Không vượt được captcha/2FA/«Đăng nhập với Google».
+  - **Tải file phiên đăng nhập**: `uv run playwright codegen --save-storage=auth.json <url>` rồi tải `auth.json` lên (ở trang chủ hoặc trong thẻ).
+  Chỉ dùng tài khoản demo. Khi có phiên đăng nhập, email/số điện thoại/avatar bị làm mờ trong video (`BLUR_PERSONAL_DATA=0` để tắt), các trang settings/billing/admin không được khám phá hay quay.
 - Khởi động lại API thì công việc đang chạy thành «Lỗi: Máy chủ đã khởi động lại»; bấm «Chạy tiếp» để làm tiếp.
 - Dùng CLI thay cho web: xem mục «Pipeline URL → video» trong [CLAUDE.md](CLAUDE.md).
 
