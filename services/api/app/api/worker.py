@@ -13,6 +13,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from app.core.credentials import cleanup_job_secrets, sweep_old_jobs
 from app.pipeline.file_frontend import POLL_S, FileFrontend
 from app.pipeline.proposal_run import Cancelled
 from app.pipeline.runner import JobConfig, JobResult, run_job
@@ -45,6 +46,7 @@ class JobRunner:
         self.cond = threading.Condition()
         self.stopping = False
         self.root.mkdir(parents=True, exist_ok=True)
+        sweep_old_jobs(self.root)  # secrets of jobs untouched for a day
         self.recover()
         self.thread = threading.Thread(target=self._loop, name="job-runner", daemon=True)
         if start:
@@ -154,7 +156,7 @@ class JobRunner:
             cfg = JobConfig(
                 url=spec["url"],
                 job_dir=directory,
-                storage_state=directory / auth if auth else None,
+                storage_state=directory / auth if auth and (directory / auth).is_file() else None,
                 resume=bool(spec.get("resume")),
                 from_step=spec.get("from_step", "explore"),
                 requires_login=bool(spec.get("requires_login")),
@@ -172,3 +174,5 @@ class JobRunner:
             update_state(
                 directory, status="failed", error=f"Lỗi không mong đợi: {type(e).__name__}: {e}"
             )
+        finally:
+            cleanup_job_secrets(directory)  # demo account, saved session, login window profile

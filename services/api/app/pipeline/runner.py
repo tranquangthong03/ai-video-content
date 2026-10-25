@@ -17,6 +17,7 @@ from typing import Literal, Protocol
 from app.browser.auth_detect import LoginRequired
 from app.browser.login_find import find_login_url
 from app.browser.session import BrowserSession
+from app.core.credentials import CredentialStore
 from app.core.usage import BudgetExceeded, UsageTracker
 from app.explorer.mapper import BlockedByChallenge
 from app.explorer.report import DeadlineExceeded
@@ -41,6 +42,7 @@ from app.schemas.generated.product_profile import ProductProfile
 from app.schemas.generated.script import Script
 from app.script.theme import ThemeResult, derive_theme
 from app.script.writer import WriterError
+from app.session.credential_login import make_credential_login
 from app.session.gate import LoginGate, LoginOutcome
 
 EXIT_OK = 0
@@ -244,6 +246,8 @@ def run_job(cfg: JobConfig, frontend: Frontend, rep: Reporter | None = None) -> 
         result = _run(cfg, frontend, rep, progress)
     except Cancelled:  # raised by a progress callback or a blocked question
         result = JobResult(EXIT_CANCELLED, "cancelled")
+    finally:
+        CredentialStore(job_dir).delete()  # a demo account lives only as long as its job
     final = {"done": "done", "failed": "failed", "cancelled": "cancelled"}[result.status]
     changes: dict[str, object] = {"status": final, "error": result.error}
     if final == "done":
@@ -258,7 +262,14 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
     caller, tracker = make_caller(cfg)
     runner: ExploreRunner | None = None
     concept_id = ""
-    gate = LoginGate(job_dir.name, job_dir, frontend)
+    store = CredentialStore(job_dir)
+    gate = LoginGate(
+        job_dir.name,
+        job_dir,
+        frontend,
+        credential_login=make_credential_login(job_dir, cfg.url),
+        has_credentials=store.path.is_file,
+    )
 
     def sign_in(need: LoginRequired) -> LoginOutcome:
         """Ask the user to sign in; from then on every step uses the new session."""
@@ -476,6 +487,9 @@ def run_produce_step(
         "recommended_duration_s": script_report.get("recommended_duration_s"),
         "footage_ratio_estimated": script_report.get("footage_ratio"),
     }
+    login_report = job_dir / "login_report.json"
+    if login_report.is_file():  # which hosts the sign-in posted to (no bodies, no secrets)
+        extra["login_phase"] = json.loads(login_report.read_text(encoding="utf-8"))
     for w in script_report.get("warnings", []):
         rep.say(f"[yellow]Lưu ý trước khi quay: {w}[/]")
     progress.set("produce", "Chuẩn bị quay", 80)

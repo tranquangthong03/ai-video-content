@@ -84,8 +84,10 @@ class LoginGate:
         *,
         probe: Probe = verify_session,
         credential_login: CredentialLogin | None = None,
+        has_credentials: Callable[[], bool] = lambda: False,
     ) -> None:
         self.job_id, self.dir, self.frontend = job_id, job_dir, frontend
+        self.has_credentials = has_credentials
         self.probe = probe
         self.credential_login = credential_login
 
@@ -98,6 +100,12 @@ class LoginGate:
         login_url = need.login_url or None
         target = need.target_url or login_url or ""
         failure: str | None = None
+        if need.reason == "session_expired" and self.credential_login and self.has_credentials():
+            # the job has a demo account: sign in again by itself before bothering the user
+            if self.credential_login(login_url or target, target) is None:
+                renewed = self.finish(login_url, target, need)
+                if renewed is not None:
+                    return renewed
         for _ in range(MAX_ROUNDS):
             request = make_request(
                 self.job_id,

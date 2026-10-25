@@ -16,6 +16,7 @@ dependencies = [
     "rich>=15.0.0",
     "questionary>=2.1.1",
     "python-multipart>=0.0.32",
+    "cryptography>=50.0.2",
 ]
 
 [dependency-groups]

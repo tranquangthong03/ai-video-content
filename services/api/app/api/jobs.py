@@ -11,9 +11,10 @@ from urllib.parse import urlparse
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, SecretStr
 
 from app.api.worker import JOB_FILE, JobRunner
+from app.core.credentials import PROFILE_DIR, SECRET_NAMES, CredentialStore
 from app.core.timing import estimate_speech_ms
 from app.pipeline.file_frontend import PENDING, RESPONSES, write_json_atomic
 from app.pipeline.state import IO_LOCK, STEP_LABELS, read_state
@@ -373,6 +374,27 @@ def login_browser_status(request: Request, job_id: str) -> dict[str, Any]:
     return {"status": windows_of(request).status(job_id)}
 
 
+class Credentials(BaseModel):
+    username: SecretStr
+    password: SecretStr
+
+
+@router.post("/jobs/{job_id}/login/credentials")
+def save_login_credentials(request: Request, job_id: str, body: Credentials) -> dict[str, Any]:
+    """Way B: the demo account, encrypted into the job dir (never logged, never echoed back).
+
+    The web then answers the card with login_method="credentials": the answer carries no secret."""
+    directory = job_dir_of(request, job_id)
+    pending = read_json(directory / PENDING)
+    if not pending or pending.get("kind") != "login_required":
+        raise HTTPException(409, "Công việc này không đang chờ đăng nhập")
+    username, password = body.username.get_secret_value(), body.password.get_secret_value()
+    if not username.strip() or not password:
+        raise HTTPException(422, "Cần nhập cả tài khoản và mật khẩu")
+    CredentialStore(directory).save(username.strip(), password)
+    return {"status": "saved"}
+
+
 @router.post("/jobs/{job_id}/login/state")
 async def upload_login_state(
     request: Request, job_id: str, storage_state: Annotated[UploadFile, File()]
@@ -397,7 +419,8 @@ def get_file(request: Request, job_id: str, path: str, download: bool = False) -
     target = (directory / path).resolve()
     if not target.is_relative_to(directory) or not target.is_file():
         raise HTTPException(404, "Không tìm thấy tệp")
-    if target.name in ("storage_state.json", JOB_FILE) or target.suffix == ".log":
+    private = target.name in SECRET_NAMES or target.name == JOB_FILE
+    if private or PROFILE_DIR in target.relative_to(directory).parts or target.suffix == ".log":
         raise HTTPException(404, "Không tìm thấy tệp")
     if download:  # a cross-origin <a download> is ignored by browsers: the server asks for it
         return FileResponse(target, filename=target.name, content_disposition_type="attachment")
