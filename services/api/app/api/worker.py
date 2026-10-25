@@ -154,13 +154,14 @@ class JobRunner:
             spec: dict[str, Any] = json.loads((directory / JOB_FILE).read_text(encoding="utf-8"))
             auth = spec.get("storage_state")
             cfg = JobConfig(
-                url=spec["url"],
+                url=spec.get("app_home_url") or spec["url"],
                 job_dir=directory,
                 storage_state=directory / auth if auth and (directory / auth).is_file() else None,
                 resume=bool(spec.get("resume")),
                 from_step=spec.get("from_step", "explore"),
                 requires_login=bool(spec.get("requires_login")),
                 login_url=spec.get("login_url"),
+                app_home_url=spec.get("app_home_url"),
                 should_stop=cancel.is_set,
             )
             update_state(directory, status="running", error=None)

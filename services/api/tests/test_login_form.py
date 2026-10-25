@@ -148,3 +148,13 @@ def test_outside_the_phase_a_post_is_decided_by_the_old_rules() -> None:
         "hosts_refused": {"evil.com": 1},
     }
     assert guard.decide("POST", "https://example.com/login", "xhr", "{}")[0] == "abort"
+
+
+def test_a_single_page_app_that_moves_on_a_moment_later_is_still_a_success(site: AuthSite) -> None:
+    result, cookies, _ = attempt(site, "spa")  # the URL changes 2.5 s after the post settled
+    assert result.ok and result.final_url == site.base + "/app" and "sid" in cookies
+
+
+def test_a_single_page_app_with_wrong_credentials_reports_the_page_s_error(site: AuthSite) -> None:
+    result, cookies, _ = attempt(site, "spa", password="nope")
+    assert result.failure == "wrong_credentials" and "sid" not in cookies

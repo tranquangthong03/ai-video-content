@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Login - TaskBoard</title></head>
+<body><main><h1>Login</h1><div id="msg"></div>
+  <form id="f" method="post" action="/login/both">
+    <label for="email">Username</label>
+    <input id="email" name="email" type="text" autocomplete="username">
+    <label for="pw">Password</label>
+    <input id="pw" name="password" type="password" autocomplete="current-password">
+    <button type="submit">Login</button>
+  </form></main>
+  <script>
+    // a single-page app: the post is a fetch, the page moves on a moment later
+    document.getElementById('f').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const r = await fetch('/login/both', {
+        method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams(new FormData(e.target)),
+      });
+      if (r.ok) setTimeout(() => { location.href = '/app'; }, 2500);
+      else document.getElementById('msg').innerHTML = '<p class="error" role="alert">Invalid credentials</p>';
+    });
+  </script>
+</body></html>

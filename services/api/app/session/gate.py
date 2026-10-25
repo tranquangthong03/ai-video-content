@@ -8,6 +8,7 @@ headless browser before it is accepted; a failed check keeps the card open with 
 """
 
 import json
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,6 +21,7 @@ from app.pipeline.asker import ask as ask_user
 from app.pipeline.frontend import Frontend
 
 STORAGE_FILE = "storage_state.json"
+LOG_FILE = "login_log.json"
 RESULT_FILE = "login_result.json"  # {"final_url": ...} written by the browser-window login
 MAX_ROUNDS = 6
 METHODS = ["browser_window", "credentials", "upload_state"]
@@ -29,7 +31,10 @@ REASONS = {
     "http_status": "Trang này trả về lỗi 401/403 (cần đăng nhập).",
     "session_expired": "Phiên đăng nhập đã hết hạn.",
     "requested": "Bạn đã báo tính năng chính nằm sau đăng nhập.",
+    "session_expired_review": "Phiên đăng nhập đã hết hạn trong lúc bạn duyệt kịch bản, "
+    "vui lòng đăng nhập lại để quay video.",
 }
+EXPIRED = ("session_expired", "session_expired_review")
 NOT_INSIDE = "Chưa vào được trang bên trong, vui lòng thử lại."
 HINT = "Chỉ dùng tài khoản demo, không dùng tài khoản thật có dữ liệu quan trọng."
 
@@ -44,6 +49,7 @@ class SessionCheck:
 class LoginOutcome:
     storage_state: Path
     url: str  # the page the signed-in visitor lands on (the app's main page)
+    login_url: str | None = None  # where the sign-in page is (asked again if the session expires)
 
 
 Probe = Callable[[Path, str], SessionCheck]
@@ -88,8 +94,16 @@ class LoginGate:
     ) -> None:
         self.job_id, self.dir, self.frontend = job_id, job_dir, frontend
         self.has_credentials = has_credentials
+        self.events: list[dict[str, object]] = []  # what happened, without any secret
         self.probe = probe
         self.credential_login = credential_login
+
+    def record(self, event: str, **fields: object) -> None:
+        """Append to job-dir/login_log.json (events and outcomes only: never a credential)."""
+        self.events.append({"at": time.strftime("%H:%M:%S"), "event": event, **fields})
+        (self.dir / LOG_FILE).write_text(
+            json.dumps(self.events, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
 
     @property
     def storage_state(self) -> Path:
@@ -100,9 +114,12 @@ class LoginGate:
         login_url = need.login_url or None
         target = need.target_url or login_url or ""
         failure: str | None = None
-        if need.reason == "session_expired" and self.credential_login and self.has_credentials():
+        self.record("login_required", reason=need.reason, login_url=login_url)
+        if need.reason in EXPIRED and self.credential_login and self.has_credentials():
             # the job has a demo account: sign in again by itself before bothering the user
-            if self.credential_login(login_url or target, target) is None:
+            failed = self.credential_login(login_url or target, target)
+            self.record("auto_relogin", ok=failed is None, failure=failed)
+            if failed is None:
                 renewed = self.finish(login_url, target, need)
                 if renewed is not None:
                     return renewed
@@ -152,10 +169,11 @@ class LoginGate:
         self, login_url: str | None, target: str, need: LoginRequired
     ) -> LoginOutcome | None:
         """Check the saved session; the page to open is the one we wanted (or the login page)."""
-        open_url = target if need.reason == "session_expired" else (login_url or target)
+        open_url = target if need.reason in EXPIRED else (login_url or target)
         if not open_url:
             return None
         check = self.probe(self.storage_state, open_url)
+        self.record("verify_session", ok=check.ok, opened=open_url, ended_at=check.url)
         if not check.ok:
             return None
         final = check.url
@@ -163,4 +181,4 @@ class LoginGate:
         if result_file.is_file():
             final = json.loads(result_file.read_text(encoding="utf-8")).get("final_url") or final
             result_file.unlink()
-        return LoginOutcome(self.storage_state, final)
+        return LoginOutcome(self.storage_state, final, login_url)

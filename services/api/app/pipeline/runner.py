@@ -43,7 +43,7 @@ from app.schemas.generated.script import Script
 from app.script.theme import ThemeResult, derive_theme
 from app.script.writer import WriterError
 from app.session.credential_login import make_credential_login
-from app.session.gate import LoginGate, LoginOutcome
+from app.session.gate import EXPIRED, LoginGate, LoginOutcome, SessionCheck
 
 EXIT_OK = 0
 EXIT_CANCELLED, EXIT_BLOCKED, EXIT_TOKENS, EXIT_TIMEOUT, EXIT_USAGE, EXIT_SCRIPT = 1, 2, 3, 4, 5, 6
@@ -79,6 +79,7 @@ class JobConfig:
     capture: tuple[int, int] | None = None  # recording size (width, height); None = 1440x900
     requires_login: bool = False  # the user says the main features are behind a sign-in
     login_url: str | None = None  # where to sign in, when the user knows
+    app_home_url: str | None = None  # the app's main page after the sign-in (not the landing)
 
 
 @dataclass
@@ -127,7 +128,9 @@ def make_caller(cfg: JobConfig) -> tuple[JsonCaller, UsageTracker]:
     return caller, tracker
 
 
-def remember_session(job_dir: Path) -> None:
+def remember_session(
+    job_dir: Path, app_home_url: str | None = None, login_url: str | None = None
+) -> None:
     """Write the new session into job.json, so a resumed job (web: "Chạy tiếp") keeps using it."""
     spec_file = job_dir / "job.json"
     if not spec_file.is_file():
@@ -135,6 +138,8 @@ def remember_session(job_dir: Path) -> None:
     spec = json.loads(spec_file.read_text(encoding="utf-8"))
     spec["storage_state"] = "storage_state.json"
     spec["requires_login"] = False
+    spec["app_home_url"] = app_home_url or spec.get("app_home_url")
+    spec["login_url"] = login_url or spec.get("login_url")
     spec_file.write_text(json.dumps(spec), encoding="utf-8")
 
 
@@ -276,8 +281,25 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
         update_state(job_dir, progress_text="Chờ bạn đăng nhập")
         outcome = gate.ask(need)
         cfg.storage_state = outcome.storage_state
-        remember_session(job_dir)
+        if need.reason not in EXPIRED:  # a new sign-in tells where the app starts
+            cfg.app_home_url = outcome.url
+        cfg.login_url = outcome.login_url or cfg.login_url
+        remember_session(job_dir, cfg.app_home_url, cfg.login_url)
         return outcome
+
+    def ensure_session() -> None:
+        """Before recording: is the session still good? (the review may have taken a while)"""
+        home = cfg.app_home_url or cfg.url
+        if cfg.storage_state is None and cfg.app_home_url is None:
+            return  # a public site: no session to keep
+        check = (
+            gate.probe(cfg.storage_state, home)
+            if cfg.storage_state is not None and cfg.storage_state.is_file()
+            else SessionCheck(False, home)
+        )
+        gate.record("verify_before_produce", ok=check.ok, opened=home, ended_at=check.url)
+        if not check.ok:
+            sign_in(LoginRequired(cfg.login_url or "", "session_expired_review", target_url=home))
 
     if cfg.from_step == "explore" and cfg.requires_login and cfg.storage_state is None:
         # the user knows the main features are behind a sign-in: find where, ask right away
@@ -420,8 +442,9 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
             return JobResult(EXIT_OK, "done")
 
     return run_produce_step(
-        cfg, rep, progress, tracker, profile, script, caller, lambda e: sign_in(e).storage_state
-    )
+        cfg, rep, progress, tracker, profile, script, caller,
+        lambda e: sign_in(e).storage_state, ensure_session,
+    )  # fmt: skip
 
 
 def run_script_step(
@@ -467,6 +490,7 @@ def run_produce_step(
     script: Script,
     caller: JsonCaller | None = None,
     on_login: Callable[[LoginRequired], Path] | None = None,
+    ensure_session: Callable[[], None] | None = None,
 ) -> JobResult:
     """Record every scene, fit the timeline, render the mp4 and write report.json."""
     job_dir = cfg.job_dir
@@ -498,6 +522,8 @@ def run_produce_step(
         rep.say(f"[cyan]{msg}[/]")
         progress.produce(msg)
 
+    if ensure_session is not None:
+        ensure_session()  # may ask for a new sign-in: the browser below then uses the new session
     try:
         with BrowserSession(cfg.url, storage_state=cfg.storage_state) as session:
             result = produce(

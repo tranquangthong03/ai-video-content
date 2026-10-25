@@ -209,6 +209,17 @@ def signed_in(page: Page) -> bool:
     return not password and not is_login_path(page.url) and not find_otp(page)
 
 
+def wait_for_outcome(page: Page, timeout_ms: int = 10_000) -> None:
+    """After submitting: single-page sites change the URL a little later, so wait until the page
+    is signed in, shows an error, asks for a code or a captcha (or the time is up)."""
+    waited = 0
+    while waited < timeout_ms:
+        if signed_in(page) or find_otp(page) or has_captcha(page) or form_error(page):
+            return
+        page.wait_for_timeout(300)
+        waited += 300
+
+
 def classify_failure(page: Page) -> Failure:
     if has_captcha(page):
         return "captcha"
@@ -262,6 +273,7 @@ def _login(page: Page, username: str, password: str, rng: random.Random) -> Logi
             return LoginAttempt(False, page.url, classify_failure(page))
     type_like_a_person(pw, password, rng)
     submit(page, pw)
+    wait_for_outcome(page)
     if signed_in(page):
         return LoginAttempt(True, page.url)
     return LoginAttempt(False, page.url, classify_failure(page))

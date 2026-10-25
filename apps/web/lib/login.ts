@@ -42,6 +42,7 @@ export const LOGIN_REASONS: Record<string, string> = {
   http_status: "Trang này trả về lỗi 401/403 (cần đăng nhập).",
   session_expired: "Phiên đăng nhập đã hết hạn.",
   requested: "Bạn đã báo tính năng chính nằm sau đăng nhập.",
+  session_expired_review: "Phiên đăng nhập đã hết hạn trong lúc bạn duyệt kịch bản, vui lòng đăng nhập lại để quay video.",
 };
 
 /** The failure line to show, with the way-A hint when another way is more likely to work. */

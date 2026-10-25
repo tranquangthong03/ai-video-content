@@ -98,6 +98,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(200, page("login_social.html"))
             if mode == "captcha":
                 return self.send(200, page("login_captcha.html", error=err))
+            if mode == "spa":
+                return self.send(200, page("login_spa.html"))
             if mode == "one_step":
                 return self.send(200, page("login_one.html", error=err))
             if step == "otp":
@@ -136,9 +138,15 @@ class Handler(BaseHTTPRequestHandler):
                 return self.redirect("/login?step=2")
             return self.redirect("/login?error=We couldn't find your account")
         if path == "/login/password" or path == "/login/both":
+            if mode == "spa":  # fetch from the page: answer with a status, not a redirect
+                if data.get("email") != EMAIL or data.get("password") != PASSWORD:
+                    return self.send(401, b"no")
+                return self.send(
+                    200, b"ok", {"Set-Cookie": f"sid={self.server.new_session()}; Path=/"}
+                )
             if mode == "captcha" and path == "/login/both":
                 return self.redirect("/login?error=Please complete the captcha")
-            if mode != "one_step" and path == "/login/both":
+            if mode not in ("one_step", "spa") and path == "/login/both":
                 return self.send(400)
             if path == "/login/both" and data.get("email") != EMAIL:
                 return self.redirect("/login?error=Incorrect email or password")
