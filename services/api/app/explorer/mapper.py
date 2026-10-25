@@ -11,7 +11,6 @@ import itertools
 import json
 import re
 from dataclasses import asdict, dataclass
-from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -29,8 +28,8 @@ from app.browser.urls import (
     related_domain,
     same_site,
 )
-from app.core.features import fold
 from app.core.subpages import is_subpage, is_subpage_text
+from app.core.textmatch import description_words, words_match
 from app.explorer.extract import extract_page, settle
 from app.explorer.models import PageData
 from app.explorer.report import Deadline, Report
@@ -472,28 +471,6 @@ def save_map(path: Path, frontier: Frontier, pages: list[PageData]) -> None:
         "candidates": [asdict(c) for c in sorted(frontier.known.values(), key=lambda c: -c.score)],
     }
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-# Words that say nothing about which page a description points at (Vietnamese and English)
-STOPWORDS = {
-    "theo", "cho", "cac", "cua", "voi", "trang", "xem", "them", "tinh", "nang", "the", "and",
-    "for", "page", "with", "from", "this", "that",
-}  # fmt: skip
-
-
-def description_words(text: str) -> set[str]:
-    """Accent-free lower-case words (3+ letters) of a description, without filler words."""
-    return {w for w in re.findall(r"[a-z0-9]{3,}", fold(text)) if w not in STOPWORDS}
-
-
-def words_match(a: str, b: str) -> bool:
-    """Same word, or close enough (learning ~ learn, paths ~ path, typo of one letter)."""
-    if a == b:
-        return True
-    stem = min(len(a), len(b))
-    if stem >= 4 and (a.startswith(b) or b.startswith(a)):
-        return True
-    return stem >= 6 and SequenceMatcher(None, a, b).ratio() >= 0.88
 
 
 def relevance(description: str, text: str, url: str) -> int:
