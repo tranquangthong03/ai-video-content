@@ -55,3 +55,6 @@ Người dùng nhập URL website (+ tài khoản demo tùy chọn). Hệ thốn
 - API: `cd services/api && uv run uvicorn app.api.main:app --port 8000` (job ở `out/jobs/<id>/`, đổi bằng env JOBS_DIR). Khởi động lại thì job running/waiting thành failed "Máy chủ đã khởi động lại"; nút "Chạy tiếp" dùng resume.
 - Pipeline URL → video (không TTS), trong services/api: `uv run python -m app.pipeline.explore_cli --url <url> --job-dir out/<job> [--auto --answers tests/fixtures/answers/<x>.json] [--from-step explore|script|produce] [--stop-after outline|script|produce]`. Sinh `outline_approved.json`, `scripts/v{n}.json`, `script_approved.json`, `video.mp4`, `report.json` trong job-dir (`out/` bị gitignore).
 - Render: `pnpm --filter render render:sample` (mẫu), `scripts/render-job.ts <props.json> <out.mp4>` (do producer gọi; asset là file local, phục vụ qua http cục bộ).
+
+## Ngôn ngữ làm việc
+Luôn trả lời và viết báo cáo bằng tiếng Việt.

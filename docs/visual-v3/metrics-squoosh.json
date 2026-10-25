@@ -1,0 +1,189 @@
+{
+  "focus_rows": 7,
+  "focus_ms_scored": 14459,
+  "side_focus_unmentioned_pct": 0.0,
+  "match_pct": 0.0,
+  "match_pct_is_reviewed": true,
+  "sources": {
+    "plan": 5,
+    "rule": 0,
+    "fallback": 2
+  },
+  "focus_camera": {
+    "frames_after_arrival": 331,
+    "frames_text_clipped": 0,
+    "frames_any_text_clipped": 123,
+    "image_zoom_inside": 0,
+    "scenes": [
+      {
+        "id": "s1",
+        "frames": 84,
+        "frames_text_clipped": 0,
+        "frames_any_text_clipped": 0,
+        "image_zoom_inside": 0
+      },
+      {
+        "id": "s4",
+        "frames": 123,
+        "frames_text_clipped": 0,
+        "frames_any_text_clipped": 123,
+        "image_zoom_inside": 0
+      },
+      {
+        "id": "s6",
+        "frames": 124,
+        "frames_text_clipped": 0,
+        "frames_any_text_clipped": 0,
+        "image_zoom_inside": 0
+      }
+    ]
+  },
+  "visual": {
+    "job": "squoosh",
+    "headline": "Ảnh nhẹ hơn, tải nhanh hơn cùng Squoosh",
+    "target_s": 30.0,
+    "actual_s": 35.033,
+    "duration_ratio": 1.168,
+    "scenes": [
+      {
+        "id": "s1",
+        "type": "hook",
+        "kind": "thao tác",
+        "speech_ms": 6650,
+        "final_ms": 6650,
+        "playback_rate": 1.0,
+        "trimmed_ms": 791,
+        "actions": 1,
+        "hold_ms": 1500,
+        "idle_max_ms": 0
+      },
+      {
+        "id": "s2",
+        "type": "feature_demo",
+        "kind": "ảnh",
+        "speech_ms": 3850,
+        "final_ms": 3850,
+        "playback_rate": 1.0,
+        "trimmed_ms": 0,
+        "actions": 0,
+        "hold_ms": null,
+        "idle_max_ms": 0
+      },
+      {
+        "id": "s3",
+        "type": "feature_demo",
+        "kind": "ảnh",
+        "speech_ms": 5450,
+        "final_ms": 5450,
+        "playback_rate": 1.0,
+        "trimmed_ms": 0,
+        "actions": 0,
+        "hold_ms": null,
+        "idle_max_ms": 0
+      },
+      {
+        "id": "s4",
+        "type": "feature_demo",
+        "kind": "thao tác",
+        "speech_ms": 6650,
+        "final_ms": 6650,
+        "playback_rate": 1.0,
+        "trimmed_ms": 471,
+        "actions": 1,
+        "hold_ms": 1500,
+        "idle_max_ms": 3036
+      },
+      {
+        "id": "s5",
+        "type": "before_after",
+        "kind": "ảnh",
+        "speech_ms": 5850,
+        "final_ms": 5850,
+        "playback_rate": 1.0,
+        "trimmed_ms": 0,
+        "actions": 0,
+        "hold_ms": null,
+        "idle_max_ms": 0
+      },
+      {
+        "id": "s6",
+        "type": "cta",
+        "kind": "cuộn-highlight",
+        "speech_ms": 4250,
+        "final_ms": 6497,
+        "playback_rate": 1.15,
+        "trimmed_ms": 3197,
+        "actions": 2,
+        "hold_ms": 1650,
+        "idle_max_ms": 0
+      }
+    ],
+    "camera_cover_share": 0.641,
+    "camera_mean_zoom": 1.077,
+    "duplicate_signatures": [
+      "s3~s2"
+    ],
+    "side_page_scenes": [],
+    "text_on_black_s": 0.0,
+    "hold_avg_ms": 1575,
+    "max_action_speedup": 1.0,
+    "max_speedup_any": 1.15,
+    "trimmed_ms": 4459,
+    "footage_ratio": 0.566,
+    "idle_ok": false,
+    "ffprobe": {
+      "codec_name": "h264",
+      "width": 1080,
+      "height": 1920,
+      "pix_fmt": "yuv420p",
+      "r_frame_rate": "30/1"
+    },
+    "warnings": [
+      "action[2] hover: Locator.scroll_into_view_if_needed: Timeout 4000ms exceeded.",
+      "action[3] click: Locator.scroll_into_view_if_needed: Timeout 3985ms exceeded.",
+      "không bước nào chạy được, dùng ảnh trang đích thay cho clip",
+      "action[2] hover: Locator.scroll_into_view_if_needed: Timeout 4000ms exceeded.",
+      "action[3] click: Locator.scroll_into_view_if_needed: Timeout 4000ms exceeded.",
+      "không bước nào chạy được, dùng ảnh trang đích thay cho clip"
+    ],
+    "dropped_scenes": []
+  },
+  "planner": {
+    "s1": {
+      "planner": "plan",
+      "planner_attempts": 2,
+      "planner_errors": [],
+      "replaced_side_focus": 0,
+      "unresolved": 0,
+      "sources": {
+        "plan": 1,
+        "rule": 0,
+        "fallback": 2
+      }
+    },
+    "s4": {
+      "planner": "plan",
+      "planner_attempts": 1,
+      "planner_errors": [],
+      "replaced_side_focus": 0,
+      "unresolved": 0,
+      "sources": {
+        "plan": 2,
+        "rule": 0,
+        "fallback": 0
+      }
+    },
+    "s6": {
+      "planner": "plan",
+      "planner_attempts": 1,
+      "planner_errors": [],
+      "replaced_side_focus": 0,
+      "unresolved": 0,
+      "sources": {
+        "plan": 2,
+        "rule": 0,
+        "fallback": 0
+      }
+    }
+  }
+}

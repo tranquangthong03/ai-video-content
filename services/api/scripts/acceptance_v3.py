@@ -141,7 +141,11 @@ def main() -> int:
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
     site = SITES[name]
-    cfg = JobConfig(url=site.url, job_dir=job_dir, max_pages=15, timeout=900)
+    from_script = len(sys.argv) > 3 and sys.argv[3] == "script"  # rerun from the script step
+    cfg = JobConfig(
+        url=site.url, job_dir=job_dir, max_pages=15, timeout=900,
+        from_step="script" if from_script else "explore", resume=from_script,
+    )  # fmt: skip
     console = Console()
     frontend = PickingFrontend(site, console)
     result = run_job(cfg, frontend, ConsoleReporter(console))

@@ -1,0 +1,190 @@
+{
+  "focus_rows": 8,
+  "focus_ms_scored": 16915,
+  "side_focus_unmentioned_pct": 0.0,
+  "match_pct": 16.0,
+  "match_pct_is_reviewed": true,
+  "sources": {
+    "plan": 8,
+    "rule": 0,
+    "fallback": 0
+  },
+  "focus_camera": {
+    "frames_after_arrival": 473,
+    "frames_text_clipped": 0,
+    "frames_any_text_clipped": 405,
+    "image_zoom_inside": 0,
+    "scenes": [
+      {
+        "id": "s1",
+        "frames": 88,
+        "frames_text_clipped": 0,
+        "frames_any_text_clipped": 88,
+        "image_zoom_inside": 0
+      },
+      {
+        "id": "s2",
+        "frames": 161,
+        "frames_text_clipped": 0,
+        "frames_any_text_clipped": 161,
+        "image_zoom_inside": 0
+      },
+      {
+        "id": "s3",
+        "frames": 156,
+        "frames_text_clipped": 0,
+        "frames_any_text_clipped": 156,
+        "image_zoom_inside": 0
+      },
+      {
+        "id": "s5",
+        "frames": 68,
+        "frames_text_clipped": 0,
+        "frames_any_text_clipped": 0,
+        "image_zoom_inside": 0
+      }
+    ]
+  },
+  "visual": {
+    "job": "aisoeasy",
+    "headline": "Học AI đúng vai trò, đúng lộ trình",
+    "target_s": 30.0,
+    "actual_s": 32.6,
+    "duration_ratio": 1.087,
+    "scenes": [
+      {
+        "id": "s1",
+        "type": "hook",
+        "kind": "thao tác",
+        "speech_ms": 5450,
+        "final_ms": 5450,
+        "playback_rate": 1.0,
+        "trimmed_ms": 0,
+        "actions": 1,
+        "hold_ms": 1500,
+        "idle_max_ms": 3870
+      },
+      {
+        "id": "s2",
+        "type": "feature_demo",
+        "kind": "cuộn-highlight",
+        "speech_ms": 7450,
+        "final_ms": 7450,
+        "playback_rate": 1.0,
+        "trimmed_ms": 0,
+        "actions": 2,
+        "hold_ms": 1650,
+        "idle_max_ms": 2010
+      },
+      {
+        "id": "s3",
+        "type": "feature_demo",
+        "kind": "cuộn-highlight",
+        "speech_ms": 8250,
+        "final_ms": 8250,
+        "playback_rate": 1.0,
+        "trimmed_ms": 2267,
+        "actions": 2,
+        "hold_ms": 1650,
+        "idle_max_ms": 1831
+      },
+      {
+        "id": "s4",
+        "type": "before_after",
+        "kind": "ảnh",
+        "speech_ms": 6250,
+        "final_ms": 6250,
+        "playback_rate": 1.0,
+        "trimmed_ms": 0,
+        "actions": 0,
+        "hold_ms": null,
+        "idle_max_ms": 0
+      },
+      {
+        "id": "s5",
+        "type": "cta",
+        "kind": "cuộn-highlight",
+        "speech_ms": 4250,
+        "final_ms": 5137,
+        "playback_rate": 1.15,
+        "trimmed_ms": 490,
+        "actions": 2,
+        "hold_ms": 1650,
+        "idle_max_ms": 1591
+      }
+    ],
+    "camera_cover_share": 0.601,
+    "camera_mean_zoom": 0.971,
+    "duplicate_signatures": [],
+    "side_page_scenes": [],
+    "text_on_black_s": 0.0,
+    "hold_avg_ms": 1629,
+    "max_action_speedup": 1.0,
+    "max_speedup_any": 1.15,
+    "trimmed_ms": 2757,
+    "footage_ratio": 0.808,
+    "idle_ok": false,
+    "ffprobe": {
+      "codec_name": "h264",
+      "width": 1080,
+      "height": 1920,
+      "pix_fmt": "yuv420p",
+      "r_frame_rate": "30/1"
+    },
+    "warnings": [
+      "s5: trùng hình ảnh với s3, đổi sang section «The workforce upskilling platform for SMEs»",
+      "s5: trùng hình ảnh với s1, đổi sang section «Facebook Page»"
+    ],
+    "dropped_scenes": []
+  },
+  "planner": {
+    "s1": {
+      "planner": "plan",
+      "planner_attempts": 2,
+      "planner_errors": [],
+      "replaced_side_focus": 0,
+      "unresolved": 0,
+      "sources": {
+        "plan": 2,
+        "rule": 0,
+        "fallback": 0
+      }
+    },
+    "s2": {
+      "planner": "plan",
+      "planner_attempts": 1,
+      "planner_errors": [],
+      "replaced_side_focus": 0,
+      "unresolved": 0,
+      "sources": {
+        "plan": 2,
+        "rule": 0,
+        "fallback": 0
+      }
+    },
+    "s3": {
+      "planner": "plan",
+      "planner_attempts": 1,
+      "planner_errors": [],
+      "replaced_side_focus": 0,
+      "unresolved": 0,
+      "sources": {
+        "plan": 2,
+        "rule": 0,
+        "fallback": 0
+      }
+    },
+    "s5": {
+      "planner": "plan",
+      "planner_attempts": 1,
+      "planner_errors": [],
+      "replaced_side_focus": 0,
+      "unresolved": 0,
+      "sources": {
+        "plan": 2,
+        "rule": 0,
+        "fallback": 0
+      }
+    }
+  }
+}

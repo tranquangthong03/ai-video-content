@@ -1,0 +1,181 @@
+{
+  "focus_rows": 10,
+  "focus_ms_scored": 19302,
+  "side_focus_unmentioned_pct": 0.0,
+  "match_pct": 49.0,
+  "match_pct_is_reviewed": true,
+  "sources": {
+    "plan": 8,
+    "rule": 2,
+    "fallback": 0
+  },
+  "focus_camera": {
+    "frames_after_arrival": 473,
+    "frames_text_clipped": 0,
+    "frames_any_text_clipped": 99,
+    "image_zoom_inside": 0,
+    "scenes": [
+      {
+        "id": "s1",
+        "frames": 149,
+        "frames_text_clipped": 0,
+        "frames_any_text_clipped": 0,
+        "image_zoom_inside": 0
+      },
+      {
+        "id": "s2",
+        "frames": 127,
+        "frames_text_clipped": 0,
+        "frames_any_text_clipped": 0,
+        "image_zoom_inside": 0
+      },
+      {
+        "id": "s3",
+        "frames": 98,
+        "frames_text_clipped": 0,
+        "frames_any_text_clipped": 0,
+        "image_zoom_inside": 0
+      },
+      {
+        "id": "s5",
+        "frames": 99,
+        "frames_text_clipped": 0,
+        "frames_any_text_clipped": 99,
+        "image_zoom_inside": 0
+      }
+    ]
+  },
+  "visual": {
+    "job": "todomvc",
+    "headline": "Tạo và sửa việc ngay trên trình duyệt",
+    "target_s": 30.0,
+    "actual_s": 26.4,
+    "duration_ratio": 0.88,
+    "scenes": [
+      {
+        "id": "s1",
+        "type": "hook",
+        "kind": "thao tác",
+        "speech_ms": 8250,
+        "final_ms": 8250,
+        "playback_rate": 1.0,
+        "trimmed_ms": 1615,
+        "actions": 1,
+        "hold_ms": 1500,
+        "idle_max_ms": 2356
+      },
+      {
+        "id": "s2",
+        "type": "feature_demo",
+        "kind": "cuộn-highlight",
+        "speech_ms": 6650,
+        "final_ms": 6650,
+        "playback_rate": 1.0,
+        "trimmed_ms": 0,
+        "actions": 2,
+        "hold_ms": 1650,
+        "idle_max_ms": 2187
+      },
+      {
+        "id": "s3",
+        "type": "feature_demo",
+        "kind": "thao tác",
+        "speech_ms": 5050,
+        "final_ms": 6656,
+        "playback_rate": 1.0,
+        "trimmed_ms": 3847,
+        "actions": 3,
+        "hold_ms": 1500,
+        "idle_max_ms": 2050
+      },
+      {
+        "id": "s5",
+        "type": "cta",
+        "kind": "cuộn-highlight",
+        "speech_ms": 3850,
+        "final_ms": 4790,
+        "playback_rate": 1.15,
+        "trimmed_ms": 0,
+        "actions": 2,
+        "hold_ms": 1650,
+        "idle_max_ms": 1912
+      }
+    ],
+    "camera_cover_share": 0.932,
+    "camera_mean_zoom": 1.055,
+    "duplicate_signatures": [],
+    "side_page_scenes": [],
+    "text_on_black_s": 0.0,
+    "hold_avg_ms": 1575,
+    "max_action_speedup": 1.0,
+    "max_speedup_any": 1.15,
+    "trimmed_ms": 5462,
+    "footage_ratio": 1.0,
+    "idle_ok": true,
+    "ffprobe": {
+      "codec_name": "h264",
+      "width": 1080,
+      "height": 1920,
+      "pix_fmt": "yuv420p",
+      "r_frame_rate": "30/1"
+    },
+    "warnings": [
+      "s2: trùng hình ảnh với s1, đổi sang section «React»",
+      "s4: trùng hình ảnh với s1, đổi sang section «todos»",
+      "s4: trùng hình ảnh với s1 và hết section, bỏ cảnh"
+    ],
+    "dropped_scenes": [
+      "s4"
+    ]
+  },
+  "planner": {
+    "s1": {
+      "planner": "plan",
+      "planner_attempts": 1,
+      "planner_errors": [],
+      "replaced_side_focus": 0,
+      "unresolved": 0,
+      "sources": {
+        "plan": 3,
+        "rule": 0,
+        "fallback": 0
+      }
+    },
+    "s2": {
+      "planner": "plan",
+      "planner_attempts": 1,
+      "planner_errors": [],
+      "replaced_side_focus": 0,
+      "unresolved": 0,
+      "sources": {
+        "plan": 2,
+        "rule": 0,
+        "fallback": 0
+      }
+    },
+    "s3": {
+      "planner": "plan",
+      "planner_attempts": 1,
+      "planner_errors": [],
+      "replaced_side_focus": 0,
+      "unresolved": 0,
+      "sources": {
+        "plan": 2,
+        "rule": 1,
+        "fallback": 0
+      }
+    },
+    "s5": {
+      "planner": "plan",
+      "planner_attempts": 1,
+      "planner_errors": [],
+      "replaced_side_focus": 0,
+      "unresolved": 0,
+      "sources": {
+        "plan": 1,
+        "rule": 1,
+        "fallback": 0
+      }
+    }
+  }
+}

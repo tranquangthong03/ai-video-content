@@ -57,7 +57,7 @@ def test_setup_steps_get_no_hold(
     assert by_kind["hover"]["hold_ms"] == 300  # a pointing hover holds for its own time
 
 
-def test_scrolling_logs_the_block_in_the_middle_and_scroll_to_the_section(
+def test_scrolling_logs_no_centre_block_and_scroll_to_logs_the_section_content(
     browser_session: BrowserSession, site: str, tmp_path: Path
 ) -> None:
     visual = {
@@ -70,7 +70,9 @@ def test_scrolling_logs_the_block_in_the_middle_and_scroll_to_the_section(
     }
     r = rec(browser_session, site, tmp_path, visual, speech_ms=1000)
     kinds = [f["kind"] for f in r.focus_log]
-    assert kinds.count("scroll") >= 2 and kinds[-1] == "section"
+    assert "scroll" not in kinds and kinds == [
+        "section"
+    ]  # what is looked at while scrolling comes from the plan
     section = r.focus_log[-1]
     assert section["hold_ms"] == 1500 and section["bbox"]["w"] > 0
     assert all(0 <= f["bbox"]["x"] and f["bbox"]["y"] + f["bbox"]["h"] <= 900 for f in r.focus_log)
