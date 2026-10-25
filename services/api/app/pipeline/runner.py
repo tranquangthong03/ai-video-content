@@ -350,7 +350,7 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
         if cfg.stop_after == "script":
             return JobResult(EXIT_OK, "done")
 
-    return run_produce_step(cfg, rep, progress, tracker, profile, script)
+    return run_produce_step(cfg, rep, progress, tracker, profile, script, caller)
 
 
 def run_script_step(
@@ -394,6 +394,7 @@ def run_produce_step(
     tracker: UsageTracker,
     profile: ProductProfile,
     script: Script,
+    caller: JsonCaller | None = None,
 ) -> JobResult:
     """Record every scene, fit the timeline, render the mp4 and write report.json."""
     job_dir = cfg.job_dir
@@ -434,6 +435,7 @@ def run_produce_step(
                 progress=say,
                 token_usage=tracker.to_dict(),
                 extra_report=extra,
+                focus_caller=caller,
             )
     except RenderError as e:
         return _fail(rep, EXIT_RENDER, "failed", f"[red]{e}[/]")

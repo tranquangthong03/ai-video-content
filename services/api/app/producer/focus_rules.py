@@ -290,6 +290,20 @@ def overlay(base: list[Seg], top: list[Seg], duration_ms: float) -> list[Seg]:
     return sorted(out, key=lambda s: s.from_ms)
 
 
+def ensure_opening(segs: list[Seg]) -> list[Seg]:
+    """Every track starts with the establishing shot (the first second shows the whole page)."""
+    if not segs or segs[0].framing == "establish":
+        return segs
+    first = segs[0]
+    if first.length <= ESTABLISH_MS + 200:  # too short to be a focus: it becomes the opening
+        return [
+            replace(first, item_id=None, framing="establish", source="rule", pick=None),
+            *segs[1:],
+        ]
+    opening = Seg(first.from_ms, first.from_ms + ESTABLISH_MS, None, "establish", "rule")
+    return [opening, replace(first, from_ms=opening.to_ms), *segs[1:]]
+
+
 def tidy(segs: list[Seg], duration_ms: float) -> list[Seg]:
     """Contiguous from 0 to the end, and no focus shorter than MIN_FOCUS_MS (the opening shot
     excepted): a short one is merged into the one before, a short typing focus takes time from
@@ -378,7 +392,7 @@ def build_focus_track(
         if plan
         else rule_segments(duration_ms, action_log, inventory)
     )
-    segs = tidy(overlay(base, typing, duration_ms), duration_ms)
+    segs = tidy(ensure_opening(overlay(base, typing, duration_ms)), duration_ms)
 
     track: list[dict[str, Any]] = []
     metrics = {
@@ -412,10 +426,10 @@ def build_focus_track(
                 framing, source = "medium", "fallback"
             else:
                 box, framing, source = whole(clip), "wide", "fallback"
-            entry: dict[str, Any] = {"item_id": None, "text": "", "kind": None, "region": None}
+            entry: dict[str, Any] = {"item_id": None, "text": "", "item_kind": None, "region": None}
         elif item is None:
             box = whole(clip)
-            entry = {"item_id": None, "text": "", "kind": None, "region": None}
+            entry = {"item_id": None, "text": "", "item_kind": None, "region": None}
         else:
             box = focus_box(item, items, clip)
             if item["kind"] in ("image", "media"):
@@ -429,7 +443,7 @@ def build_focus_track(
             entry = {
                 "item_id": item["id"],
                 "text": item["text"],
-                "kind": item["kind"],
+                "item_kind": item["kind"],
                 "region": item["region"],
             }
         metrics["sources"][source] += 1

@@ -8,6 +8,7 @@ import {
   focusFromClicks,
   insideClip,
   lerpView,
+  pickFocus,
   targetView,
   viewTransform,
   type FocusLike,
@@ -32,8 +33,7 @@ const FRAME = { w: MEDIA.w, h: MEDIA.h };
 const DEFAULT_CLIP = { w: 1440, h: 900 };
 
 const clipSize = (a: SceneAssets) => ({ w: a.clip_width ?? DEFAULT_CLIP.w, h: a.clip_height ?? DEFAULT_CLIP.h });
-const focusOf = (a: SceneAssets): FocusLike[] =>
-  a.focus_log?.length ? a.focus_log : focusFromClicks(a.click_log ?? []);
+const focusOf = (a: SceneAssets): FocusLike[] => pickFocus(a);
 
 /** The recorded clip seen through the focus camera, with the drawn cursor and click ripples. */
 export const FocusClip: React.FC<{ assets: SceneAssets; durationInFrames: number }> = ({ assets, durationInFrames }) => {

@@ -15,7 +15,10 @@ from typing import Any
 
 from app.browser.session import BrowserSession
 from app.core.timing import PAUSE_MS, EstimatedTimer, estimate_captions
+from app.llm.json_call import JsonCaller
 from app.producer.dedupe import MIN_SCENES, swap_scene, used_texts
+from app.producer.focus_plan import phrases_from_captions, plan_focus
+from app.producer.focus_rules import build_focus_track
 from app.producer.trim import trim_dead_time
 from app.recorder.motion import idle_gaps
 from app.recorder.record import RecordResult, record_scene
@@ -88,6 +91,8 @@ class SceneOutcome:
     hold_avg_ms: int | None = None  # mean time kept on the result of those actions
     inventory_snapshots: int = 0  # frame_inventory snapshots taken (items are in inventory_file)
     inventory_file: str | None = None  # produce/inventory/<scene>.json: inventory + action_log
+    focus: dict[str, Any] | None = None  # how the focus track came about (see focus_summary)
+    focus_file: str | None = None  # produce/focus/<scene>.json: plan, track, metrics
 
     def as_dict(self) -> dict[str, Any]:
         return self.__dict__.copy()
@@ -145,6 +150,61 @@ def save_inventory(work: Path, scene_id: str, plan: "ClipPlan | None") -> str | 
     payload = {"inventory": plan.inventory, "action_log": plan.action_log}
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
     return str(path.relative_to(work.parent))
+
+
+def focus_for_scene(
+    work: Path,
+    s: Any,
+    plan: "ClipPlan",
+    captions: list[dict[str, Any]],
+    rate: float,
+    record: RecordResult,
+    caller: JsonCaller | None,
+) -> tuple[list[dict[str, Any]], dict[str, Any], str]:
+    """The scene's focus_track: the planner's plan (when it gave a usable one) through the rules."""
+    phrases = phrases_from_captions(captions, rate)
+    planned = None
+    if caller is not None:
+        planned = plan_focus(
+            caller,
+            scene_kind=s.type,
+            feature_name=getattr(s, "feature", None) or "",
+            key_point=s.key_point,
+            phrases=phrases,
+            actions=plan.action_log,
+            inventory=plan.inventory,
+            duration_ms=plan.content_ms,
+        )
+    built = build_focus_track(
+        duration_ms=plan.content_ms,
+        clip=(record.width, record.height),
+        inventory=plan.inventory,
+        action_log=plan.action_log,
+        phrases=phrases,
+        plan=planned.plan if planned else None,
+        legacy_focus=plan.focus_log,
+    )
+    summary = {
+        "planner": "plan" if planned and planned.plan else ("failed" if planned else "off"),
+        "planner_attempts": planned.attempts if planned else 0,
+        "planner_errors": planned.errors if planned else [],
+        **built.metrics,
+    }
+    path = work / "focus" / f"{s.id}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "phrases": phrases,
+                "plan": planned.plan if planned else None,
+                "track": built.track,
+                "summary": summary,
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    return built.track, summary, str(path.relative_to(work.parent))
 
 
 def plan_clip(record: RecordResult, visual: Any, speech_ms: int, scene_id: str) -> ClipPlan:
@@ -277,6 +337,7 @@ def produce(
     recorder: Recorder = record_scene,
     token_usage: dict[str, Any] | None = None,
     extra_report: dict[str, Any] | None = None,
+    focus_caller: JsonCaller | None = None,
 ) -> ProduceResult:
     """Record every scene in order, fit the timeline, render, and write report.json."""
     say = progress or (lambda msg: None)
@@ -348,6 +409,12 @@ def produce(
             if s.type == "cta":  # no button to point at: drift toward the header
                 bar = {"x": 0, "y": 0, "w": viewport["width"], "h": 140}
                 entry["focus_log"] = [{"t_ms": 0, "bbox": bar, "kind": "section", "hold_ms": 0}]
+        focus, focus_file = None, None
+        if plan is not None and plan.clip is not None and plan.inventory:
+            track, focus, focus_file = focus_for_scene(
+                work, s, plan, captions, rate, record, focus_caller
+            )
+            entry["focus_track"] = track
         assets[s.id] = entry
         inventory_file = save_inventory(work, s.id, plan)
         outcomes.append(
@@ -373,6 +440,8 @@ def produce(
                 hold_avg_ms=round(sum(holds) / len(holds)) if holds else None,
                 inventory_snapshots=len(plan.inventory) if plan else 0,
                 inventory_file=inventory_file,
+                focus=focus,
+                focus_file=focus_file,
             )
         )
     phases["record"] = round(time.monotonic() - started, 1)

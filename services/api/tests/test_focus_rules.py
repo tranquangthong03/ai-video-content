@@ -85,7 +85,8 @@ def test_a_sidebar_focus_from_the_plan_is_dropped_unless_the_voice_names_it() ->
         phrases=[{"from_ms": 0, "to_ms": 5000, "text": "Xem Official Resources của React"}],
     )  # fmt: skip
     assert said.metrics["replaced_side_focus"] == 0
-    assert said.track[0]["item_id"] == "sidetxt" and said.track[0]["source"] == "plan"
+    focus = next(t for t in said.track if t["framing"] != "establish")
+    assert focus["item_id"] == "sidetxt" and focus["source"] == "plan"
 
 
 def test_the_focus_grows_to_the_whole_text_block_so_nothing_is_cut() -> None:
@@ -143,9 +144,10 @@ def test_an_unknown_item_falls_back_to_the_old_focus_or_to_the_whole_page() -> N
     plan = [{"from_ms": 0, "to_ms": 4000, "item_id": "gone", "framing": "tight", "reason": ""}]
     legacy = [{"t_ms": 0, "kind": "click", "bbox": {"x": 10, "y": 20, "w": 100, "h": 50}}]
     old = run(plan=plan, action_log=[], legacy_focus=legacy, duration_ms=4000)
-    assert old.track[0]["source"] == "fallback" and old.track[0]["bbox"]["x"] == 10
+    body = [t for t in old.track if t["framing"] != "establish"]
+    assert body[0]["source"] == "fallback" and body[0]["bbox"]["x"] == 10
     none = run(plan=plan, action_log=[], legacy_focus=[], duration_ms=4000)
-    assert none.track[0]["bbox"] == {"x": 0, "y": 0, "w": 1440, "h": 900}
+    assert none.track[-1]["bbox"] == {"x": 0, "y": 0, "w": 1440, "h": 900}
     assert none.metrics["unresolved"] == 1
 
 

@@ -179,4 +179,5 @@ export function cursorAt(tMs: number, clicks: ClipClick[], clip: Size, frame: Si
 // the focus-first camera (desktop_focus) and its knobs
 export * from "./focus";
 export { CAMERA_CONFIG } from "./config";
-export type { CameraConfig, FocusKind } from "./config";
+export { pickFocus } from "./pick";
+export type { CameraConfig, FocusKind, Framing } from "./config";

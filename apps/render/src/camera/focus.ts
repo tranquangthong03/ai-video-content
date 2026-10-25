@@ -11,12 +11,13 @@
  *    (less for hover/scroll); a box wider than the view keeps the minimum zoom, centered
  *  - moves between targets are springs, the window is always clamped inside the clip
  */
-import { CAMERA_CONFIG, type CameraConfig, type FocusKind } from "./config";
+import { CAMERA_CONFIG, type CameraConfig, type FocusKind, type Framing } from "./config";
 import type { Size } from "../geometry";
 import { springStep } from "./index";
 
 export type ClipBox = { x: number; y: number; w: number; h: number };
-export type FocusLike = { t_ms: number; bbox: ClipBox; kind: FocusKind; hold_ms?: number };
+/** A camera target: from the recorder's focus_log (kind) or from the focus_track (framing). */
+export type FocusLike = { t_ms: number; bbox: ClipBox; kind?: FocusKind; framing?: Framing; hold_ms?: number };
 /** The part of the clip shown in the media frame (clip pixels); same aspect as the frame. */
 export type View = { x: number; y: number; w: number; h: number };
 export type FocusCamera = {
@@ -52,9 +53,10 @@ export function establishingView(clip: Size, frame: Size): View {
 export function insideClip(cx: number, cy: number, zoom: number, clip: Size, frame: Size): View {
   const w = coverWidth(clip, frame) / zoom;
   const h = (w * frame.h) / frame.w;
+  // a window larger than the clip (zoom below cover) is centred; the backdrop fills the rest
   return {
-    x: clamp(cx - w / 2, 0, Math.max(0, clip.w - w)),
-    y: clamp(cy - h / 2, 0, Math.max(0, clip.h - h)),
+    x: w >= clip.w ? (clip.w - w) / 2 : clamp(cx - w / 2, 0, clip.w - w),
+    y: h >= clip.h ? (clip.h - h) / 2 : clamp(cy - h / 2, 0, clip.h - h),
     w,
     h,
   };
@@ -62,16 +64,23 @@ export function insideClip(cx: number, cy: number, zoom: number, clip: Size, fra
 
 /** Where the camera should look for one focus point. */
 export function targetView(fp: FocusLike, clip: Size, frame: Size, cfg: CameraConfig = CAMERA_CONFIG): View {
+  if (fp.framing === "establish") return establishingView(clip, frame);
   const pad = 1 + 2 * cfg.padding;
   const bw = fp.bbox.w * pad;
   const bh = fp.bbox.h * pad;
   const cover = coverWidth(clip, frame);
-  const share = cfg.share[fp.kind] ?? 0.7;
+  const share = fp.framing ? cfg.framingShare[fp.framing] : (cfg.share[fp.kind ?? "click"] ?? 0.7);
   // the view that gives the padded box `share` of its width, and also holds it vertically
   let w = bw / share;
   const hAspect = frame.h / frame.w;
   w = Math.max(w, bh / (share * hAspect));
-  const zoom = clamp(cover / w, cfg.minZoom, cfg.maxZoom);
+  let zoom = clamp(cover / w, cfg.minZoom, cfg.maxZoom);
+  if (fp.framing) {
+    // a focus_track target is never cut: when its padded box is wider (or taller) than the window
+    // at cover, the camera zooms out below cover - down to the whole clip width - to hold it all
+    const needed = Math.max(bw, bh / hAspect);
+    zoom = Math.min(zoom, Math.max(cover / needed, cover / clip.w));
+  }
   return insideClip(fp.bbox.x + fp.bbox.w / 2, fp.bbox.y + fp.bbox.h / 2, zoom, clip, frame);
 }
 

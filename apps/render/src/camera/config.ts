@@ -6,11 +6,15 @@
  * 1440 px wide, so the maximum is kept low (1.4) to limit how much it is magnified.
  */
 export type FocusKind = "click" | "dblclick" | "type" | "hover" | "highlight" | "section" | "scroll";
+/** How the focus track wants a target framed (see producer/focus_rules.py). */
+export type Framing = "establish" | "tight" | "medium" | "wide";
 
 export interface CameraConfig {
   minZoom: number; // never below cover after the establishing shot
   maxZoom: number;
   padding: number; // each side of the target box, as a share of its size
+  /** Share of the view width the padded box fills, per framing of a focus_track entry. */
+  framingShare: Record<Framing, number>;
   /** Share of the view width the (padded) target should fill, by what is being shown. */
   share: Record<FocusKind, number>;
   establishingMs: number; // whole page (fit to width) at the start of every clip
@@ -29,7 +33,8 @@ export interface CameraConfig {
 export const CAMERA_CONFIG: CameraConfig = {
   minZoom: 1.0,
   maxZoom: 1.4,
-  padding: 0.15,
+  padding: 0.12,
+  framingShare: { establish: 1, tight: 0.7, medium: 0.5, wide: 1 },
   share: {
     click: 0.7,
     dblclick: 0.7,

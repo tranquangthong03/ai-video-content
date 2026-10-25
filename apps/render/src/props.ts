@@ -26,6 +26,21 @@ export const FocusSchema = z.object({
 });
 export type FocusPoint = z.infer<typeof FocusSchema>;
 
+/** One stretch of the focus track the producer worked out: what to look at, how, and for how long. */
+export const FocusTrackSchema = z.object({
+  t_ms: z.number().min(0),
+  bbox: z.object({ x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() }),
+  framing: z.enum(["establish", "tight", "medium", "wide"]),
+  hold_ms: z.number().min(0).default(0),
+  source: z.enum(["plan", "rule", "fallback"]),
+  item_id: z.string().nullish(),
+  text: z.string().nullish(),
+  item_kind: z.string().nullish(),
+  region: z.string().nullish(),
+  reason: z.string().nullish(),
+});
+export type FocusTrackEntry = z.infer<typeof FocusTrackSchema>;
+
 /** Per-scene media. URLs are absolute (http/data) or paths relative to the bundle's public dir. */
 export const SceneAssetsSchema = z.object({
   audio_url: z.string().optional(),
@@ -38,6 +53,7 @@ export const SceneAssetsSchema = z.object({
   screenshot_url: z.string().optional(),
   click_log: z.array(ClickSchema).optional(), // x,y in source clip pixels, t_ms in clip time
   focus_log: z.array(FocusSchema).optional(), // what the camera should look at, clip pixels / clip time
+  focus_track: z.array(FocusTrackSchema).optional(), // the producer's final focus plan; wins over focus_log
   // stretches the producer already cut out of clip_url (original clip time); informational only
   segments: z.array(z.object({ from_ms: z.number(), to_ms: z.number() })).optional(),
   clip_width: z.number().positive().optional(),

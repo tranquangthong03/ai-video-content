@@ -163,3 +163,79 @@ def test_produce_fits_every_scene_and_writes_the_report(tmp_path: Path) -> None:
     assert (
         s2.idle_max_ms is not None and s2.idle_max_ms >= speech["s2"] - 4500
     )  # the held frame is quiet
+
+
+def test_produce_adds_a_focus_track_planned_by_the_model_and_corrected_by_the_rules(
+    tmp_path: Path,
+) -> None:
+    from app.llm.json_call import JsonCaller
+    from tests.conftest import FakeLLM
+
+    script, _ = make_script(tmp_path, 45)
+    work = tmp_path / "job"
+
+    def item(id: str, kind: str, text: str, y: int, region: str = "main") -> dict[str, Any]:
+        return {
+            "id": id, "role": kind, "tag": "div", "text": text, "kind": kind, "region": region,
+            "is_new": False, "bbox": {"x": 400, "y": y, "w": 400, "h": 60},
+        }  # fmt: skip
+
+    items = [item("e1", "input", "New todo", 200), item("side", "sidebar", "React", 20, "aside")]
+    inventory = [{"t_ms": t, "items": items} for t in (1100, 2600, 4200, 6000)]
+    actions = [{"t_ms": 1500, "end_ms": 2600, "do": "type", "target_text": "", "item_id": "e1"}]
+
+    def recorder(
+        session: Any, scene: Any, out_dir: Path, speech_ms: int, **kw: Any
+    ) -> RecordResult:
+        s = scene.root
+        if s.visual.mode == "screenshot":
+            img = out_dir / f"{s.id}.png"
+            img.parent.mkdir(parents=True, exist_ok=True)
+            img.write_bytes(b"png")
+            return RecordResult(kind="screenshot", image_path=img)
+        if s.visual.mode != "recording":
+            return RecordResult(kind="template")
+        return RecordResult(
+            kind="recording", clip_path=tiny_mp4(out_dir / f"{s.id}.mp4"), start_offset_ms=1000,
+            setup_end_ms=1000, content_ms=9000, width=1440, height=900,
+            click_log=[{"t_ms": 1500, "x": 10, "y": 10, "type": "click"}],
+            focus_log=[{"t_ms": 1500, "bbox": {"x": 400, "y": 200, "w": 400, "h": 60},
+                        "kind": "type", "hold_ms": 1500}],
+            inventory=inventory, action_log=actions, activity_ms=[1500.0, 2500.0], steps_ok=1,
+        )  # fmt: skip
+
+    bad = {
+        "plan": [{"from_ms": 0, "to_ms": 9000, "item_id": "side", "framing": "wide", "reason": ""}]
+    }
+    llm = FakeLLM(lambda _p: bad)  # the planner picks the sidebar: the rules must refuse it
+    renders: list[dict[str, Any]] = []
+
+    def render(props: dict[str, Any], out: Path, work_dir: Path) -> Any:
+        renders.append(props)
+        tiny_mp4(out)
+        return type("R", (), {"render_ms": 1})()
+
+    result = produce(
+        script, url="https://todo.example/", job_dir=work, session=None,  # type: ignore[arg-type]
+        render=render, profile=make_profile(), recorder=recorder,
+        focus_caller=JsonCaller(llm, cache_dir=tmp_path / "c"),
+    )  # fmt: skip
+
+    track = renders[0]["assets"]["s2"]["focus_track"]
+    assert track[0]["framing"] == "establish"
+    assert all(t["region"] != "aside" for t in track)  # no sidebar focus, whatever the plan said
+    assert any(t["item_id"] == "e1" and t["framing"] == "tight" for t in track)  # typing = input
+    s2 = next(o for o in result.scenes if o.id == "s2")
+    assert s2.focus is not None and s2.focus["planner"] == "plan"
+    assert s2.focus["replaced_side_focus"] >= 1 and s2.focus_file is not None
+    saved = json.loads((work / s2.focus_file).read_text(encoding="utf-8"))
+    assert saved["track"] == track and saved["phrases"]
+    assert s2.inventory_snapshots == 4 and (work / s2.inventory_file).is_file()  # type: ignore[arg-type]
+    assert "focus_track" not in renders[0]["assets"]["s1"]  # a photo has none
+
+    renders.clear()  # without a model the rules alone still make a track
+    produce(
+        script, url="https://todo.example/", job_dir=tmp_path / "job2", session=None,  # type: ignore[arg-type]
+        render=render, profile=make_profile(), recorder=recorder,
+    )  # fmt: skip
+    assert renders[0]["assets"]["s2"]["focus_track"][0]["framing"] == "establish"
