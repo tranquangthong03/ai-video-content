@@ -6,6 +6,10 @@ few well-known authentication providers pass too; nothing else does.
 Rules (see decide()): PUT/PATCH/DELETE and document POSTs (form submits) are always blocked.
 Other POSTs pass only for GraphQL queries, telemetry/font calls (fake 204),
 or read-like paths (search|query|list|filter|graphql without create|update|delete|save|...).
+
+Inside allow_writes() (a core flow whose submit policy is "allow") POST/PUT/PATCH to the site's
+own domain pass too, except paths that delete, pay, invite or send. At most MAX_WRITE_WINDOWS
+windows per guard, never on a shared demo site; every write request is listed in the report.
 """
 
 import json
@@ -17,11 +21,27 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 from urllib.parse import urlparse
 
+from app.core.shared_demo import is_shared_demo
+
 Verdict = Literal["continue", "abort", "fake_204"]
 
 ALWAYS_BLOCKED = {"PUT", "PATCH", "DELETE"}
 READ_PATH = re.compile(r"search|query|list|filter|graphql", re.I)
 WRITE_PATH = re.compile(r"create|update|delete|save|submit|send|pay|checkout", re.I)
+# Never let through, even while writes are allowed: destructive, payment, people, outgoing mail
+FORBIDDEN_WRITE_PATH = re.compile(
+    r"delete|remove|destroy|pay|checkout|billing|subscri|invite|share|send|message|mail|notify|"
+    r"upgrade|logout|signout|sign-out|log-out",
+    re.I,
+)
+WRITE_METHODS = {"POST", "PUT", "PATCH"}
+MAX_WRITE_WINDOWS = 2
+
+
+class WritesNotAllowed(RuntimeError):
+    """allow_writes() was refused (shared demo site, or the windows are used up)."""
+
+
 TELEMETRY_HOSTS = (
     "google-analytics.com",
     "googletagmanager.com",
@@ -104,6 +124,9 @@ class RequestGuard:
     login_phase: bool = False
     login_hosts: Counter[str] = field(default_factory=Counter)  # POSTs let through while signing in
     login_blocked_hosts: Counter[str] = field(default_factory=Counter)  # and the ones refused
+    write_phase: bool = False
+    write_windows: int = 0
+    write_log: list[str] = field(default_factory=list)  # every write request let through
 
     def _is_main_domain(self, url: str) -> bool:
         host, root = _host(url), _host(self.root_url)
@@ -117,6 +140,20 @@ class RequestGuard:
             yield
         finally:
             self.login_phase = False
+
+    @contextmanager
+    def allow_writes(self) -> Iterator[None]:
+        """Within this block the flow's own writes pass (see decide); refused on shared demos."""
+        if is_shared_demo(self.root_url):
+            raise WritesNotAllowed("shared demo site")
+        if self.write_windows >= MAX_WRITE_WINDOWS:
+            raise WritesNotAllowed(f"at most {MAX_WRITE_WINDOWS} submits per flow")
+        self.write_windows += 1
+        self.write_phase = True
+        try:
+            yield
+        finally:
+            self.write_phase = False
 
     def login_post_allowed(self, url: str) -> bool:
         host, root = _host(url), _host(self.root_url)
@@ -138,6 +175,13 @@ class RequestGuard:
         method = method.upper()
         if method in {"GET", "HEAD", "OPTIONS"}:
             return "continue", "read"
+        if (
+            self.write_phase
+            and method in WRITE_METHODS
+            and self._is_main_domain(url)
+            and not FORBIDDEN_WRITE_PATH.search(urlparse(url).path)
+        ):
+            return "continue", "flow_write"
         if method in ALWAYS_BLOCKED:
             return "abort", f"method_{method.lower()}"
         # POST from here on
@@ -175,6 +219,8 @@ class RequestGuard:
         elif self.allow_mutations or verdict == "continue":
             self.counts[f"allowed:{rule}"] += 1
             self._remember(f"allowed:{rule}", request)
+            if rule == "flow_write":
+                self.write_log.append(f"{request.method} {request.url[:200]}")
             route.continue_()
         elif verdict == "fake_204":
             self.counts[f"faked_204:{rule}"] += 1
@@ -203,6 +249,7 @@ class RequestGuard:
                 "posts_allowed": dict(self.login_hosts),
                 "hosts_refused": dict(self.login_blocked_hosts),
             },
+            "writes": {"windows": self.write_windows, "requests": self.write_log[:20]},
             "first_blocked_urls": self.blocked_urls,
             "first_passed_urls": self.passed_urls,
         }
