@@ -10,6 +10,7 @@ import json
 import os
 import threading
 import time
+from collections.abc import Callable
 from pathlib import Path
 
 from app.pipeline.proposal_run import Cancelled
@@ -20,6 +21,7 @@ from app.schemas.generated.user_response import UserResponse
 PENDING = "pending.json"
 RESPONSES = "responses"
 POLL_S = 0.5
+KEEPALIVE_S = 240  # a job waiting for the user touches its signed-in session this often
 
 
 def write_json_atomic(path: Path, data: object) -> None:
@@ -31,7 +33,17 @@ def write_json_atomic(path: Path, data: object) -> None:
 
 
 class FileFrontend:
-    def __init__(self, job_dir: Path, cancel: threading.Event, poll_s: float = POLL_S) -> None:
+    def __init__(
+        self,
+        job_dir: Path,
+        cancel: threading.Event,
+        poll_s: float = POLL_S,
+        keepalive_s: float = KEEPALIVE_S,
+    ) -> None:
+        self.keepalive: Callable[[], None] | None = (
+            None  # set by the pipeline when it holds a session
+        )
+        self.keepalive_s = keepalive_s
         self.dir = job_dir
         self.cancel = cancel
         self.poll_s = poll_s
@@ -45,9 +57,17 @@ class FileFrontend:
         write_json_atomic(pending, request.model_dump(mode="json", exclude_none=True))
         update_state(self.dir, status="waiting")
         try:
+            next_ping = time.monotonic() + self.keepalive_s
             while not answer.is_file():
                 if self.cancel.is_set():  # checked twice a second: Hủy takes effect at once
                     raise Cancelled("hủy bởi người dùng")
+                if (
+                    self.keepalive is not None
+                    and request.kind != "login_required"
+                    and time.monotonic() >= next_ping
+                ):
+                    self.keepalive()  # keeps a signed-in session alive while the user thinks
+                    next_ping = time.monotonic() + self.keepalive_s
                 time.sleep(self.poll_s)
             return UserResponse.model_validate_json(answer.read_text(encoding="utf-8"))
         finally:

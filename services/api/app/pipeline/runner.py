@@ -44,6 +44,7 @@ from app.script.theme import ThemeResult, derive_theme
 from app.script.writer import WriterError
 from app.session.credential_login import make_credential_login
 from app.session.gate import EXPIRED, LoginGate, LoginOutcome, SessionCheck
+from app.session.keepalive import keepalive_enabled, keepalive_interval, refresh_session
 
 EXIT_OK = 0
 EXIT_CANCELLED, EXIT_BLOCKED, EXIT_TOKENS, EXIT_TIMEOUT, EXIT_USAGE, EXIT_SCRIPT = 1, 2, 3, 4, 5, 6
@@ -302,6 +303,16 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
         gate.record("verify_before_produce", ok=check.ok, opened=home, ended_at=check.url)
         if not check.ok:
             sign_in(LoginRequired(cfg.login_url or "", "session_expired_review", target_url=home))
+
+    if keepalive_enabled() and hasattr(frontend, "keepalive"):
+        frontend.keepalive_s = keepalive_interval()  # type: ignore[attr-defined]
+
+        def keep_session_alive() -> None:
+            if cfg.storage_state is not None and cfg.storage_state.is_file():
+                ok = refresh_session(cfg.storage_state, cfg.app_home_url or cfg.url)
+                gate.record("keepalive", ok=ok)
+
+        frontend.keepalive = keep_session_alive  # type: ignore[attr-defined]
 
     if cfg.from_step == "explore" and cfg.requires_login and cfg.storage_state is None:
         # the user knows the main features are behind a sign-in: find where, ask right away

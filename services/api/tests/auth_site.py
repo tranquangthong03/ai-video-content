@@ -125,7 +125,8 @@ class Handler(BaseHTTPRequestHandler):
             name = {"/app/settings": "settings.html", "/app/billing": "billing.html"}.get(
                 path, "app.html"
             )
-            return self.send(200, page(name, email=EMAIL))
+            touch = {"Set-Cookie": "seen=1; Path=/"} if name == "app.html" else None
+            return self.send(200, page(name, email=EMAIL), touch)
         self.send(404, b"not found")
 
     def do_POST(self) -> None:  # noqa: N802

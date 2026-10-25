@@ -173,3 +173,81 @@ def test_the_app_home_after_a_sign_in_is_kept_for_the_next_run(
     spec = json.loads((job / "job.json").read_text(encoding="utf-8"))
     assert spec["app_home_url"] == site.base + "/app" and spec["login_url"] == site.base + "/login"
     assert spec["storage_state"] == "storage_state.json"
+
+
+# --- keeping a session alive while the user reviews -----------------------------------------------------
+
+
+def test_refreshing_a_live_session_saves_the_cookies_the_visit_produced(
+    site: AuthSite, tmp_path: Path
+) -> None:
+    from app.session.keepalive import refresh_session
+
+    state = cookie_file(tmp_path / "state.json", site.new_session())
+    assert refresh_session(state, site.base + "/app") is True
+    names = [c["name"] for c in json.loads(state.read_text(encoding="utf-8"))["cookies"]]
+    assert "sid" in names and "seen" in names  # the page set a cookie: it is kept
+    assert "/app" in site.hits and not any(h for h in site.hits if "logout" in h)
+
+
+def test_a_session_that_is_gone_is_reported_and_the_file_is_left_alone(
+    site: AuthSite, tmp_path: Path
+) -> None:
+    from app.session.keepalive import refresh_session
+
+    state = cookie_file(tmp_path / "state.json", "stale")
+    before = state.read_text(encoding="utf-8")
+    assert refresh_session(state, site.base + "/app") is False
+    assert state.read_text(encoding="utf-8") == before
+    assert site.posts == []  # a GET and nothing else
+
+
+def test_a_waiting_job_pings_every_interval_but_not_while_asking_for_a_login(
+    tmp_path: Path,
+) -> None:
+    import threading
+
+    from app.core.interaction import make_request
+    from app.pipeline.file_frontend import RESPONSES, FileFrontend, write_json_atomic
+
+    job = tmp_path / "job"
+    job.mkdir()
+    (job / "state.json").write_text(
+        json.dumps({"job_id": "job", "url": "u", "status": "running", "step": "script",
+                    "progress_text": "", "progress_pct": 1, "latest_screenshot": None, "error": None,
+                    "created_at": "2026-01-01T00:00:00+00:00", "updated_at": "2026-01-01T00:00:00+00:00"})
+    )  # fmt: skip
+    pings: list[int] = []
+    frontend = FileFrontend(job, threading.Event(), poll_s=0.02, keepalive_s=0.15)
+    frontend.keepalive = lambda: pings.append(1)
+
+    def answer_later(kind: str, after_s: float) -> InteractionRequest:
+        request = make_request("job", kind, "q")
+        threading.Timer(
+            after_s,
+            lambda: write_json_atomic(
+                job / RESPONSES / f"{request.interaction_id}.json",
+                {
+                    "interaction_id": request.interaction_id,
+                    "job_id": "job",
+                    "action": "login_done" if kind == "login_required" else "approve",
+                },
+            ),  # fmt: skip
+        ).start()
+        return request
+
+    frontend.ask(answer_later("script_review", 0.6))
+    assert len(pings) >= 2
+    pings.clear()
+    frontend.ask(answer_later("login_required", 0.6))
+    assert pings == []  # the user is signing in: nothing to keep alive
+
+
+def test_the_keepalive_can_be_turned_off() -> None:
+    from app.session.keepalive import keepalive_enabled, keepalive_interval
+
+    assert keepalive_enabled({}) is True and keepalive_enabled({"KEEPALIVE_SESSION": "0"}) is False
+    assert (
+        keepalive_interval({}) == 240 and keepalive_interval({"KEEPALIVE_INTERVAL_S": "30"}) == 30
+    )
+    assert keepalive_interval({"KEEPALIVE_INTERVAL_S": "x"}) == 240
