@@ -216,6 +216,7 @@ class ExploreRunner:
                 self.state.pages,
                 self.state.insights,
                 self.report,
+                authenticated=self.storage_state is not None,
             )
         question = self.report.data.get("scope_question")
         if question and question not in profile.open_questions:
@@ -299,7 +300,10 @@ class ExploreRunner:
         ]
         if description:
             targets += pick_candidates_by_description(
-                known["candidates"], known["visited"], description
+                known["candidates"],
+                known["visited"],
+                description,
+                authenticated=self.storage_state is not None,
             )
         targets = [t for t in dict.fromkeys(targets) if t not in known["visited"]]
         if not targets:
@@ -322,6 +326,7 @@ class ExploreRunner:
                 first_n=len(self.state.pages) + 1,
                 description=description,
                 visited=known["visited"],
+                authenticated=self.storage_state is not None,
             )
             context.close()
             if not new_pages:
@@ -338,6 +343,7 @@ class ExploreRunner:
                 new_insights,
                 self.report,
                 existing=self.state.profile,
+                authenticated=self.storage_state is not None,
             )
             merged = merge_profiles(self.state.profile, fresh)
             added = [

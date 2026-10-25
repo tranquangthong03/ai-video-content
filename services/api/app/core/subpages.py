@@ -20,6 +20,29 @@ _TEXT = re.compile(
 )
 
 
+_SENSITIVE_WORDS = (
+    r"settings?|account|profile|billing|subscription|payment|invoice|admin|users|members"
+    r"|team/invite|invite|security|api[-_]?keys?|token|password"
+    r"|cài[ -]đặt|tài[ -]khoản|thanh[ -]toán|hồ[ -]sơ|bảo[ -]mật"
+    r"|cai[ -]dat|tai[ -]khoan|thanh[ -]toan|ho[ -]so|bao[ -]mat"
+)
+_SENSITIVE_PATH = re.compile(rf"(^|/|[-_.])({_SENSITIVE_WORDS})($|/|[-_.])", re.IGNORECASE)
+_SENSITIVE_TEXT = re.compile(rf"(?<!\w)({_SENSITIVE_WORDS})(?!\w)", re.IGNORECASE)
+
+
+def is_sensitive(url: str | None = None, title: str | None = None) -> bool:
+    """A page of settings / account / billing / admin / keys...: never explored or filmed once
+    the visitor is signed in (it shows personal data, or things that could be changed)."""
+    if url and _SENSITIVE_PATH.search(urlparse(url).path or "/"):
+        return True
+    return bool(title and _SENSITIVE_TEXT.search(title))
+
+
+def is_sensitive_text(text: str | None) -> bool:
+    """A link text that leads to such a page."""
+    return bool(text and _SENSITIVE_TEXT.search(text))
+
+
 def is_subpage(url: str | None = None, title: str | None = None) -> bool:
     """True when the URL path or the page title names one of the side pages."""
     if url:

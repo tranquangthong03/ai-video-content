@@ -18,7 +18,7 @@ LOGIN_PATH = re.compile(
 )
 # a path that must never be visited on purpose after signing in
 LOGOUT_PATH = re.compile(
-    r"(^|/|[-_.])(log-?out|sign-?out|signout|đăng-?xuất|dang-?xuat)($|/|[-_.])", re.IGNORECASE
+    r"(^|/|[-_.])(log[-_]?out|sign[-_]?out|đăng[-_ ]?xuất|dang[-_]?xuat)($|/|[-_.])", re.IGNORECASE
 )
 
 Reason = Literal["password_field", "redirect", "http_status", "session_expired"]

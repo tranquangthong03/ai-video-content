@@ -17,7 +17,7 @@ from typing import Any
 
 from playwright.sync_api import BrowserContext, Page
 
-from app.browser.auth_detect import LoginRequired, detect_login
+from app.browser.auth_detect import LoginRequired, detect_login, is_logout_url
 from app.browser.blacklist import is_blocked, is_blocked_href
 from app.browser.enter_policy import Policy, enter_decision
 from app.browser.locate import Target, Unsafe, check_clickable, resolve
@@ -406,6 +406,8 @@ class _Recorder:
             self.focus_log[-1]["hold_ms"] = own or HOLD_MS
 
     def do_goto(self, a: Any, label: str) -> None:
+        if is_logout_url(a.url or ""):
+            raise Unsafe("blacklist", f"goto to a sign-out page {a.url}")
         self.collect_activity()
         response = self.page.goto(a.url, wait_until="domcontentloaded")
         self.settle()

@@ -6,6 +6,7 @@ from types import TracebackType
 from playwright.sync_api import Browser, BrowserContext, Playwright, sync_playwright
 
 from app.browser.guard import RequestGuard
+from app.browser.privacy import BLUR_JS, blur_enabled
 
 VIEWPORT = {"width": 1920, "height": 1080}
 NAV_TIMEOUT_MS = 20_000
@@ -19,8 +20,10 @@ class BrowserSession:
         storage_state: Path | None = None,
         headless: bool = True,
         allow_mutations: bool = False,
+        blur_personal: bool | None = None,
     ) -> None:
         self.storage_state = storage_state
+        self.blur_personal = blur_personal  # None: blur when a session is held (BLUR_PERSONAL_DATA)
         self.headless = headless
         self.guard = RequestGuard(root_url, allow_mutations=allow_mutations)
         self._pw: Playwright | None = None
@@ -61,4 +64,9 @@ class BrowserSession:
         context.set_default_navigation_timeout(NAV_TIMEOUT_MS)
         context.set_default_timeout(8_000)
         context.route("**/*", self.guard.handle)
+        blur = self.blur_personal
+        if blur is None:
+            blur = blur_enabled(self.storage_state is not None)
+        if blur:  # personal data of a signed-in account must not reach screenshots or video
+            context.add_init_script(BLUR_JS)
         return context

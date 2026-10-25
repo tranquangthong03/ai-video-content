@@ -24,6 +24,16 @@ BLACKLIST: tuple[str, ...] = (
     "đăng xuất",
     "logout",
     "hủy tài khoản",
+    "invite",  # actions of a signed-in account that reach other people or change its plan
+    "mời",
+    "share access",
+    "chia sẻ quyền",
+    "generate key",
+    "tạo khóa",
+    "revoke",
+    "thu hồi",
+    "upgrade",
+    "nâng cấp",
 )
 
 # Extra intents the verifier must never trigger (they write data or leave the page)
@@ -40,7 +50,7 @@ SUBMIT_INTENTS: tuple[str, ...] = (
 
 # href path segments that mean "destructive/account/payment" even if the link text looks harmless
 BLOCKED_PATH = re.compile(
-    r"/(logout|log-out|signout|sign-out|delete|remove|checkout|payment|payments|billing|cart)(/|$|\?)",
+    r"/(logout|log-out|signout|sign-out|sign_out|log_out|đăng-xuất|dang-xuat|delete|remove|checkout|payment|payments|billing|cart)(/|$|\?)",
     re.I,
 )
 

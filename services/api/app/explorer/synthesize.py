@@ -3,10 +3,11 @@
 import json
 from pathlib import Path
 
+from app.browser.auth_detect import is_logout_url
 from app.browser.blacklist import is_blocked, is_blocked_href
 from app.browser.urls import normalize_url, same_site
 from app.core.samples import CATALOG, catalog_text, pick_sample
-from app.core.subpages import is_subpage, is_subpage_text
+from app.core.subpages import is_sensitive, is_subpage, is_subpage_text
 from app.explorer.extract import describe_layout
 from app.explorer.models import Element, PageData
 from app.explorer.report import Report
@@ -99,6 +100,8 @@ def sanitize_profile(
     pages: list[PageData],
     root_url: str,
     typed: set[str] | None = None,
+    *,
+    authenticated: bool = False,
 ) -> tuple[ProductProfile, list[str]]:
     """Drop what the data does not support: unknown refs/pages and unsafe or invalid demo steps.
 
@@ -142,7 +145,9 @@ def sanitize_profile(
             continue
         feature.evidence = evidence
 
-        feature.demo_steps = _clean_steps(feature, lookup, root_url, notes, set(typed or ()))
+        feature.demo_steps = _clean_steps(
+            feature, lookup, root_url, notes, set(typed or ()), authenticated
+        )
         kept.append(feature)
 
     profile.features = kept[:MAX_FEATURES]
@@ -155,13 +160,14 @@ def _clean_steps(
     root_url: str,
     notes: list[str],
     typed: set[str],
+    authenticated: bool = False,
 ) -> list[DemoStep]:
     current = next(
         (e.url for e in feature.evidence if e.source == "app_action"), feature.evidence[0].url
     )
     clean: list[DemoStep] = []
     for i, step in enumerate(feature.demo_steps[:MAX_STEPS]):
-        problem = _step_problem(step, current, lookup, root_url, typed)
+        problem = _step_problem(step, current, lookup, root_url, typed, authenticated)
         if step.do == "type" and step.text:
             typed = typed | {step.text.strip().lower()}
         if problem:
@@ -190,11 +196,16 @@ def _step_problem(
     lookup: dict[str, PageData],
     root_url: str,
     typed: set[str] = frozenset(),  # type: ignore[assignment]
+    authenticated: bool = False,
 ) -> str | None:
     if step.do == "goto":
         target = normalize_url(step.url or "", root_url)
         if not target or not same_site(target, root_url):
             return "goto without a same-site url"
+        if is_logout_url(target):
+            return "goto to a sign-out page"
+        if authenticated and is_sensitive(target):
+            return "goto to a settings/account/billing page"
         return None
     if step.do not in REF_STEPS:
         return None
@@ -321,6 +332,7 @@ def synthesize(
     report: Report,
     *,
     existing: ProductProfile | None = None,
+    authenticated: bool = False,
 ) -> ProductProfile:
     """Product profile from page insights. With `existing`, `pages`/`insights` hold only the NEW
     part: the model is told which features (and intent keys) exist and should reuse the keys."""
@@ -348,6 +360,6 @@ def synthesize(
         known_intents=known,
     )
     profile = caller.call("synthesize", prompt, ProductProfile, images=images if use_images else ())
-    profile, notes = sanitize_profile(profile, pages, root_url)
+    profile, notes = sanitize_profile(profile, pages, root_url, authenticated=authenticated)
     report.data["synthesis_dropped"] = notes
     return profile

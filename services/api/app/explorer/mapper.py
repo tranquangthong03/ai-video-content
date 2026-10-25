@@ -29,7 +29,7 @@ from app.browser.urls import (
     related_domain,
     same_site,
 )
-from app.core.subpages import is_subpage, is_subpage_text
+from app.core.subpages import is_sensitive, is_sensitive_text, is_subpage, is_subpage_text
 from app.core.textmatch import description_words, words_match
 from app.explorer.extract import extract_page, settle
 from app.explorer.models import PageData
@@ -369,6 +369,28 @@ def discover_spa_routes(
     return found
 
 
+def skip_sensitive(report: Report, url: str) -> None:
+    """Note a page left unexplored because it is settings / billing / admin... (signed-in only)."""
+    skipped = report.data.setdefault("sensitive_skipped", [])
+    if url not in skipped:
+        skipped.append(url)
+    report.skip(url, "sensitive page (signed in)")
+
+
+def drop_sensitive(
+    candidates: list[Candidate], report: Report, authenticated: bool
+) -> list[Candidate]:
+    if not authenticated:
+        return candidates
+    keep = []
+    for c in candidates:
+        if is_sensitive(c.url) or is_sensitive_text(c.text):
+            skip_sensitive(report, c.url)
+        else:
+            keep.append(c)
+    return keep
+
+
 def visit(
     page: Page,
     cand: Candidate,
@@ -410,6 +432,9 @@ def visit(
         return None
     if blockers["needs_login"]:
         report.data["blockers"].append({"url": cand.url, "needs_login": True})
+    if authenticated and is_sensitive(final, page.title()):
+        skip_sensitive(report, final)  # e.g. a redirect or a page whose title gives it away
+        return None
     data = extract_page(page, n, out_dir, depth=cand.depth, score=cand.score)
     data.url = final if "#" in cand.url else data.url
     return data
@@ -463,12 +488,12 @@ def crawl(
         if cand.depth < MAX_DEPTH:
             raw = page.evaluate(LINKS_JS)
             interactive = int(data.signals.get("interactive", 0))
-            for found in candidates_from_links(
+            links = candidates_from_links(
                 raw, page.url, root, cand.depth + 1, report,
                 parent_interactive=interactive, prefix=prefix,
-            ):  # fmt: skip
-                frontier.add(found)
-            for found in discover_spa_routes(page, data, root, report, deadline, prefix):
+            )  # fmt: skip
+            spa = discover_spa_routes(page, data, root, report, deadline, prefix)
+            for found in drop_sensitive([*links, *spa], report, authenticated):
                 frontier.add(found)
     report.data["grouped_pages"] = dict(frontier.grouped_skips)
     unvisited = [u for u in frontier.known if u not in frontier.visited]
@@ -497,7 +522,12 @@ def relevance(description: str, text: str, url: str) -> int:
 
 
 def pick_candidates_by_description(
-    candidates: list[dict[str, Any]], visited: list[str], description: str, limit: int = 3
+    candidates: list[dict[str, Any]],
+    visited: list[str],
+    description: str,
+    limit: int = 3,
+    *,
+    authenticated: bool = False,
 ) -> list[str]:
     """Unvisited, non-side-page known URLs whose link text/path best match a description."""
     scored = []
@@ -505,6 +535,8 @@ def pick_candidates_by_description(
         if c["url"] in visited or is_auth_url(c["url"]):
             continue
         if is_subpage(c["url"]) or is_subpage_text(c["text"]):
+            continue
+        if authenticated and (is_sensitive(c["url"]) or is_sensitive_text(c["text"])):
             continue
         overlap = relevance(description, c["text"], c["url"])
         if overlap:
@@ -523,6 +555,7 @@ def explore_targeted(
     description: str | None = None,
     visited: list[str] | None = None,
     max_pages: int = MAX_TARGETED_PAGES,
+    authenticated: bool = False,
 ) -> list[PageData]:
     """Look at the pages a user asked for: the seeds first, then links next to them.
 
@@ -539,7 +572,9 @@ def explore_targeted(
         if cand.url in seen:
             continue
         seen.add(cand.url)
-        data = visit(page, cand, first_n + len(pages), out_dir, report, root)
+        data = visit(
+            page, cand, first_n + len(pages), out_dir, report, root, authenticated=authenticated
+        )
         if data is None:
             continue
         if is_subpage(data.url, data.title):
@@ -557,6 +592,7 @@ def explore_targeted(
             and not is_subpage(c.url)
             and not is_subpage_text(c.text)
         ]
+        found = drop_sensitive(found, report, authenticated)
         found.sort(
             key=lambda c: (-relevance(description or "", c.text, c.url), -c.score),
         )
