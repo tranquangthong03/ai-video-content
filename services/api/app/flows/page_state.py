@@ -63,7 +63,11 @@ STATE_JS = r"""
       const before = node.previousElementSibling;
       if (before && !before.querySelector('input,select,textarea,button,a')) {
         const t = clean(before.innerText);
-        if (t && t.length <= 50) return t;
+        const b = before.getBoundingClientRect(), c = node.getBoundingClientRect();
+        // it must sit above the control or just to its left, not be another column's label
+        const near = (b.bottom <= c.top + 4 && Math.min(b.right, c.right) > Math.max(b.left, c.left)) ||
+          (b.right <= c.left + 4 && Math.min(b.bottom, c.bottom) > Math.max(b.top, c.top));
+        if (t && t.length <= 50 && near) return t;
       }
       node = node.parentElement;
       const controls = node.querySelectorAll('input:not([type=hidden]),select,textarea,[role=combobox],[role=textbox]');
@@ -72,6 +76,24 @@ STATE_JS = r"""
       if (label && !label.contains(el)) { const t = clean(label.innerText); if (t) return t; }
     }
     return '';
+  };
+  const labelByPosition = (el) => {
+    // the nearest short label above the control, or just to its left, in the same column / row
+    const r = el.getBoundingClientRect();
+    let best = '', bestScore = 1e9;
+    document.querySelectorAll('label,legend,[class*=label]').forEach((l) => {
+      if (l.contains(el) || l.querySelector('input,select,textarea,button') || !visible(l)) return;
+      const t = clean(l.innerText);
+      if (!t || t.length > 40) return;
+      const b = l.getBoundingClientRect();
+      const overlapX = Math.min(b.right, r.right) - Math.max(b.left, r.left);
+      const overlapY = Math.min(b.bottom, r.bottom) - Math.max(b.top, r.top);
+      const above = b.bottom <= r.top + 4 && r.top - b.bottom < 60 && overlapX > 0;
+      const left = b.right <= r.left + 4 && r.left - b.right < 120 && overlapY > 0;
+      const score = above ? r.top - b.bottom : left ? (r.left - b.right) * 0.5 + 30 : 1e9;
+      if (score < bestScore) { best = t; bestScore = score; }
+    });
+    return best;
   };
   const nameOf = (el, tag, type) => {
     const aria = el.getAttribute('aria-label');
@@ -84,7 +106,7 @@ STATE_JS = r"""
     if (tag === 'input' && ['button', 'submit', 'reset'].includes(type)) return clean(el.value);
     if (el.labels && el.labels.length) { const t = clean(el.labels[0].innerText); if (t) return t; }
     const field = tag === 'input' || tag === 'textarea' || tag === 'select' || el.getAttribute('role') === 'combobox';
-    if (field) { const t = labelNear(el); if (t) return t; }
+    if (field) { const t = labelNear(el) || labelByPosition(el); if (t) return t; }
     if (tag === 'input' && ['checkbox', 'radio'].includes(type)) {
       // a tick box of a list item has no label of its own: it is named by its row
       const row = el.closest('li,tr,[role=row],[role=listitem]');
@@ -196,7 +218,20 @@ STATE_JS = r"""
     if (d) addMessage(d);
   });
 
-  const h = [...document.querySelectorAll('h1,h2,[role=heading]')].find((x) => visible(x) && clean(x.innerText));
+  if (!elements.some((e) => e.region === 'main' || e.region === 'dialog')) {
+    // nothing to operate in the page body: say what it shows (e.g. "No Leave Types with Leave Balance")
+    const seenText = new Set();
+    document.querySelectorAll('p,span,div,h3,h4,h5,h6').forEach((el) => {
+      if (el.children.length || !visible(el)) return;
+      if (el.closest('nav,aside,header,footer,[role=navigation],[class*=sidebar],[class*=topbar]')) return;
+      const t = clean(el.innerText);
+      if (t.length < 8 || t.length > 120 || t.includes('©') || seenText.has(t) || seenText.size >= 4) return;
+      seenText.add(t);
+      if (messages.length < 8) messages.push('Nội dung trang: ' + t);
+    });
+  }
+  const heading = (sel) => [...document.querySelectorAll(sel)].find((x) => visible(x) && clean(x.innerText));
+  const h = heading('h1,h2,[role=heading]') || heading('h3,h4,h5,h6');
   return {
     url: location.href, title: document.title, heading: h ? clean(h.innerText).slice(0, 140) : '',
     messages, elements, scroll_y: Math.round(scrollY),

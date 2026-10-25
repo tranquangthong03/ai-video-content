@@ -165,3 +165,32 @@ def test_a_transparent_tick_box_drawn_by_its_label_is_listed_and_named_by_its_ro
     assert page.locator("input.toggle").nth(1).is_checked()
     assert not page.locator("input.toggle").nth(0).is_checked()
     context.close()
+
+
+def test_a_field_whose_label_is_only_next_to_it_still_gets_the_label_as_its_name(
+    browser_session: BrowserSession, site: str
+) -> None:
+    context = browser_session.new_context()
+    page = context.new_page()
+    page.goto(site + "/labels_apart.html")
+    state = capture_state(page)
+    fields = [e for e in state.elements if e.role == "textbox"]
+    assert [e.name for e in fields] == ["From Date", "To Date"]  # not both "yyyy-dd-mm"
+    assert [e.placeholder for e in fields] == ["yyyy-dd-mm", "yyyy-dd-mm"]
+    assert state.heading == "Apply Leave"  # an h6 title counts
+    context.close()
+
+
+def test_a_page_with_nothing_to_operate_says_what_it_shows(
+    browser_session: BrowserSession, site: str
+) -> None:
+    context = browser_session.new_context()
+    page = context.new_page()
+    page.goto(site + "/empty_state.html")
+    state = capture_state(page)
+    assert state.heading == "Apply Leave"
+    assert "Nội dung trang: No Leave Types with Leave Balance" in state.messages
+    assert not any("Sidebar" in m or "©" in m for m in state.messages)
+    page.goto(site + "/flowform.html")  # a page with a form does not add its text as messages
+    assert not any(m.startswith("Nội dung trang") for m in capture_state(page).messages)
+    context.close()

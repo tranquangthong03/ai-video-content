@@ -37,3 +37,6 @@ Mỗi site có báo cáo riêng (`<site>.md`: storyboard từng bước, chươn
 - **Khung hình hook/camera**: hook lấy 2 s quanh khoảnh khắc chính nhưng khung to ở trạng thái cuối, nội dung nhỏ; một vài đoạn zoom quá sát vào góc trang (todomvc). Thuộc lượt M1/camera.
 - **Luồng phụ** chưa dựng (chỉ cảnh báo).
 - **Test timing có sẵn** `test_recorder::…1440x900…`: video dài hơn đồng hồ log 1,2–1,4 s (ngưỡng 1,2 s), hiện fail ổn định trên máy này. Chưa xác định độ lệch nằm ở đầu hay cuối clip; nếu ở đầu thì log lệch 1,3 s so với hình (ảnh hưởng cắt chương/camera). Cần đo riêng.
+
+## Benchmark Flow Agent (C14)
+Xem `llm-benchmark.md` (bảng, các bước hay kẹt, nhận xét, đề xuất cấu hình) và `llm-benchmark-before.md` (vòng chạy trước các cải tiến page-state / lỗi `select`). Chạy lại: `uv run python scripts/bench_flow_agent.py run <fixture|orangehrm|todomvc>` rồi `... report`.

@@ -121,6 +121,21 @@ def find_option(page: Page, text: str, anchor: dict[str, float] | None) -> Locat
     return None
 
 
+def visible_option_texts(page: Page, limit: int = 10) -> list[str]:
+    """What the opened list offers: the texts of its visible options."""
+    found: list[str] = []
+    for search in (page.get_by_role("option"), page.locator(POPUP).locator("li,div,span,a")):
+        for item in _visible(search, 40):
+            if search is not None and item.locator("*").count():
+                continue  # a wrapper, not an option
+            text = " ".join((item.inner_text() or "").split())
+            if text and text not in found:
+                found.append(text)
+        if found:
+            break
+    return found[:limit]
+
+
 def current_text(target: Target) -> str:
     """What a dropdown shows now: the selected option of a <select>, else the visible text."""
     return target.evaluate(
@@ -151,7 +166,14 @@ def select_option(page: Page, target: Target, text: str, root_url: str, ops: Ops
     page.wait_for_timeout(250)
     option = find_option(page, wanted, target.box())
     if option is None:
-        raise ActionFailed(f"select: không thấy lựa chọn «{wanted}» sau khi mở danh sách")
+        seen = visible_option_texts(page)
+        page.keyboard.press("Escape")
+        if visible_option_texts(
+            page
+        ):  # still open: close it, or the next select would toggle it shut
+            ops.click(target)
+        have = f" (có: {', '.join(seen)})" if seen else " sau khi mở danh sách"
+        raise ActionFailed(f"select: không thấy lựa chọn «{wanted}»{have}")
     choice = Target("css", locator=option)
     check_clickable(choice.info(), root_url, scope_prefix=None)
     ops.click(choice)

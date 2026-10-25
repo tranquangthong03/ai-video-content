@@ -280,3 +280,13 @@ def test_a_render_that_fails_once_is_tried_again(
     calls.clear()
     with pytest.raises(render_mod.RenderError, match="boom"):
         render_mod.render_props({"a": 1}, tmp_path / "v.mp4", tmp_path / "w")
+
+
+def test_a_missing_option_lists_what_the_dropdown_offers_and_leaves_it_closed(env: Any) -> None:
+    page, _, _ = env
+    runner = runner_for(env)
+    with pytest.raises(ActionFailed, match=r"có: Family, Medical, Travel"):
+        act(page, runner, "Reason category", do="select", value="Personal")
+    assert not page.locator("#catmenu").is_visible()  # closed, so the next try opens it again
+    act(page, runner, "Reason category", do="select", value="Medical")
+    assert page.inner_text("#cat") == "Medical"

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Labels apart</title>
+<style>
+  .grid { display: grid; grid-template-columns: 240px 240px; column-gap: 20px; margin: 30px; }
+  .grid label { grid-row: 1; } .grid .a { grid-column: 1; } .grid .b { grid-column: 2; }
+  .grid input { grid-row: 2; } .grid input.a { grid-column: 1; } .grid input.b { grid-column: 2; }
+</style></head>
+<body>
+  <aside><a href="/x">Side link</a></aside>
+  <main>
+    <h6>Apply Leave</h6>
+    <!-- the labels and the inputs are siblings in one grid: no wrapper ties a label to its input -->
+    <div class="grid">
+      <label class="a">From Date</label><label class="b">To Date</label>
+      <input class="a" placeholder="yyyy-dd-mm"><input class="b" placeholder="yyyy-dd-mm">
+    </div>
+  </main>
+</body>
+</html>
