@@ -16,7 +16,9 @@ from datetime import date
 
 from playwright.sync_api import Locator, Page
 
-from app.browser.locate import Target, check_clickable
+from app.browser.blacklist import is_blocked, is_blocked_href
+from app.browser.locate import ElementInfo, Target, Unsafe, check_clickable
+from app.browser.urls import same_site
 
 MAX_MONTH_STEPS = 18
 POPUP = (
@@ -30,6 +32,21 @@ CALENDAR = (
 DATE_TOKEN = re.compile(r"yyyy|yy|mmmm|mmm|mm|m|dd|d", re.IGNORECASE)
 NEXT_BUTTON = re.compile(r"next|tiếp|sau|forward|›|»|>", re.IGNORECASE)
 PREV_BUTTON = re.compile(r"prev|trước|back|‹|«|<", re.IGNORECASE)
+
+
+SUBMIT_NAME = re.compile(
+    r"\b(save|submit|apply|create|add|confirm|send request|lưu|gửi|tạo|thêm|xác nhận)\b",
+    re.IGNORECASE,
+)
+
+
+def check_submit_click(info: ElementInfo, root_url: str) -> None:
+    """The checks for a click the flow is allowed to make (a submit): still no delete / pay /
+    invite / send, and nothing that leaves the site."""
+    if is_blocked(*info.texts, strict=False, interactive=True):
+        raise Unsafe("blacklist", f"matches blacklist: {info.texts[:2]}")
+    if is_blocked_href(info.href) or (info.href and not same_site(info.href, root_url)):
+        raise Unsafe("blacklist", f"blocked link {info.href}")
 
 
 class ActionFailed(RuntimeError):

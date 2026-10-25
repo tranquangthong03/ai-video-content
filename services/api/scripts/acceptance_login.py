@@ -48,7 +48,9 @@ def main() -> int:
             stream.reconfigure(encoding="utf-8", errors="replace")
     console = Console()
     with running_site() as site:
-        cfg = JobConfig(url=site.base + "/", job_dir=job_dir, requires_login=True, timeout=600)
+        cfg = JobConfig(
+            url=site.base + "/", job_dir=job_dir, requires_login=True, timeout=600, core_flow=False
+        )
         user = DemoUser(job_dir, console)
         result = run_job(cfg, user, ConsoleReporter(console))
         summary = {

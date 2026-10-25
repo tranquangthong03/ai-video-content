@@ -6,7 +6,6 @@ apply, and the page settles afterwards. A click on a submit-like control is refu
 flow's submit policy is "allow" (then at most MAX_SUBMITS times, inside the guard's write window).
 """
 
-import re
 from dataclasses import dataclass
 from typing import Literal
 
@@ -14,20 +13,14 @@ from playwright.sync_api import Page
 from pydantic import BaseModel, model_validator
 
 from app.browser import form_actions
-from app.browser.blacklist import is_blocked, is_blocked_href
-from app.browser.form_actions import ActionFailed, Ops
+from app.browser.form_actions import SUBMIT_NAME, ActionFailed, Ops, check_submit_click
 from app.browser.guard import MAX_WRITE_WINDOWS, RequestGuard, WritesNotAllowed
 from app.browser.locate import ElementInfo, Target, Unsafe, check_clickable, check_typeable, resolve
 from app.browser.page_utils import wait_for_settle
-from app.browser.urls import same_site
 from app.flows.page_state import PageElement, PageState
 from app.schemas.generated.locator import LocatorSpec
 
 MAX_SUBMITS = MAX_WRITE_WINDOWS
-SUBMIT_NAME = re.compile(
-    r"\b(save|submit|apply|create|add|confirm|send request|lưu|gửi|tạo|thêm|xác nhận)\b",
-    re.IGNORECASE,
-)
 REF_ACTIONS = {"click", "type", "select", "check", "pick_date", "navigate", "stop_before_submit"}
 VALUE_ACTIONS = {"type", "select", "pick_date"}
 SCROLL_FRACTION = 0.7
@@ -75,14 +68,6 @@ def is_submit_target(element: PageElement) -> bool:
     if element.is_submit_like and element.role != "link":
         return True
     return element.role == "button" and element.in_form and bool(SUBMIT_NAME.search(element.name))
-
-
-def check_submit_click(info: ElementInfo, root_url: str) -> None:
-    """The checks for the click the flow is allowed to make: still no delete/pay/invite/send."""
-    if is_blocked(*info.texts, strict=False, interactive=True):
-        raise Unsafe("blacklist", f"matches blacklist: {info.texts[:2]}")
-    if is_blocked_href(info.href) or (info.href and not same_site(info.href, root_url)):
-        raise Unsafe("blacklist", f"blocked link {info.href}")
 
 
 class ActionRunner:

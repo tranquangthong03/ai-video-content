@@ -66,8 +66,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="the main features are behind a sign-in: ask for it right away",
     )  # fmt: skip
     p.add_argument(
-        "--core-flow", action="store_true",
-        help="film one core flow (chapters) chosen by the user instead of separate features",
+        "--classic", action="store_true",
+        help="the old route: pick separate features instead of one core flow",
     )  # fmt: skip
     p.add_argument("--login-url", help="where to sign in (otherwise the login link is searched)")
     p.add_argument(
@@ -179,7 +179,7 @@ def main(argv: list[str] | None = None) -> int:
         from_step=args.from_step,
         capture=parse_capture(args.capture),
         requires_login=args.requires_login,
-        core_flow=args.core_flow,
+        core_flow=not args.classic,
         login_url=args.login_url,
     )
     frontend = ScriptedFrontend.from_file(args.answers) if args.auto else TerminalFrontend(console)

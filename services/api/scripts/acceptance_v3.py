@@ -144,7 +144,7 @@ def main() -> int:
     from_script = len(sys.argv) > 3 and sys.argv[3] == "script"  # rerun from the script step
     cfg = JobConfig(
         url=site.url, job_dir=job_dir, max_pages=15, timeout=900,
-        from_step="script" if from_script else "explore", resume=from_script,
+        from_step="script" if from_script else "explore", resume=from_script, core_flow=False,
     )  # fmt: skip
     console = Console()
     frontend = PickingFrontend(site, console)

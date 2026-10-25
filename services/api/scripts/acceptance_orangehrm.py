@@ -84,7 +84,9 @@ class OrangeUser(ScriptedFrontend):
 def main_run(job_dir: Path) -> int:
     console = Console()
     user = OrangeUser(job_dir, console)
-    cfg = JobConfig(url=SITE, job_dir=job_dir, requires_login=True, timeout=900)
+    cfg = JobConfig(
+        url=SITE, job_dir=job_dir, requires_login=True, timeout=900, core_flow=False
+    )  # the feature route (the flow route has its own driver)
     result = run_job(cfg, user, ConsoleReporter(console))
     (job_dir / "acceptance_orangehrm.json").write_text(
         json.dumps({"exit": result.exit_code, "status": result.status, "user": user.log},

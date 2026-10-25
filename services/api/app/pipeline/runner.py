@@ -84,7 +84,9 @@ class JobConfig:
     requires_login: bool = False  # the user says the main features are behind a sign-in
     login_url: str | None = None  # where to sign in, when the user knows
     app_home_url: str | None = None  # the app's main page after the sign-in (not the landing)
-    core_flow: bool = False  # film one core flow (chapters) instead of separate features
+    # film one core flow (chapters, one recording) instead of separate features; falls back to
+    # the feature route when no flow can be found or run
+    core_flow: bool = True
 
 
 @dataclass

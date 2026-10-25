@@ -34,7 +34,7 @@ def test_auto_run_produces_an_approved_outline_after_edits(
     answers.write_text(json.dumps(ANSWERS, ensure_ascii=False), encoding="utf-8")
     job = tmp_path / "job"
 
-    code = main(["--url", site + "/", "--job-dir", str(job), "--auto", "--answers", str(answers),
+    code = main(["--url", site + "/", "--job-dir", str(job), "--auto", "--classic", "--answers", str(answers),
                  "--max-pages", "6", "--timeout", "180", "--stop-after", "outline"])  # fmt: skip
     assert code == 0
 
@@ -103,6 +103,7 @@ def test_resume_skips_finished_steps(site: str, tmp_path: Path, monkeypatch) -> 
         "--job-dir",
         str(job),
         "--auto",
+        "--classic",
         "--answers",
         str(answers),
         "--max-pages",
@@ -130,6 +131,7 @@ def test_token_ceiling_pauses_and_resume_continues(site: str, tmp_path: Path, mo
         "--job-dir",
         str(job),
         "--auto",
+        "--classic",
         "--answers",
         str(answers),
         "--max-pages",

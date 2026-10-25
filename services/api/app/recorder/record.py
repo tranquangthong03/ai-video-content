@@ -21,7 +21,7 @@ from app.browser import form_actions
 from app.browser.auth_detect import LoginRequired, detect_login, is_logout_url, on_login_page
 from app.browser.blacklist import is_blocked, is_blocked_href
 from app.browser.enter_policy import Policy, enter_decision
-from app.browser.form_actions import Ops
+from app.browser.form_actions import SUBMIT_NAME, Ops, check_submit_click
 from app.browser.locate import Target, Unsafe, check_clickable, resolve
 from app.browser.page_utils import dismiss_cookie_banner, wait_for_settle
 from app.browser.session import BrowserSession
@@ -265,6 +265,8 @@ class _Recorder:
         ] = []  # boxes of the slow hovers since the last outline
         self.pointed = 0  # showcase_lite: elements hovered or outlined
         self.ok = self.failed = 0
+        self.submit_ok = False  # a flow with submit_policy allow: its submit click may be replayed
+        self.hover_submit = False  # a flow replay: pointing at the submit button is allowed
 
     # --- clock ----------------------------------------------------------------------------
 
@@ -393,8 +395,14 @@ class _Recorder:
             raise RuntimeError("element has no box")
         return box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
 
-    def safe(self, target: Target) -> None:
+    def safe(self, target: Target, *, hover: bool = False) -> None:
         info = target.info()
+        if hover and self.hover_submit:  # only pointing: the button is not pressed
+            check_submit_click(info, self.root_url)
+            return
+        if self.submit_ok and SUBMIT_NAME.search(" ".join(info.texts[:3])):
+            check_submit_click(info, self.root_url)
+            return
         check_clickable(info, self.root_url, scope_prefix=None, ignore_texts=self.typed)
 
     # --- actions --------------------------------------------------------------------------
@@ -452,7 +460,7 @@ class _Recorder:
 
     def _pointer_action(self, a: Any, label: str, kind: str) -> None:
         target = self.target_of(a.locator, label)
-        self.safe(target)
+        self.safe(target, hover=kind == "hover")
         x, y = self.center_of(target)
         slow = kind == "hover" and bool(a.ms)  # showcase_lite: a slow, deliberate hover
         self.note_action(kind, target)

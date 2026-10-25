@@ -21,8 +21,10 @@ from app.producer.dedupe import MIN_SCENES, swap_scene, used_texts
 from app.producer.focus_plan import phrases_from_captions, plan_focus
 from app.producer.focus_rules import build_focus_track
 from app.producer.trim import trim_dead_time
+from app.recorder.flow import FlowRecorder
 from app.recorder.motion import idle_gaps
 from app.recorder.record import RecordResult, record_scene
+from app.schemas.generated.flow_run import FlowRun
 from app.schemas.generated.product_profile import ProductProfile
 from app.schemas.generated.scene import Scene
 from app.schemas.generated.script import Script
@@ -352,6 +354,20 @@ def record_unique(
 MAX_LOGIN_RETRIES = 2  # sign-ins asked for one scene before giving up
 
 
+def flow_report(recorder: FlowRecorder, session: BrowserSession) -> dict[str, Any]:
+    """How the one-go recording of a core flow went (goes into report.json)."""
+    rec = recorder.recording
+    return {
+        "flow_id": recorder.run.flow_id,
+        "steps": len(recorder.run.steps),
+        "replayed": sum(1 for m in rec.marks if m.ok) if rec else 0,
+        "replay_failed_at": rec.failed_at if rec else None,
+        "clip_ms": rec.content_ms if rec else 0,
+        "notes": recorder.notes,
+        "write_requests": list(session.guard.write_log),
+    }
+
+
 def produce(
     script: Script,
     *,
@@ -385,6 +401,16 @@ def produce(
     started = time.monotonic()
     viewport = {"width": script.capture.width, "height": script.capture.height}
     dedupe = Dedupe(load_page_index(job_dir / "explore"))
+    flow_recorder: FlowRecorder | None = None
+    approved_flow = job_dir / "flow" / "flow_approved.json"
+    if script.flow_id and recorder is record_scene and approved_flow.is_file():
+        # a core flow is filmed in one go on one context and cut into its chapters
+        flow_recorder = FlowRecorder(
+            FlowRun.model_validate_json(approved_flow.read_text(encoding="utf-8")), job_dir
+        )
+        recorder = flow_recorder
+    elif isinstance(recorder, FlowRecorder):
+        flow_recorder = recorder
     dropped: set[int] = set()
     for i, scene in enumerate(script.scenes):
         s = scene.root
@@ -393,10 +419,19 @@ def produce(
         say(f"[record] scene {i + 1}/{len(script.scenes)} {s.id} ({s.type}) ...")
         for attempt in range(MAX_LOGIN_RETRIES + 1):
             try:
-                recorded = record_unique(
-                    recorder, session, scene, work, speech_ms, url, color, viewport, dedupe,
-                    can_drop=len(script.scenes) - len(dropped) > MIN_SCENES,
-                )  # fmt: skip
+                if flow_recorder is not None:  # chapters repeat each other's pages by design
+                    recorded = (
+                        scene,
+                        recorder(
+                            session, scene, work, speech_ms, root_url=url,
+                            highlight_color=color, viewport=viewport,
+                        ),
+                    )  # fmt: skip
+                else:
+                    recorded = record_unique(
+                        recorder, session, scene, work, speech_ms, url, color, viewport, dedupe,
+                        can_drop=len(script.scenes) - len(dropped) > MIN_SCENES,
+                    )  # fmt: skip
                 if recorded is not None and shows_login_page(recorded[1].inventory):
                     # quality gate: a clip of the sign-in page is never rendered
                     raise LoginRequired("", "login_page", target_url=url, scene_id=scene.root.id)
@@ -537,6 +572,7 @@ def produce(
         "warnings": [*dedupe.notes, *(w for o in outcomes for w in o.warnings)],
         "dropped_scenes": sorted(script.scenes[j].root.id for j in dropped),
         "tokens": token_usage,
+        "flow": flow_report(flow_recorder, session) if flow_recorder else None,
         **(extra_report or {}),
     }
     (job_dir / "report.json").write_text(
