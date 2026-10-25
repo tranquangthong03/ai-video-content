@@ -147,3 +147,11 @@ def check_selection(profile: ProductProfile, selected: object) -> list[str]:
     known = {f.id for f in profile.features}
     errors += [f"unknown feature id: {s}" for s in selected if s not in known]
     return errors
+
+
+def restrict_profile(profile: ProductProfile, selected: list[str]) -> ProductProfile:
+    """The profile with only the selected features, in the user's priority order."""
+    by_id = {f.id: f for f in profile.features}
+    restricted = profile.model_copy(deep=True)
+    restricted.features = [by_id[i].model_copy(deep=True) for i in selected if i in by_id]
+    return restricted

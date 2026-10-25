@@ -9,7 +9,7 @@ import json
 from collections.abc import Callable
 from pathlib import Path
 
-from app.core.features import default_selection, merge_duplicates
+from app.core.features import default_selection, merge_duplicates, restrict_profile
 from app.core.interaction import check_response, make_request
 from app.llm.json_call import JsonCaller, LLMCallError
 from app.pipeline.frontend import Frontend
@@ -48,6 +48,7 @@ class ProposalRunner:
         self.frontend = frontend
         self.explore_more = explore_more
         self.warnings: list[str] = []  # word-limit cuts etc., saved with the approved outline
+        self.unselected_names: list[str] = []  # features the user left out of the video
         self.known_ids: set[str] = set()  # feature ids the user has already seen
         self.beat_mappings: list[dict] = []  # type: ignore[type-arg]  # beat_feature_mapper decisions
 
@@ -125,7 +126,9 @@ class ProposalRunner:
         done = self.dir / "selected_features.json"
         if done.is_file():
             saved = json.loads(done.read_text(encoding="utf-8"))
-            return ProductProfile.model_validate(saved["profile"]), saved["selected"]
+            return self._finish_selection(
+                ProductProfile.model_validate(saved["profile"]), saved["selected"], save=False
+            )
         profile, dropped = merge_duplicates(profile)
         if dropped:
             self.warnings.append(
@@ -160,16 +163,28 @@ class ProposalRunner:
                 )
                 continue
             selected = list((response.answers or {})["selected_features"])
-            done.write_text(
+            return self._finish_selection(profile, selected, save=True)
+        raise RuntimeError("too many select_features rounds")
+
+    def _finish_selection(
+        self, full: ProductProfile, selected: list[str], *, save: bool
+    ) -> tuple[ProductProfile, list[str]]:
+        """Everything after this step sees only the selected features (confirmed_profile.json)."""
+        restricted = restrict_profile(full, selected)
+        self.unselected_names = [f.name for f in full.features if f.id not in selected]
+        if save:
+            (self.dir / "selected_features.json").write_text(
                 json.dumps(
-                    {"selected": selected, "profile": profile.model_dump(mode="json")},
+                    {"selected": selected, "profile": full.model_dump(mode="json")},
                     ensure_ascii=False,
                     indent=2,
                 ),
                 encoding="utf-8",
             )
-            return profile, selected
-        raise RuntimeError("too many select_features rounds")
+            (self.dir / "confirmed_profile.json").write_text(
+                restricted.model_dump_json(indent=2), encoding="utf-8"
+            )
+        return restricted, selected
 
     # --- 2. concepts -------------------------------------------------------------------------
 
@@ -187,7 +202,11 @@ class ProposalRunner:
         guidance = notes
         for _ in range(10):
             concepts = concepts_mod.propose_concepts(
-                self.caller, profile, guidance, warnings=self.warnings
+                self.caller,
+                profile,
+                guidance,
+                warnings=self.warnings,
+                unselected_names=self.unselected_names,
             )
             concepts_file.write_text(
                 json.dumps([c.model_dump() for c in concepts], ensure_ascii=False, indent=2),

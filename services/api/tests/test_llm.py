@@ -31,7 +31,7 @@ SAMPLE_VARS = {
     "product_synthesizer": dict(root_url="u", site_type="landing", title="t", meta_description="m",
                                 og_description="o", page_insights_json="[]", sample_files="- sample.jpg: ảnh", delta_json="", known_features="", known_intents=""),
     "concept_proposer": dict(
-        confirmed_product_profile_json="{}", user_notes_or_empty="", recommended_duration_s=30
+        confirmed_product_profile_json="{}", selected_features_json="[]", user_notes_or_empty="", recommended_duration_s=30
     ),
     "outline_editor": dict(confirmed_profile_summary="s", concept_json="{}", version=1,
                            outline_json="{}", instruction="sửa"),

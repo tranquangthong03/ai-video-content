@@ -1,9 +1,11 @@
 """choose_concept: propose 3 video directions and read the user's pick."""
 
+import json
 from dataclasses import dataclass
 from typing import Literal
 
 from app.core.budget import budget_for
+from app.core.features import fold
 from app.core.interaction import make_request
 from app.llm.json_call import JsonCaller
 from app.llm.prompts import render
@@ -42,20 +44,91 @@ def normalize_concepts(concepts: list[VideoConcept], profile: ProductProfile) ->
     return concepts
 
 
+MAX_REPAIRS = 2
+MIN_NAME_LEN = 4  # shorter feature names are too generic to spot in a beat
+MIN_BEATS = 4
+
+
+def mentions(text: str, names: list[str]) -> list[str]:
+    """The names (accents and case ignored) that appear in a beat."""
+    hay = fold(text)
+    return [n for n in names if len(fold(n)) >= MIN_NAME_LEN and fold(n) in hay]
+
+
+def check_concept(
+    concept: VideoConcept, selected_names: list[str], unselected_names: list[str]
+) -> tuple[set[int], list[str]]:
+    """(indexes of beats naming a feature outside the selection, all problems as text).
+
+    Also checks the priority order: selected features must first show up in the order picked.
+    """
+    bad: set[int] = set()
+    problems: list[str] = []
+    for i, beat in enumerate(concept.beats):
+        for name in mentions(beat, unselected_names):
+            bad.add(i)
+            problems.append(f"beat {i + 1} nhắc tới «{name}», tính năng người dùng KHÔNG chọn")
+    first_seen: dict[str, int] = {}
+    for i, beat in enumerate(concept.beats):
+        for name in mentions(beat, selected_names):
+            first_seen.setdefault(name, i)
+    seen_order = [n for n in selected_names if n in first_seen]
+    if sorted(seen_order, key=lambda n: first_seen[n]) != seen_order:
+        problems.append("thứ tự demo phải theo ưu tiên người dùng: " + " → ".join(selected_names))
+    return bad, problems
+
+
+def drop_beats(concept: VideoConcept, bad: set[int]) -> bool:
+    """Remove the offending beats; refuses (False) when fewer than MIN_BEATS would be left."""
+    if not bad or len(concept.beats) - len(bad) < MIN_BEATS:
+        return False
+    concept.beats = [b for i, b in enumerate(concept.beats) if i not in bad]
+    return True
+
+
 def propose_concepts(
     caller: JsonCaller,
     profile: ProductProfile,
     notes: str = "",
     warnings: list[str] | None = None,
+    *,
+    unselected_names: list[str] | None = None,
 ) -> list[VideoConcept]:
-    prompt = render(
-        "concept_proposer",
-        confirmed_product_profile_json=profile.model_dump_json(indent=1),
-        user_notes_or_empty=notes,
-        recommended_duration_s=budget_for(profile).recommended_duration_s,
+    """`profile` holds only the selected features, in priority order (restrict_profile).
+
+    Beats that name a feature the user did not select go through up to MAX_REPAIRS repair rounds
+    (the problems are sent back to the model); beats still wrong are dropped.
+    """
+    unselected = unselected_names or []
+    selected_names = [f.name for f in profile.features]
+    budget = budget_for(profile)
+    selected_json = json.dumps(
+        [{"id": f.id, "name": f.name, "demo_kind": f.demo_kind} for f in profile.features],
+        ensure_ascii=False,
     )
-    result = caller.call("concepts", prompt, ConceptSet)
-    concepts = normalize_concepts(result.concepts, profile)
+    guidance = notes
+    for attempt in range(MAX_REPAIRS + 1):
+        prompt = render(
+            "concept_proposer",
+            confirmed_product_profile_json=profile.model_dump_json(indent=1),
+            selected_features_json=selected_json,
+            user_notes_or_empty=guidance,
+            recommended_duration_s=budget.recommended_duration_s,
+        )
+        result = caller.call("concepts", prompt, ConceptSet)
+        concepts = normalize_concepts(result.concepts, profile)
+        checks = [check_concept(c, selected_names, unselected) for c in concepts]
+        problems = [f"{c.id}: {p}" for c, (_, ps) in zip(concepts, checks, strict=True) for p in ps]
+        if not problems or attempt == MAX_REPAIRS:
+            break
+        fixes = "; ".join(problems)
+        guidance = f"{notes}\nSỬA LỖI lần trước (giữ nguyên phần đúng): {fixes}"
+    for c, (bad, ps) in zip(concepts, checks, strict=True):
+        dropped = drop_beats(c, bad)
+        if warnings is not None:
+            warnings += [f"{c.id}: {p}" for p in ps]
+            if bad and not dropped:
+                warnings.append(f"{c.id}: không bỏ được beat sai vì dưới {MIN_BEATS} beat")
     found = enforce_concepts(caller, concepts)  # hook <= 12 words, beats <= 15
     if warnings is not None:
         warnings.extend(found)

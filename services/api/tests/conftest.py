@@ -218,3 +218,15 @@ def scripted_handler(prompt: str) -> dict[str, Any]:
         return {"lines": [{"id": x["id"], "text": " ".join(x["text"].split()[: x["max_words"] - 1])}
                           for x in lines]}  # fmt: skip
     raise AssertionError(f"unexpected prompt: {prompt[:80]!r}")
+
+
+SLOW_FIXTURES = {"browser_session", "site", "hits"}
+SLOW_MODULES = {"test_recorder", "test_producer", "test_trim", "test_visual_v2", "test_e2e_explore"}
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Mark tests that start Chromium / ffmpeg as slow, so `-m 'not slow'` is a quick loop."""
+    for item in items:
+        fixtures = set(getattr(item, "fixturenames", ()))
+        if fixtures & SLOW_FIXTURES or item.module.__name__.split(".")[-1] in SLOW_MODULES:
+            item.add_marker(pytest.mark.slow)
