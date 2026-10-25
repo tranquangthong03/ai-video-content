@@ -2,7 +2,7 @@
 // For every recorded scene, how long the focus camera is at or above cover (zoom >= 1.0), not counting the
 // establishing shot at the start of each clip. Prints one JSON object.
 import { readFileSync } from "node:fs";
-import { CAMERA_CONFIG, establishingEndMs, focusCameraAt, focusFromClicks } from "../src/camera";
+import { CAMERA_CONFIG, establishingEndMs, focusCameraAt, pickFocus } from "../src/camera";
 import { InputPropsSchema } from "../src/props";
 import { clipPlayback } from "../src/templates/DesktopShowcase/playback";
 import { FPS, sceneRanges } from "../src/timing";
@@ -18,7 +18,7 @@ for (const r of sceneRanges(props.script, FPS)) {
   const a = props.assets[r.scene.id];
   if (!a?.clip_url) continue;
   const clip = { w: a.clip_width ?? 1440, h: a.clip_height ?? 900 };
-  const focus = a.focus_log?.length ? a.focus_log : focusFromClicks(a.click_log ?? []);
+  const focus = pickFocus(a);
   const { startMs, rate, lastFrame } = clipPlayback(a, FPS, r.frames);
   let total = 0;
   let cover = 0;

@@ -162,6 +162,15 @@ def focus_for_scene(
     caller: JsonCaller | None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], str]:
     """The scene's focus_track: the planner's plan (when it gave a usable one) through the rules."""
+    # the track is worked out on the shown axis (0 = first shown moment of the clip) and moved
+    # onto the clip's own axis at the end, where the renderer looks for it
+    lead = plan.start_offset_ms + plan.trim_start_ms
+    inventory = [{**e, "t_ms": e["t_ms"] - lead} for e in plan.inventory]
+    actions = [
+        {**a, "t_ms": a["t_ms"] - lead, "end_ms": a["end_ms"] - lead} for a in plan.action_log
+    ]
+    legacy = [{**f, "t_ms": f["t_ms"] - lead} for f in plan.focus_log]
+    duration_ms = plan.content_ms - lead
     phrases = phrases_from_captions(captions, rate)
     planned = None
     if caller is not None:
@@ -171,19 +180,21 @@ def focus_for_scene(
             feature_name=getattr(s, "feature", None) or "",
             key_point=s.key_point,
             phrases=phrases,
-            actions=plan.action_log,
-            inventory=plan.inventory,
-            duration_ms=plan.content_ms,
+            actions=actions,
+            inventory=inventory,
+            duration_ms=duration_ms,
         )
     built = build_focus_track(
-        duration_ms=plan.content_ms,
+        duration_ms=duration_ms,
         clip=(record.width, record.height),
-        inventory=plan.inventory,
-        action_log=plan.action_log,
+        inventory=inventory,
+        action_log=actions,
         phrases=phrases,
         plan=planned.plan if planned else None,
-        legacy_focus=plan.focus_log,
+        legacy_focus=legacy,
     )
+    for entry in built.track:
+        entry["t_ms"] += lead
     summary = {
         "planner": "plan" if planned and planned.plan else ("failed" if planned else "off"),
         "planner_attempts": planned.attempts if planned else 0,
@@ -195,6 +206,7 @@ def focus_for_scene(
     path.write_text(
         json.dumps(
             {
+                "lead_ms": lead,
                 "phrases": phrases,
                 "plan": planned.plan if planned else None,
                 "track": built.track,

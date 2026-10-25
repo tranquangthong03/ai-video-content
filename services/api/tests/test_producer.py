@@ -205,7 +205,7 @@ def test_produce_adds_a_focus_track_planned_by_the_model_and_corrected_by_the_ru
         )  # fmt: skip
 
     bad = {
-        "plan": [{"from_ms": 0, "to_ms": 9000, "item_id": "side", "framing": "wide", "reason": ""}]
+        "plan": [{"from_ms": 0, "to_ms": 8000, "item_id": "side", "framing": "wide", "reason": ""}]
     }
     llm = FakeLLM(lambda _p: bad)  # the planner picks the sidebar: the rules must refuse it
     renders: list[dict[str, Any]] = []
