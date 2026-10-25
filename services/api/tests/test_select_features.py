@@ -97,3 +97,45 @@ def test_cancel_stops_the_job(tmp_path: Path) -> None:
     except Cancelled:
         return
     raise AssertionError("expected Cancelled")
+
+
+class FakeQuestionary:
+    """Stands in for the questionary module: checkbox picks, then select answers in order."""
+
+    class Choice:
+        def __init__(self, title: str, value: str, checked: bool = False) -> None:
+            self.title, self.value, self.checked = title, value, checked
+
+    def __init__(self, picks: list[str], priorities: list[str]) -> None:
+        self.picks, self.priorities = picks, priorities
+        self.defaults: list[str] = []
+
+    def checkbox(self, _msg: str, choices: list) -> "FakeQuestionary":  # type: ignore[type-arg]
+        self.defaults = [c.value for c in choices if c.checked]
+        return _Ask(self.picks)  # type: ignore[return-value]
+
+    def select(self, _msg: str, choices: list) -> "FakeQuestionary":  # type: ignore[type-arg]
+        return _Ask(self.priorities.pop(0))  # type: ignore[return-value]
+
+
+class _Ask:
+    def __init__(self, value: object) -> None:
+        self.value = value
+
+    def ask(self) -> object:
+        return self.value
+
+
+def test_terminal_menu_asks_the_priority_order_and_preselects_the_defaults() -> None:
+    from app.pipeline.frontend import TerminalFrontend
+    from app.proposal.selection import build_request
+
+    request = build_request("j", base(), ["create_todo", "filter_todos"], new_ids=["export"])
+    fake = FakeQuestionary(["create_todo", "filter_todos", "export"], ["export", "create_todo"])
+    response = TerminalFrontend()._ask_selection(request, fake)
+    assert fake.defaults == ["create_todo", "filter_todos"]
+    assert (response.answers or {})["selected_features"] == [
+        "export",
+        "create_todo",
+        "filter_todos",
+    ]

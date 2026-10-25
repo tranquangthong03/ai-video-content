@@ -27,7 +27,7 @@ const load = (file) => {
 };
 
 // Inline every $ref ("file.json" or "[file.json]#/$defs/X") so each schema is self-contained.
-function deref(node, file) {
+function deref(node, file, isProperties = false) {
   if (Array.isArray(node)) return node.map((n) => deref(n, file));
   if (node === null || typeof node !== "object") return node;
   if (typeof node.$ref === "string") {
@@ -39,9 +39,10 @@ function deref(node, file) {
   }
   const out = {};
   for (const [k, v] of Object.entries(node)) {
-    if (["$defs", "$schema", "$id", "description"].includes(k)) continue;
+    // inside "properties" the keys are field names (a field may be called "description")
+    if (!isProperties && ["$defs", "$schema", "$id", "description"].includes(k)) continue;
     // oneOf branches are mutually exclusive here; anyOf is what the Zod converter understands
-    out[k === "oneOf" ? "anyOf" : k] = deref(v, file);
+    out[k === "oneOf" ? "anyOf" : k] = deref(v, file, !isProperties && k === "properties");
   }
   return out;
 }

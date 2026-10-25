@@ -198,7 +198,7 @@ class TerminalFrontend:
         assert profile is not None and sel is not None
         self.console.print(Panel(request.message, title="Chọn tính năng", border_style="cyan"))
         picks = questionary.checkbox(
-            "Chọn tính năng (thứ tự bạn chọn là thứ tự ưu tiên):",
+            "Chọn tính năng (khoảng trắng để chọn, tối đa 4):",
             choices=[
                 questionary.Choice(
                     f"{f.name} — {score_dots(f)}" + (" [mới]" if f.id in sel.new_ids else ""),
@@ -210,7 +210,19 @@ class TerminalFrontend:
         ).ask()
         if picks is None:
             return make_response(request, "cancel")
-        return make_response(request, "answer", answers={"selected_features": picks})
+        ordered: list[str] = []
+        names = {f.id: f.name for f in profile.features}
+        rest = list(picks)
+        while len(rest) > 1:  # who comes first? one question per priority place
+            first = questionary.select(
+                f"Ưu tiên số {len(ordered) + 1}:",
+                choices=[questionary.Choice(names[i], i) for i in rest],
+            ).ask()
+            if first is None:
+                return make_response(request, "cancel")
+            ordered.append(first)
+            rest.remove(first)
+        return make_response(request, "answer", answers={"selected_features": ordered + rest})
 
     def _ask_script_review(self, request: InteractionRequest, questionary: Any) -> UserResponse:
         version = request.script_version

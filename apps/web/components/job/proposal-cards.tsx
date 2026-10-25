@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Star } from "lucide-react";
+import { ArrowDown, ArrowUp, Star } from "lucide-react";
 import type { InteractionRequest } from "@/lib/generated";
 import { fileUrl } from "@/lib/api";
 import { demoKindLabel, demoKindTone } from "@/lib/labels";
-import { buildResponse, conceptFields, confirmFields, editFields } from "@/lib/responses";
+import { buildResponse, conceptFields, confirmFields, editFields, exploreFields, selectFields } from "@/lib/responses";
+import { isPointingOnly, moveSelection, toggleSelection } from "@/lib/selection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -112,6 +113,103 @@ export function ConfirmCard({ ctx, pending }: { ctx: JobCtx; pending: Pending })
         }
       >
         {busy ? "Đang gửi..." : "Xác nhận"}
+      </Button>
+    </div>
+  );
+}
+
+/** select_features: pick 1-4 features and put them in priority order; ask for a missing one. */
+export function SelectFeaturesCard({ ctx, pending }: { ctx: JobCtx; pending: Pending }) {
+  const profile = pending.profile as Profile;
+  const sel = pending.selection!;
+  const { send, busy, error } = useSend(ctx);
+  const [order, setOrder] = useState<string[]>(() => sel.default);
+  const [description, setDescription] = useState("");
+  const [url, setUrl] = useState("");
+  const jobId = ctx.job.state.job_id;
+  const byId = useMemo(() => new Map(profile.features.map((f) => [f.id, f])), [profile.features]);
+  const tooMany = order.length > sel.recommended_max;
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-xl font-bold">Chọn tính năng để review</h2>
+        <p className="text-sm text-muted-foreground">
+          Chọn {sel.min}–{sel.max} tính năng (khuyến nghị 2–{sel.recommended_max}). Video chỉ nói về các tính năng này, theo thứ tự ưu tiên bên dưới.
+        </p>
+      </div>
+      <Notices message={pending.message} />
+      <Section title={`Tính năng (${order.length}/${sel.max} được chọn)`}>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {profile.features.map((f) => {
+            const thumb = (f as { thumbnail_url?: string | null }).thumbnail_url;
+            const on = order.includes(f.id);
+            const isNew = sel.new_ids.includes(f.id);
+            const full = !on && order.length >= sel.max;
+            return (
+              <label key={f.id} className={full ? "cursor-not-allowed" : "cursor-pointer"}>
+                <Card className={on ? "border-primary/60" : full ? "opacity-40" : "opacity-70"}>
+                  {thumb && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={fileUrl(jobId, thumb)} alt="" className="h-28 w-full rounded-t-lg object-cover object-top" />
+                  )}
+                  <CardHeader className="flex-row items-start gap-2 pb-1">
+                    <Checkbox checked={on} disabled={full} onChange={() => setOrder(toggleSelection(order, f.id, sel.max))} className="mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-sm">
+                        {on && <span className="mr-1 text-primary">{order.indexOf(f.id) + 1}.</span>}
+                        {f.name}
+                      </CardTitle>
+                    </div>
+                    {isNew && <Badge tone="success">Mới thêm</Badge>}
+                    <Badge tone={demoKindTone(f.demo_kind)}>{demoKindLabel(f.demo_kind)}</Badge>
+                  </CardHeader>
+                  <CardContent className="space-y-1 text-xs text-muted-foreground">
+                    <p>{(f as { description?: string }).description}</p>
+                    {on && isPointingOnly(f.demo_kind) && (
+                      <p className="text-amber-700">Chỉ quay được cảnh chỉ vị trí, không thao tác thật.</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </label>
+            );
+          })}
+        </div>
+      </Section>
+      {order.length > 0 && (
+        <Section title="Thứ tự ưu tiên">
+          <ol className="space-y-2">
+            {order.map((id, i) => (
+              <li key={id} className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
+                <span className="w-5 font-semibold text-primary">{i + 1}</span>
+                <span className="min-w-0 flex-1 truncate">{byId.get(id)?.name ?? id}</span>
+                <Button variant="outline" size="sm" aria-label="Lên" disabled={i === 0} onClick={() => setOrder(moveSelection(order, id, -1))}>
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" aria-label="Xuống" disabled={i === order.length - 1} onClick={() => setOrder(moveSelection(order, id, 1))}>
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
+              </li>
+            ))}
+          </ol>
+          {tooMany && <p className="text-sm text-amber-700">Chọn nhiều hơn {sel.recommended_max} tính năng thì mỗi tính năng sẽ có ít thời gian hơn.</p>}
+        </Section>
+      )}
+      <Section title="Tính năng chưa có trong danh sách?">
+        <p className="text-sm text-muted-foreground">Mô tả tính năng (và dán URL trang chứa nó nếu có), mình sẽ xem thêm tối đa 3 trang rồi hiện lại danh sách.</p>
+        <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ví dụ: Lộ trình học theo vai trò (Learning Paths)" aria-label="Mô tả tính năng cần thêm" disabled={busy} />
+        <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="URL (không bắt buộc)" aria-label="URL trang chứa tính năng" disabled={busy} />
+        <Button
+          variant="outline"
+          disabled={busy || (!description.trim() && !url.trim())}
+          onClick={() => send(() => buildResponse(pending, "explore_more", exploreFields(description, url)))}
+        >
+          {busy ? "Đang khám phá thêm..." : "Khám phá thêm"}
+        </Button>
+      </Section>
+      <ErrorNote text={error} />
+      <Button disabled={busy || order.length < sel.min} onClick={() => send(() => buildResponse(pending, "answer", selectFields(order)))}>
+        {busy ? "Đang gửi..." : `Tiếp tục với ${order.length} tính năng`}
       </Button>
     </div>
   );

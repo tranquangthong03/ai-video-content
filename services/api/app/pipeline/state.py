@@ -19,6 +19,7 @@ STATE_FILE = "state.json"
 STEP_LABELS = {
     "explore": "Khám phá",
     "confirm": "Xác nhận",
+    "select": "Chọn tính năng",
     "concept": "Chọn hướng",
     "outline": "Dàn ý",
     "script": "Kịch bản",

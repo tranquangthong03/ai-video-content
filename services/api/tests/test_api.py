@@ -77,13 +77,13 @@ def job(c: TestClient, job_id: str) -> dict[str, Any]:
 
 
 def waiting_for(c: TestClient, job_id: str, kind: str) -> dict[str, Any]:
-    until(
-        lambda: (
-            job(c, job_id)["state"]["status"] == "waiting"
-            and job(c, job_id)["pending"]["kind"] == kind
-        )
-    )
-    return job(c, job_id)
+    def ready() -> dict[str, Any] | None:
+        d = job(c, job_id)  # one read: pending can vanish between two reads
+        pending = d["pending"]
+        waiting = d["state"]["status"] == "waiting" and pending and pending["kind"] == kind
+        return d if waiting else None
+
+    return until(ready)  # type: ignore[no-any-return]
 
 
 def answer(c: TestClient, d: dict[str, Any], action: str, **extra: Any):  # type: ignore[no-untyped-def]

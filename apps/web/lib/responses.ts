@@ -62,3 +62,13 @@ export const editFields = (instruction: string): Fields => ({
 export function setOpFields(sceneId: string, field: "voiceover" | "on_screen_text", value: string): Fields {
   return { edit: { instruction: null, targets: [], ops: [{ op: "set", scene_id: sceneId, field, value }] } };
 }
+
+/** select_features → "answer": the chosen feature ids, most important first. */
+export const selectFields = (orderedIds: string[]): Fields => ({ answers: { selected_features: orderedIds } });
+
+/** select_features → "explore_more": a feature that is not in the list yet (description, url optional). */
+export function exploreFields(description: string, url: string): Fields {
+  const u = url.trim();
+  const d = description.trim();
+  return { explore: { urls: u ? [u] : [], description: d || null } };
+}

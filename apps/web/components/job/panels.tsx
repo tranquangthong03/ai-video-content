@@ -16,6 +16,7 @@ export function currentStep(job: JobDetail): string {
   const kind = job.pending?.kind;
   if (job.state.status === "done") return "done";
   if (kind === "confirm_understanding") return "confirm";
+  if (kind === "select_features") return "select";
   if (kind === "choose_concept") return "concept";
   if (kind === "outline_review" || kind === "clarify") return "outline";
   if (kind === "script_review") return "script";
@@ -26,6 +27,11 @@ export function summarize(h: HistoryItem): string {
   if (h.kind === "choose_concept") {
     const a = h.answers ?? {};
     return h.action === "regenerate" ? "Đề xuất lại" : `Hướng «${String(a.concept_id ?? "")}»${a.notes ? ` · ${String(a.notes)}` : ""}`;
+  }
+  if (h.kind === "select_features") {
+    if (h.action === "explore_more") return "Thêm tính năng mới";
+    const n = ((h.answers ?? {}).selected_features as string[] | undefined)?.length ?? 0;
+    return `Đã chọn ${n} tính năng`;
   }
   if (h.instruction) return `Sửa: ${h.instruction}`;
   const verbs: Record<string, string> = { approve: "Đã duyệt", answer: "Đã xác nhận", regenerate: "Tạo lại", revert: "Quay về bản cũ", edit: "Đã sửa" };
