@@ -175,4 +175,6 @@ class JobRunner:
                 directory, status="failed", error=f"Lỗi không mong đợi: {type(e).__name__}: {e}"
             )
         finally:
-            cleanup_job_secrets(directory)  # demo account, saved session, login window profile
+            state = read_state(directory)
+            if state is not None and state.status in ("done", "cancelled"):
+                cleanup_job_secrets(directory)  # a failed job keeps them for "Chạy tiếp" (24 h)

@@ -17,7 +17,7 @@ from typing import Literal, Protocol
 from app.browser.auth_detect import LoginRequired
 from app.browser.login_find import find_login_url
 from app.browser.session import BrowserSession
-from app.core.credentials import CredentialStore
+from app.core.credentials import CredentialStore, cleanup_job_secrets
 from app.core.usage import BudgetExceeded, UsageTracker
 from app.explorer.mapper import BlockedByChallenge
 from app.explorer.report import DeadlineExceeded
@@ -246,9 +246,9 @@ def run_job(cfg: JobConfig, frontend: Frontend, rep: Reporter | None = None) -> 
         result = _run(cfg, frontend, rep, progress)
     except Cancelled:  # raised by a progress callback or a blocked question
         result = JobResult(EXIT_CANCELLED, "cancelled")
-    finally:
-        CredentialStore(job_dir).delete()  # a demo account lives only as long as its job
     final = {"done": "done", "failed": "failed", "cancelled": "cancelled"}[result.status]
+    if final in ("done", "cancelled"):  # a failed job keeps its session: "Chạy tiếp" needs it
+        cleanup_job_secrets(job_dir)
     changes: dict[str, object] = {"status": final, "error": result.error}
     if final == "done":
         changes.update(step="done", progress_pct=100, progress_text="Hoàn tất")

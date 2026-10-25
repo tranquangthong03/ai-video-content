@@ -246,3 +246,52 @@ def test_a_demo_account_renews_an_expired_session_without_asking(
     )  # fmt: skip
     need = LoginRequired(site.base + "/login", "session_expired", target_url=site.base + "/app")
     assert gate.ask(need).url == site.base + "/app"
+
+
+# --- a failed job keeps its session, a finished or cancelled one does not -------------------------------
+
+
+def _job_with_secrets(tmp_path: Path) -> Path:
+    job = tmp_path / "job"
+    (job / "login_profile").mkdir(parents=True)
+    CredentialStore(job).save("u", "p")
+    (job / "storage_state.json").write_text("{}")
+    return job
+
+
+@pytest.mark.parametrize(
+    ("status", "kept"), [("done", False), ("cancelled", False), ("failed", True)]
+)
+def test_run_job_cleans_secrets_only_for_done_and_cancelled(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, status: str, kept: bool
+) -> None:
+    from app.pipeline import runner
+
+    job = _job_with_secrets(tmp_path)
+    monkeypatch.setattr(runner, "_run", lambda *a, **k: JobResult(0, status))  # type: ignore[arg-type]
+    runner.run_job(JobConfig(url="https://x.com/", job_dir=job), None)  # type: ignore[arg-type]
+    assert (job / "credentials.enc").exists() is kept
+    assert (job / "storage_state.json").exists() is kept
+    assert (job / "login_profile").exists() is kept
+
+
+@pytest.mark.parametrize(
+    ("outcome", "kept"), [("done", False), ("cancelled", False), ("failed", True)]
+)
+def test_the_web_worker_cleans_secrets_only_for_done_and_cancelled(
+    tmp_path: Path, outcome: str, kept: bool
+) -> None:
+    def pipeline(cfg: JobConfig, frontend: FileFrontend) -> JobResult:
+        for name, content in (("credentials.enc", "x"), ("storage_state.json", "{}")):
+            (cfg.job_dir / name).write_text(content)
+        update_state(cfg.job_dir, status=outcome, error="x" if outcome == "failed" else None)
+        return JobResult(0, outcome)  # type: ignore[arg-type]
+
+    with TestClient(create_app(tmp_path / "jobs", pipeline)) as c:
+        c.app.state.runner.poll_s = 0.05  # type: ignore[attr-defined]
+        job_id = c.post("/api/jobs", data={"url": "https://example.com/"}).json()["state"]["job_id"]
+        until(lambda: c.get(f"/api/jobs/{job_id}").json()["state"]["status"] == outcome)
+        time.sleep(0.4)  # the worker's cleanup runs right after the pipeline returns
+        directory = tmp_path / "jobs" / job_id
+        assert (directory / "credentials.enc").exists() is kept
+        assert (directory / "storage_state.json").exists() is kept
