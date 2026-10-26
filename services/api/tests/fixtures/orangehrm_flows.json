@@ -1,0 +1,55 @@
+{
+ "discovery_leave": {
+  "id": "flow-dashboard-leave-timesheet-selfservice",
+  "title": "Tự phục vụ nghỉ phép và chấm công từ dashboard",
+  "persona": "Nhân viên tự phục vụ (self-service)",
+  "goal": "Từ dashboard mở nhanh các tiện ích tự phục vụ để xử lý đơn nghỉ phép và xem timesheet cá nhân",
+  "start_url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+  "expected_steps": [
+   "Từ Dashboard, dùng Quick Launch chọn Apply Leave để mở tiện ích xin nghỉ phép",
+   "Mở My Leave để xem lại danh sách đơn nghỉ phép của mình và trạng thái từng đơn",
+   "Quay lại Quick Launch chọn My Timesheet để mở timesheet cá nhân",
+   "Xem trạng thái Punch In/Punch Out trong ngày và tổng giờ làm theo tuần"
+  ],
+  "success_signal": "Màn hình My Leave hiển thị danh sách đơn nghỉ của cá nhân; màn hình My Timesheet hiển thị trạng thái chấm công và tổng giờ làm",
+  "needs_submit": false,
+  "value": "Nhân viên tự xử lý việc nghỉ phép và chấm công ngay từ dashboard mà không cần nhờ HR",
+  "related_feature_ids": [
+   "f4",
+   "f5",
+   "f6"
+  ],
+  "source": "proposed",
+  "confidence": 0.7,
+  "notes": "Bắt đầu từ trang dashboard đã khám phá và đi qua các quick-launch action có thật (Apply Leave, My Leave, My Timesheet); chưa mở được chi tiết từng màn hình nên chỉ mô tả ở mức điều hướng tới tiện ích."
+ },
+ "user_leave": {
+  "id": "user_nh_n_vi_n_xin_ngh_ph_p_2",
+  "title": "Nhân viên xin nghỉ phép 2 ngày và kiểm tra trạng thái đơn",
+  "persona": "Nhân viên tự phục vụ (self-service)",
+  "goal": "Tạo đơn xin nghỉ phép 2 ngày từ dashboard và xem lại trạng thái đơn đã gửi",
+  "start_url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+  "expected_steps": [
+   "Tại trang Dashboard, mở Quick Launch và chọn Apply Leave",
+   "Trong form đơn nghỉ phép, chọn loại nghỉ phép phù hợp",
+   "Chọn ngày bắt đầu và ngày kết thúc sao cho tổng cộng 2 ngày nghỉ",
+   "Kiểm tra số ngày nghỉ và thông tin đơn hiển thị trên form",
+   "Bấm Apply để gửi đơn nghỉ phép",
+   "Quay lại Quick Launch trên dashboard và mở My Leave",
+   "Xem danh sách đơn nghỉ phép của mình và xác nhận đơn vừa tạo cùng trạng thái (ví dụ Pending)",
+   "Mở chi tiết đơn nếu cần để xem lại ngày nghỉ, loại nghỉ và trạng thái"
+  ],
+  "success_signal": "Đơn nghỉ phép 2 ngày xuất hiện trong My Leave với trạng thái hiển thị rõ ràng; ngay trước khi gửi, form đã điền đủ loại nghỉ, ngày bắt đầu/kết thúc và tổng số ngày",
+  "needs_submit": true,
+  "value": "Nhân viên chủ động xin nghỉ 2 ngày và theo dõi được trạng thái đơn ngay trong hệ thống, không cần hỏi HR qua kênh khác",
+  "related_feature_ids": [
+   "f1",
+   "f4",
+   "f6"
+  ],
+  "source": "user",
+  "confidence": 0.9,
+  "notes": null
+ },
+ "infeasible_why": "Form Apply Leave không hiển thị các trường để chọn loại nghỉ, ngày bắt đầu/kết thúc; trang chỉ có menu điều hướng và logo, không có form nhập liệu."
+}

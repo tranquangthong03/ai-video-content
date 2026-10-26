@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Any
 
@@ -8,7 +9,7 @@ from app.browser.session import BrowserSession
 from app.core.flow_choice import build_request, check_flow_answer
 from app.core.interaction import make_response
 from app.flows.actions import FlowAction
-from app.flows.agent import FlowAgent
+from app.flows.agent import FlowAgent, _Step, give_up_has_evidence, tried_to_reach
 from app.flows.discovery import propose_flows, same_flow
 from app.llm.json_call import JsonCaller
 from app.pipeline.frontend import TerminalFrontend
@@ -34,8 +35,13 @@ def test_give_up_says_why_and_defaults_to_stuck() -> None:
         FlowAction(do="give_up", reason_kind="whatever")  # type: ignore[arg-type]
 
 
-def agent_run(session: BrowserSession, site: str, tmp_path: Path, quote: str | None) -> Any:
-    plan = [step("give_up", reason="trang không có form", reason_kind="no_data", quote=quote)]
+def agent_run(
+    session: BrowserSession, site: str, tmp_path: Path, quote: str | None, times: int = 1
+) -> Any:
+    plan = [
+        step("give_up", reason="trang không có form", reason_kind="no_data", quote=quote)
+        for _ in range(times)
+    ]
     caller, _ = make_caller(tmp_path, plan)
     flow = flow_for(site, start_url=site + "/empty_state.html")
     return FlowAgent(session, caller, flow, tmp_path / "job").run()
@@ -47,8 +53,12 @@ def test_the_site_message_is_kept_only_when_it_is_really_on_the_page(
     run = agent_run(browser_session, site, tmp_path / "a", MESSAGE)
     assert run.status == "partial" and run.give_up is not None
     assert (run.give_up.reason_kind, run.give_up.quote) == ("no_data", MESSAGE)
-    made_up = agent_run(browser_session, site, tmp_path / "b", "Please contact your administrator")
-    assert made_up.give_up is not None and made_up.give_up.quote is None  # not on the page
+    made_up = agent_run(
+        browser_session, site, tmp_path / "b", "Please contact your administrator", times=3
+    )
+    # no real message and no try through the menu: refused twice, then kept as plain "stuck"
+    assert made_up.give_up is not None and made_up.give_up.quote is None
+    assert made_up.give_up.reason_kind == "stuck"
 
 
 # --- the card and discovery ---------------------------------------------------------------------
@@ -118,3 +128,46 @@ def test_the_terminal_card_disables_a_flow_that_cannot_be_done() -> None:
     q = Q()
     TerminalFrontend()._ask_flow(req, q)
     assert [(c.value, bool(c.disabled)) for c in q.choices] == [("a", True), ("b", False)]
+
+
+# --- P0-b: a flow is only "infeasible" with evidence (saved OrangeHRM data) -------------------------
+
+SAVED = json.loads((Path(__file__).parent / "fixtures" / "orangehrm_flows.json").read_text("utf-8"))
+
+
+def saved_step(do: str, text: str = "") -> _Step:
+    return _Step({"do": do}, None, text, None, "", "", "", "")
+
+
+def goto_step() -> _Step:
+    return saved_step("goto")
+
+
+def click_step(text: str) -> _Step:
+    return saved_step("click", text)
+
+
+def test_the_saved_user_flow_and_the_discovery_flow_start_from_the_same_page() -> None:
+    user, found = (
+        CoreFlow.model_validate(SAVED["user_leave"]),
+        CoreFlow.model_validate(SAVED["discovery_leave"]),
+    )
+    assert user.start_url == found.start_url  # the start page was never the difference
+    assert (
+        user.expected_steps[0].split("chọn")[-1].strip() in found.expected_steps[0]
+    )  # same entry point: Apply Leave
+
+
+def test_giving_up_on_the_saved_leave_flow_needs_the_message_or_a_try_through_the_menu() -> None:
+    user = CoreFlow.model_validate(SAVED["user_leave"])
+    only_start = [goto_step()]  # what the agent had done when it declared the form missing
+    assert not give_up_has_evidence("no_data", None, user, only_start)
+    assert not give_up_has_evidence("feature_missing", None, user, only_start)
+    assert give_up_has_evidence("no_data", MESSAGE, user, only_start)  # the site said so
+    assert give_up_has_evidence(
+        "no_permission", None, user, only_start
+    )  # not an account-data claim
+    assert give_up_has_evidence("stuck", None, user, only_start)
+    tried = [goto_step(), click_step("Apply Leave")]
+    assert tried_to_reach(user, tried) and give_up_has_evidence("no_data", None, user, tried)
+    assert not tried_to_reach(user, [goto_step(), click_step("Logout")])

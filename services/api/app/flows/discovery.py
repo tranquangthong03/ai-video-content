@@ -113,6 +113,26 @@ def _is_side(page: PageSummary) -> bool:
     return is_subpage(page.url, page.title) or is_sensitive(page.url, page.title)
 
 
+def _words(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z0-9]+", fold(text)) if len(w) >= 4}
+
+
+def page_match(text: str, page: PageSummary) -> int:
+    """How many words of `text` the page's own address, title, purpose and actions share.
+    (The menu is left out on purpose: it is the same on every page.)"""
+    path = urlparse(page.url).path.replace("_", " ").replace("-", " ")
+    own = _words(" ".join([path, page.title, page.purpose, *page.actions]))
+    return len(_words(text) & own)
+
+
+def nearest_page(text: str, pages: list[PageSummary]) -> PageSummary | None:
+    """The explored, non-side page that best matches the description (first one on a tie), if
+    any shares a word with it."""
+    usable = [p for p in pages if not _is_side(p)]
+    best = max(usable, key=lambda p: page_match(text, p), default=None)
+    return best if best is not None and page_match(text, best) > 0 else None
+
+
 def tour_flow(
     profile: ProductProfile, pages: list[PageSummary], flow_id: str = "tour"
 ) -> CoreFlow | None:
@@ -255,11 +275,22 @@ def normalize_flow(
     flow.expected_steps = flow.expected_steps[:MAX_STEPS]
     notes: list[str] = [flow.notes] if flow.notes else []
     bad = start_problem(flow.start_url, {page_key(p.url) for p in pages})
+    wanted = " ".join([description, flow.title, flow.goal])
+    near = nearest_page(wanted, pages)
     if bad:
-        fallback = next((p.url for p in pages if not _is_side(p)), flow.start_url)
+        fallback = (near.url if near else None) or next(
+            (p.url for p in pages if not _is_side(p)), flow.start_url
+        )
         notes.append(f"{bad}; dùng {fallback}")
         flow.start_url = fallback
         flow.confidence = min(flow.confidence, LOW_CONFIDENCE)
+    elif near and page_match(wanted, near) > 0:
+        own = next((p for p in pages if page_key(p.url) == page_key(flow.start_url)), None)
+        if (
+            own is not None and page_match(wanted, own) == 0
+        ):  # the model's pick has nothing to do with it
+            notes.append(f"start_url không khớp mô tả; dùng {near.url}")
+            flow.start_url = near.url
     if len(flow.expected_steps) < MIN_STEPS:
         notes.append("mô tả ngắn: agent tự bổ sung các bước trung gian")
     if profile.site_type in LANDING_TYPES:

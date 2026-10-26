@@ -118,7 +118,9 @@ def test_normalize_with_an_unexplored_start_lowers_confidence_and_notes_it(tmp_p
         tmp_path, [flow(start_url="https://hr.example.com/not-seen", expected_steps=["Mở"])]
     )
     out = normalize_flow(c, profile(), PAGES, "xin nghỉ")
-    assert out and out.start_url == HOME and out.confidence <= 0.3
+    assert (
+        out and out.start_url.endswith("/leave/apply/") and out.confidence <= 0.3
+    )  # nearest to "xin nghỉ"
     assert out.notes and "không thuộc" in out.notes and "bổ sung" in out.notes
 
 
@@ -134,3 +136,22 @@ def test_the_pages_are_listed_with_actions_and_nav() -> None:
         [PageSummary(url=HOME, title="D", purpose="P", actions=["Apply"], nav=["Leave"])]
     )
     assert HOME in text and "actions: Apply" in text and "nav: Leave" in text
+
+
+def test_normalize_picks_the_explored_page_closest_to_the_description(tmp_path: Path) -> None:
+    pages = [
+        *PAGES,
+        PageSummary(
+            url="https://hr.example.com/recruitment/candidates",
+            title="Candidates",
+            purpose="Ứng viên",
+        ),
+    ]
+    c, _ = caller(tmp_path, [flow(start_url=HOME, title="Thêm candidates mới")])
+    out = normalize_flow(c, profile(), pages, "Thêm candidates: vào Recruitment, bấm Add")
+    assert out and out.start_url.endswith(
+        "/recruitment/candidates"
+    )  # the model's HOME had no link to it
+    c, _ = caller(tmp_path / "2", [flow(start_url=HOME, title="Mở Dashboard")])
+    kept = normalize_flow(c, profile(), pages, "Mở Dashboard xem tổng quan")
+    assert kept and kept.start_url == HOME  # a start that matches the description is left alone

@@ -49,6 +49,9 @@ ESCALATE_FAILED = 2  # refused actions after which the screenshot goes along
 ESCALATE_CANVAS = 0.25  # share of the viewport a canvas / svg must take to do the same
 FILMED_TIMEOUT_S = 480.0
 REPEAT_WARN, REPEAT_STOP = 2, 3
+# "the account cannot do this" needs evidence; the agent may be refused this many times first
+GIVE_UP_REFUSALS = 2
+EVIDENCE_KINDS = ("no_data", "feature_missing")
 STEP_MS = 2500  # a step is about this long on screen (before the hold)
 
 
@@ -91,6 +94,25 @@ class _Step:
     chapter: str
 
 
+def tried_to_reach(flow: CoreFlow, steps: list[_Step]) -> bool:
+    """Did the agent open a menu or link that matches the flow's own words (not just the start)?"""
+    words = {
+        w
+        for w in fold(" ".join([flow.title, flow.goal, *flow.expected_steps])).split()
+        if len(w) >= 4
+    }
+    return any(
+        s.action.get("do") in ("navigate", "click") and words & set(fold(s.target_text).split())
+        for s in steps
+    )
+
+
+def give_up_has_evidence(kind: str, quote: str | None, flow: CoreFlow, steps: list[_Step]) -> bool:
+    """no_data / feature_missing only count with the site's own message on the page, or after the
+    agent really tried to reach the screen through the menu; other kinds need no proof."""
+    return kind not in EVIDENCE_KINDS or bool(quote) or tried_to_reach(flow, steps)
+
+
 @dataclass
 class _Run:
     steps: list[_Step] = field(default_factory=list)
@@ -102,6 +124,7 @@ class _Run:
     repeat_warnings: int = 0
     failed_actions: int = 0
     give_up: dict[str, Any] | None = None
+    give_up_refused: int = 0
     text_calls: int = 0
     vision_calls: int = 0
     escalated_because: str | None = None
@@ -255,12 +278,21 @@ class FlowAgent:
                 run.status = "reached_goal" if action.do == "finish" else "partial"
                 if action.do == "give_up":
                     why = action.reason or answer.reason or "?"
+                    kind = action.reason_kind or "stuck"
+                    quote = self._verified_quote(action.quote, state)
+                    if not give_up_has_evidence(kind, quote, self.flow, run.steps):
+                        if run.give_up_refused < GIVE_UP_REFUSALS:
+                            run.give_up_refused += 1
+                            run.status = "partial"
+                            self._failed(
+                                run, action, "give_up",
+                                "chưa có thông báo của trang và chưa thử mở menu/mục khớp mô tả "
+                                "luồng; hãy điều hướng qua menu tới màn hình đó rồi mới kết luận",
+                            )  # fmt: skip
+                            continue
+                        kind = "stuck"  # still no proof: the flow is not blamed on the account
                     run.warnings.append(f"Agent bỏ cuộc: {why}")
-                    run.give_up = {
-                        "reason_kind": action.reason_kind or "stuck",
-                        "reason": why,
-                        "quote": self._verified_quote(action.quote, state),
-                    }
+                    run.give_up = {"reason_kind": kind, "reason": why, "quote": quote}
                 return
             if action.do == "stop_before_submit":
                 if self._stop_before_submit(page, state, action, answer, run):
