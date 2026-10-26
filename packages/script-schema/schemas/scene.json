@@ -87,7 +87,7 @@
       "properties": {
         "id": { "type": "string", "minLength": 1 },
         "type": { "const": "before_after" },
-        "layout": { "enum": ["split_vertical", "swipe"] },
+        "layout": { "enum": ["split_vertical", "swipe", "split_frames"] },
         "before_text": { "type": "string", "minLength": 1 },
         "after_text": { "type": "string", "minLength": 1 },
         "voiceover": { "type": "string" },

@@ -27,7 +27,20 @@ import {
   usePop,
   type ViewProps,
 } from "../DesktopShowcase/SceneViews";
-import { MEDIA, OVERLAY } from "./layout";
+import {
+  POP_FRAMES,
+  STAT_POP_FRAMES,
+  anchorFrame,
+  cornerRect,
+  kineticWords,
+  pickStatCorner,
+  popOf,
+  punchFactor,
+  splitHalves,
+  statStartFrame,
+  type Rect,
+} from "./finish";
+import { CAPTION_STRIP, MEDIA, OVERLAY } from "./layout";
 
 const FRAME = { w: MEDIA.w, h: MEDIA.h };
 const DEFAULT_CLIP = { w: 1440, h: 900 };
@@ -54,8 +67,10 @@ export const FocusClip: React.FC<{ assets: SceneAssets; durationInFrames: number
   const src = resolveAsset(assets.clip_url!);
   const startFrom = Math.round((startMs / 1000) * fps);
 
+  const punch = punchFactor(frame, assets.punches ?? [], fps);
   return (
     <AbsoluteFill style={{ overflow: "hidden", background: "#000" }}>
+      <AbsoluteFill style={{ transform: `scale(${punch})`, transformOrigin: "50% 45%" }}>
       {cam.establishing > 0.001 && (
         // the establishing shot is shorter than the frame is tall: the clip itself, enlarged, blurred and dimmed fills the rest
         <Freeze frame={shown}>
@@ -117,6 +132,7 @@ export const FocusClip: React.FC<{ assets: SceneAssets; durationInFrames: number
       <div style={{ position: "absolute", left: tip.x - 4, top: tip.y - 4, opacity: cursor.opacity, transform: "scale(1.25)", transformOrigin: "4px 4px" }}>
         <Arrow press={cursor.press} />
       </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
@@ -160,13 +176,14 @@ const Footage: React.FC<{ assets: SceneAssets; durationInFrames: number }> = ({ 
     <FocusShot assets={assets} durationInFrames={durationInFrames} />
   );
 
-/** on_screen_text laid lightly over the top of the footage, on a fading dark gradient. */
-const TopText: React.FC<{ text: string | null | undefined }> = ({ text }) => {
+/** on_screen_text laid over the top of the footage: word by word, on the beat of the voice-over. */
+const TopText: React.FC<{ text: string | null | undefined; assets?: SceneAssets }> = ({ text, assets }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const { fontFamily, motion } = useTheme();
+  const { fontFamily, highlight } = useTheme();
   if (!text) return null;
-  const pop = spring({ frame: frame - 6, fps, config: motion.spring, durationInFrames: 18 });
+  const anchor = anchorFrame(text, assets?.captions ?? [], fps, 6);
+  const words = kineticWords(text, anchor, fps);
   return (
     <>
       <div
@@ -191,19 +208,33 @@ const TopText: React.FC<{ text: string | null | undefined }> = ({ text }) => {
           fontSize: 58,
           lineHeight: 1.2,
           color: "#fff",
-          opacity: Math.min(1, pop * 2),
-          transform: `translateY(${(1 - pop) * -16}px)`,
           textShadow: "0 4px 20px rgba(0,0,0,0.7)",
         }}
       >
-        {text}
+        {words.map((w, i) => {
+          const pop = popOf(frame, w.startFrame);
+          return (
+            <span
+              key={i}
+              style={{
+                display: "inline-block",
+                marginRight: "0.28em",
+                opacity: pop.opacity,
+                transform: `scale(${pop.scale})`,
+                color: w.highlight ? highlight : "#fff",
+              }}
+            >
+              {w.text}
+            </span>
+          );
+        })}
       </div>
     </>
   );
 };
 
 /** The CTA button: pulses, and only appears for the last third of the scene. */
-const CtaButton: React.FC<{ text: string; durationInFrames: number }> = ({ text, durationInFrames }) => {
+const CtaButton: React.FC<{ text: string; domain?: string; durationInFrames: number }> = ({ text, domain, durationInFrames }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { accent, fontFamily, motion } = useTheme();
@@ -229,6 +260,67 @@ const CtaButton: React.FC<{ text: string; durationInFrames: number }> = ({ text,
       >
         {text}
       </div>
+      {domain && (
+        <div style={{ marginTop: 18, fontFamily, fontWeight: 700, fontSize: 30, color: "#fff", textShadow: "0 3px 14px rgba(0,0,0,0.8)" }}>
+          {domain}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/** The focus box on screen right now (frame pixels), to keep the callout from covering it. */
+function focusOnScreen(assets: SceneAssets, frame: number, fps: number, durationInFrames: number): Rect | null {
+  if (!hasClip(assets)) return null;
+  const clip = clipSize(assets);
+  const { startMs, rate, lastFrame } = clipPlayback(assets, fps, durationInFrames);
+  const shown = lastFrame === null ? frame : Math.min(frame, lastFrame);
+  const tMs = startMs + (shown / fps) * 1000 * rate;
+  const list = focusOf(assets).filter((f) => f.t_ms <= tMs);
+  const current = list[list.length - 1];
+  if (!current) return null;
+  const cam = focusCameraAt(tMs, focusOf(assets), clip, FRAME);
+  const { scale } = viewTransform(cam.view, FRAME);
+  const b = current.bbox;
+  return { x: (b.x - cam.view.x) * scale, y: (b.y - cam.view.y) * scale, w: b.w * scale, h: b.h * scale };
+}
+
+const STAT_BOX = { w: 340, h: 170 };
+
+/** A big number in the highlight colour with a small label; pops in early and keeps clear of the focus. */
+const StatCallout: React.FC<{ scene: ViewProps["scene"]; assets: SceneAssets; durationInFrames: number }> = ({
+  scene,
+  assets,
+  durationInFrames,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const { highlight, fontFamily, motion } = useTheme();
+  const stat = scene.stat;
+  if (!stat) return null;
+  const start = statStartFrame(durationInFrames);
+  if (frame < start) return null;
+  const pop = spring({ frame: frame - start, fps, config: motion.spring, durationInFrames: STAT_POP_FRAMES });
+  const focus = focusOnScreen(assets, frame, fps, durationInFrames);
+  const corner = pickStatCorner(focus, FRAME, STAT_BOX, 28, CAPTION_STRIP.height);
+  const at = cornerRect(corner, FRAME, STAT_BOX, 28, CAPTION_STRIP.height);
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: at.x,
+        top: at.y,
+        width: STAT_BOX.w,
+        textAlign: corner.endsWith("right") ? "right" : "left",
+        fontFamily,
+        opacity: Math.min(1, pop * 2),
+        transform: `scale(${0.85 + 0.15 * pop})`,
+        transformOrigin: corner.endsWith("right") ? "100% 0" : "0 0",
+        textShadow: "0 4px 22px rgba(0,0,0,0.75)",
+      }}
+    >
+      <div style={{ fontSize: 110, fontWeight: 900, lineHeight: 1, color: highlight }}>{stat.value}</div>
+      <div style={{ marginTop: 6, fontSize: 30, fontWeight: 700, color: "#fff" }}>{stat.label}</div>
     </div>
   );
 };
@@ -244,7 +336,8 @@ const HookView: React.FC<ViewProps> = ({ scene, assets, durationInFrames }) => {
   return (
     <AbsoluteFill>
       <Footage assets={assets} durationInFrames={durationInFrames} />
-      <TopText text={scene.on_screen_text} />
+      <TopText text={scene.on_screen_text} assets={assets} />
+      <StatCallout scene={scene} assets={assets} durationInFrames={durationInFrames} />
     </AbsoluteFill>
   );
 };
@@ -264,8 +357,9 @@ const CtaView: React.FC<ViewProps> = ({ scene, assets, durationInFrames, product
   return (
     <AbsoluteFill>
       <Footage assets={assets} durationInFrames={durationInFrames} />
-      <TopText text={productName} />
-      <CtaButton text={label} durationInFrames={durationInFrames} />
+      <TopText text={productName} assets={assets} />
+      <StatCallout scene={scene} assets={assets} durationInFrames={durationInFrames} />
+      <CtaButton text={label} domain={assets.cta_domain} durationInFrames={durationInFrames} />
     </AbsoluteFill>
   );
 };
@@ -282,12 +376,50 @@ const CtaButtonStatic: React.FC<{ text: string }> = ({ text }) => {
   );
 };
 
+/** Before / after on real screens: the frame split in two, the flow's first frame left, its hero frame right. */
+const SplitFrames: React.FC<{ beforeUrl: string; afterUrl: string; before: string; after: string }> = ({ beforeUrl, afterUrl, before, after }) => {
+  const frame = useCurrentFrame();
+  const { primary, fontFamily } = useTheme();
+  const { left, right } = splitHalves(FRAME);
+  const appear = Math.min(1, frame / POP_FRAMES);
+  const half = (r: Rect, url: string, label: string, after: boolean): React.ReactNode => (
+    <div style={{ position: "absolute", left: r.x, top: r.y, width: r.w, height: r.h, overflow: "hidden", opacity: appear }}>
+      <Img src={resolveAsset(url)} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "left top" }} />
+      <div
+        style={{
+          position: "absolute",
+          left: 18,
+          top: 18,
+          padding: "8px 18px",
+          borderRadius: 999,
+          fontFamily,
+          fontWeight: 800,
+          fontSize: 28,
+          color: "#fff",
+          background: after ? primary : "rgba(16,21,32,0.82)",
+        }}
+      >
+        {label}
+      </div>
+    </div>
+  );
+  return (
+    <AbsoluteFill style={{ background: "#05070D" }}>
+      {half(left, beforeUrl, before, false)}
+      {half(right, afterUrl, after, true)}
+    </AbsoluteFill>
+  );
+};
+
 /** Before / after: two translucent cards over the blurred, dimmed product page (never a black screen). */
 const FocusBeforeAfter: React.FC<ViewProps> = (props) => {
   const { scene, assets, durationInFrames } = props;
   const { primary, fontFamily } = useTheme();
   const pop = usePop(4);
   if (scene.type !== "before_after") return null;
+  if (scene.layout === "split_frames" && assets.before_url && assets.after_url) {
+    return <SplitFrames beforeUrl={assets.before_url} afterUrl={assets.after_url} before={scene.before_text} after={scene.after_text} />;
+  }
   if (!hasClip(assets) && !hasShot(assets)) return <BeforeAfterView {...props} />;
   const card = (label: string, text: string, after: boolean): React.ReactNode => (
     <div

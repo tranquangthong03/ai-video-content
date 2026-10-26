@@ -11,7 +11,8 @@ export const LAYOUTS_BY_TYPE = {
   ],
   "before_after": [
     "split_vertical",
-    "swipe"
+    "swipe",
+    "split_frames"
   ],
   "cta": [
     "logo_center",

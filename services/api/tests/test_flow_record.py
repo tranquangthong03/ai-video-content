@@ -253,3 +253,30 @@ def test_the_sync_pulse_is_measured_and_stays_in_the_part_that_is_cut_off(
     hook = filmed._hook(rec, tmp_path, "sh")
     assert hook is not None and hook.clip_path is not None
     assert not sync.video_has_pulse(hook.clip_path, 0, fps=15)
+
+
+def test_the_cta_uses_the_hero_frame_as_its_background_with_a_gentle_zoom_target(
+    filmed: FlowRecorder, tmp_path: Path
+) -> None:
+    rec = filmed.recording
+    assert rec is not None
+    cta = filmed._cta(rec, tmp_path, "s9")
+    assert cta is not None and cta.kind == "screenshot"
+    assert cta.image_path and cta.image_path.is_file() and cta.image_path.stat().st_size > 1000
+    assert cta.focus_log and cta.focus_log[0]["bbox"]["w"] > 0  # something real to zoom toward
+    assert filmed._cta(replace(rec, inventory=[]), tmp_path, "s8") is None  # no frames: the old way
+
+
+def test_a_before_after_needs_two_really_different_frames(
+    filmed: FlowRecorder, tmp_path: Path
+) -> None:
+    rec = filmed.recording
+    assert rec is not None
+    pair = filmed._pair(rec, tmp_path, "s7")
+    if pair is None:  # (the fixture form may not change enough between its first frame and the end)
+        assert any("trước/sau" in n for n in filmed.notes)
+    else:
+        before, after = pair.pair_images or (None, None)
+        assert before and after and before.is_file() and after.is_file() and before != after
+        assert pair.image_path == after
+    assert filmed._pair(replace(rec, inventory=rec.inventory[:1]), tmp_path, "s6") is None

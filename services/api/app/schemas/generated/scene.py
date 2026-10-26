@@ -134,7 +134,7 @@ class BeforeAfterScene(BaseModel):
     )
     id: Annotated[str, Field(min_length=1)]
     type: Literal['before_after']
-    layout: Literal['split_vertical', 'swipe']
+    layout: Literal['split_vertical', 'swipe', 'split_frames']
     before_text: Annotated[str, Field(min_length=1)]
     after_text: Annotated[str, Field(min_length=1)]
     voiceover: str

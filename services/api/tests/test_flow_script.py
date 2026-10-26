@@ -131,7 +131,7 @@ def draft(*, demo_types: tuple[str, str] = ("feature_demo", "feature_demo")) -> 
 def test_the_prompt_carries_the_flow_and_the_benefit_rule_only_in_flow_mode() -> None:
     prompt = build_prompt(writer_ctx())
     assert "<flow>" in prompt and '"persona": "Nhân viên"' in prompt
-    assert "KHÔNG kể lại từng thao tác" in prompt and "không dùng before_after" in prompt
+    assert "KHÔNG kể lại từng thao tác" in prompt and "Không dùng before_after" in prompt
     assert "demo_steps của feature" not in prompt  # the old "describe what is on screen" rule
     plain = writer_ctx()
     plain.flow = None
@@ -268,3 +268,53 @@ def test_nav_entries_come_from_the_pages_menu_links() -> None:
         ]
 
     assert nav_by_url([Pg()]) == {"u": ["Leave", "Home"]}
+
+
+# --- the before/after card of two real screens ------------------------------------------------
+
+
+def pair_ctx() -> WriterContext:
+    flow, run, ctx = the_ctx()
+    ctx.before_after_pair = True
+    return WriterContext(
+        flow_profile(profile([]), ctx), outline_from_flow(flow, run, ctx), THEME, HOME, flow=ctx
+    )
+
+
+def draft_with_card(**card: Any) -> DraftScript:
+    d = draft()
+    fields: dict[str, Any] = {
+        "voiceover": "Từ trống đến xong chỉ một phút", "key_point": "kc", "icon": "check",
+        "layout": "split_frames", "before_text": "Trước", "after_text": "Sau",
+    }  # fmt: skip
+    d.scenes.insert(3, DraftScene(type="before_after", **{**fields, **card}))
+    return d
+
+
+def test_a_real_pair_of_frames_adds_a_before_after_beat_before_the_cta() -> None:
+    ctx = pair_ctx()
+    beats = ctx.outline.beats
+    assert [b.feature_id for b in beats] == [None, "c1", "c2", None, None]
+    assert "Trước/sau" in beats[3].text and "Kêu gọi" in beats[4].text
+    plain = writer_ctx()
+    assert len(plain.outline.beats) == 4  # without a pair: unchanged
+
+
+def test_the_card_is_short_has_the_fixed_layout_and_needs_a_real_pair() -> None:
+    ctx = pair_ctx()
+    assert check_draft(draft_with_card(), ctx) == []
+    long = check_draft(draft_with_card(voiceover="một hai ba bốn năm sáu bảy tám chín mười"), ctx)
+    assert any("voiceover có 10 từ, cần 4–7" in e for e in long)
+    wrong = check_draft(draft_with_card(layout="swipe"), ctx)
+    assert any("split_frames" in e for e in wrong)
+    labels = check_draft(draft_with_card(before_text="một hai ba bốn"), ctx)
+    assert any("before_text quá 3 từ" in e for e in labels)
+    no_pair = writer_ctx()
+    no_pair.outline = ctx.outline  # same five beats, but the flow has no good pair
+    assert any("không có cặp khung" in e for e in check_draft(draft_with_card(), no_pair))
+
+
+def test_the_prompt_explains_the_card_only_when_the_flow_has_a_pair() -> None:
+    assert '"before_after_pair": true' in build_prompt(pair_ctx())
+    assert '"before_after_pair": false' in build_prompt(writer_ctx())
+    assert "split_frames" in build_prompt(pair_ctx())

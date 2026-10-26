@@ -1,4 +1,4 @@
-from app.core.hero import choose_hero, notable_texts, score_snapshot
+from app.core.hero import before_after_pair, choose_hero, hero_item, notable_texts, score_snapshot
 
 
 def snap(t: int, *items: tuple[str, str, bool]) -> dict:
@@ -36,3 +36,67 @@ def test_notable_texts_are_short_unique_and_capped() -> None:
     )
     assert len(texts) == 8 and all(len(t) <= 60 for t in texts)
     assert notable_texts(FILLED)[0] == "Add Employee"
+
+
+def test_a_before_after_pair_needs_distance_and_something_new() -> None:
+    first = snap(
+        0,
+        ("heading", "Add Employee", False),
+        ("input", "First Name", False),
+        ("button", "Save", False),
+    )
+    hero = snap(
+        5000,
+        ("heading", "Add Employee", False),
+        ("input", "Nguyễn Văn An", True),
+        ("input", "Mã nhân viên 0042", True),
+        ("button", "Save", False),
+    )
+    inventory = [first, hero]
+    assert before_after_pair(inventory, 5000) == (0, 5000)
+    assert (
+        before_after_pair(
+            [first, snap(1000, *[(i["kind"], i["text"], False) for i in hero["items"]])], 1000
+        )
+        is None
+    )  # too close
+    same = snap(
+        5000,
+        ("heading", "Add Employee", False),
+        ("input", "First Name", False),
+        ("button", "Save", False),
+    )
+    assert before_after_pair([first, same], 5000) is None  # nothing changed
+    assert before_after_pair(inventory, 7777) is None  # not a frame of the inventory
+    assert (
+        before_after_pair(inventory, 5000, from_ms=1000) is None
+    )  # the first frame is hidden loading
+
+
+def test_the_hero_item_is_what_is_new_then_a_heading_and_never_the_menu() -> None:
+    items = [
+        {
+            "kind": "heading",
+            "text": "Add Employee",
+            "is_new": False,
+            "region": "main",
+            "bbox": {"x": 0, "y": 0, "w": 300, "h": 40},
+        },
+        {
+            "kind": "list_item",
+            "text": "Nguyễn Văn An",
+            "is_new": True,
+            "region": "main",
+            "bbox": {"x": 0, "y": 50, "w": 300, "h": 40},
+        },
+        {
+            "kind": "heading",
+            "text": "Menu",
+            "is_new": True,
+            "region": "nav",
+            "bbox": {"x": 0, "y": 0, "w": 100, "h": 40},
+        },
+    ]
+    assert hero_item(items, (1440, 900))["text"] == "Nguyễn Văn An"  # type: ignore[index]
+    assert hero_item(items[:1] + items[2:], (1440, 900))["text"] == "Add Employee"  # type: ignore[index]
+    assert hero_item([], (1440, 900)) is None

@@ -35,7 +35,7 @@ Thời lượng mục tiêu: {{ duration_s }} giây. Tổng số từ voiceover 
 {# changed: failed/null features are shown by a short pointing recording (feature_demo) instead of a text-only hook/before_after; hook only first #}2. Beat có feature_id → type "feature_demo", field "feature" = feature_id, với mọi demo_kind:
    - interaction / navigation / showcase: hệ thống quay thao tác thật.
    - failed hoặc null (chưa trình diễn được): hệ thống chỉ quay ngắn VỊ TRÍ của tính năng (di chuột chậm, tô sáng), KHÔNG thao tác. Voiceover của scene này mô tả "ở đây có…", "bạn có thể…" và KHÔNG mô tả kết quả thao tác chưa được trình diễn. Scene này quay khoảng 5–7 giây nên voiceover nên dài 10–20 từ.
-   Type "hook" CHỈ dùng cho scene đầu tiên; không dùng hook, before_after hay cta cho beat ở giữa video.
+   Type "hook" CHỈ dùng cho scene đầu tiên; không dùng hook, before_after hay cta cho beat ở giữa video (ngoại lệ: beat «Trước/sau» của chế độ luồng, xem quy tắc 10).
 {# changed: at most one before_after, not next to another scene without footage; no repeated feature #}3. Beat nói về so sánh trước/sau, cũ/mới, vấn đề/giải pháp và không gắn với tính năng → có thể dùng "before_after" (before_text, after_text ≤ 6 từ mỗi bên), nhưng TỐI ĐA 1 scene before_after mỗi video và không đặt liền kề scene khác không có cảnh quay (hook, cta, before_after). Mục tiêu: ít nhất một nửa thời lượng (30 giây: 40%) là cảnh quay thật (feature_demo). Không dùng cùng một feature cho hai scene; nếu buộc phải lặp, scene sau là bước tiếp nối (show_setup = false), không quay lại từ đầu.
 {# changed: hook/CTA are footage of the home page; landing-only products tour different sections #}   Hook và cta được quay trực tiếp từ trang chủ (hook: khối hero; cta: nút kêu gọi hành động, không bấm), nên voiceover nói về điều người xem đang thấy. Nếu sản phẩm chỉ là trang giới thiệu (không tính năng nào thao tác được), mỗi feature_demo là một section KHÁC nhau của trang theo thứ tự trên trang: voiceover giới thiệu đúng phần đang hiển thị, không lặp lại nội dung các scene trước.
 4. layout phải thuộc danh sách hợp lệ của type trong scene_catalog. Chỉ dùng field mà type đó cho phép.
@@ -58,7 +58,7 @@ Thời lượng mục tiêu: {{ duration_s }} giây. Tổng số từ voiceover 
 13. CTA: một hành động cụ thể + lý do có thật (ưu đãi từ proof_bank) + tên miền ngắn «{{ home_domain }}»; không đọc URL dài (không https://, không đường dẫn).
 14. Cấm các cụm sáo rỗng: {{ forbidden_phrases }}. Hãy nói cụ thể.
 15. Không viết visual.actions — hệ thống tự điền từ dữ liệu đã kiểm chứng. Đặt visual = {"mode": "auto"} cho mọi scene.
-{# changed: flow mode never uses before_after and each chapter is exactly one scene #}{% if flow_json %}10. Chế độ luồng: không dùng before_after; mỗi chương trong <flow> là đúng 1 scene feature_demo với feature = id của chương, theo đúng thứ tự chương.
+{# changed: flow mode uses before_after only for the real-screens pair; each chapter is exactly one scene #}{% if flow_json %}10. Chế độ luồng: mỗi chương trong <flow> là đúng 1 scene feature_demo với feature = id của chương, theo đúng thứ tự chương. Không dùng before_after, TRỪ beat «Trước/sau» (chỉ có khi <flow> có "before_after_pair": true): beat đó là đúng 1 scene before_after với layout "split_frames" (nửa trái = màn hình lúc bắt đầu, nửa phải = kết quả), voiceover 4–7 từ (khoảng 3 giây), before_text/after_text ≤ 3 từ làm nhãn nhỏ (ví dụ «Trước» / «Sau»).
 {% endif %}
 ## Đầu ra
 Chỉ trả về json:

@@ -21,6 +21,10 @@ HOOK_KINDS = ("pain_question", "result_first", "shocking_number", "counterintuit
 FORBIDDEN_PHRASES = ("giải pháp toàn diện", "tối ưu hóa trải nghiệm", "nâng tầm", "đột phá",
                      "hoàn hảo")  # fmt: skip
 STAT_VALUE_MAX, STAT_LABEL_MAX = 12, 30
+# the before/after of a flow video is a card of about three seconds on two real screens
+BEFORE_AFTER_FLOW_MIN_WORDS, BEFORE_AFTER_FLOW_MAX_WORDS = 4, 7
+BEFORE_AFTER_FLOW_LABEL_WORDS = 3
+BEFORE_AFTER_FLOW_LAYOUT = "split_frames"
 BEFORE_AFTER_MAX_WORDS = 6
 VOICEOVER_MIN_WORDS = 8
 VOICEOVER_MAX_WORDS = 30

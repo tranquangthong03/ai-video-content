@@ -18,6 +18,7 @@ The rules apply AFTER a plan and also when there is none:
 from dataclasses import dataclass, replace
 from typing import Any
 
+from app.core.hero import hero_item
 from app.core.textmatch import text_matches
 
 ESTABLISH_MS = 1000  # the opening shot of the whole page
@@ -380,25 +381,6 @@ def tidy(segs: list[Seg], duration_ms: float) -> list[Seg]:
         else:
             merged.append(s)
     return merged
-
-
-HERO_KINDS = ("heading", "card", "list_item", "button", "input")
-
-
-def hero_item(items: list[dict[str, Any]], clip: tuple[int, int]) -> dict[str, Any] | None:
-    """The most telling item of a frame: what just appeared first, then headings and data."""
-    view = float(clip[0] * clip[1])
-    pool = [
-        i
-        for i in items
-        if i.get("text")
-        and i["kind"] in HERO_KINDS
-        and not is_excluded(i)
-        and area(i["bbox"]) <= 0.5 * view
-    ]
-    if not pool:
-        return None
-    return min(pool, key=lambda i: (not i.get("is_new"), HERO_KINDS.index(i["kind"])))
 
 
 def enforce_hook_framing(

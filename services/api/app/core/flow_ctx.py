@@ -42,6 +42,7 @@ class FlowCtx(BaseModel):
     status: str = "reached_goal"
     submit_policy: str = "stop"
     hero_texts: list[str] = Field(default_factory=list)  # prominent texts of the best frame
+    before_after_pair: bool = False  # the first frame and the hero frame make a real before/after
     chapters: list[ChapterCtx]
     # what each scene shows: a Visual dict per chapter id, plus the opening and closing scenes
     visuals: dict[str, dict[str, Any]] = Field(default_factory=dict)

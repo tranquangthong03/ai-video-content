@@ -232,22 +232,30 @@ def check_scene(
     demo_max: int = cat.VOICEOVER_MAX_WORDS,
     *,
     strict_min: bool = True,
+    flow_mode: bool = False,
 ) -> list[str]:
     """Limits that hold for every scene, whoever wrote it (writer, scene writer, user edit).
 
-    strict_min=False: a voiceover that is too short is not an error (it cannot be fixed by code)."""
+    strict_min=False: a voiceover that is too short is not an error (it cannot be fixed by code).
+    flow_mode: a before/after is the ~3 s card of two real screens (short words, fixed layout)."""
     errors: list[str] = []
     max_words = demo_max if s.type == "feature_demo" else cat.VOICEOVER_MAX_WORDS
-    if s.layout not in LAYOUTS_BY_TYPE[s.type]:
+    min_words = cat.VOICEOVER_MIN_WORDS
+    card = flow_mode and s.type == "before_after"
+    if card:
+        min_words, max_words = cat.BEFORE_AFTER_FLOW_MIN_WORDS, cat.BEFORE_AFTER_FLOW_MAX_WORDS
+        if s.layout != cat.BEFORE_AFTER_FLOW_LAYOUT:
+            errors.append(
+                f"{label}: before_after của luồng dùng layout «{cat.BEFORE_AFTER_FLOW_LAYOUT}»"
+            )
+    elif s.layout not in LAYOUTS_BY_TYPE[s.type]:
         errors.append(
             f"{label}: layout «{s.layout}» không hợp lệ cho {s.type} "
             f"(chọn một trong {', '.join(LAYOUTS_BY_TYPE[s.type])})"
         )
     words = cat.word_count(s.voiceover)
-    if words > max_words or (strict_min and words < cat.VOICEOVER_MIN_WORDS):
-        errors.append(
-            f"{label}: voiceover có {words} từ, cần {cat.VOICEOVER_MIN_WORDS}–{max_words}"
-        )
+    if words > max_words or (strict_min and words < min_words):
+        errors.append(f"{label}: voiceover có {words} từ, cần {min_words}–{max_words}")
     if cat.word_count(s.on_screen_text) > cat.ON_SCREEN_MAX_WORDS:
         errors.append(f"{label}: on_screen_text quá {cat.ON_SCREEN_MAX_WORDS} từ")
     for field_name, text in nar.scene_texts(s).items():
@@ -286,8 +294,11 @@ def check_scene(
             text = getattr(s, name)
             if not text or not text.strip():
                 errors.append(f"{label}: before_after thiếu {name}")
-            elif cat.word_count(text) > cat.BEFORE_AFTER_MAX_WORDS:
-                errors.append(f"{label}: {name} quá {cat.BEFORE_AFTER_MAX_WORDS} từ")
+            elif cat.word_count(text) > (
+                cat.BEFORE_AFTER_FLOW_LABEL_WORDS if card else cat.BEFORE_AFTER_MAX_WORDS
+            ):
+                limit = cat.BEFORE_AFTER_FLOW_LABEL_WORDS if card else cat.BEFORE_AFTER_MAX_WORDS
+                errors.append(f"{label}: {name} quá {limit} từ")
     elif s.before_text or s.after_text:
         errors.append(f"{label}: chỉ before_after mới có before_text/after_text")
     return errors
@@ -318,7 +329,14 @@ def check_draft(draft: DraftScript, ctx: WriterContext, *, strict_min: bool = Tr
     seen: dict[str, str] = {}
     for i, scene in enumerate(scenes):
         label = f"scene {i + 1}"
-        errors += check_scene(scene, label, features, ctx.demo_max_words, strict_min=strict_min)
+        errors += check_scene(
+            scene, label, features, ctx.demo_max_words, strict_min=strict_min,
+            flow_mode=ctx.flow is not None,
+        )  # fmt: skip
+        if scene.type == "before_after" and ctx.flow is not None and not ctx.flow.before_after_pair:
+            errors.append(
+                f"{label}: luồng này không có cặp khung trước/sau, không dùng before_after"
+            )
         beat = beats[i] if i < len(beats) else None
         if beat and beat.feature_id:
             feature = features.get(beat.feature_id)
@@ -470,6 +488,8 @@ def flow_visual_for(s: DraftScene, ctx: WriterContext) -> dict[str, Any] | None:
         return flow.hook_visual or None
     if s.type == "cta":
         return flow.cta_visual or None
+    if s.type == "before_after":  # two real screens of the flow
+        return flow.hook_visual or None
     return None
 
 

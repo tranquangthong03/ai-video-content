@@ -22,7 +22,7 @@ export type SceneTable = {
 export const SCENES: SceneTable = {
   hook: { big_text_over_blur: HookBigText, emoji_pop: HookEmoji },
   feature_demo: { full_screen: DemoFull, phone_mockup: DemoPhone },
-  before_after: { split_vertical: BeforeAfterSplit, swipe: BeforeAfterSwipe },
+  before_after: { split_vertical: BeforeAfterSplit, swipe: BeforeAfterSwipe, split_frames: BeforeAfterSplit }, // (split_frames is the desktop_focus real-screens layout)
   cta: { logo_center: CtaLogo, button_pulse: CtaButtonPulse },
 };
 

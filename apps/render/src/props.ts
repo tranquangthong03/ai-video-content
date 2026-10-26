@@ -56,6 +56,14 @@ export const SceneAssetsSchema = z.object({
   focus_track: z.array(FocusTrackSchema).optional(), // the producer's final focus plan; wins over focus_log
   // stretches the producer already cut out of clip_url (original clip time); informational only
   segments: z.array(z.object({ from_ms: z.number(), to_ms: z.number() })).optional(),
+  // punch-ins at the start of shots (scene time): the frame grows by `scale` within 6 frames
+  punches: z.array(z.object({ t_ms: z.number().min(0), scale: z.number().min(0).max(0.3) })).optional(),
+  // one shot per spoken phrase and what changed at its start (informational)
+  shots: z.array(z.object({ from_ms: z.number(), to_ms: z.number(), change: z.string() })).optional(),
+  // before_after / split_frames: two real frames of the flow (first frame, hero frame)
+  before_url: z.string().optional(),
+  after_url: z.string().optional(),
+  cta_domain: z.string().optional(), // short domain shown under the CTA button
   clip_width: z.number().positive().optional(),
   clip_height: z.number().positive().optional(),
   captions: z.array(CaptionSchema).optional(),

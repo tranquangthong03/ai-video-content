@@ -12,6 +12,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from app.browser.auth_detect import LoginRequired
 from app.browser.session import BrowserSession
@@ -261,6 +262,11 @@ def shots_for_scene(
         "punches": punches,
         "max_static_ms": max_static_ms(final_ms, focus_times, action_times, punches),
     }
+
+
+def short_domain(url: str) -> str:
+    """hr.example.com for https://www.hr.example.com/app/x: what a CTA may say out loud."""
+    return (urlparse(url).hostname or "").removeprefix("www.")
 
 
 def shows_login_page(inventory: list[dict[str, Any]]) -> bool:
@@ -571,7 +577,13 @@ def produce(
         elif record.image_path:
             entry["screenshot_url"] = str(record.image_path)
             entry["clip_width"], entry["clip_height"] = viewport["width"], viewport["height"]
-            if s.type == "cta":  # no button to point at: drift toward the header
+            if record.pair_images:
+                entry["before_url"], entry["after_url"] = (str(p) for p in record.pair_images)
+            if record.focus_log:
+                entry["focus_log"] = record.focus_log
+            if (
+                s.type == "cta" and not record.focus_log
+            ):  # no button to point at: drift to the header
                 bar = {"x": 0, "y": 0, "w": viewport["width"], "h": 140}
                 entry["focus_log"] = [{"t_ms": 0, "bbox": bar, "kind": "section", "hold_ms": 0}]
         focus, focus_file = None, None
@@ -589,6 +601,8 @@ def produce(
             if plan is not None and plan.clip is not None
             else 0
         )
+        if s.type == "cta":
+            entry["cta_domain"] = short_domain(url)
         assets[s.id] = entry
         inventory_file = save_inventory(work, s.id, plan)
         outcomes.append(

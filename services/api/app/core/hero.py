@@ -59,6 +59,55 @@ def hero_window(t_ms: int, content_ms: int) -> tuple[int, int]:
     return a, a + length
 
 
+MIN_PAIR_GAP_MS = 2000  # the frames must be this far apart in the flow
+MAX_PAIR_SIMILARITY = 0.8  # share of texts the two frames have in common, at most
+MIN_NEW_TEXTS = 2  # texts the hero frame shows that the first one did not
+
+
+def _texts(snapshot: dict[str, Any]) -> set[str]:
+    return {" ".join(str(i["text"]).split()).casefold() for i in _items(snapshot)}
+
+
+def before_after_pair(
+    inventory: Sequence[dict[str, Any]], hero_t_ms: int, *, from_ms: int = 0
+) -> tuple[int, int] | None:
+    """(before t_ms, after t_ms) when the first frame of the flow and the hero frame make a real
+    before/after: far enough apart, and the hero shows something the first one does not."""
+    usable = [s for s in inventory if int(s.get("t_ms", 0)) >= from_ms and _items(s)]
+    hero = next((s for s in usable if int(s["t_ms"]) == hero_t_ms), None)
+    if not usable or hero is None:
+        return None
+    first = usable[0]
+    if hero_t_ms - int(first["t_ms"]) < MIN_PAIR_GAP_MS:
+        return None
+    a, b = _texts(first), _texts(hero)
+    if len(b - a) < MIN_NEW_TEXTS or len(a & b) / len(a | b) > MAX_PAIR_SIMILARITY:
+        return None
+    return int(first["t_ms"]), hero_t_ms
+
+
+HERO_KINDS = ("heading", "card", "list_item", "button", "input")
+EXCLUDED_REGIONS = {"nav", "aside", "footer"}
+EXCLUDED_KINDS = {"sidebar", "nav", "footer"}
+
+
+def hero_item(items: list[dict[str, Any]], clip: tuple[int, int]) -> dict[str, Any] | None:
+    """The most telling item of a frame: what just appeared first, then headings and data."""
+    view = float(clip[0] * clip[1])
+    pool = [
+        i
+        for i in items
+        if i.get("text")
+        and i["kind"] in HERO_KINDS
+        and i.get("region") not in EXCLUDED_REGIONS
+        and i["kind"] not in EXCLUDED_KINDS
+        and i["bbox"]["w"] * i["bbox"]["h"] <= 0.5 * view
+    ]
+    if not pool:
+        return None
+    return min(pool, key=lambda i: (not i.get("is_new"), HERO_KINDS.index(i["kind"])))
+
+
 def choose_hero(inventory: Sequence[dict[str, Any]], *, from_ms: int = 0) -> Hero | None:
     """The best snapshot at or after `from_ms`; ties go to the later one."""
     usable = [s for s in inventory if int(s.get("t_ms", 0)) >= from_ms and _items(s)]

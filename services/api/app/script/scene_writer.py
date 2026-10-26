@@ -116,7 +116,9 @@ def _prompt(
 
 def scene_errors(draft: DraftScene, ctx: WriterContext, **kw: Any) -> list[str]:
     """check_scene plus the marketing rules: hook line and numbers with a source."""
-    errors = check_scene(draft, "scene", ctx.features, ctx.demo_max_words, **kw)
+    errors = check_scene(
+        draft, "scene", ctx.features, ctx.demo_max_words, flow_mode=ctx.flow is not None, **kw
+    )
     if draft.type == "hook":
         errors += nar.hook_line_issues(
             "scene", draft.voiceover, draft.on_screen_text, ctx.profile.product_name

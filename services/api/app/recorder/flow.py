@@ -24,7 +24,7 @@ from app.browser.form_actions import SUBMIT_NAME
 from app.browser.guard import WritesNotAllowed
 from app.browser.page_utils import dismiss_cookie_banner
 from app.browser.session import BrowserSession
-from app.core.hero import choose_hero, hero_window
+from app.core.hero import before_after_pair, choose_hero, hero_item, hero_window
 from app.recorder import motion, sync
 from app.recorder.record import (
     CAPTURE,
@@ -214,6 +214,18 @@ def record_flow(
 # --- cutting -------------------------------------------------------------------------------------
 
 
+def grab_still(src: Path, dst: Path, t_ms: int, offset_ms: int = 0) -> None:
+    """One frame at flow time `t_ms` (offset_ms turns log time into video time) as a PNG."""
+    at = max(0, t_ms + offset_ms)
+    result = subprocess.run(
+        ["ffmpeg", "-y", "-v", "error", "-ss", f"{at / 1000:.3f}", "-i", str(src),
+         "-frames:v", "1", str(dst)],
+        capture_output=True, text=True,
+    )  # fmt: skip
+    if result.returncode != 0 or not dst.is_file():
+        raise RuntimeError(f"ffmpeg still failed: {result.stderr[:200]}")
+
+
 def cut_clip(src: Path, dst: Path, start_ms: int, end_ms: int, offset_ms: int = 0) -> None:
     """Frame-accurate copy of [start, end] in LOG time (re-encoded the way the recorder encodes);
     offset_ms turns log time into video time (the sync pulse measured it)."""
@@ -304,11 +316,16 @@ class FlowRecorder:
     ) -> RecordResult:
         s = scene.root
         chapter = getattr(s, "chapter_id", None)
-        if chapter is None and s.type != "hook":
+        if chapter is None and s.type not in ("hook", "cta", "before_after"):
             return record_scene(session, scene, out_dir, speech_ms, **kw)
         rec = self._record(session, out_dir, kw)
         if s.type == "hook":
             result = self._hook(rec, out_dir, s.id)
+            return result or record_scene(session, scene, out_dir, speech_ms, **kw)
+        if chapter is None:  # the closing CTA and the before/after card use the flow's own frames
+            result = (
+                self._cta(rec, out_dir, s.id) if s.type == "cta" else self._pair(rec, out_dir, s.id)
+            )
             return result or record_scene(session, scene, out_dir, speech_ms, **kw)
         assert chapter is not None
         return self._chapter(rec, chapter, out_dir, s.id)
@@ -384,6 +401,53 @@ class FlowRecorder:
                 kind="fallback_screenshot", warnings=[note, "không có ảnh storyboard"]
             )
         return RecordResult(kind="fallback_screenshot", image_path=image, warnings=[note])
+
+    def _still(self, rec: FlowRecording, out_dir: Path, name: str, t_ms: int) -> Path | None:
+        """One frame of the flow clip at flow time `t_ms`."""
+        if rec.clip_path is None:
+            return None
+        dst = out_dir / f"{name}.png"
+        try:
+            grab_still(rec.clip_path, dst, t_ms, rec.sync_offset_ms)
+        except RuntimeError as e:
+            self.notes.append(f"{name}: không lấy được khung hình ({str(e)[:60]})")
+            return None
+        return dst
+
+    def _pair(self, rec: FlowRecording, out_dir: Path, scene_id: str) -> RecordResult | None:
+        """Two real frames: the flow's first and its hero frame; None without a good pair."""
+        hero = choose_hero(rec.inventory, from_ms=rec.start_offset_ms)
+        pair = hero and before_after_pair(rec.inventory, hero.t_ms, from_ms=rec.start_offset_ms)
+        if not pair:
+            self.notes.append("trước/sau: không có cặp khung phù hợp, quay lại bằng ảnh trang")
+            return None
+        before = self._still(rec, out_dir, f"{scene_id}_before", pair[0])
+        after = self._still(rec, out_dir, f"{scene_id}_after", pair[1])
+        if before is None or after is None:
+            return None
+        return RecordResult(
+            kind="screenshot", image_path=after, pair_images=(before, after),
+            width=rec.width, height=rec.height,
+        )  # fmt: skip
+
+    def _cta(self, rec: FlowRecording, out_dir: Path, scene_id: str) -> RecordResult | None:
+        """The hero frame as the closing background, with a gentle zoom toward its best item."""
+        hero = choose_hero(rec.inventory, from_ms=rec.start_offset_ms)
+        if hero is None:
+            return None
+        image = self._still(rec, out_dir, scene_id, hero.t_ms)
+        if image is None:
+            return None
+        snap = next((s for s in rec.inventory if int(s["t_ms"]) == hero.t_ms), None)
+        item = hero_item(snap["items"], (rec.width, rec.height)) if snap else None
+        focus = (
+            [{"t_ms": 0, "bbox": dict(item["bbox"]), "kind": "section", "hold_ms": 0}]
+            if item
+            else []
+        )
+        return RecordResult(
+            kind="screenshot", image_path=image, focus_log=focus, width=rec.width, height=rec.height
+        )
 
     def _hook(self, rec: FlowRecording, out_dir: Path, scene_id: str) -> RecordResult | None:
         """1.5-2.5 s around the hero frame (chosen by code from the frame inventory), else around

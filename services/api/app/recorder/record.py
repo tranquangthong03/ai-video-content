@@ -228,6 +228,7 @@ class RecordResult:
     filled_ms: int = 0  # time spent on the filler hovers
     activity_ms: list[float] = field(default_factory=list)  # clip times where anything happened
     dead_cut_ms: int = 0  # blank / spinner / skeleton frames cut out by the producer
+    pair_images: tuple[Path, Path] | None = None  # before / after stills (split_frames)
 
 
 class _Recorder:

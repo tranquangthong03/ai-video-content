@@ -5,7 +5,7 @@ chose and approved the flow."""
 from typing import Any
 
 from app.core.flow_ctx import ChapterCtx, FlowCtx
-from app.core.hero import choose_hero
+from app.core.hero import before_after_pair, choose_hero
 from app.schemas.generated.core_flow import CoreFlow
 from app.schemas.generated.flow_run import FlowRun
 from app.schemas.generated.outline import Beat, Outline
@@ -15,6 +15,7 @@ DURATIONS = (30, 45, 60)
 STEP_S = 2.5  # one step on screen, before the hold
 HOLD_S = 1.5
 HOOK_S, CTA_S = 3.0, 4.0
+MAX_FLOW_BEATS = 6  # a script has at most six scenes
 NO_PICTURE = ("scroll", "wait")
 
 
@@ -57,6 +58,7 @@ def plain_visual(url: str) -> dict[str, Any]:
 def build_flow_ctx(
     flow: CoreFlow, run: FlowRun, home_url: str, inventory: list[dict[str, Any]] | None = None
 ) -> FlowCtx:
+    start_ms = run.live.start_offset_ms if run.live else 0
     steps_by = chapter_steps(run)
     chapters = [
         ChapterCtx(
@@ -77,6 +79,9 @@ def build_flow_ctx(
         success_signal=flow.success_signal, value=flow.value, needs_submit=flow.needs_submit,
         status=run.status, submit_policy=run.submit_policy,
         hero_texts=list(hero.texts) if (hero := choose_hero(inventory or [])) else [],
+        before_after_pair=bool(
+            hero and before_after_pair(inventory or [], hero.t_ms, from_ms=start_ms)
+        ),
         chapters=chapters, visuals=visuals,
         hook_visual=plain_visual(flow.start_url),
         cta_visual=plain_visual(home_url or flow.start_url),
@@ -110,6 +115,13 @@ def outline_from_flow(flow: CoreFlow, run: FlowRun, ctx: FlowCtx) -> Outline:
         if n == len(ctx.chapters) - 1:
             text += f" → kết quả: {flow.success_signal}"
         beats.append(Beat(id=f"b{len(beats) + 1}", text=text, feature_id=c.id))
+    if ctx.before_after_pair and len(beats) < MAX_FLOW_BEATS - 1:  # (room left for the CTA)
+        beats.append(
+            Beat(
+                id=f"b{len(beats) + 1}",
+                text="Trước/sau: màn hình lúc bắt đầu so với kết quả của luồng (≤ 3 giây)",
+            )
+        )
     beats.append(Beat(id=f"b{len(beats) + 1}", text=f"Kêu gọi hành động: {flow.value}"))
     return Outline(
         concept_id=f"flow:{flow.id}",
