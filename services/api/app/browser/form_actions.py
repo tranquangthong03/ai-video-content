@@ -59,6 +59,7 @@ class Ops:
 
     click: Callable[[Target], None] = lambda t: t.click()
     type_text: Callable[[Target, str], None] = lambda t, text: t.fill(text)
+    scroll: Callable[[int], None] | None = None  # px, + = down; None: the page just jumps
 
 
 def fold(text: str) -> str:

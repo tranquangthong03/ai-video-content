@@ -27,6 +27,7 @@ from app.browser.session import BrowserSession
 from app.core.usage import BudgetExceeded
 from app.flows.actions import ActionRunner, FlowAction, StepResult, is_submit_target
 from app.flows.chapters import chapter_ids, group_chapters
+from app.flows.film import Film
 from app.flows.page_state import (
     PageElement,
     PageState,
@@ -44,6 +45,7 @@ ROLE = "flow_agent"
 FLOW_DIR = "flow"
 RUN_FILE = "flow_run.json"
 HISTORY_LINES = 14
+FILMED_TIMEOUT_S = 480.0
 REPEAT_WARN, REPEAT_STOP = 2, 3
 STEP_MS = 2500  # a step is about this long on screen (before the hold)
 
@@ -117,6 +119,7 @@ class FlowAgent:
         use_cache: bool | None = None,
         previous: FlowRun | None = None,
         keep: int = 0,
+        film: Film | None = None,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self.session = session
@@ -128,7 +131,9 @@ class FlowAgent:
         self.authenticated = authenticated
         self.viewport = viewport
         self.images = caller.can_see_images if use_images is None else use_images
-        self.limits = limits or Limits()
+        self.film = film  # filming while the agent works (the live clip of FlowRun.live)
+        # holds and slow typing make a filmed run longer than a silent one
+        self.limits = limits or (Limits(timeout_s=FILMED_TIMEOUT_S) if film else Limits())
         self.use_cache = caller.cache_enabled if use_cache is None else use_cache
         self.clock = clock
         self.previous = previous  # earlier run: its first `keep` steps are repeated, not asked
@@ -147,15 +152,25 @@ class FlowAgent:
         before = dict(self.caller.tracker.steps.get(ROLE, {}))
         self._calls0 = before.get("calls", 0)
         run = _Run()
-        context = self.session.new_context(viewport=self.viewport)
+        film = self.film
+        context = self.session.new_context(
+            viewport=self.viewport, record_video_dir=film.raw_dir if film else None
+        )
         try:
+            if film is not None:
+                film.prepare(context)
             page = context.new_page()
+            if film is not None:
+                film.start(page, allow_submit=self.policy == "allow")
             self._open(page, run)
             if run.status != "failed":
                 self._loop(page, run, started)
+            if film is not None:
+                film.stop()
         finally:
             context.close()
-        flow_run = self._finish(run, started, before)
+        live = film.finish() if film is not None else None
+        flow_run = self._finish(run, started, before, live)
         self._save(flow_run)
         return flow_run
 
@@ -172,6 +187,8 @@ class FlowAgent:
             run.warnings.append(f"Không mở được trang bắt đầu: {str(e)[:160]}")
             return
         self._check_login(page, response.status if response else None)
+        if self.film is not None:
+            self.film.opened()
 
     def _check_login(self, page: Page, status: int | None) -> None:
         if self.authenticated:
@@ -185,6 +202,8 @@ class FlowAgent:
             self.flow.start_url,
             allow_submit=self.policy == "allow",
             guard=self.session.guard,
+            ops=self.film.ops if self.film else None,
+            observer=self.film,
         )
         pending_key: str | None = None
         pending_sig = ""
@@ -193,6 +212,8 @@ class FlowAgent:
         if self.previous is not None and self.keep > 1:
             shot = self._replay(page, runner, run) or shot
         while True:
+            if self.film is not None:
+                self.film.begin_wait()  # nothing moves on the page until the model has answered
             state = capture_state(page)
             sig = signature(state)
             if pending_key is not None and sig == pending_sig:
@@ -208,6 +229,8 @@ class FlowAgent:
                 run.warnings.append(stop)
                 return
             answer = self._ask(state, shot, run)
+            if self.film is not None:
+                self.film.end_wait()
             if answer is None:
                 return
             action = answer.action
@@ -228,7 +251,7 @@ class FlowAgent:
             key = f"{action.do}:{name}"
             pending_key, pending_sig = key, sig
             try:
-                result = runner.run(state, action)
+                result = self._run_action(runner, state, action, len(run.steps) + 1)
             except ActionFailed as e:
                 if "không có trong danh sách" in str(e):
                     run.invented_refs += 1
@@ -249,6 +272,23 @@ class FlowAgent:
             if len([s for s in run.steps if s.action["do"] != "goto"]) >= self.limits.max_actions:
                 run.warnings.append(f"Dừng: đã đủ {self.limits.max_actions} hành động.")
                 return
+
+    def _run_action(
+        self, runner: ActionRunner, state: PageState, action: FlowAction, step: int
+    ) -> StepResult:
+        """runner.run, noted by the film: a failed attempt is cut later, a good one is held."""
+        film = self.film
+        if film is not None:
+            film.attempt_start()
+        try:
+            result = runner.run(state, action)
+        except BaseException:
+            if film is not None:
+                film.attempt_end(False, None, action.do)
+            raise
+        if film is not None:
+            film.attempt_end(True, step, action.do)
+        return result
 
     def _replay(self, page: Page, runner: ActionRunner, run: _Run) -> bytes | None:
         """Repeat the kept steps of the previous run from their locators, without asking the model.
@@ -273,7 +313,7 @@ class FlowAgent:
             )  # fmt: skip
             state = PageState(page.url, "", "", [], [element])
             try:
-                result = runner.run(state, action)
+                result = self._run_action(runner, state, action, len(run.steps) + 1)
             except Exception as e:
                 run.warnings.append(
                     f"Không lặp lại được bước {old.i} ({str(e).splitlines()[0][:100]}); "
@@ -428,9 +468,14 @@ class FlowAgent:
         if found.target is None:
             self._failed(run, action, element.name, "không tìm lại được nút gửi")
             return False
-        found.target.hover()
-        page.wait_for_timeout(400)
         spec = element.locator.model_dump()
+        if self.film is not None:  # the film's own pointing (hover, then the outline)
+            if not self.film.point_at(spec, element.name, len(run.steps) + 1):
+                self._failed(run, action, element.name, "không trỏ được vào nút gửi")
+                return False
+        else:
+            found.target.hover()
+            page.wait_for_timeout(400)
         chapter = answer.chapter.strip()
         for do, extra in (("hover", {}), ("highlight", {"ms": 1800})):
             self._shot(page, run, len(run.steps) + 1)
@@ -451,7 +496,9 @@ class FlowAgent:
 
     # --- result ---------------------------------------------------------------------------
 
-    def _finish(self, run: _Run, started: float, before: dict[str, int]) -> FlowRun:
+    def _finish(
+        self, run: _Run, started: float, before: dict[str, int], live: dict[str, Any] | None = None
+    ) -> FlowRun:
         names = [(i, s.action["do"], s.chapter) for i, s in enumerate(run.steps, start=1)]
         first = next((c for _, d, c in names if d != "goto" and c), "Mở trang")
         names = [(i, d, first if d == "goto" else c) for i, d, c in names]
@@ -495,6 +542,7 @@ class FlowAgent:
                 "llm_calls": calls,
                 "submit_policy": self.policy,
                 "stop_ref": run.stop_name,
+                "live": live,
                 "report": {
                     "model": model,
                     "used_images": self.images_sent,

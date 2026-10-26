@@ -7,7 +7,7 @@ flow's submit policy is "allow" (then at most MAX_SUBMITS times, inside the guar
 """
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 
 from playwright.sync_api import Page
 from pydantic import BaseModel, model_validator
@@ -81,8 +81,12 @@ class ActionRunner:
         allow_submit: bool = False,
         guard: RequestGuard | None = None,
         ops: Ops | None = None,
+        observer: Any = None,
     ) -> None:
         self.page = page
+        # told which element each action is about (the live film follows it): on_target(do, element,
+        # state, target); None for a scroll
+        self.observer = observer
         self.root_url = root_url
         self.allow_submit = allow_submit
         self.guard = guard
@@ -94,6 +98,8 @@ class ActionRunner:
         """Do `action` on the page described by `state`. Raises ActionFailed or Unsafe."""
         result = StepResult(do=action.do, url_before=self.page.url, value=action.value)
         if action.do == "scroll":
+            if self.observer is not None:
+                self.observer.on_target("scroll", None, state, None)
             self._scroll(action)
         else:
             element = state.by_ref.get(action.ref or "")
@@ -101,6 +107,8 @@ class ActionRunner:
                 raise ActionFailed(f"ref «{action.ref}» không có trong danh sách phần tử hiện tại")
             result.locator, result.target_text = element.locator, element.name
             target = self._resolve(element)
+            if self.observer is not None:
+                self.observer.on_target(action.do, element, state, target)
             self._act(action, element, target, result)
         wait_for_settle(self.page)
         result.url_after = self.page.url
@@ -186,5 +194,9 @@ class ActionRunner:
     def _scroll(self, action: FlowAction) -> None:
         height = self.page.evaluate("window.innerHeight")
         sign = 1 if action.direction == "down" else -1
-        self.page.mouse.wheel(0, sign * height * SCROLL_FRACTION)
+        pixels = round(sign * height * SCROLL_FRACTION)
+        if self.ops.scroll is not None:
+            self.ops.scroll(pixels)
+        else:
+            self.page.mouse.wheel(0, pixels)
         self.page.wait_for_timeout(300)
