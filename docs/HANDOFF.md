@@ -78,7 +78,17 @@ Giao thức tương tác chung: `InteractionRequest(kind, …)` / `UserResponse(
 - M1-3 xong: `app/script/critic.py` + `prompts/copy_critic.md` (nguyên văn): chọn hook theo điểm hook_strength của từng phương án, chấm 5 tiêu chí, dưới 7 → Scene Writer viết lại cảnh yếu (tối đa 3, 1 vòng) → chấm lại, giữ bản tốt hơn; điểm trước/sau trong `script_report.json["critic"]`; chỉ chạy ở chế độ luồng, lỗi critic không làm hỏng job; sau khi người dùng sửa chỉ hiển thị điểm cũ (`edited`). Web script_review: 5 thanh điểm + chọn 1 trong 2 hook (EditOp `hook_option`, không gọi LLM).
 - M1-4 xong (2 commit): **4a** hook cắt 1,5–2,5 s quanh hero frame chấm bằng code (`core/hero.py`, `FlowRecorder._hook`; dự phòng theo bước hero cũ), khung hook luôn tight/medium (`enforce_hook_framing`), mỗi cụm lời đọc là một shot + punch-in +8–12% trong 6 frame, không đoạn nào >3,0 s không đổi (`producer/shots.py`), cắt khung chết >300 ms trước khi cắt dead-time (`producer/dead_frames.py`, `dead_frames_ms` đo trên clip cảnh vì video cuối có nền/tiêu đề nên không phẳng), tight giữ thêm nhãn/heading gần nhất (`with_context`, đếm `context_limited`), thống kê thẻ chữ (`text_cards`). **4b** template: chữ động theo từ khớp lời đọc, stat callout né tiêu điểm, before/after = layout mới `split_frames` của scene before_after (2 ảnh thật: khung đầu + hero, chỉ xuất hiện khi `FlowCtx.before_after_pair`, voiceover 4–7 từ), CTA nền là hero frame + zoom nhẹ vào item nổi bật + tên miền ngắn dưới nút (`apps/render/.../finish.ts` + test thuần).
   - Giới hạn đã biết: thẻ chữ toàn màn hình chỉ được báo cáo/cảnh báo (`text_cards.ok`), chưa tự thay bằng ảnh; clip Playwright không có âm thanh/2x nên chữ khi zoom vẫn hơi mềm; chưa render thử video thật cho các quy tắc 4b (làm ở M1-6).
-- Tiếp theo: M1-5 (scorecard) → M1-6 (nghiệm thu 3 URL).
+- M1-5 xong: `producer/scorecard.py` (10 dòng đạt/không đạt + âm thanh «chưa có (M2)» không tính) ghi `report.json["scorecard"]`, hiện ở trang video trên web.
+- M1-6 xong (nghiệm thu, thư mục `docs/m1/`: `<tên>.md`, contact sheet 16 khung, still hook; video ở `services/api/out/m1-{orangehrm,squoosh,todomvc}/video.mp4`):
+  | Video | Scorecard | Critic (hook / lợi ích / kêu gọi) |
+  |---|---|---|
+  | orangehrm «Thêm nhân viên mới» (stop, 0 request ghi) | 7/10 | 5 / 6 / 6 → **chưa đạt** |
+  | squoosh nén + so sánh | 9/10 | 8 / 6 / 7 → lợi ích chưa đạt |
+  | todomvc «lên danh sách việc» | 8/10 | 7 / 6 / 6 → lợi ích, CTA chưa đạt |
+  Các tiêu chí dựng phim (khung hook gần, shot ≤ 3 s, 0 khung chết, thẻ chữ, footage ≥ 60%, steps_in_clip 100%) đều đạt ở cả 3 video; chỗ chưa đạt là **chất lượng lời** (DeepSeek chưa viết lợi ích/CTA đủ sắc, vòng viết lại 1 lần chỉ giúp được một phần).
+  - Lỗi tìm ra khi nghiệm thu và đã sửa: hook_options dài quá 12 từ làm hỏng cả job (nay code cắt, ghi `auto_trimmed`); camera luôn mở bằng cảnh toàn trang nên «hook gần» chỉ đúng trên giấy (nay `closeOpening` cho hook, có test).
+  - Kiểm tra cuối: pytest -n auto 3 lần liên tiếp 894 pass, ruff, codegen-check, tsc + vitest (render 120, web 43) đều pass. Trong lúc đó lộ thêm 3 test chờ theo đồng hồ (hàng đợi API, recorder 1440x900, login secrets) và đã đổi sang chờ theo điều kiện/dung sai rộng.
+- Tiếp theo: M2 (TTS + nhạc + SFX).
 
 ## 6. Lộ trình tiếp theo
 
@@ -100,7 +110,10 @@ flowchart LR
 
 - Replay trên control tự vẽ (squoosh) mong manh → đã xử lý bằng quay trực tiếp (R1); replay chỉ còn là dự phòng.
 - Nội dung marketing còn đơn giản, video **chưa có âm thanh** → M1, M2.
-- Hook/camera đôi lúc zoom quá sát (M1).
+- Hook/camera zoom quá sát: đã có giới hạn giữ nhãn gần nhất (M1-4a), cần xem lại trên video thật.
+- Chất lượng lời (M1): hook bị code cắt cho đủ ≤ 12 từ có thể cụt ý (ví dụ «…chỉ với một cú.»); stat đôi khi lấy số của dữ liệu mẫu trên màn hình (OrangeHRM «0736» là mã nhân viên) — đúng nguồn nhưng không phải lợi ích; critic dưới 7 ở ít nhất một tiêu chí trên cả 3 URL.
+- Thẻ chữ toàn màn hình chỉ được báo cáo, chưa tự thay bằng ảnh; `hook_options` chỉ bắt buộc ở chế độ luồng.
+- Critic dùng chung model với writer (`copy_critic` trong router chưa được nối vào ScriptRunner khi chạy thật).
 - Luồng phụ (luồng thứ 2) chưa được dựng.
 - Cách A (cửa sổ đăng nhập) chỉ chạy khi API cùng máy người dùng; deploy server cần noVNC (sau MVP).
 - Chữ khi zoom hơi mềm (nguồn 1440×900, Playwright không quay được 2x).

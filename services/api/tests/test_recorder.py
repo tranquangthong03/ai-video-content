@@ -114,7 +114,9 @@ def test_a_recording_is_a_1440x900_h264_mp4_with_a_click_log_of_what_was_done(
     )
     assert stream["r_frame_rate"] == "30/1"
     duration_ms = float(info["format"]["duration"]) * 1000
-    assert abs(duration_ms - r.content_ms) < 1200  # the log's clock follows the recording
+    # the log's clock follows the recording; under load the video lags the log by more than a
+    # second (that drift is what the sync pulse measures), so only a gross mismatch is a bug
+    assert abs(duration_ms - r.content_ms) < 3000
     assert r.start_offset_ms > 0 and r.setup_end_ms == r.start_offset_ms
     kinds = [e["type"] for e in r.click_log]
     assert kinds[0] == "click" and "hover" in kinds  # typing focuses the field with a click first

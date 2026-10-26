@@ -15,6 +15,7 @@ A storyboard that did not reach its goal is rerun once ("regenerate"), then appr
 """
 
 import json
+import os
 import sys
 import time
 from dataclasses import dataclass, field
@@ -34,7 +35,9 @@ from app.pipeline.runner import JobConfig, run_job  # noqa: E402
 from app.schemas.generated.interaction import InteractionRequest  # noqa: E402
 from app.schemas.generated.user_response import UserResponse  # noqa: E402
 
-OUT = Path(__file__).resolve().parents[3] / "docs" / "core-flow"
+OUT = Path(
+    os.environ.get("FLOW_REPORT_OUT") or Path(__file__).resolve().parents[3] / "docs" / "core-flow"
+)
 
 
 @dataclass
@@ -63,6 +66,14 @@ SITES = {
             "Thêm ứng viên: vào Recruitment, mục Candidates, bấm Add, điền họ tên và email rồi "
             "dừng trước nút Save",
         ],
+    ),
+    "orangehrm_add": Site(
+        "https://opensource-demo.orangehrmlive.com/",
+        "Thêm nhân viên mới: vào PIM, bấm Add Employee, điền họ tên và mã nhân viên rồi dừng "
+        "trước nút Save",
+        describe_only=True,
+        requires_login=True,
+        credentials=("Admin", "admin123"),
     ),
     "orangehrm_view": Site(
         "https://opensource-demo.orangehrmlive.com/",

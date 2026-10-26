@@ -46,6 +46,7 @@ target-version = "py312"
 "app/browser/privacy.py" = ["E501"]  # embedded JavaScript
 "app/flows/page_state.py" = ["E501"]  # embedded JavaScript
 "scripts/bench_flow_agent.py" = ["E501"]  # long Vietnamese report lines
+"scripts/m1_report.py" = ["E501"]  # long Vietnamese report lines
 "tests/**" = ["E501"]  # long fixture/data lines
 
 [tool.ruff.lint]

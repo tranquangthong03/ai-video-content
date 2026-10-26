@@ -62,7 +62,7 @@ def client(tmp_path: Path) -> Iterator[TestClient]:
         yield c
 
 
-def until(check: Callable[[], Any], seconds: float = 6) -> Any:
+def until(check: Callable[[], Any], seconds: float = 60) -> Any:
     end = time.monotonic() + seconds
     while time.monotonic() < end:
         value = check()

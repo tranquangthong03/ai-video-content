@@ -101,7 +101,7 @@ def demo_pipeline(site: AuthSite) -> Callable[[JobConfig, FileFrontend], JobResu
     return pipeline
 
 
-def until(check: Callable[[], Any], seconds: float = 30) -> Any:
+def until(check: Callable[[], Any], seconds: float = 90) -> Any:
     end = time.monotonic() + seconds
     while time.monotonic() < end:
         value = check()

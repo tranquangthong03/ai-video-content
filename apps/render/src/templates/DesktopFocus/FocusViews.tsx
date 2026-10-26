@@ -49,7 +49,11 @@ const clipSize = (a: SceneAssets) => ({ w: a.clip_width ?? DEFAULT_CLIP.w, h: a.
 const focusOf = (a: SceneAssets): FocusLike[] => pickFocus(a);
 
 /** The recorded clip seen through the focus camera, with the drawn cursor and click ripples. */
-export const FocusClip: React.FC<{ assets: SceneAssets; durationInFrames: number }> = ({ assets, durationInFrames }) => {
+export const FocusClip: React.FC<{ assets: SceneAssets; durationInFrames: number; closeOpening?: boolean }> = ({
+  assets,
+  durationInFrames,
+  closeOpening = false,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { highlight } = useTheme();
@@ -57,7 +61,7 @@ export const FocusClip: React.FC<{ assets: SceneAssets; durationInFrames: number
   const { startMs, rate, lastFrame } = clipPlayback(assets, fps, durationInFrames);
   const shown = lastFrame === null ? frame : Math.min(frame, lastFrame);
   const tMs = startMs + (shown / fps) * 1000 * rate; // the logs are in clip time
-  const cam = focusCameraAt(tMs, focusOf(assets), clip, FRAME);
+  const cam = focusCameraAt(tMs, focusOf(assets), clip, FRAME, CAMERA_CONFIG, closeOpening);
   const { scale, translateX, translateY } = viewTransform(cam.view, FRAME);
   // cursor and ripples in clip pixels (frame = clip: identity mapping), then through the camera
   const clicks = assets.click_log ?? [];
@@ -169,9 +173,13 @@ export const FocusShot: React.FC<{ assets: SceneAssets; durationInFrames: number
   );
 };
 
-const Footage: React.FC<{ assets: SceneAssets; durationInFrames: number }> = ({ assets, durationInFrames }) =>
+const Footage: React.FC<{ assets: SceneAssets; durationInFrames: number; closeOpening?: boolean }> = ({
+  assets,
+  durationInFrames,
+  closeOpening,
+}) =>
   hasClip(assets) ? (
-    <FocusClip assets={assets} durationInFrames={durationInFrames} />
+    <FocusClip assets={assets} durationInFrames={durationInFrames} closeOpening={closeOpening} />
   ) : (
     <FocusShot assets={assets} durationInFrames={durationInFrames} />
   );
@@ -335,7 +343,7 @@ const HookView: React.FC<ViewProps> = ({ scene, assets, durationInFrames }) => {
   }
   return (
     <AbsoluteFill>
-      <Footage assets={assets} durationInFrames={durationInFrames} />
+      <Footage assets={assets} durationInFrames={durationInFrames} closeOpening />
       <TopText text={scene.on_screen_text} assets={assets} />
       <StatCallout scene={scene} assets={assets} durationInFrames={durationInFrames} />
     </AbsoluteFill>

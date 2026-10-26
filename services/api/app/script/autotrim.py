@@ -84,4 +84,17 @@ def trim_draft(draft, ctx):  # type: ignore[no-untyped-def]
         scenes.append(fixed)
         notes += scene_notes
     changes["scenes"] = scenes
+    options = []
+    for n, option in enumerate(getattr(draft, "hook_options", []), start=1):
+        voice, screen = option.voiceover, option.on_screen_text
+        if voice and tt.words_of(voice) > cat.HOOK_MAX_WORDS:
+            voice = _first_words(voice, cat.HOOK_MAX_WORDS)
+            notes.append(note(f"hook_options[{n}] voiceover", option.voiceover, voice))
+        if screen and tt.words_of(screen) > cat.ON_SCREEN_MAX_WORDS:
+            screen = _first_words(screen, cat.ON_SCREEN_MAX_WORDS)
+            notes.append(
+                note(f"hook_options[{n}] on_screen_text", option.on_screen_text or "", screen)
+            )
+        options.append(option.model_copy(update={"voiceover": voice, "on_screen_text": screen}))
+    changes["hook_options"] = options
     return draft.model_copy(update=changes), notes

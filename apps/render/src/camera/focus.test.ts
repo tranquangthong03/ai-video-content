@@ -197,3 +197,16 @@ describe("fallback to the click log", () => {
     }
   });
 });
+
+describe("a hook that opens close", () => {
+  it("starts on its first target instead of the establishing shot of the whole page", () => {
+    const opening = focusCameraAt(0, LOG, CLIP, FRAME, CAMERA_CONFIG, true);
+    expect(opening.establishing).toBe(0);
+    expect(opening.view.w).toBeCloseTo(targetView(LOG[0], CLIP, FRAME, CAMERA_CONFIG).w, 3);
+    expect(cam(0).establishing).toBeGreaterThan(0.99); // the normal clip still opens wide
+  });
+
+  it("without any focus it falls back to the usual opening", () => {
+    expect(focusCameraAt(0, [], CLIP, FRAME, CAMERA_CONFIG, true).establishing).toBeGreaterThan(0.99);
+  });
+});

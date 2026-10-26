@@ -1,0 +1,136 @@
+{
+  "flow_id": "user_n_n_nh_m_u_v_so_s_nh_tr_",
+  "status": "reached_goal",
+  "steps": [
+    {
+      "i": 1,
+      "action": {
+        "do": "goto",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": "https://squoosh.app/",
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": null,
+      "url_after": "https://squoosh.app/",
+      "screenshot": "flow/steps/s1.jpg",
+      "note": "Mở trang bắt đầu",
+      "chapter_id": "c1",
+      "t_ms_hint": 0
+    },
+    {
+      "i": 2,
+      "action": {
+        "do": "click",
+        "target": "2.8MB",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "button",
+        "name": "2.8MB",
+        "text": "2.8MB",
+        "css": "button",
+        "nth": 2,
+        "tag": "button",
+        "fingerprint": "button|2.8mb|0.32,0.95",
+        "bbox": {
+          "x": 412.0,
+          "y": 784.0,
+          "w": 100.0,
+          "h": 139.0
+        }
+      },
+      "target_text": "2.8MB",
+      "value": null,
+      "url_before": "https://squoosh.app/",
+      "url_after": "https://squoosh.app/editor",
+      "screenshot": "flow/steps/s2.jpg",
+      "note": "Mở Squoosh và chọn ảnh mẫu Large photo (2.8MB) để bắt đầu tối ưu.",
+      "chapter_id": "c1",
+      "t_ms_hint": 2500
+    }
+  ],
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "Chọn ảnh mẫu",
+      "step_ids": [
+        1,
+        2
+      ],
+      "value_line": null
+    }
+  ],
+  "sample_data": {
+    "anh_mau": "Large photo",
+    "dung_luong_goc": "2.79MB",
+    "dung_luong_sau_nen": "862kB",
+    "codec": "MozJPEG",
+    "chat_luong": "75"
+  },
+  "warnings": [
+    "Bắt đầu gửi kèm ảnh màn hình: trang có canvas/svg lớn."
+  ],
+  "llm_calls": 2,
+  "submit_policy": "stop",
+  "stop_ref": null,
+  "live": {
+    "clip": "flow/live/flow.mp4",
+    "logs": "flow/live/logs.json",
+    "content_ms": 16902,
+    "start_offset_ms": 5212,
+    "sync_offset_ms": -1581,
+    "pulse_at_ms": 1581,
+    "segments": [
+      {
+        "from_ms": 5253,
+        "to_ms": 8165,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 13523,
+        "to_ms": 16583,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      }
+    ],
+    "marks": [
+      {
+        "i": 2,
+        "start_ms": 8181,
+        "end_ms": 13362
+      }
+    ]
+  },
+  "give_up": null,
+  "report": {
+    "model": "deepseek-flash",
+    "used_images": true,
+    "llm_calls": 2,
+    "prompt_tokens": 5521,
+    "completion_tokens": 675,
+    "seconds": 18.8,
+    "write_requests": [],
+    "text_calls": 0,
+    "vision_calls": 2,
+    "escalated_because": "trang có canvas/svg lớn",
+    "invented_refs": 0,
+    "repeat_warnings": 0
+  }
+}

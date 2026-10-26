@@ -108,8 +108,10 @@ def build_scorecard(
             line("proof_used", "Dùng bằng chứng thật", "có", None, "na", "không có proof bank")
         )
     else:
-        lines.append(line("proof_used", "Dùng bằng chứng thật", "có", proof_used(said, proof),
-                          judge(proof_used(said, proof))))  # fmt: skip
+        used = proof_used(said, proof)
+        lines.append(
+            line("proof_used", "Dùng bằng chứng thật", "có", "có" if used else "không", judge(used))
+        )
 
     footage = report.get("footage_ratio")
     lines.append(line(

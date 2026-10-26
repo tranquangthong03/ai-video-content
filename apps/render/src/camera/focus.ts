@@ -126,18 +126,22 @@ export function focusCameraAt(
   clip: Size,
   frame: Size,
   cfg: CameraConfig = CAMERA_CONFIG,
+  /** A hook opens already on its first target: no establishing shot of the whole page. */
+  closeOpening = false,
 ): FocusCamera {
   const cover = coverWidth(clip, frame);
-  const est = establishingView(clip, frame);
   const sorted = [...focus].sort((a, b) => a.t_ms - b.t_ms);
   const centre = insideClip(clip.w / 2, clip.h / 2, 1, clip, frame);
+  const opening = closeOpening && sorted.length > 0;
+  const est = opening ? targetView(sorted[0], clip, frame, cfg) : establishingView(clip, frame);
+  const settleMs = opening ? 0 : cfg.establishingMs;
 
   const segments: Segment[] = [];
   if (sorted.length === 0) segments.push({ start: cfg.establishingMs, target: centre });
   sorted.forEach((fp, i) => {
     const prev = segments[segments.length - 1];
-    const wanted = i === 0 ? cfg.establishingMs : fp.t_ms - cfg.leadMs;
-    const start = prev ? Math.max(wanted, prev.start + cfg.minSegmentMs) : Math.max(wanted, cfg.establishingMs);
+    const wanted = i === 0 ? settleMs : fp.t_ms - cfg.leadMs;
+    const start = prev ? Math.max(wanted, prev.start + cfg.minSegmentMs) : Math.max(wanted, settleMs);
     segments.push({ start, target: targetView(fp, clip, frame, cfg) });
   });
 
@@ -159,7 +163,8 @@ export function focusCameraAt(
     break;
   }
   const zoom = cover / view.w;
-  const establishing = clamp((1 - zoom) / (1 - cover / est.w), 0, 1);
+  const whole = establishingView(clip, frame);
+  const establishing = clamp((1 - zoom) / (1 - cover / whole.w), 0, 1);
   return { view, zoom, establishing };
 }
 

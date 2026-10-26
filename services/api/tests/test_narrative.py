@@ -167,3 +167,16 @@ def test_the_prompt_has_the_marketing_rules_the_proof_and_the_framework() -> Non
     )
     ctx.proof = None
     assert "<proof_bank>" not in build_prompt(ctx)
+
+
+def test_a_hook_option_that_stays_too_long_is_cut_by_code_not_failed(tmp_path: Path) -> None:
+    ctx = writer_ctx()
+    out = output()
+    long = "Xin nghỉ phép mà vẫn mất cả buổi sáng chờ duyệt rồi còn phải hỏi lại nhiều lần nữa"
+    out["script"]["hook_options"][1]["voiceover"] = long
+    out["script"]["hook_options"][1]["on_screen_text"] = "một hai ba bốn năm sáu bảy"
+    caller, _ = caller_for(out, tmp_path=tmp_path)
+    result = write_script(caller, ctx)  # (three attempts keep the long line: the code trims it)
+    second = result.script.hook_options[1]
+    assert len(second.voiceover.split()) <= 12 and len((second.on_screen_text or "").split()) <= 5
+    assert any(w.startswith("auto_trimmed: hook_options[2] voiceover") for w in result.warnings)
