@@ -24,7 +24,7 @@ from app.browser.form_actions import SUBMIT_NAME
 from app.browser.guard import WritesNotAllowed
 from app.browser.page_utils import dismiss_cookie_banner
 from app.browser.session import BrowserSession
-from app.recorder import motion
+from app.recorder import motion, sync
 from app.recorder.record import (
     CAPTURE,
     INIT_JS,
@@ -72,6 +72,8 @@ class FlowRecording:
     action_log: list[dict[str, Any]]
     activity_ms: list[float]
     warnings: list[str]
+    sync_offset_ms: int = 0  # video clock = log clock + this (measured with the sync pulse)
+    pulse_at_ms: int = 0  # log time at which the pulse was shown
 
     @property
     def failed_at(self) -> int | None:
@@ -149,6 +151,7 @@ def record_flow(
         rec.submit_ok = run.submit_policy == "allow"
         rec.hover_submit = True  # the climax of a stopped flow points at the submit button
         page.mouse.move(*rec.home)
+        pulse_at = sync.emit_pulse(page, rec.now)  # in the loading phase, which is cut off
         try:
             response = page.goto(start_url, wait_until="domcontentloaded")
             rec.settle()
@@ -159,6 +162,9 @@ def record_flow(
             raise
         except Exception as e:
             rec.warnings.append(f"không mở được {start_url}: {type(e).__name__}")
+        shown_from = pulse_at + sync.PULSE_MS + sync.PULSE_SETTLE_MS
+        if rec.now() < shown_from:  # the shown part never starts before the pulse is over
+            page.wait_for_timeout(shown_from - rec.now())
         start_offset = rec.now()
         skips = 0
         for step in run.steps:
@@ -189,17 +195,24 @@ def record_flow(
         clip = out_dir / "flow.mp4"
         to_mp4(Path(video.path()), clip)
     activity = [t - rec.t0 * 1000 for t in rec.activity] + [e["t_ms"] for e in rec.log] + rec.marks
+    offset = sync.measure_offset(clip, pulse_at) if clip is not None else None
+    if offset is None:
+        rec.warnings.append("không đo được độ lệch đồng hồ log/hình (xung đồng bộ), dùng 0")
     return FlowRecording(
         clip, start_offset, content_ms, viewport["width"], viewport["height"], marks,
         rec.log, rec.focus_log, rec.inventory, rec.action_log, activity, rec.warnings,
+        sync_offset_ms=offset or 0,
+        pulse_at_ms=pulse_at,
     )  # fmt: skip
 
 
 # --- cutting -------------------------------------------------------------------------------------
 
 
-def cut_clip(src: Path, dst: Path, start_ms: int, end_ms: int) -> None:
-    """Frame-accurate copy of [start, end] (re-encoded the way the recorder encodes)."""
+def cut_clip(src: Path, dst: Path, start_ms: int, end_ms: int, offset_ms: int = 0) -> None:
+    """Frame-accurate copy of [start, end] in LOG time (re-encoded the way the recorder encodes);
+    offset_ms turns log time into video time (the sync pulse measured it)."""
+    start_ms, end_ms = max(0, start_ms + offset_ms), max(1, end_ms + offset_ms)
     result = subprocess.run(
         [
             "ffmpeg", "-y", "-v", "error", "-ss", f"{start_ms / 1000:.3f}", "-i", str(src),
@@ -340,7 +353,7 @@ class FlowRecorder:
         if window is not None and rec.clip_path is not None:
             a, b, first = window
             clip = out_dir / f"{scene_id}.mp4"
-            cut_clip(rec.clip_path, clip, a, b)
+            cut_clip(rec.clip_path, clip, a, b, rec.sync_offset_ms)
             result = window_result(rec, clip, a, b, first=first)
             result.steps_ok = sum(1 for m in rec.marks if m.ok and m.i in chapter.step_ids)
             if broke:
@@ -374,7 +387,7 @@ class FlowRecorder:
                 b = mark.end_ms
                 a = max(0, b - HERO_MS)
             clip = out_dir / f"{scene_id}.mp4"
-            cut_clip(rec.clip_path, clip, a, b)
+            cut_clip(rec.clip_path, clip, a, b, rec.sync_offset_ms)
             return window_result(rec, clip, a, b, first=False)
         image = self._storyboard(hero, out_dir, scene_id)
         if image is not None:

@@ -214,3 +214,24 @@ def test_a_click_whose_target_is_gone_is_skipped_and_the_film_goes_on(
     assert [m.i for m in rec.marks if m.skipped] == [pointing.i]
     assert rec.marks[-1].i == broken.steps[-1].i and rec.marks[-1].ok  # the highlight still ran
     assert any("bị bỏ qua" in w for w in rec.warnings)
+
+
+def test_the_sync_pulse_is_measured_and_stays_in_the_part_that_is_cut_off(
+    filmed: FlowRecorder, tmp_path: Path
+) -> None:
+    from app.recorder import sync
+
+    rec = filmed.recording
+    assert rec is not None and not any("độ lệch đồng hồ" in w for w in rec.warnings)
+    assert abs(rec.sync_offset_ms) < sync.MAX_OFFSET_MS
+    first = filmed._chapter(rec, filmed.run.chapters[0].id, tmp_path, "s1")
+    assert first.clip_path is not None and first.start_offset_ms > rec.pulse_at_ms + sync.PULSE_MS
+    seen = sync.find_pulse(first.clip_path)  # in the cut clip, log time = clip time
+    assert seen is not None and abs(seen - rec.pulse_at_ms) <= 150
+    assert not sync.video_has_pulse(first.clip_path, first.start_offset_ms, fps=15)
+    for chapter in filmed.run.chapters[1:]:
+        later = filmed._chapter(rec, chapter.id, tmp_path, f"s_{chapter.id}")
+        assert later.clip_path is not None and not sync.video_has_pulse(later.clip_path, 0, fps=15)
+    hook = filmed._hook(rec, tmp_path, "sh")
+    assert hook is not None and hook.clip_path is not None
+    assert not sync.video_has_pulse(hook.clip_path, 0, fps=15)
