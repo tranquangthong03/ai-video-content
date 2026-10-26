@@ -46,6 +46,8 @@ class Site:
     requires_login: bool = False
     credentials: tuple[str, str] | None = None
     allow_submit: bool = False
+    # described one after another when the card says the previous flow cannot be done (R3)
+    fallbacks: list[str] = field(default_factory=list)
 
 
 SITES = {
@@ -55,6 +57,12 @@ SITES = {
         describe_only=True,
         requires_login=True,
         credentials=("Admin", "admin123"),
+        fallbacks=[
+            "Thêm nhân viên mới: vào PIM, bấm Add Employee, điền họ tên và mã nhân viên rồi dừng "
+            "trước nút Save",
+            "Thêm ứng viên: vào Recruitment, mục Candidates, bấm Add, điền họ tên và email rồi "
+            "dừng trước nút Save",
+        ],
     ),
     "orangehrm_view": Site(
         "https://opensource-demo.orangehrmlive.com/",
@@ -90,6 +98,7 @@ class FlowUser(ScriptedFrontend):
         self.log: list[dict[str, object]] = []
         self.described = False
         self.regenerated = False
+        self.fallback_at = 0
 
     def note(self, event: str, **fields: object) -> None:
         self.log.append({"at": time.strftime("%H:%M:%S"), "event": event, **fields})
@@ -109,7 +118,18 @@ class FlowUser(ScriptedFrontend):
         return super().ask(request)
 
     def select_flow(self, request: InteractionRequest) -> UserResponse:
-        flows = request.flows or []
+        infeasible = dict(request.flow_select.infeasible or {}) if request.flow_select else {}
+        flows = [f for f in request.flows or [] if f.id not in infeasible]
+        if infeasible:
+            self.note("infeasible", flows=infeasible)
+        if infeasible and self.fallback_at < len(self.site.fallbacks):
+            text = self.site.fallbacks[self.fallback_at]
+            self.fallback_at += 1
+            self.note("describe_fallback", text=text)
+            default = list(request.flow_select.default) if request.flow_select else []
+            return make_response(
+                request, "answer", answers={"selected_flows": default, "flow_description": text}
+            )
         titles = [f"{f.id}: {f.title}" for f in flows]
         own = next((f for f in flows if f.source == "user"), None)
         proposed = next(

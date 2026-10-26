@@ -1,0 +1,353 @@
+{
+  "flow_id": "user_l_n_danh_s_ch_vi_c_trong",
+  "status": "reached_goal",
+  "steps": [
+    {
+      "i": 1,
+      "action": {
+        "do": "goto",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": "https://todomvc.com/examples/react/dist/",
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": null,
+      "url_after": "https://todomvc.com/examples/react/dist/",
+      "screenshot": "flow/steps/s1.jpg",
+      "note": "Mở trang bắt đầu",
+      "chapter_id": "c1",
+      "t_ms_hint": 0
+    },
+    {
+      "i": 2,
+      "action": {
+        "do": "type",
+        "target": "New Todo Input",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "Mua sữa",
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "textbox",
+        "name": "New Todo Input",
+        "text": null,
+        "css": "[data-testid=\"text-input\"]",
+        "nth": null,
+        "tag": "input",
+        "fingerprint": "input||0.60,0.18",
+        "bbox": {
+          "x": 595.0,
+          "y": 130.0,
+          "w": 550.0,
+          "h": 65.0
+        }
+      },
+      "target_text": "New Todo Input",
+      "value": "Mua sữa",
+      "url_before": "https://todomvc.com/examples/react/dist/",
+      "url_after": "https://todomvc.com/examples/react/dist/",
+      "screenshot": "flow/steps/s2.jpg",
+      "note": "Gõ việc đầu tiên vào ô nhập What needs to be done?",
+      "chapter_id": "c1",
+      "t_ms_hint": 2500
+    },
+    {
+      "i": 3,
+      "action": {
+        "do": "type",
+        "target": "New Todo Input",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "Gọi điện cho mẹ",
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "textbox",
+        "name": "New Todo Input",
+        "text": null,
+        "css": "[data-testid=\"text-input\"]",
+        "nth": null,
+        "tag": "input",
+        "fingerprint": "input||0.60,0.18",
+        "bbox": {
+          "x": 595.0,
+          "y": 130.0,
+          "w": 550.0,
+          "h": 65.0
+        }
+      },
+      "target_text": "New Todo Input",
+      "value": "Gọi điện cho mẹ",
+      "url_before": "https://todomvc.com/examples/react/dist/",
+      "url_after": "https://todomvc.com/examples/react/dist/",
+      "screenshot": "flow/steps/s3.jpg",
+      "note": "Gõ việc thứ hai vào ô nhập để chuẩn bị tạo mục todo mới.",
+      "chapter_id": "c2",
+      "t_ms_hint": 5000
+    },
+    {
+      "i": 4,
+      "action": {
+        "do": "type",
+        "target": "New Todo Input",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "Đọc sách 30 phút",
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "textbox",
+        "name": "New Todo Input",
+        "text": null,
+        "css": "[data-testid=\"text-input\"]",
+        "nth": null,
+        "tag": "input",
+        "fingerprint": "input||0.60,0.18",
+        "bbox": {
+          "x": 595.0,
+          "y": 130.0,
+          "w": 550.0,
+          "h": 65.0
+        }
+      },
+      "target_text": "New Todo Input",
+      "value": "Đọc sách 30 phút",
+      "url_before": "https://todomvc.com/examples/react/dist/",
+      "url_after": "https://todomvc.com/examples/react/dist/",
+      "screenshot": "flow/steps/s4.jpg",
+      "note": "Gõ việc thứ ba 'Đọc sách 30 phút' vào ô nhập rồi nhấn Enter để thêm vào danh sách.",
+      "chapter_id": "c2",
+      "t_ms_hint": 7500
+    },
+    {
+      "i": 5,
+      "action": {
+        "do": "click",
+        "target": "Mua sữa",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "checkbox",
+        "name": "Mua sữa",
+        "text": null,
+        "css": "main input",
+        "nth": 1,
+        "tag": "input",
+        "fingerprint": "input||0.43,0.25",
+        "bbox": {
+          "x": 595.0,
+          "y": 205.0,
+          "w": 40.0,
+          "h": 40.0
+        }
+      },
+      "target_text": "Mua sữa",
+      "value": null,
+      "url_before": "https://todomvc.com/examples/react/dist/",
+      "url_after": "https://todomvc.com/examples/react/dist/",
+      "screenshot": "flow/steps/s5.jpg",
+      "note": "Tích ô vuông của việc 'Mua sữa' để đánh dấu đã hoàn thành.",
+      "chapter_id": "c3",
+      "t_ms_hint": 10000
+    },
+    {
+      "i": 6,
+      "action": {
+        "do": "click",
+        "target": "Active",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "link",
+        "name": "Active",
+        "text": "Active",
+        "css": "footer a",
+        "nth": 3,
+        "tag": "a",
+        "fingerprint": "a|active|0.58,0.44",
+        "bbox": {
+          "x": 814.0,
+          "y": 382.0,
+          "w": 57.0,
+          "h": 25.0
+        }
+      },
+      "target_text": "Active",
+      "value": null,
+      "url_before": "https://todomvc.com/examples/react/dist/",
+      "url_after": "https://todomvc.com/examples/react/dist/#/active",
+      "screenshot": "flow/steps/s6.jpg",
+      "note": "Nhấn liên kết Active để chỉ hiển thị các việc chưa hoàn thành.",
+      "chapter_id": "c4",
+      "t_ms_hint": 12500
+    }
+  ],
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "Thêm việc thứ nhất",
+      "step_ids": [
+        1,
+        2
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c2",
+      "title": "Thêm việc thứ hai",
+      "step_ids": [
+        3,
+        4
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c3",
+      "title": "Đánh dấu hoàn thành",
+      "step_ids": [
+        5
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c4",
+      "title": "Lọc việc chưa xong",
+      "step_ids": [
+        6
+      ],
+      "value_line": null
+    }
+  ],
+  "sample_data": {
+    "todo1": "Mua sữa",
+    "todo2": "Gọi điện cho mẹ",
+    "todo3": "Đọc sách 30 phút"
+  },
+  "warnings": [],
+  "llm_calls": 6,
+  "submit_policy": "stop",
+  "stop_ref": null,
+  "live": {
+    "clip": "flow/live/flow.mp4",
+    "logs": "flow/live/logs.json",
+    "content_ms": 34223,
+    "start_offset_ms": 4127,
+    "sync_offset_ms": -1526,
+    "pulse_at_ms": 1526,
+    "segments": [
+      {
+        "from_ms": 4184,
+        "to_ms": 5291,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 10141,
+        "to_ms": 11356,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 17010,
+        "to_ms": 18122,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 23792,
+        "to_ms": 24673,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 28213,
+        "to_ms": 29245,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 32707,
+        "to_ms": 33912,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      }
+    ],
+    "marks": [
+      {
+        "i": 2,
+        "start_ms": 5307,
+        "end_ms": 10097
+      },
+      {
+        "i": 3,
+        "start_ms": 11358,
+        "end_ms": 16965
+      },
+      {
+        "i": 4,
+        "start_ms": 18123,
+        "end_ms": 23756
+      },
+      {
+        "i": 5,
+        "start_ms": 24675,
+        "end_ms": 28171
+      },
+      {
+        "i": 6,
+        "start_ms": 29247,
+        "end_ms": 32673
+      }
+    ]
+  },
+  "give_up": null,
+  "report": {
+    "model": "deepseek-chat",
+    "used_images": false,
+    "llm_calls": 6,
+    "prompt_tokens": 12391,
+    "completion_tokens": 521,
+    "seconds": 36.7,
+    "write_requests": [],
+    "text_calls": 6,
+    "vision_calls": 0,
+    "escalated_because": null,
+    "invented_refs": 0,
+    "repeat_warnings": 0
+  }
+}

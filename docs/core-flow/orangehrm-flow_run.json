@@ -1,6 +1,6 @@
 {
-  "flow_id": "user_nh_n_vi_n_xin_ngh_ph_p_v",
-  "status": "partial",
+  "flow_id": "user_th_m_nh_n_vi_n_m_i_v_o_h",
+  "status": "stopped_before_submit",
   "steps": [
     {
       "i": 1,
@@ -10,7 +10,7 @@
         "selector": null,
         "locator": null,
         "file": null,
-        "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+        "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
         "text": null,
         "ms": null,
         "zoom": false
@@ -19,7 +19,7 @@
       "target_text": null,
       "value": null,
       "url_before": null,
-      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
       "screenshot": "flow/steps/s1.jpg",
       "note": "Mở trang bắt đầu",
       "chapter_id": "c1",
@@ -29,7 +29,7 @@
       "i": 2,
       "action": {
         "do": "click",
-        "target": "Leave",
+        "target": "Add",
         "selector": null,
         "locator": null,
         "file": null,
@@ -39,325 +39,182 @@
         "zoom": false
       },
       "locator": {
-        "role": "link",
-        "name": "Leave",
-        "text": "Leave",
-        "css": "nav a",
-        "nth": 3,
-        "tag": "a",
-        "fingerprint": "a|leave|0.09,0.18",
+        "role": "button",
+        "name": "Add",
+        "text": "Add",
+        "css": "button",
+        "nth": 6,
+        "tag": "button",
+        "fingerprint": "button|add|0.27,0.15",
         "bbox": {
-          "x": 0.0,
-          "y": 234.0,
-          "w": 246.0,
-          "h": 38.0
+          "x": 329.0,
+          "y": 506.0,
+          "w": 109.0,
+          "h": 31.0
         }
       },
-      "target_text": "Leave",
+      "target_text": "Add",
       "value": null,
-      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
-      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveList",
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
       "screenshot": "flow/steps/s2.jpg",
-      "note": "Từ Dashboard, tôi mở menu 'Leave' trên thanh điều hướng bên trái để vào phân hệ nghỉ phép.",
+      "note": "Bấm nút Add để mở form thêm nhân viên mới",
       "chapter_id": "c1",
       "t_ms_hint": 2500
     },
     {
       "i": 3,
       "action": {
-        "do": "navigate",
-        "target": "Apply",
+        "do": "type",
+        "target": "Employee Full Name",
         "selector": null,
         "locator": null,
         "file": null,
         "url": null,
-        "text": null,
+        "text": "Nguyễn Văn",
         "ms": null,
         "zoom": false
       },
       "locator": {
-        "role": "link",
-        "name": "Apply",
-        "text": "Apply",
-        "css": "nav a",
-        "nth": 13,
-        "tag": "a",
-        "fingerprint": "a|apply|0.23,0.09",
+        "role": "textbox",
+        "name": "Employee Full Name",
+        "text": null,
+        "css": "input",
+        "nth": 2,
+        "tag": "input",
+        "fingerprint": "input||0.51,0.27",
         "bbox": {
-          "x": 316.0,
-          "y": 84.0,
-          "w": 32.0,
-          "h": 16.0
+          "x": 615.0,
+          "y": 249.0,
+          "w": 250.0,
+          "h": 45.0
         }
       },
-      "target_text": "Apply",
-      "value": null,
-      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveList",
-      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "target_text": "Employee Full Name",
+      "value": "Nguyễn Văn",
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
       "screenshot": "flow/steps/s3.jpg",
-      "note": "Mở tab Apply để bắt đầu tạo đơn xin nghỉ phép.",
+      "note": "Nhập họ và tên đệm của nhân viên mới vào trường First Name.",
       "chapter_id": "c2",
       "t_ms_hint": 5000
     },
     {
       "i": 4,
       "action": {
-        "do": "pick_date",
-        "target": "yyyy-dd-mm",
+        "do": "type",
+        "target": "Employee Full Name",
         "selector": null,
         "locator": null,
         "file": null,
         "url": null,
-        "text": "2026-03-02",
+        "text": "An",
         "ms": null,
         "zoom": false
       },
       "locator": {
         "role": "textbox",
-        "name": "yyyy-dd-mm",
+        "name": "Employee Full Name",
         "text": null,
         "css": "input",
-        "nth": 1,
+        "nth": 4,
         "tag": "input",
-        "fingerprint": "input||0.31,0.35",
+        "fingerprint": "input||0.86,0.27",
         "bbox": {
-          "x": 331.0,
-          "y": 326.0,
-          "w": 241.0,
+          "x": 1115.0,
+          "y": 249.0,
+          "w": 250.0,
           "h": 45.0
         }
       },
-      "target_text": "yyyy-dd-mm",
-      "value": "2026-03-02",
-      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "target_text": "Employee Full Name",
+      "value": "An",
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
       "screenshot": "flow/steps/s4.jpg",
-      "note": "Chọn ngày bắt đầu nghỉ phép là 02/03/2026.",
-      "chapter_id": "c3",
+      "note": "Nhập họ (Last Name) của nhân viên vào trường Last Name.",
+      "chapter_id": "c2",
       "t_ms_hint": 7500
     },
     {
       "i": 5,
       "action": {
-        "do": "pick_date",
-        "target": "yyyy-dd-mm",
+        "do": "hover",
+        "target": "Save",
         "selector": null,
         "locator": null,
         "file": null,
         "url": null,
-        "text": "2026-03-03",
+        "text": null,
         "ms": null,
         "zoom": false
       },
       "locator": {
-        "role": "textbox",
-        "name": "yyyy-dd-mm",
-        "text": null,
-        "css": "input",
-        "nth": 2,
-        "tag": "input",
-        "fingerprint": "input||0.50,0.35",
+        "role": "button",
+        "name": "Save",
+        "text": "Save",
+        "css": "button",
+        "nth": 5,
+        "tag": "button",
+        "fingerprint": "button|save|0.91,0.49",
         "bbox": {
-          "x": 596.0,
-          "y": 326.0,
-          "w": 241.0,
-          "h": 45.0
+          "x": 1267.0,
+          "y": 477.0,
+          "w": 100.0,
+          "h": 32.0
         }
       },
-      "target_text": "yyyy-dd-mm",
-      "value": "2026-03-03",
-      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "target_text": "Save",
+      "value": null,
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
       "screenshot": "flow/steps/s5.jpg",
-      "note": "Cập nhật ngày kết thúc (To Date) thành 03/03/2026 để đơn nghỉ kéo dài đúng 2 ngày.",
+      "note": "Đã điền đầy đủ họ tên và mã nhân viên, dừng lại ngay trước nút Save.",
       "chapter_id": "c3",
       "t_ms_hint": 10000
     },
     {
       "i": 6,
       "action": {
-        "do": "pick_date",
-        "target": "yyyy-dd-mm",
+        "do": "highlight",
+        "target": "Save",
         "selector": null,
         "locator": null,
         "file": null,
         "url": null,
-        "text": "2026-03-02",
-        "ms": null,
+        "text": null,
+        "ms": 1800,
         "zoom": false
       },
       "locator": {
-        "role": "textbox",
-        "name": "yyyy-dd-mm",
-        "text": null,
-        "css": "input",
-        "nth": 1,
-        "tag": "input",
-        "fingerprint": "input||0.31,0.35",
+        "role": "button",
+        "name": "Save",
+        "text": "Save",
+        "css": "button",
+        "nth": 5,
+        "tag": "button",
+        "fingerprint": "button|save|0.91,0.49",
         "bbox": {
-          "x": 331.0,
-          "y": 326.0,
-          "w": 241.0,
-          "h": 45.0
+          "x": 1267.0,
+          "y": 477.0,
+          "w": 100.0,
+          "h": 32.0
         }
       },
-      "target_text": "yyyy-dd-mm",
-      "value": "2026-03-02",
-      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
+      "target_text": "Save",
+      "value": null,
+      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
+      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
       "screenshot": "flow/steps/s6.jpg",
-      "note": "Chỉnh lại ngày bắt đầu nghỉ phép thành 02/03/2026.",
+      "note": "Đã điền đầy đủ họ tên và mã nhân viên, dừng lại ngay trước nút Save.",
       "chapter_id": "c3",
       "t_ms_hint": 12500
-    },
-    {
-      "i": 7,
-      "action": {
-        "do": "scroll",
-        "target": null,
-        "selector": null,
-        "locator": null,
-        "file": null,
-        "url": null,
-        "text": "up",
-        "ms": 600,
-        "zoom": false
-      },
-      "locator": null,
-      "target_text": null,
-      "value": null,
-      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "screenshot": "flow/steps/s7.jpg",
-      "note": "Cuộn lên để hiển thị đầy đủ trường chọn loại nghỉ phép.",
-      "chapter_id": "c3",
-      "t_ms_hint": 15000
-    },
-    {
-      "i": 8,
-      "action": {
-        "do": "pick_date",
-        "target": "yyyy-dd-mm",
-        "selector": null,
-        "locator": null,
-        "file": null,
-        "url": null,
-        "text": "2026-03-02",
-        "ms": null,
-        "zoom": false
-      },
-      "locator": {
-        "role": "textbox",
-        "name": "yyyy-dd-mm",
-        "text": null,
-        "css": "input",
-        "nth": 1,
-        "tag": "input",
-        "fingerprint": "input||0.31,0.35",
-        "bbox": {
-          "x": 331.0,
-          "y": 326.0,
-          "w": 241.0,
-          "h": 45.0
-        }
-      },
-      "target_text": "yyyy-dd-mm",
-      "value": "2026-03-02",
-      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "screenshot": "flow/steps/s8.jpg",
-      "note": "Chỉnh lại ngày bắt đầu nghỉ phép thành 02/03/2026.",
-      "chapter_id": "c3",
-      "t_ms_hint": 17500
-    },
-    {
-      "i": 9,
-      "action": {
-        "do": "scroll",
-        "target": null,
-        "selector": null,
-        "locator": null,
-        "file": null,
-        "url": null,
-        "text": "up",
-        "ms": 600,
-        "zoom": false
-      },
-      "locator": null,
-      "target_text": null,
-      "value": null,
-      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "screenshot": "flow/steps/s9.jpg",
-      "note": "Cuộn lên để hiển thị lại ô chọn Loại nghỉ phép ở đầu biểu mẫu.",
-      "chapter_id": "c3",
-      "t_ms_hint": 20000
-    },
-    {
-      "i": 10,
-      "action": {
-        "do": "type",
-        "target": "yyyy-dd-mm",
-        "selector": null,
-        "locator": null,
-        "file": null,
-        "url": null,
-        "text": "2026-03-02",
-        "ms": null,
-        "zoom": false
-      },
-      "locator": {
-        "role": "textbox",
-        "name": "yyyy-dd-mm",
-        "text": null,
-        "css": "input",
-        "nth": 1,
-        "tag": "input",
-        "fingerprint": "input||0.31,0.35",
-        "bbox": {
-          "x": 331.0,
-          "y": 326.0,
-          "w": 241.0,
-          "h": 45.0
-        }
-      },
-      "target_text": "yyyy-dd-mm",
-      "value": "2026-03-02",
-      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "screenshot": "flow/steps/s10.jpg",
-      "note": "Sửa lại ngày bắt đầu nghỉ thành 02/03/2026.",
-      "chapter_id": "c3",
-      "t_ms_hint": 22500
-    },
-    {
-      "i": 11,
-      "action": {
-        "do": "scroll",
-        "target": null,
-        "selector": null,
-        "locator": null,
-        "file": null,
-        "url": null,
-        "text": null,
-        "ms": 600,
-        "zoom": false
-      },
-      "locator": null,
-      "target_text": null,
-      "value": null,
-      "url_before": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "url_after": "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave",
-      "screenshot": "flow/steps/s11.jpg",
-      "note": "Cuộn xuống để tìm ô chọn loại nghỉ phép còn thiếu trong danh sách phần tử.",
-      "chapter_id": "c3",
-      "t_ms_hint": 25000
     }
   ],
   "chapters": [
     {
       "id": "c1",
-      "title": "Mở menu Leave",
+      "title": "Mở form",
       "step_ids": [
         1,
         2
@@ -366,48 +223,110 @@
     },
     {
       "id": "c2",
-      "title": "Mở form",
+      "title": "Điền thông tin",
       "step_ids": [
-        3
+        3,
+        4
       ],
       "value_line": null
     },
     {
       "id": "c3",
-      "title": "Điền thông tin",
+      "title": "Rà soát và dừng",
       "step_ids": [
-        4,
         5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11
+        6
       ],
       "value_line": null
     }
   ],
   "sample_data": {
-    "from_date": "2026-03-02",
-    "to_date": "2026-03-03",
-    "leave_type": "Annual Leave"
+    "first_name": "Nguyễn Văn",
+    "last_name": "An",
+    "employee_id": "0383"
   },
-  "warnings": [
-    "Dừng: «scroll:» lặp 3 lần mà trang không đổi."
-  ],
-  "llm_calls": 10,
+  "warnings": [],
+  "llm_calls": 4,
   "submit_policy": "stop",
-  "stop_ref": null,
+  "stop_ref": "Save",
+  "live": {
+    "clip": "flow/live/flow.mp4",
+    "logs": "flow/live/logs.json",
+    "content_ms": 33518,
+    "start_offset_ms": 6705,
+    "sync_offset_ms": -1382,
+    "pulse_at_ms": 1382,
+    "segments": [
+      {
+        "from_ms": 6749,
+        "to_ms": 7730,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 14693,
+        "to_ms": 15637,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 20579,
+        "to_ms": 21643,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 25544,
+        "to_ms": 26787,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      }
+    ],
+    "marks": [
+      {
+        "i": 2,
+        "start_ms": 7735,
+        "end_ms": 14652
+      },
+      {
+        "i": 3,
+        "start_ms": 15639,
+        "end_ms": 20532
+      },
+      {
+        "i": 4,
+        "start_ms": 21645,
+        "end_ms": 25508
+      },
+      {
+        "i": 5,
+        "start_ms": 26791,
+        "end_ms": 30842
+      },
+      {
+        "i": 6,
+        "start_ms": 30842,
+        "end_ms": 33135
+      }
+    ]
+  },
+  "give_up": null,
   "report": {
-    "model": "deepseek-flash",
-    "used_images": true,
-    "llm_calls": 10,
-    "prompt_tokens": 26682,
-    "completion_tokens": 8411,
-    "seconds": 74.8,
+    "model": "deepseek-chat",
+    "used_images": false,
+    "llm_calls": 4,
+    "prompt_tokens": 8863,
+    "completion_tokens": 338,
+    "seconds": 36.1,
     "write_requests": [],
+    "text_calls": 4,
+    "vision_calls": 0,
+    "escalated_because": null,
     "invented_refs": 0,
-    "repeat_warnings": 2
+    "repeat_warnings": 0
   }
 }

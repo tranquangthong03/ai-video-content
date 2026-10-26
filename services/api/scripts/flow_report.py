@@ -13,6 +13,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # services/api, for `app`
+
+from app.recorder import sync  # noqa: E402
+
 SHARED_SITES = ("opensource-demo.orangehrmlive.com",)
 SHEET_FRAMES = 16
 
@@ -32,6 +36,17 @@ def contact_sheet(video: Path, out: Path, duration_ms: int, frames: int = SHEET_
             "-vf", f"fps={rate:.5f},scale=216:-2,tile=8x{frames // 8}",
             "-frames:v", "1", str(out),
         ],
+        capture_output=True, text=True,
+    )  # fmt: skip
+    return result.returncode == 0 and out.is_file()
+
+
+def first_frame(video: Path, out: Path) -> bool:
+    """The very first frame of the final video as a still (to check no sync pulse leaked in)."""
+    if not video.is_file():
+        return False
+    result = subprocess.run(
+        ["ffmpeg", "-y", "-v", "error", "-i", str(video), "-frames:v", "1", str(out)],
         capture_output=True, text=True,
     )  # fmt: skip
     return result.returncode == 0 and out.is_file()
@@ -105,6 +120,9 @@ def build(job: Path, out_dir: Path, name: str) -> dict[str, Any]:
     chapters = chapter_rows(job, run)
     url = str((load(job / "state.json") or {}).get("url", ""))
     shared = any(s in url for s in SHARED_SITES)
+    video = job / "video.mp4"
+    still_ok = first_frame(video, out_dir / f"{name}-first-frame.png")
+    pulse_leak = sync.video_has_pulse(video) if video.is_file() else None
     numbers = {
         "status": run["status"], "steps": len(run["steps"]), "chapters": len(run["chapters"]),
         "agent_llm_calls": agent.get("llm_calls"), "agent_seconds": agent.get("seconds"),
@@ -117,6 +135,13 @@ def build(job: Path, out_dir: Path, name: str) -> dict[str, Any]:
         "skipped_steps": flow_info.get("skipped_steps", []),
         "write_requests": writes["total"], "video_ms": report.get("actual_ms"),
         "footage_ratio": report.get("footage_ratio"), "shared_demo_site": shared,
+        "clip_source": flow_info.get("clip_source"),
+        "llm_wait_cut_ms": flow_info.get("llm_wait_cut_ms"),
+        "retry_segments_cut": flow_info.get("retry_segments_cut"),
+        "rejected_segments_cut": flow_info.get("rejected_segments_cut"),
+        "text_calls": agent.get("text_calls"), "vision_calls": agent.get("vision_calls"),
+        "escalated_because": agent.get("escalated_because"),
+        "pulse_in_final_video": pulse_leak, "first_frame_still": still_ok,
         "writes_ok": (writes["total"] == 0) if shared or run["submit_policy"] == "stop" else True,
     }  # fmt: skip
     lines = [
@@ -135,6 +160,13 @@ def build(job: Path, out_dir: Path, name: str) -> dict[str, Any]:
         f"- **Request ghi dữ liệu: {writes['total']}** (agent {len(writes['agent'])}, quay "
         f"{len(writes['film'])})" + (" ✔" if numbers["writes_ok"] else " ✘ PHẢI LÀ 0"),
         f"- Video: {numbers['video_ms']} ms, tỉ lệ cảnh quay {numbers['footage_ratio']}",
+        f"- Nguồn clip: `{numbers['clip_source']}` · cắt chờ LLM {numbers['llm_wait_cut_ms']} ms · "
+        f"cắt {numbers['retry_segments_cut']} đoạn thử lại, "
+        f"{numbers['rejected_segments_cut']} đoạn bị từ chối",
+        f"- Gọi agent: {numbers['text_calls']} chữ, {numbers['vision_calls']} ảnh "
+        f"(lý do thêm ảnh: {numbers['escalated_because']})",
+        f"- Xung đồng bộ lọt vào video cuối: **{numbers['pulse_in_final_video']}** "
+        f"(phải là False) · still khung đầu: `{name}-first-frame.png`",
         "",
         "## Bảng chương",
         "",

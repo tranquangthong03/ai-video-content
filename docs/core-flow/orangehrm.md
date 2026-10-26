@@ -1,87 +1,91 @@
 # Nghiệm thu luồng: orangehrm
 
-- Trạng thái luồng: **partial** · chính sách gửi: `stop`
-- Agent: 10 lần gọi LLM, 74.8 s, model `deepseek-flash`, có nhìn ảnh, 35093 token; ref bịa bị từ chối: 0; cảnh báo lặp: 2
-- Phát lại khi quay: None/10 bước
+- Trạng thái luồng: **stopped_before_submit** · chính sách gửi: `stop` · dừng ở nút «Save»
+- Agent: 4 lần gọi LLM, 36.1 s, model `deepseek-chat`, chỉ đọc chữ, 9201 token; ref bịa bị từ chối: 0; cảnh báo lặp: 0
+- Phát lại khi quay: 5/5 bước
 - **Request ghi dữ liệu: 0** (agent 0, quay 0) ✔
-- Video: None ms, tỉ lệ cảnh quay None
+- Video: 33333 ms, tỉ lệ cảnh quay 0.764
+- Nguồn clip: `live` · cắt chờ LLM 2632 ms · cắt 0 đoạn thử lại, 0 đoạn bị từ chối
+- Gọi agent: 4 chữ, 0 ảnh (lý do thêm ảnh: None)
+- Xung đồng bộ lọt vào video cuối: **False** (phải là False) · still khung đầu: `orangehrm-first-frame.png`
 
 ## Bảng chương
 
 | Chương | Bước | Thời lượng | Quay | Lời đọc |
 |---|---|---|---|---|
-| Mở menu Leave | 1–2 | 0.0 s | — | — |
-| Mở form | 3–3 | 0.0 s | — | — |
-| Điền thông tin | 4–11 | 0.0 s | — | — |
+| Mở form | 1–2 | 5.5 s | recording | Mở module PIM, bấm Add là form thêm nhân viên hiện ra ngay. |
+| Điền thông tin | 3–4 | 6.2 s | recording | Nhập họ, tên đệm và họ của nhân viên vào form. |
+| Rà soát và dừng | 5–6 | 5.8 s | recording | Đã điền đủ họ tên và mã nhân viên, chỉ còn chờ bấm Save. |
 
 ## Storyboard
 
-### Mở menu Leave
+### Mở form
 
 1. Mở trang bắt đầu  
    ![](orangehrm/steps/s1.jpg)
-2. Từ Dashboard, tôi mở menu 'Leave' trên thanh điều hướng bên trái để vào phân hệ nghỉ phép.  
+2. Bấm nút Add để mở form thêm nhân viên mới  
    ![](orangehrm/steps/s2.jpg)
-
-### Mở form
-
-3. Mở tab Apply để bắt đầu tạo đơn xin nghỉ phép.  
-   ![](orangehrm/steps/s3.jpg)
 
 ### Điền thông tin
 
-4. Chọn ngày bắt đầu nghỉ phép là 02/03/2026.  
+3. Nhập họ và tên đệm của nhân viên mới vào trường First Name.  
+   ![](orangehrm/steps/s3.jpg)
+4. Nhập họ (Last Name) của nhân viên vào trường Last Name.  
    ![](orangehrm/steps/s4.jpg)
-5. Cập nhật ngày kết thúc (To Date) thành 03/03/2026 để đơn nghỉ kéo dài đúng 2 ngày.  
+
+### Rà soát và dừng
+
+5. Đã điền đầy đủ họ tên và mã nhân viên, dừng lại ngay trước nút Save.  
    ![](orangehrm/steps/s5.jpg)
-6. Chỉnh lại ngày bắt đầu nghỉ phép thành 02/03/2026.  
+6. Đã điền đầy đủ họ tên và mã nhân viên, dừng lại ngay trước nút Save.  
    ![](orangehrm/steps/s6.jpg)
-7. Cuộn lên để hiển thị đầy đủ trường chọn loại nghỉ phép.  
-   ![](orangehrm/steps/s7.jpg)
-8. Chỉnh lại ngày bắt đầu nghỉ phép thành 02/03/2026.  
-   ![](orangehrm/steps/s8.jpg)
-9. Cuộn lên để hiển thị lại ô chọn Loại nghỉ phép ở đầu biểu mẫu.  
-   ![](orangehrm/steps/s9.jpg)
-10. Sửa lại ngày bắt đầu nghỉ thành 02/03/2026.  
-   ![](orangehrm/steps/s10.jpg)
-11. Cuộn xuống để tìm ô chọn loại nghỉ phép còn thiếu trong danh sách phần tử.  
-   ![](orangehrm/steps/s11.jpg)
-
-## Cảnh báo
-
-- Dừng: «scroll:» lặp 3 lần mà trang không đổi.
 
 ## Lần gọi LLM của cả job
 
 | Bước | Lần gọi | Token vào | Token ra |
 |---|---|---|---|
-| flow_agent | 21 | 56316 | 13907 |
-| synthesize | 1 | 2849 | 4052 |
-| flow_discovery | 2 | 3772 | 2072 |
-| analyze | 2 | 2100 | 451 |
-| classify | 1 | 371 | 98 |
+| flow_discovery | 5 | 10391 | 7979 |
+| script | 3 | 14322 | 3022 |
+| flow_agent | 7 | 15001 | 589 |
+| synthesize | 1 | 3158 | 5205 |
+| analyze | 2 | 2243 | 673 |
+| fit | 1 | 1335 | 230 |
+| classify | 1 | 372 | 103 |
+
+## Contact sheet (16 frame)
+
+![](orangehrm-contact-sheet.png)
 
 ## Số liệu
 
 ```json
 {
-  "status": "partial",
-  "steps": 11,
+  "status": "stopped_before_submit",
+  "steps": 6,
   "chapters": 3,
-  "agent_llm_calls": 10,
-  "agent_seconds": 74.8,
-  "agent_model": "deepseek-flash",
-  "agent_used_images": true,
-  "agent_tokens": 35093,
+  "agent_llm_calls": 4,
+  "agent_seconds": 36.1,
+  "agent_model": "deepseek-chat",
+  "agent_used_images": false,
+  "agent_tokens": 9201,
   "invented_refs": 0,
-  "repeat_warnings": 2,
-  "replayed": null,
+  "repeat_warnings": 0,
+  "replayed": 5,
   "replay_failed_at": null,
   "skipped_steps": [],
   "write_requests": 0,
-  "video_ms": null,
-  "footage_ratio": null,
+  "video_ms": 33333,
+  "footage_ratio": 0.764,
   "shared_demo_site": true,
+  "clip_source": "live",
+  "llm_wait_cut_ms": 2632,
+  "retry_segments_cut": 0,
+  "rejected_segments_cut": 0,
+  "text_calls": 4,
+  "vision_calls": 0,
+  "escalated_because": null,
+  "pulse_in_final_video": false,
+  "first_frame_still": true,
   "writes_ok": true
 }
 ```

@@ -58,7 +58,7 @@
       "url_before": "https://squoosh.app/",
       "url_after": "https://squoosh.app/editor",
       "screenshot": "flow/steps/s2.jpg",
-      "note": "Bấm vào ảnh mẫu 'Large photo' (2.8MB) để mở trong công cụ nén.",
+      "note": "Bấm chọn ảnh mẫu 'Large photo 2.8MB' để nạp vào trình nén.",
       "chapter_id": "c1",
       "t_ms_hint": 2500
     },
@@ -66,18 +66,18 @@
       "i": 3,
       "action": {
         "do": "type",
-        "target": null,
+        "target": "Quality:",
         "selector": null,
         "locator": null,
         "file": null,
         "url": null,
-        "text": "50",
+        "text": "60",
         "ms": null,
         "zoom": false
       },
       "locator": {
         "role": "textbox",
-        "name": null,
+        "name": "Quality:",
         "text": null,
         "css": "input",
         "nth": 3,
@@ -90,57 +90,57 @@
           "h": 23.0
         }
       },
-      "target_text": null,
-      "value": "50",
+      "target_text": "Quality:",
+      "value": "60",
       "url_before": "https://squoosh.app/editor",
       "url_after": "https://squoosh.app/editor",
       "screenshot": "flow/steps/s3.jpg",
-      "note": "Hạ chất lượng nén MozJPEG xuống 50 để thấy dung lượng ảnh giảm rõ rệt.",
+      "note": "Hạ chất lượng nén MozJPEG xuống 60 để giảm dung lượng ảnh tối đa.",
       "chapter_id": "c2",
       "t_ms_hint": 5000
     },
     {
       "i": 4,
       "action": {
-        "do": "type",
-        "target": null,
+        "do": "click",
+        "target": "Download",
         "selector": null,
         "locator": null,
         "file": null,
         "url": null,
-        "text": "25",
+        "text": null,
         "ms": null,
         "zoom": false
       },
       "locator": {
-        "role": "textbox",
-        "name": null,
+        "role": "link",
+        "name": "Download",
         "text": null,
-        "css": "input",
-        "nth": 3,
-        "tag": "input",
-        "fingerprint": "input||0.97,0.82",
+        "css": "a",
+        "nth": 1,
+        "tag": "a",
+        "fingerprint": "a||0.97,0.95",
         "bbox": {
-          "x": 1376.0,
-          "y": 728.0,
-          "w": 54.0,
-          "h": 23.0
+          "x": 1347.0,
+          "y": 807.0,
+          "w": 93.0,
+          "h": 93.0
         }
       },
-      "target_text": null,
-      "value": "25",
+      "target_text": "Download",
+      "value": null,
       "url_before": "https://squoosh.app/editor",
       "url_after": "https://squoosh.app/editor",
       "screenshot": "flow/steps/s4.jpg",
-      "note": "Hạ chất lượng MozJPEG xuống 25 để giảm dung lượng ảnh sau nén nhiều hơn.",
-      "chapter_id": "c2",
+      "note": "Bấm nút Download để lưu ảnh đã nén (587 kB, giảm từ 2.79 MB) về máy.",
+      "chapter_id": "c3",
       "t_ms_hint": 7500
     },
     {
       "i": 5,
       "action": {
         "do": "click",
-        "target": "Toggle background",
+        "target": "Download",
         "selector": null,
         "locator": null,
         "file": null,
@@ -150,65 +150,28 @@
         "zoom": false
       },
       "locator": {
-        "role": "button",
-        "name": "Toggle background",
+        "role": "link",
+        "name": "Download",
         "text": null,
-        "css": "button",
-        "nth": 4,
-        "tag": "button",
-        "fingerprint": "button||0.59,0.97",
+        "css": "a",
+        "nth": 1,
+        "tag": "a",
+        "fingerprint": "a||0.97,0.95",
         "bbox": {
-          "x": 827.0,
-          "y": 852.0,
-          "w": 42.0,
-          "h": 39.0
+          "x": 1347.0,
+          "y": 807.0,
+          "w": 93.0,
+          "h": 93.0
         }
       },
-      "target_text": "Toggle background",
+      "target_text": "Download",
       "value": null,
       "url_before": "https://squoosh.app/editor",
       "url_after": "https://squoosh.app/editor",
       "screenshot": "flow/steps/s5.jpg",
-      "note": "Bật nền hiển thị để dễ đánh giá vùng trong suốt và chất lượng ảnh sau nén.",
-      "chapter_id": "c3",
-      "t_ms_hint": 10000
-    },
-    {
-      "i": 6,
-      "action": {
-        "do": "click",
-        "target": "Toggle smoothing",
-        "selector": null,
-        "locator": null,
-        "file": null,
-        "url": null,
-        "text": null,
-        "ms": null,
-        "zoom": false
-      },
-      "locator": {
-        "role": "button",
-        "name": "Toggle smoothing",
-        "text": null,
-        "css": "button",
-        "nth": 3,
-        "tag": "button",
-        "fingerprint": "button||0.56,0.97",
-        "bbox": {
-          "x": 786.0,
-          "y": 852.0,
-          "w": 41.0,
-          "h": 39.0
-        }
-      },
-      "target_text": "Toggle smoothing",
-      "value": null,
-      "url_before": "https://squoosh.app/editor",
-      "url_after": "https://squoosh.app/editor",
-      "screenshot": "flow/steps/s6.jpg",
-      "note": "Bật chế độ làm mịn để dễ quan sát chi tiết ảnh sau nén so với ảnh gốc.",
+      "note": "Bấm nút Download để lưu ảnh đã nén (587 kB, giảm 79% so với 2.79 MB ban đầu) về máy.",
       "chapter_id": "c4",
-      "t_ms_hint": 12500
+      "t_ms_hint": 10000
     }
   ],
   "chapters": [
@@ -223,48 +186,138 @@
     },
     {
       "id": "c2",
-      "title": "Điều chỉnh thiết lập nén",
+      "title": "Điều chỉnh cài đặt nén",
       "step_ids": [
-        3,
-        4
+        3
       ],
       "value_line": null
     },
     {
       "id": "c3",
-      "title": "So sánh trước – sau",
+      "title": "Lưu ảnh tối ưu",
       "step_ids": [
-        5
+        4
       ],
       "value_line": null
     },
     {
       "id": "c4",
-      "title": "Đánh giá chất lượng",
+      "title": "Lưu ảnh đã tối ưu",
       "step_ids": [
-        6
+        5
       ],
       "value_line": null
     }
   ],
   "sample_data": {
     "sample_image": "Large photo 2.8MB",
-    "codec": "MozJPEG",
-    "quality": 25
+    "format": "MozJPEG",
+    "quality": 60,
+    "output_size": "587 kB",
+    "reduction": "79%"
   },
-  "warnings": [],
-  "llm_calls": 6,
+  "warnings": [
+    "Bắt đầu gửi kèm ảnh màn hình: trang có canvas/svg lớn.",
+    "stop_before_submit «e15»: ref không phải nút gửi của form",
+    "stop_before_submit «e15»: ref không phải nút gửi của form"
+  ],
+  "llm_calls": 7,
   "submit_policy": "stop",
   "stop_ref": null,
+  "live": {
+    "clip": "flow/live/flow.mp4",
+    "logs": "flow/live/logs.json",
+    "content_ms": 52334,
+    "start_offset_ms": 5841,
+    "sync_offset_ms": -1531,
+    "pulse_at_ms": 1531,
+    "segments": [
+      {
+        "from_ms": 5909,
+        "to_ms": 7800,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 13126,
+        "to_ms": 15884,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 20972,
+        "to_ms": 24658,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 24658,
+        "to_ms": 27304,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 27304,
+        "to_ms": 31390,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 35076,
+        "to_ms": 42609,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 46143,
+        "to_ms": 52005,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      }
+    ],
+    "marks": [
+      {
+        "i": 2,
+        "start_ms": 7804,
+        "end_ms": 12972
+      },
+      {
+        "i": 3,
+        "start_ms": 15886,
+        "end_ms": 20906
+      },
+      {
+        "i": 4,
+        "start_ms": 31393,
+        "end_ms": 35008
+      },
+      {
+        "i": 5,
+        "start_ms": 42612,
+        "end_ms": 46064
+      }
+    ]
+  },
+  "give_up": null,
   "report": {
     "model": "deepseek-flash",
     "used_images": true,
-    "llm_calls": 6,
-    "prompt_tokens": 15596,
-    "completion_tokens": 2027,
-    "seconds": 27.9,
+    "llm_calls": 7,
+    "prompt_tokens": 19993,
+    "completion_tokens": 3819,
+    "seconds": 57.4,
     "write_requests": [],
+    "text_calls": 0,
+    "vision_calls": 7,
+    "escalated_because": "trang có canvas/svg lớn",
     "invented_refs": 0,
-    "repeat_warnings": 0
+    "repeat_warnings": 2
   }
 }
