@@ -9,7 +9,7 @@ grows. Actions are never sped up. The result is a report with every number behin
 import json
 import time
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -17,12 +17,15 @@ from app.browser.auth_detect import LoginRequired
 from app.browser.session import BrowserSession
 from app.core.timing import PAUSE_MS, EstimatedTimer, estimate_captions
 from app.llm.json_call import JsonCaller
+from app.producer.dead_frames import cut_dead, dead_ms
 from app.producer.dedupe import MIN_SCENES, swap_scene, used_texts
 from app.producer.focus_plan import phrases_from_captions, plan_focus
-from app.producer.focus_rules import build_focus_track
+from app.producer.focus_rules import build_focus_track, enforce_hook_framing
 from app.producer.live_clip import live_usable, recording_from_live
+from app.producer.shots import max_static_ms, plan_shots
 from app.producer.steps_coverage import steps_in_clip
-from app.producer.trim import trim_dead_time
+from app.producer.text_cards import text_card_stats
+from app.producer.trim import Cut, shift_actions, shift_logs, shift_time, trim_dead_time
 from app.recorder.flow import FlowRecorder
 from app.recorder.motion import idle_gaps
 from app.recorder.record import RecordResult, record_scene
@@ -98,6 +101,11 @@ class SceneOutcome:
     inventory_file: str | None = None  # produce/inventory/<scene>.json: inventory + action_log
     focus: dict[str, Any] | None = None  # how the focus track came about (see focus_summary)
     focus_file: str | None = None  # produce/focus/<scene>.json: plan, track, metrics
+    dead_cut_ms: int = 0  # dead frames (blank, spinner, skeleton) cut out of the clip
+    dead_frames_ms: int = 0  # dead frames still in the part of the clip the scene shows
+    shots: int = 0  # one per spoken phrase
+    punches: int = 0  # punch-ins added where a shot began without a change
+    max_static_ms: int | None = None  # longest stretch with nothing changing on screen
 
     def as_dict(self) -> dict[str, Any]:
         return self.__dict__.copy()
@@ -198,12 +206,18 @@ def focus_for_scene(
         plan=planned.plan if planned else None,
         legacy_focus=legacy,
     )
+    hook_reframed = 0
+    if s.type == "hook":  # a hook is shot tight or medium on its hero, never establishing
+        built.track, hook_reframed = enforce_hook_framing(
+            built.track, inventory, (record.width, record.height)
+        )
     for entry in built.track:
         entry["t_ms"] += lead
     summary = {
         "planner": "plan" if planned and planned.plan else ("failed" if planned else "off"),
         "planner_attempts": planned.attempts if planned else 0,
         "planner_errors": planned.errors if planned else [],
+        "hook_reframed": hook_reframed,
         **built.metrics,
     }
     path = work / "focus" / f"{s.id}.json"
@@ -224,6 +238,31 @@ def focus_for_scene(
     return built.track, summary, str(path.relative_to(work.parent))
 
 
+def shots_for_scene(
+    entry: dict[str, Any],
+    plan: "ClipPlan",
+    rate: float,
+    final_ms: int,
+    captions: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Shots (one per phrase) and punch-ins of a recorded scene, on the scene's own time axis."""
+    lead = plan.start_offset_ms + plan.trim_start_ms
+
+    def scene_time(t: float) -> float:
+        return (t - lead) / rate if rate else t - lead
+
+    focus_times = [scene_time(f["t_ms"]) for f in entry.get("focus_track", [])]
+    action_times = [scene_time(a["t_ms"]) for a in plan.action_log]
+    shots, punches = plan_shots(
+        captions, final_ms, focus_times=focus_times, action_times=action_times
+    )
+    return {
+        "shots": [{"from_ms": x.from_ms, "to_ms": x.to_ms, "change": x.change} for x in shots],
+        "punches": punches,
+        "max_static_ms": max_static_ms(final_ms, focus_times, action_times, punches),
+    }
+
+
 def shows_login_page(inventory: list[dict[str, Any]]) -> bool:
     """True when at least 2 of 3 moments of a clip (start, middle, end) are the sign-in page."""
     if not inventory:
@@ -235,11 +274,43 @@ def shows_login_page(inventory: list[dict[str, Any]]) -> bool:
     return login * 3 >= len(picks) * 2 if len(picks) >= 2 else login == 1
 
 
+def without_dead_frames(record: RecordResult, lead: int, scene_id: str) -> RecordResult:
+    """Blank pages, spinners and skeletons longer than 300 ms are cut out of the clip (a stretch
+    before `lead` is hidden anyway). The logs move to the new time axis; a clip that cannot be
+    cut keeps its frames and the scene reports them."""
+    if record.clip_path is None:
+        return record
+    try:
+        cut = cut_dead(record.clip_path, scene_id, lead, record.content_ms)
+    except Exception as e:  # sampling or cutting failed: the clip as recorded is still usable
+        record.warnings.append(f"{scene_id}: không dò được khung hình chết ({type(e).__name__})")
+        return record
+    if cut is None:
+        return record
+    _, runs = cut
+    cuts = [Cut(a, b) for a, b in runs]
+    removed = sum(c.length for c in cuts)
+    activity = [shift_time(t, cuts) for t in record.activity_ms]
+    record.warnings.append(f"{scene_id}: đã cắt {removed} ms khung hình chết")
+    return replace(
+        record,
+        content_ms=record.content_ms - removed,
+        click_log=shift_logs(record.click_log, cuts),
+        focus_log=shift_logs(record.focus_log, cuts),
+        inventory=shift_logs(record.inventory, cuts),
+        action_log=shift_actions(record.action_log, cuts),
+        activity_ms=activity,
+        idle_gaps_ms=idle_gaps(activity, record.start_offset_ms, record.content_ms - removed),
+        dead_cut_ms=record.dead_cut_ms + removed,
+    )
+
+
 def plan_clip(record: RecordResult, visual: Any, speech_ms: int, scene_id: str) -> ClipPlan:
     """Hide the loading phase and hidden setup; a clip longer than the speech loses dead time."""
     lead = record.start_offset_ms
     if visual.setup and not visual.show_setup:
         lead = record.setup_end_ms
+    record = without_dead_frames(record, lead, scene_id)
     shown = [e for e in record.click_log if e["t_ms"] >= lead]
     focus = [e for e in record.focus_log if e["t_ms"] >= lead]
     plan = ClipPlan(
@@ -368,6 +439,7 @@ def flow_report(recorder: FlowRecorder, session: BrowserSession) -> dict[str, An
         **steps_in_clip(
             recorder.run, [m.i for m in rec.marks if m.ok and not m.skipped] if rec else []
         ),
+        "hero": recorder.hero,
         "clip_ms": rec.content_ms if rec else 0,
         "clip_source": rec.source if rec else None,
         "llm_wait_cut_ms": rec.llm_wait_cut_ms if rec else 0,
@@ -508,6 +580,15 @@ def produce(
                 work, s, plan, captions, rate, record, focus_caller
             )
             entry["focus_track"] = track
+        shots_info: dict[str, Any] = {}
+        if plan is not None and plan.clip is not None:
+            shots_info = shots_for_scene(entry, plan, rate, final_ms, captions)
+            entry["shots"], entry["punches"] = shots_info["shots"], shots_info["punches"]
+        dead_left = (
+            dead_ms(plan.clip, plan.start_offset_ms + plan.trim_start_ms)
+            if plan is not None and plan.clip is not None
+            else 0
+        )
         assets[s.id] = entry
         inventory_file = save_inventory(work, s.id, plan)
         outcomes.append(
@@ -535,6 +616,11 @@ def produce(
                 inventory_file=inventory_file,
                 focus=focus,
                 focus_file=focus_file,
+                dead_cut_ms=record.dead_cut_ms,
+                dead_frames_ms=dead_left,
+                shots=len(shots_info.get("shots", [])),
+                punches=len(shots_info.get("punches", [])),
+                max_static_ms=shots_info.get("max_static_ms"),
             )
         )
     phases["record"] = round(time.monotonic() - started, 1)
@@ -585,6 +671,13 @@ def produce(
         "idle_limit_ms": IDLE_LIMIT_MS,
         "idle_ok": all(o.idle_max_ms is None or o.idle_max_ms <= IDLE_LIMIT_MS for o in outcomes),
         "scenes": [o.as_dict() for o in outcomes],
+        "dead_frames_ms": sum(o.dead_frames_ms for o in outcomes),
+        "dead_frames_cut_ms": sum(o.dead_cut_ms for o in outcomes),
+        "max_static_shot_s": round(
+            max((o.max_static_ms or 0 for o in outcomes), default=0) / 1000, 2
+        ),
+        "punch_ins": sum(o.punches for o in outcomes),
+        "text_cards": text_card_stats([(o.kind, o.final_ms) for o in outcomes]),
         "features": features,
         "phases_s": phases,
         "render_ms": getattr(rendered, "render_ms", None),

@@ -49,6 +49,16 @@ def notable_texts(snapshot: dict[str, Any]) -> tuple[str, ...]:
     return tuple(out)
 
 
+HOOK_MIN_MS, HOOK_MAX_MS, HOOK_LEAD_MS = 1500, 2500, 800
+
+
+def hero_window(t_ms: int, content_ms: int) -> tuple[int, int]:
+    """The 1.5-2.5 s of the flow clip around the hero frame: a little before it, mostly after."""
+    length = min(HOOK_MAX_MS, max(HOOK_MIN_MS, 2000), content_ms)
+    a = max(0, min(t_ms - HOOK_LEAD_MS, content_ms - length))
+    return a, a + length
+
+
 def choose_hero(inventory: Sequence[dict[str, Any]], *, from_ms: int = 0) -> Hero | None:
     """The best snapshot at or after `from_ms`; ties go to the later one."""
     usable = [s for s in inventory if int(s.get("t_ms", 0)) >= from_ms and _items(s)]

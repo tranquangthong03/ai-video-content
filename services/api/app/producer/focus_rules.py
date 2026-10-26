@@ -183,6 +183,36 @@ def focus_box(item: dict[str, Any], items: list[dict[str, Any]], clip: tuple[int
     return text_block(item, items, view_area)
 
 
+CONTEXT_PX = 160  # a label / heading this close to the focus gives it its meaning
+CONTEXT_KINDS = {"heading", "paragraph", "list_item"}
+MAX_CONTEXT_SHARE = 0.6  # the frame with its context may fill at most this share of the viewport
+
+
+def with_context(
+    item: dict[str, Any], box: Box, items: list[dict[str, Any]], clip: tuple[int, int]
+) -> tuple[Box, bool]:
+    """A tight frame also holds the nearest label or heading, so a field is never shown without
+    the words that say what it is. (box, True) when the frame had to grow."""
+    view = float(clip[0] * clip[1])
+    near = [
+        i
+        for i in items
+        if i["id"] != item["id"]
+        and i.get("text")
+        and i["kind"] in CONTEXT_KINDS
+        and not is_excluded(i)
+        and not contains(box, i["bbox"])
+        and gap(i["bbox"], box) <= CONTEXT_PX
+    ]
+    if not near:
+        return box, False
+    nearest = min(near, key=lambda i: gap(i["bbox"], box))
+    grown = union([box, nearest["bbox"]])
+    if area(grown) > MAX_CONTEXT_SHARE * view:
+        return box, False
+    return grown, True
+
+
 def framing_for(item: dict[str, Any], box: Box, clip: tuple[int, int]) -> str:
     """tight for a field/button/number, medium for a card or list item, wide for a big block."""
     if area(box) > 0.35 * clip[0] * clip[1] or item["kind"] in ("image", "media"):
@@ -352,6 +382,52 @@ def tidy(segs: list[Seg], duration_ms: float) -> list[Seg]:
     return merged
 
 
+HERO_KINDS = ("heading", "card", "list_item", "button", "input")
+
+
+def hero_item(items: list[dict[str, Any]], clip: tuple[int, int]) -> dict[str, Any] | None:
+    """The most telling item of a frame: what just appeared first, then headings and data."""
+    view = float(clip[0] * clip[1])
+    pool = [
+        i
+        for i in items
+        if i.get("text")
+        and i["kind"] in HERO_KINDS
+        and not is_excluded(i)
+        and area(i["bbox"]) <= 0.5 * view
+    ]
+    if not pool:
+        return None
+    return min(pool, key=lambda i: (not i.get("is_new"), HERO_KINDS.index(i["kind"])))
+
+
+def enforce_hook_framing(
+    track: list[dict[str, Any]], inventory: list[dict[str, Any]], clip: tuple[int, int]
+) -> tuple[list[dict[str, Any]], int]:
+    """A hook is shot tight or medium on its hero: an establishing or wide entry becomes a
+    close frame of the best item on screen then. Returns (track, entries changed)."""
+    changed = 0
+    out: list[dict[str, Any]] = []
+    for e in track:
+        if e["framing"] in ("establish", "wide"):
+            snap = snapshot_at(inventory, e["t_ms"] + e["hold_ms"] / 2)
+            items = snap["items"] if snap else []
+            item = hero_item(items, clip)
+            if item is not None:
+                box = focus_box(item, items, clip)
+                framing = "tight" if item["kind"] in ("input", "button") else "medium"
+                if framing == "tight":
+                    box, _ = with_context(item, box, items, clip)
+                e = {
+                    **e, "bbox": {k: round(v) for k, v in box.items()}, "framing": framing,
+                    "item_id": item["id"], "text": item["text"], "item_kind": item["kind"],
+                    "region": item["region"], "source": "rule", "reason": "hook: khung gần",
+                }  # fmt: skip
+                changed += 1
+        out.append(e)
+    return out, changed
+
+
 # --- the track -----------------------------------------------------------------------------------
 
 
@@ -398,6 +474,7 @@ def build_focus_track(
     metrics = {
         "replaced_side_focus": 0,
         "unresolved": 0,
+        "context_limited": 0,  # tight frames that grew to keep their nearest label in view
         "sources": {"plan": 0, "rule": 0, "fallback": 0},
     }
     for seg in segs:
@@ -440,6 +517,9 @@ def build_focus_track(
                 framing = "tight"
             else:
                 framing = framing_for(item, box, clip)
+            if framing == "tight":
+                box, grew = with_context(item, box, items, clip)
+                metrics["context_limited"] += int(grew)
             entry = {
                 "item_id": item["id"],
                 "text": item["text"],

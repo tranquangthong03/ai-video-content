@@ -227,6 +227,7 @@ class RecordResult:
     steps_failed: int = 0
     filled_ms: int = 0  # time spent on the filler hovers
     activity_ms: list[float] = field(default_factory=list)  # clip times where anything happened
+    dead_cut_ms: int = 0  # blank / spinner / skeleton frames cut out by the producer
 
 
 class _Recorder:

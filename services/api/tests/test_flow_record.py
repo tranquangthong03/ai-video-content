@@ -1,5 +1,6 @@
 import shutil
 import subprocess
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -98,7 +99,22 @@ def test_the_hook_is_about_two_seconds_around_the_highlighted_button(
 ) -> None:
     assert pick_hero(filmed.run) == filmed.run.steps[-1].i  # the highlight
     hook = filmed._hook(filmed.recording, tmp_path, "s1")  # type: ignore[arg-type]
+    # the hero frame is chosen by code from the frame inventory: 1.5-2.5 s around it
     assert hook is not None and hook.kind == "recording" and hook.start_offset_ms == 0
+    assert 1400 <= hook.content_ms <= 2500
+    assert filmed.hero is not None and filmed.hero["to_ms"] - filmed.hero["from_ms"] >= 1500
+
+
+def test_without_a_frame_inventory_the_hook_falls_back_to_the_hero_step(
+    filmed: FlowRecorder, tmp_path: Path
+) -> None:
+    assert filmed.recording is not None
+    rec = replace(
+        filmed.recording, inventory=[]
+    )  # (the film is shared by the tests of this module)
+    filmed.hero = None
+    hook = filmed._hook(rec, tmp_path, "s1")
+    assert hook is not None and hook.kind == "recording" and filmed.hero is None
     assert HERO_MS - 100 <= hook.content_ms <= HERO_MS
     assert any(f["kind"] == "highlight" for f in hook.focus_log)  # the camera has the button
 
@@ -127,7 +143,9 @@ def test_a_step_that_cannot_be_replayed_ends_the_film_and_the_rest_uses_the_stor
         assert r.kind == "fallback_screenshot" and r.image_path and r.image_path.is_file()
         assert any("ảnh storyboard" in w for w in r.warnings)
     hook = recorder._hook(rec, tmp_path, "sh")
-    assert hook is not None and hook.kind == "screenshot"  # the hero step was never reached
+    assert hook is not None and hook.kind == "recording"  # the best frame that WAS filmed
+    hook = recorder._hook(replace(rec, inventory=[]), tmp_path, "sh2")
+    assert hook is not None and hook.kind == "screenshot"  # no frames, and the hero step never ran
 
 
 def test_a_submit_click_is_replayed_only_when_the_policy_is_allow(

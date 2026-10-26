@@ -24,6 +24,7 @@ from app.browser.form_actions import SUBMIT_NAME
 from app.browser.guard import WritesNotAllowed
 from app.browser.page_utils import dismiss_cookie_banner
 from app.browser.session import BrowserSession
+from app.core.hero import choose_hero, hero_window
 from app.recorder import motion, sync
 from app.recorder.record import (
     CAPTURE,
@@ -290,6 +291,7 @@ class FlowRecorder:
         self.live = live  # the film made while the agent ran: used instead of a replay
         self.recording: FlowRecording | None = None
         self.notes: list[str] = []
+        self.hero: dict[str, Any] | None = None  # the hero frame the hook was cut around
         self._windows: dict[str, tuple[int, int, bool]] = {}
 
     def __call__(
@@ -384,7 +386,15 @@ class FlowRecorder:
         return RecordResult(kind="fallback_screenshot", image_path=image, warnings=[note])
 
     def _hook(self, rec: FlowRecording, out_dir: Path, scene_id: str) -> RecordResult | None:
-        """About two seconds around the hero moment of the flow, or its storyboard picture."""
+        """1.5-2.5 s around the hero frame (chosen by code from the frame inventory), else around
+        the hero step, else its storyboard picture."""
+        frame = choose_hero(rec.inventory, from_ms=rec.start_offset_ms)
+        if frame is not None and rec.clip_path is not None:
+            a, b = hero_window(frame.t_ms, rec.content_ms)
+            clip = out_dir / f"{scene_id}.mp4"
+            cut_clip(rec.clip_path, clip, a, b, rec.sync_offset_ms)
+            self.hero = {"t_ms": frame.t_ms, "from_ms": a, "to_ms": b, "score": frame.score}
+            return window_result(rec, clip, a, b, first=False)
         hero = pick_hero(self.run)
         mark = next((m for m in rec.marks if m.i == hero and m.ok), None)
         if mark is not None and rec.clip_path is not None:
