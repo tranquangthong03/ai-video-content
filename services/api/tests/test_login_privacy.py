@@ -149,7 +149,12 @@ def test_email_phone_and_the_account_menu_are_blurred_and_the_text_is_unchanged(
         page.evaluate(
             "document.querySelector('main').append(' write to late@example.com or +84 912 345 678')"
         )
-        page.wait_for_timeout(300)  # the observer catches what appears later
+        # the observer catches what appears later (it scans on requestAnimationFrame, which a busy
+        # machine can delay well past a fixed 300ms: wait for the condition, not for the clock)
+        page.wait_for_function(
+            "[...document.querySelectorAll('[data-pii-blur]')].some((e) => e.textContent.includes('late@example.com'))",
+            timeout=10_000,
+        )
         late = page.evaluate(
             "[...document.querySelectorAll('[data-pii-blur]')].map((e) => e.textContent)"
         )
@@ -201,7 +206,7 @@ def test_a_public_visit_without_a_session_is_not_blurred(site: AuthSite) -> None
         page = ctx.new_page()
         page.goto(site.base + "/")
         page.evaluate("document.body.append(' mail me: someone@example.com')")
-        page.wait_for_timeout(200)
+        page.wait_for_timeout(500)  # negative check: nothing to wait on, only time
         count = page.locator("[data-pii-blur]").count()
         ctx.close()
     assert count == 0

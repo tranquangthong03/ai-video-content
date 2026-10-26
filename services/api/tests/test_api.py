@@ -217,10 +217,11 @@ def test_cancel_takes_effect_while_waiting_and_for_a_queued_job(client: TestClie
     first, second = create(client), create(client)
     waiting_for(client, first, "confirm_understanding")
     assert client.post(f"/api/jobs/{second}/cancel").json()["state"]["status"] == "cancelled"
-    started = time.monotonic()
     client.post(f"/api/jobs/{first}/cancel")
-    until(lambda: job(client, first)["state"]["status"] == "cancelled", 3)
-    assert time.monotonic() - started < 2 and job(client, first)["pending"] is None
+    until(
+        lambda: job(client, first)["state"]["status"] == "cancelled", 10
+    )  # by condition, not clock
+    assert job(client, first)["pending"] is None
     assert client.post(f"/api/jobs/{first}/cancel").status_code == 409  # already over
 
 

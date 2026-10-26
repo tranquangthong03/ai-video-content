@@ -234,3 +234,4 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
         fixtures = set(getattr(item, "fixturenames", ()))
         if fixtures & SLOW_FIXTURES or item.module.__name__.split(".")[-1] in SLOW_MODULES:
             item.add_marker(pytest.mark.slow)
+            item.add_marker(pytest.mark.timeout(300))  # browsers / ffmpeg get a longer budget

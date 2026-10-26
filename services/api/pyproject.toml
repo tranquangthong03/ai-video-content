@@ -25,6 +25,8 @@ dev = [
     "pytest>=8.3",
     "httpx>=0.27",
     "pytest-xdist>=3.8.0",
+    "pytest-timeout>=2.3",
+    "pytest-repeat>=0.9.3",
 ]
 
 [tool.uv]
@@ -52,6 +54,8 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-m 'not e2e'"
+timeout = 120
+timeout_method = "thread"
 markers = [
     "e2e: real LLM + network, run with `pytest -m e2e` (needs DEEPSEEK_API_KEY)",
     "slow: drives a real browser / ffmpeg (auto-marked); skip with -m 'not slow'",

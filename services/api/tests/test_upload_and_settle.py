@@ -3,8 +3,10 @@
 import time
 from pathlib import Path
 
+import pytest
 from playwright.sync_api import Page
 
+from app.browser.locate import Target
 from app.browser.page_utils import wait_for_settle
 from app.browser.session import BrowserSession
 from app.explorer.extract import extract_page
@@ -177,13 +179,17 @@ def test_click_dblclick_and_type_on_a_hidden_file_input_become_uploads(
 
 
 def test_hover_on_a_hidden_file_input_is_skipped_without_waiting(
-    browser_session: BrowserSession, site: str, tmp_path: Path
+    browser_session: BrowserSession,
+    site: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    hovers: list[str] = []
+    monkeypatch.setattr(Target, "hover", lambda self, timeout=4000: hovers.append(self.strategy))
     data = page_of(browser_session, site, "/pick.html", tmp_path)
     steps = [css_step("hover", data.url, "#f3"), css_step("click", data.url, "#plain")]
     prof = profile([feature("h", None, steps, url=data.url)])
-    started = time.monotonic()
     report = verify(browser_session, prof, [data], site, tmp_path)
-    assert time.monotonic() - started < 3.5  # a hover would have burned the 4s timeout
+    assert hovers == []  # a real hover would have burned the 4s timeout; counting beats timing
     assert report.data["step_errors"] == [] and report.data["auto_upload"] == []
     assert prof.features[0].demo_kind == "interaction"  # the click after it still ran

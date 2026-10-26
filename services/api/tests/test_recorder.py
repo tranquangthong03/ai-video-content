@@ -257,7 +257,9 @@ def test_a_quiet_stretch_is_filled_with_harmless_hovers_and_never_with_clicks(
         "mode": "recording",
         "actions": [goto(site, "/tall.html"), {"do": "hover", "locator": loc("#safe")}],
     }
-    r = rec(browser_session, site, tmp_path, visual, speech_ms=7000)
+    # the filler fills what the clock leaves missing, so a slow machine (real time spent on the
+    # actions) must not eat the whole gap: ask for far more than the actions can ever take
+    r = rec(browser_session, site, tmp_path, visual, speech_ms=30000)
     kinds = [e["type"] for e in r.click_log]
     assert kinds.count("hover") >= 2 and "click" not in kinds and "dblclick" not in kinds
     assert r.filled_ms > 1500 and r.content_ms >= 5000

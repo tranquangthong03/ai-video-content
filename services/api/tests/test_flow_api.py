@@ -96,10 +96,13 @@ def test_the_web_runs_the_core_flow_route_unless_the_job_says_otherwise(tmp_path
         seen.append(cfg.core_flow)
         return JobResult(0, "done")
 
-    runner = JobRunner(tmp_path / "jobs", pipeline)
-    for job_id, extra in (("j1", {}), ("j2", {"core_flow": False})):
-        directory = runner.create(job_id, "https://x.test/", has_auth=False)
-        spec = json.loads((directory / JOB_FILE).read_text("utf-8"))
-        (directory / JOB_FILE).write_text(json.dumps({**spec, **extra}), "utf-8")
-        runner._run(job_id, threading.Event())
+    runner = JobRunner(tmp_path / "jobs", pipeline, start=False)  # driven by hand, no worker thread
+    try:
+        for job_id, extra in (("j1", {}), ("j2", {"core_flow": False})):
+            directory = runner.create(job_id, "https://x.test/", has_auth=False)
+            spec = json.loads((directory / JOB_FILE).read_text("utf-8"))
+            (directory / JOB_FILE).write_text(json.dumps({**spec, **extra}), "utf-8")
+            runner._run(job_id, threading.Event())
+    finally:
+        runner.stop()
     assert seen == [True, False]

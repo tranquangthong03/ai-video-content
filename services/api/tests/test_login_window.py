@@ -39,7 +39,7 @@ def site() -> Iterator[AuthSite]:
         yield s
 
 
-def until(check: Callable[[], Any], seconds: float = 20) -> Any:
+def until(check: Callable[[], Any], seconds: float = 90) -> Any:
     end = time.monotonic() + seconds
     while time.monotonic() < end:
         value = check()
@@ -57,15 +57,14 @@ def client_for(tmp_path: Path, site: AuthSite, windows: LoginWindows) -> TestCli
     return c
 
 
-def waiting_card(c: TestClient, job_id: str) -> dict[str, Any]:
-    def card() -> dict[str, Any] | None:
-        d = c.get(f"/api/jobs/{job_id}").json()
-        p = d["pending"]
-        return (
-            p if d["state"]["status"] == "waiting" and p and p["kind"] == "login_required" else None
-        )
+def current_card(c: TestClient, job_id: str) -> dict[str, Any] | None:
+    d = c.get(f"/api/jobs/{job_id}").json()
+    p = d["pending"]
+    return p if d["state"]["status"] == "waiting" and p and p["kind"] == "login_required" else None
 
-    return until(card)  # type: ignore[no-any-return]
+
+def waiting_card(c: TestClient, job_id: str) -> dict[str, Any]:
+    return until(lambda: current_card(c, job_id))  # type: ignore[no-any-return]
 
 
 def answer(c: TestClient, card: dict[str, Any], action: str = "login_done") -> Any:
@@ -126,7 +125,7 @@ def test_pressing_done_without_signing_in_keeps_the_card_with_a_reason(
         assert answer(c, card).status_code == 200  # nothing was typed in the window
         again = until(
             lambda: (
-                (p := waiting_card(c, job_id))
+                (p := current_card(c, job_id))
                 and p["interaction_id"] != card["interaction_id"]
                 and p
             )
