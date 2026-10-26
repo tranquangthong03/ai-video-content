@@ -14,7 +14,12 @@ export function validateEditOp(op: EditOp, script: Script): string[] {
 
   if (op.op === "set") {
     const scene = scenes.get(op.scene_id);
-    if (scene && !(FIELDS_BY_TYPE as Table)[scene.type].includes(op.field)) {
+    if (scene && op.field === "hook_option") {
+      if (scene.type !== "hook") errors.push(`set: hook_option only applies to a hook scene, not ${scene.id}`);
+      else if (!(script.hook_options ?? []).some((o, i) => op.value === String(i + 1) || op.value === o.kind)) {
+        errors.push(`set: no hook option '${op.value}'`);
+      }
+    } else if (scene && !(FIELDS_BY_TYPE as Table)[scene.type].includes(op.field)) {
       errors.push(`set: field '${op.field}' does not exist on scene ${scene.id} (type '${scene.type}')`);
     } else if (scene && op.field === "layout" && !(LAYOUTS_BY_TYPE as Table)[scene.type].includes(op.value)) {
       errors.push(`set: layout '${op.value}' is invalid for scene ${scene.id} (type '${scene.type}')`);

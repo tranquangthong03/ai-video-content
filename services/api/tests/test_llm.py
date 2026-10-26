@@ -55,6 +55,10 @@ SAMPLE_VARS = {
         product_profile_summary="s", forced=False, scene_catalog_json="{}", allowed_icons="check",
         proof_json="",
     ),
+    "copy_critic": dict(
+        persona="p", goal="g", value="v", chapters_summary="c", proof_bank_json_or_empty="",
+        script_compact_json="{}",
+    ),
     "flow_agent": dict(
         title="t", persona="p", goal="g", expected_steps="a; b", success_signal="s",
         submit_policy="stop", user_notes_or_none="không có", sample_data_json_or_empty="{}",

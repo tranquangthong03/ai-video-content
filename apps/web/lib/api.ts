@@ -43,6 +43,42 @@ export interface ScriptExtra {
   footage_min: number | null;
   recommended_duration_s: number | null;
   warnings: string[];
+  critic?: CriticReport | null;
+  hook_options?: HookOption[];
+  hook_scene_id?: string | null;
+  /** 1-based number of the hook option the hook scene shows. */
+  chosen_hook?: number | null;
+}
+
+export interface HookOption {
+  kind: string;
+  voiceover: string;
+  on_screen_text: string | null;
+}
+
+export interface CriticScore {
+  score: number | null;
+  reason: string;
+}
+
+export interface CriticView {
+  scores: Record<string, CriticScore>;
+  weak_scenes: { scene_id: string; problem: string; suggestion: string }[];
+  issues: string[];
+  summary: string;
+}
+
+export interface CriticReport {
+  threshold: number;
+  before?: CriticView;
+  after?: CriticView | null;
+  final?: CriticView;
+  kept_rewrite?: boolean;
+  rewritten?: string[];
+  passed?: boolean;
+  /** The user edited the script after it was scored: the bars are the last scored version. */
+  edited?: boolean;
+  error?: string;
 }
 
 export interface HistoryItem {

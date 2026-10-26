@@ -6,6 +6,8 @@ import type { InteractionRequest } from "@/lib/generated";
 import type { SceneView } from "@/lib/api";
 import { SHOT_LABEL, seconds, splitHighlight } from "@/lib/labels";
 import { buildResponse, editFields, setOpFields } from "@/lib/responses";
+import { HOOK_KIND_LABEL, criticRows } from "@/lib/critic";
+import type { CriticReport, HookOption } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -87,6 +89,80 @@ function SceneCard({
   );
 }
 
+/** Five score bars of the copy critic, with its one-line summary. */
+function CriticPanel({ report }: { report: CriticReport }) {
+  const rows = criticRows(report);
+  if (report.error || rows.length === 0) return null;
+  const view = report.final ?? report.before;
+  return (
+    <Section title="Chấm điểm nội dung">
+      <ul className="space-y-2">
+        {rows.map((r) => (
+          <li key={r.key} className="space-y-0.5">
+            <div className="flex items-center justify-between text-xs">
+              <span>{r.label}</span>
+              <span className={r.ok === false ? "font-semibold text-amber-700" : "text-muted-foreground"}>
+                {r.score === null ? "chưa có bằng chứng" : `${r.score}/10`}
+              </span>
+            </div>
+            <div
+              role="meter"
+              aria-label={r.label}
+              aria-valuemin={0}
+              aria-valuemax={10}
+              aria-valuenow={r.score ?? 0}
+              className="h-2 overflow-hidden rounded bg-muted"
+            >
+              <div className={`h-full ${r.ok === false ? "bg-amber-500" : "bg-emerald-600"}`} style={{ width: `${r.percent}%` }} />
+            </div>
+            {r.reason && <p className="text-xs text-muted-foreground">{r.reason}</p>}
+          </li>
+        ))}
+      </ul>
+      {view?.summary && <p className="text-sm">{view.summary}</p>}
+      {report.rewritten && report.rewritten.length > 0 && report.kept_rewrite && (
+        <p className="text-xs text-muted-foreground">Đã tự viết lại cảnh {report.rewritten.join(", ")} theo gợi ý.</p>
+      )}
+      {report.edited && <p className="text-xs text-muted-foreground">Điểm của bản trước khi bạn sửa (không chấm lại tự động).</p>}
+    </Section>
+  );
+}
+
+/** Two hook options: pick one (a deterministic edit, no model). */
+function HookChooser({
+  options,
+  chosen,
+  disabled,
+  onPick,
+}: {
+  options: HookOption[];
+  chosen: number | null | undefined;
+  disabled: boolean;
+  onPick: (n: number) => void;
+}) {
+  if (options.length < 2) return null;
+  return (
+    <Section title="Chọn hook mở đầu">
+      <div className="grid gap-2 sm:grid-cols-2">
+        {options.map((o, i) => (
+          <button
+            key={o.kind}
+            type="button"
+            disabled={disabled}
+            aria-pressed={chosen === i + 1}
+            onClick={() => chosen !== i + 1 && onPick(i + 1)}
+            className={`rounded-lg border p-3 text-left text-sm ${chosen === i + 1 ? "border-primary bg-accent" : "border-border"}`}
+          >
+            <Badge tone="muted">{HOOK_KIND_LABEL[o.kind] ?? o.kind}</Badge>
+            <p className="mt-1">{o.voiceover}</p>
+            {o.on_screen_text && <p className="mt-1 text-xs text-muted-foreground">Chữ: “{o.on_screen_text}”</p>}
+          </button>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
 /** script_review: scenes, totals, warnings, quick edits, free edit, versions. */
 export function ScriptCard({ ctx, pending }: { ctx: JobCtx; pending: InteractionRequest }) {
   const extra = ctx.job.pending_extra;
@@ -140,6 +216,18 @@ export function ScriptCard({ ctx, pending }: { ctx: JobCtx; pending: Interaction
             </li>
           ))}
         </ul>
+      )}
+
+      {extra.critic && <CriticPanel report={extra.critic} />}
+      {extra.hook_scene_id && (
+        <HookChooser
+          options={extra.hook_options ?? []}
+          chosen={extra.chosen_hook}
+          disabled={busy}
+          onPick={(n) =>
+            send(() => buildResponse(pending, "edit", { ...setOpFields(extra.hook_scene_id!, "hook_option", String(n)), base_version: version }))
+          }
+        />
       )}
 
       <div className="space-y-3">

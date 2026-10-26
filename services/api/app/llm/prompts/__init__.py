@@ -25,6 +25,7 @@ PROMPTS = (
     "focus_planner",
     "flow_discovery",
     "flow_agent",
+    "copy_critic",
 )
 
 

@@ -9,6 +9,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from pydantic import ValidationError
 from rich.markup import escape
 
 from app.core.budget import budget_for, oversize_warning
@@ -25,6 +26,7 @@ from app.schemas.generated.product_profile import ProductProfile
 from app.schemas.generated.script import Script
 from app.schemas.generated.theme import Theme
 from app.schemas.generated.user_response import UserResponse
+from app.script.critic import improve
 from app.script.diff import diff_scripts
 from app.script.edit import EditOutcome, apply_edit, apply_global
 from app.script.fit_duration import FitReport, fit_duration
@@ -80,9 +82,13 @@ class ScriptRunner:
         theme_fn: Callable[[], ThemeResult],
         capture: tuple[int, int] | None = None,
         flow: FlowCtx | None = None,
+        critic: JsonCaller | None = None,
     ) -> None:
         self.flow = flow  # flow mode: the chapters are the features, the outline is already linked
         self.job_id, self.dir, self.caller, self.frontend = job_id, job_dir, caller, frontend
+        self.critic = (
+            critic or caller
+        )  # copy_critic role; same model unless the .env says otherwise
         self.profile, self.outline, self.url = profile, outline, url
         self.theme_fn = theme_fn
         self.capture = capture
@@ -234,6 +240,7 @@ class ScriptRunner:
         written = write_script(self.caller, self.ctx)
         self.last_write = written
         script, fit = fit_duration(self.caller, written.script, self.ctx)
+        script, fit = self._critique(script, fit)
         self.fit = fit
         self.report["generation"] = {
             "attempts": written.attempts,
@@ -243,6 +250,22 @@ class ScriptRunner:
         self.report["warnings"] += [*written.warnings, *fit.warnings]
         self._footage(script)
         return script
+
+    def _critique(self, script: Script, fit: FitReport) -> tuple[Script, FitReport]:
+        """Flow videos only: score the copy, pick the better hook, fix what is weak once. A critic
+        that cannot answer never fails the job; the scores are simply missing."""
+        assert self.ctx is not None
+        if self.ctx.flow is None:
+            return script, fit
+        try:
+            result = improve(self.critic, self.ctx, script)
+        except (LLMCallError, ValidationError) as e:
+            self.report["critic"] = {"error": str(e)[:200]}
+            return script, fit
+        self.report["critic"] = result.report()
+        if result.script == script:
+            return script, fit
+        return fit_duration(self.caller, result.script, self.ctx)  # the words changed: refit
 
     def _measure(self, script: Script) -> None:
         """After a user edit the fit is only measured: the user's words are not overridden."""
@@ -413,6 +436,8 @@ class ScriptRunner:
                 continue
             version = self.store.save(script)
             if response.action == "edit" and not (outcome.full_regen):
+                if isinstance(self.report.get("critic"), dict):
+                    self.report["critic"]["edited"] = True  # shown, but not scored again
                 self._measure(script)
                 if self.fit and not self.fit.within:
                     notice = "\n".join(x for x in [notice, f"Lưu ý: {self.fit.warnings[-1]}"] if x)

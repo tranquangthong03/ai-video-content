@@ -136,6 +136,15 @@ def scene_view(scene: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def chosen_hook(script: dict[str, Any]) -> int | None:
+    """1-based number of the hook option the hook scene shows, if it matches one."""
+    hook = next((s for s in script.get("scenes", []) if s["type"] == "hook"), None)
+    for n, option in enumerate(script.get("hook_options", []), start=1):
+        if hook and option["voiceover"] == hook.get("voiceover"):
+            return n
+    return None
+
+
 def script_extra(directory: Path, version: int | None) -> dict[str, Any] | None:
     script = read_json(directory / "scripts" / f"v{version}.json") if version else None
     if script is None:
@@ -158,6 +167,12 @@ def script_extra(directory: Path, version: int | None) -> dict[str, Any] | None:
         "recommended_duration_s": report.get("recommended_duration_s"),
         "warnings": report.get("warnings", []),
         "fit": report.get("fit"),
+        "critic": report.get("critic"),
+        "hook_options": script.get("hook_options", []),
+        "hook_scene_id": next(
+            (s["id"] for s in script.get("scenes", []) if s["type"] == "hook"), None
+        ),
+        "chosen_hook": chosen_hook(script),
     }
 
 

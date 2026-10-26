@@ -59,7 +59,7 @@ export const editFields = (instruction: string): Fields => ({
 });
 
 /** A quick edit of one scene field becomes a deterministic `set` op (no LLM). */
-export function setOpFields(sceneId: string, field: "voiceover" | "on_screen_text", value: string): Fields {
+export function setOpFields(sceneId: string, field: "voiceover" | "on_screen_text" | "hook_option", value: string): Fields {
   return { edit: { instruction: null, targets: [], ops: [{ op: "set", scene_id: sceneId, field, value }] } };
 }
 

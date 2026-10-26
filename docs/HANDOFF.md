@@ -75,7 +75,8 @@ Giao thức tương tác chung: `InteractionRequest(kind, …)` / `UserResponse(
 - P0-c xong: `flow_report.steps_in_clip` (+ `scripts/steps_in_clip.py`); 3 video R4 đều 100% (`docs/core-flow/r4/steps_in_clip.json`).
 - M1-1 xong: `app/script/proof.py` (proof bank: numbers/quotes/offers/pains; `unsupported_numbers`, `strip_numbers`).
 - M1-2 xong: schema `script.framework`, `script.hook_options` (2 phương án), `scene.stat`, EditOp `set` field `hook_option` (chọn hook không gọi LLM); `core/hero.py` (hero frame chấm bằng code); `FlowCtx` thêm value_line/submit_policy/hero_texts; writer kiểm bằng code (`script/narrative.py`): hook 5–12 từ, không mở bằng tên sản phẩm, 2 hook khác kiểu, cụm sáo rỗng, on_screen ≤ 5 từ, CTA không đọc URL, con số có nguồn (hỏi lại 1 lần rồi code xóa → duration_fit). `hook_options` bắt buộc chỉ ở chế độ luồng; ngoài luồng là tùy chọn. Hook scene luôn lấy phương án 1; M1-3 sẽ chọn theo điểm critic.
-- Tiếp theo: M1-3 (Copy Critic) → M1-6.
+- M1-3 xong: `app/script/critic.py` + `prompts/copy_critic.md` (nguyên văn): chọn hook theo điểm hook_strength của từng phương án, chấm 5 tiêu chí, dưới 7 → Scene Writer viết lại cảnh yếu (tối đa 3, 1 vòng) → chấm lại, giữ bản tốt hơn; điểm trước/sau trong `script_report.json["critic"]`; chỉ chạy ở chế độ luồng, lỗi critic không làm hỏng job; sau khi người dùng sửa chỉ hiển thị điểm cũ (`edited`). Web script_review: 5 thanh điểm + chọn 1 trong 2 hook (EditOp `hook_option`, không gọi LLM).
+- Tiếp theo: M1-4a → M1-6.
 
 ## 6. Lộ trình tiếp theo
 
