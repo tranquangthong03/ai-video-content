@@ -75,3 +75,6 @@ Người dùng nhập URL website (+ tài khoản demo tùy chọn). Hệ thốn
 
 ## Ngôn ngữ làm việc
 Luôn trả lời và viết báo cáo bằng tiếng Việt.
+
+## Kế hoạch nhiều bước
+Mọi nhiệm vụ nhiều bước được duyệt phải được lưu vào docs/plans/<tên>.md trước khi bắt đầu làm, để không mất khi /clear.
