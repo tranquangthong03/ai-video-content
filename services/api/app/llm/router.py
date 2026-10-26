@@ -39,6 +39,19 @@ class RoleConfig:
     model: str
     vision: bool  # may this role send images (needs a vision model in the settings)
     vision_model: str | None
+    vision_mode: str = "on"  # on | off | auto (auto: images only once the work gets hard)
+
+
+# roles that look at the screen only when needed, unless the .env says otherwise
+AUTO_ROLES = {"flow_agent": "auto"}
+
+
+def _mode(raw: str | None, default: str) -> str:
+    """on | off | auto from LLM_<ROLE>_VISION (true / false as before)."""
+    if raw is None or not raw.strip():
+        return default
+    value = raw.strip().lower()
+    return "auto" if value == "auto" else ("on" if _flag(value, True) else "off")
 
 
 def _flag(raw: str | None, default: bool) -> bool:
@@ -60,13 +73,15 @@ def role_config(
     values = merged_env(env)
     prefix = f"LLM_{role.upper()}_"
     # on by default: with DEEPSEEK_VISION_MODEL set every role may send images, as before
-    vision = _flag(values.get(prefix + "VISION"), True)
+    mode = _mode(values.get(prefix + "VISION"), AUTO_ROLES.get(role, "on"))
+    vision = mode != "off"
     return RoleConfig(
         role=role,
         provider=(values.get(prefix + "PROVIDER") or DEFAULT_PROVIDER).strip().lower(),
         model=(values.get(prefix + "MODEL") or settings.model).strip(),
         vision=vision and settings.vision_model is not None,
         vision_model=settings.vision_model if vision else None,
+        vision_mode=mode if settings.vision_model is not None else "off",
     )
 
 
@@ -85,9 +100,11 @@ def get_client(
     if config.provider not in registry:
         raise ValueError(f"LLM provider {config.provider!r} is not available for role {role}")
     role_settings = replace(settings, model=config.model, vision_model=config.vision_model)
-    return JsonCaller(
+    caller = JsonCaller(
         registry[config.provider](role_settings),
         tracker=tracker,
         cache_enabled=settings.cache_enabled,
         cache_dir=settings.cache_dir,
     )
+    caller.vision_mode = config.vision_mode
+    return caller

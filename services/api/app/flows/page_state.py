@@ -230,11 +230,20 @@ STATE_JS = r"""
       if (messages.length < 8) messages.push('Nội dung trang: ' + t);
     });
   }
+  // a big canvas / svg in the page body (a drawing, a chart, an image editor): text will not say it
+  let canvasRatio = 0;
+  document.querySelectorAll('canvas,svg').forEach((c) => {
+    if (!visible(c) || c.closest('nav,aside,header,footer,[role=navigation]')) return;
+    const r = c.getBoundingClientRect();
+    const w = Math.max(0, Math.min(r.right, vw) - Math.max(r.left, 0));
+    const h = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
+    canvasRatio = Math.max(canvasRatio, (w * h) / (vw * vh));
+  });
   const heading = (sel) => [...document.querySelectorAll(sel)].find((x) => visible(x) && clean(x.innerText));
   const h = heading('h1,h2,[role=heading]') || heading('h3,h4,h5,h6');
   return {
     url: location.href, title: document.title, heading: h ? clean(h.innerText).slice(0, 140) : '',
-    messages, elements, scroll_y: Math.round(scrollY),
+    messages, elements, canvas_ratio: Math.round(canvasRatio * 100) / 100, scroll_y: Math.round(scrollY),
     max_scroll: Math.max(0, document.documentElement.scrollHeight - innerHeight),
   };
 }
@@ -278,6 +287,7 @@ class PageState:
     elements: list[PageElement]
     scroll_y: int = 0
     max_scroll: int = 0
+    canvas_ratio: float = 0.0  # share of the viewport taken by the biggest canvas / svg in the body
 
     @property
     def by_ref(self) -> dict[str, PageElement]:
@@ -348,6 +358,7 @@ def build_state(raw: dict[str, Any]) -> PageState:
         elements=elements,
         scroll_y=raw["scroll_y"],
         max_scroll=raw["max_scroll"],
+        canvas_ratio=raw.get("canvas_ratio", 0.0),
     )
 
 

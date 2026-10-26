@@ -86,6 +86,7 @@ class JsonCaller:
         cache_dir: Path = Path(".cache"),
     ) -> None:
         self.llm = llm
+        self.vision_mode = "on"  # on | off | auto (set by llm.router for roles that escalate)
         self.tracker = tracker or UsageTracker()
         self.cache_enabled = cache_enabled
         self.cache_dir = cache_dir

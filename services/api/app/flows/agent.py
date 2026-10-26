@@ -20,7 +20,7 @@ from playwright.sync_api import Page
 from pydantic import BaseModel, Field
 
 from app.browser.auth_detect import LoginRequired, detect_login
-from app.browser.form_actions import ActionFailed
+from app.browser.form_actions import ActionFailed, NoReadableOptions
 from app.browser.locate import Unsafe, resolve
 from app.browser.page_utils import dismiss_cookie_banner, wait_for_settle
 from app.browser.session import BrowserSession
@@ -45,6 +45,8 @@ ROLE = "flow_agent"
 FLOW_DIR = "flow"
 RUN_FILE = "flow_run.json"
 HISTORY_LINES = 14
+ESCALATE_FAILED = 2  # refused actions after which the screenshot goes along
+ESCALATE_CANVAS = 0.25  # share of the viewport a canvas / svg must take to do the same
 FILMED_TIMEOUT_S = 480.0
 REPEAT_WARN, REPEAT_STOP = 2, 3
 STEP_MS = 2500  # a step is about this long on screen (before the hold)
@@ -98,6 +100,10 @@ class _Run:
     unchanged: dict[str, int] = field(default_factory=dict)
     invented_refs: int = 0
     repeat_warnings: int = 0
+    failed_actions: int = 0
+    text_calls: int = 0
+    vision_calls: int = 0
+    escalated_because: str | None = None
     status: str = "partial"
     stop_name: str | None = None
 
@@ -130,7 +136,15 @@ class FlowAgent:
         self.notes = user_notes.strip()
         self.authenticated = authenticated
         self.viewport = viewport
-        self.images = caller.can_see_images if use_images is None else use_images
+        # vision auto: text only until the work gets hard (see _maybe_escalate); an explicit
+        # use_images wins over the role's setting
+        mode = (
+            getattr(caller, "vision_mode", "on")
+            if use_images is None
+            else ("on" if use_images else "off")
+        )
+        self.vision_auto = mode == "auto" and caller.can_see_images
+        self.images = caller.can_see_images and mode == "on"
         self.film = film  # filming while the agent works (the live clip of FlowRun.live)
         # holds and slow typing make a filmed run longer than a silent one
         self.limits = limits or (Limits(timeout_s=FILMED_TIMEOUT_S) if film else Limits())
@@ -224,6 +238,7 @@ class FlowAgent:
                     )
                     return
             pending_key = None
+            self._maybe_escalate(state, run)
             stop = self._limit_reached(run, started)
             if stop:
                 run.warnings.append(stop)
@@ -255,6 +270,8 @@ class FlowAgent:
             except ActionFailed as e:
                 if "không có trong danh sách" in str(e):
                     run.invented_refs += 1
+                if isinstance(e, NoReadableOptions):
+                    self._escalate(run, "control tự vẽ không đọc được option")
                 self._failed(run, action, name, str(e))
                 continue
             except Unsafe as e:
@@ -369,6 +386,23 @@ class FlowAgent:
             warnings="\n".join(warnings),
         )
 
+    def _escalate(self, run: _Run, why: str) -> None:
+        """From the next question on the screenshot goes along (vision auto only; it stays on)."""
+        if self.vision_auto and not self.images:
+            self.images = True
+            run.escalated_because = why
+            run.warnings.append(f"Bắt đầu gửi kèm ảnh màn hình: {why}.")
+
+    def _maybe_escalate(self, state: PageState, run: _Run) -> None:
+        if not self.vision_auto or self.images:
+            return
+        if self._repeat_warnings(run):
+            self._escalate(run, "cảnh báo lặp")
+        elif run.failed_actions >= ESCALATE_FAILED:
+            self._escalate(run, f"{run.failed_actions} hành động bị từ chối")
+        elif state.canvas_ratio >= ESCALATE_CANVAS:
+            self._escalate(run, "trang có canvas/svg lớn")
+
     def _repeat_warnings(self, run: _Run) -> list[str]:
         return [
             f"Hành động «{k}» đã lặp {n} lần mà trang không đổi; hãy chọn cách khác hoặc give_up."
@@ -385,6 +419,7 @@ class FlowAgent:
                         ROLE, self._prompt(state, run, True), AgentAnswer, images=[shot]
                     )
                     self.images_sent = True
+                    run.vision_calls += 1
                     return answer
                 except (LLMCallError, BudgetExceeded):
                     raise
@@ -392,6 +427,7 @@ class FlowAgent:
                     self.images = False
                     kind = "chưa cấu hình" if isinstance(e, VisionUnavailable) else str(e)[:100]
                     run.warnings.append(f"Không gửi được ảnh ({kind}); chuyển sang chỉ dùng chữ.")
+            run.text_calls += 1
             return self.caller.call(ROLE, self._prompt(state, run, False), AgentAnswer)
         except BudgetExceeded:
             raise
@@ -452,6 +488,7 @@ class FlowAgent:
         return f"{n}. {what} → {result.url_after}"
 
     def _failed(self, run: _Run, action: FlowAction, name: str, why: str) -> None:
+        run.failed_actions += 1
         run.history.append(f"✗ {action.do} «{name}»: {why[:140]}")
         run.warnings.append(f"{action.do} «{name}»: {why[:140]}")
 
@@ -506,9 +543,14 @@ class FlowAgent:
         ids = chapter_ids(chapters)
         usage = self.caller.tracker.steps.get(ROLE, {})
         calls = usage.get("calls", 0) - before.get("calls", 0)
-        model = (
-            self.caller.llm.vision_model if self.images_sent else self.caller.llm.model
-        ) or self.caller.llm.model
+        text_model, vision_model = (
+            self.caller.llm.model,
+            self.caller.llm.vision_model or self.caller.llm.model,
+        )
+        if run.vision_calls and run.text_calls:
+            model = f"{text_model} + {vision_model}"
+        else:
+            model = vision_model if run.vision_calls else text_model
         steps = []
         for i, s in enumerate(run.steps, start=1):
             steps.append(
@@ -551,6 +593,9 @@ class FlowAgent:
                     "completion_tokens": usage.get("output", 0) - before.get("output", 0),
                     "seconds": round(self.clock() - started, 1),
                     "write_requests": list(self.session.guard.write_log),
+                    "text_calls": run.text_calls,
+                    "vision_calls": run.vision_calls,
+                    "escalated_because": run.escalated_because,
                     "invented_refs": run.invented_refs,
                     "repeat_warnings": sum(1 for n in run.unchanged.values() if n >= REPEAT_WARN),
                 },

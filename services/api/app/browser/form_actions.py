@@ -53,6 +53,10 @@ class ActionFailed(RuntimeError):
     """The action could not be done (option missing, date refused...); the text is for the agent."""
 
 
+class NoReadableOptions(ActionFailed):
+    """A drawn dropdown that shows no option text: only a picture of it tells what to pick."""
+
+
 @dataclass
 class Ops:
     """How the mouse and keyboard are used."""
@@ -174,7 +178,8 @@ def select_option(page: Page, target: Target, text: str, root_url: str, ops: Ops
         ):  # still open: close it, or the next select would toggle it shut
             ops.click(target)
         have = f" (có: {', '.join(seen)})" if seen else " sau khi mở danh sách"
-        raise ActionFailed(f"select: không thấy lựa chọn «{wanted}»{have}")
+        error = ActionFailed if seen else NoReadableOptions
+        raise error(f"select: không thấy lựa chọn «{wanted}»{have}")
     choice = Target("css", locator=option)
     check_clickable(choice.info(), root_url, scope_prefix=None)
     ops.click(choice)

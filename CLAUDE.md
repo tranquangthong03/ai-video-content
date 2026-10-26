@@ -60,6 +60,8 @@ Người dùng nhập URL website (+ tài khoản demo tùy chọn). Hệ thốn
 ## Core flow (luồng chức năng chính)
 - Mặc định (CLI) job quay MỘT luồng chính thay vì tính năng rời rạc: `select_flow` (Flow Discovery, `app/flows/discovery.py`) → Flow Agent chạy luồng trên một phiên (`app/flows/agent.py`, mỗi vòng 1 hành động JSON, ảnh viewport nếu role `flow_agent` bật vision) → `flow_storyboard_review` → outline theo chương (`app/proposal/flow_outline.py`) → script (`script.flow_id`, scene `chapter_id`) → quay MỘT mạch (`app/recorder/flow.py`) rồi cắt theo chương. `--classic` quay lại đường cũ (chọn tính năng); đường cũ cũng là fallback khi không tìm/chạy được luồng. API/web tạm dùng đường cũ (`core_flow=False` trong worker) tới khi có thẻ web (C11).
 - Chính sách gửi dữ liệu: mặc định `stop` (không bấm Gửi/Lưu; bước cuối là hover + highlight nút). `allow` cần tick xác nhận, tối đa 2 lần bấm, trong `guard.allow_writes()`; luôn bị từ chối trên site demo dùng chung (`core/shared_demo.py`, env `SHARED_DEMO_SITES`).
+- Quay trực tiếp: Flow Agent quay ngay trên context của nó (`app/recorder/live.py`, `FlowRun.live`); producer cắt `llm_wait` (giữ đệm 200 ms), lần thử sai (`retry`/`rejected`) rồi dựng thành `FlowRecording` (`app/producer/live_clip.py`). Replay (`record_flow`) chỉ là dự phòng (`--film auto|live|replay`). Xung đồng bộ (`app/recorder/sync.py`) đo độ lệch đồng hồ log/hình và không bao giờ được lọt vào video cuối.
+- `LLM_FLOW_AGENT_VISION=auto` (mặc định): text-only, tự thêm ảnh khi có cảnh báo lặp, ≥ 2 hành động bị từ chối, canvas/svg lớn hoặc dropdown tự vẽ không đọc được option.
 - Cấu hình model theo vai trò: `app/llm/router.py` (`get_client(role)`, env `LLM_<ROLE>_MODEL/_VISION/_PROVIDER`).
 
 ## Đăng nhập (web)
