@@ -64,6 +64,12 @@ class FlowSelect(BaseModel):
             description='Set when the site is a shared demo: allowing submit is refused'
         ),
     ] = None
+    infeasible: Annotated[
+        dict[str, str],
+        Field(
+            description="flow id -> the site's own message: this flow cannot be done with this account"
+        ),
+    ] = {}
 
 
 class Selection(BaseModel):

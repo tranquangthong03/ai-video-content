@@ -109,7 +109,13 @@
           "properties": {
             "max": { "type": "integer" },
             "default": { "type": "array", "items": { "type": "string" } },
-            "submit_blocked_reason": { "type": ["string", "null"], "default": null, "description": "Set when the site is a shared demo: allowing submit is refused" }
+            "submit_blocked_reason": { "type": ["string", "null"], "default": null, "description": "Set when the site is a shared demo: allowing submit is refused" },
+            "infeasible": {
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "default": {},
+              "description": "flow id -> the site's own message: this flow cannot be done with this account"
+            }
           }
         },
         { "type": "null" }

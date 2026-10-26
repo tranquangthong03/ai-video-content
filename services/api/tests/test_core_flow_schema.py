@@ -76,3 +76,40 @@ def test_script_and_scenes_know_their_flow_and_chapter() -> None:
         "scenes": [{**scene, "id": f"s{i}"} for i in range(3)],
     })  # fmt: skip
     assert script.flow_id == "leave" and script.scenes[0].root.chapter_id == "c1"
+
+
+def test_a_flow_run_can_carry_its_live_film_and_why_it_gave_up() -> None:
+    run = FlowRun.model_validate({
+        "flow_id": "f", "status": "partial", "steps": [], "chapters": [],
+        "live": {
+            "clip": "flow/live/flow.mp4", "logs": "flow/live/logs.json", "content_ms": 9000,
+            "start_offset_ms": 1200, "sync_offset_ms": 40,
+            "segments": [{"from_ms": 2000, "to_ms": 4500, "kind": "llm_wait", "step": 3}],
+            "marks": [{"i": 2, "start_ms": 1300, "end_ms": 3000}],
+        },
+        "give_up": {"reason_kind": "no_data", "reason": "no leave types", "quote": "No Leave Types"},
+        "report": {"model": "m", "used_images": False, "llm_calls": 3, "prompt_tokens": 1,
+                   "completion_tokens": 1, "seconds": 1, "write_requests": [], "text_calls": 3,
+                   "vision_calls": 0, "escalated_because": None},
+    })  # fmt: skip
+    assert run.live and run.live.segments[0].kind == "llm_wait" and run.live.pulse_at_ms == 0
+    assert run.give_up and run.give_up.reason_kind == "no_data"
+    assert FlowRun.model_validate(run.model_dump(mode="json")) == run
+    for bad in ({"reason_kind": "other", "reason": "x"},):
+        with pytest.raises(ValidationError):
+            FlowRun.model_validate(
+                {"flow_id": "f", "status": "partial", "steps": [], "chapters": [], "give_up": bad}
+            )
+
+
+def test_the_select_flow_card_can_mark_flows_that_cannot_be_done() -> None:
+    from app.schemas.generated.interaction import InteractionRequest
+
+    ask = InteractionRequest.model_validate({
+        "interaction_id": "i", "job_id": "j", "message": "m", "allowed_actions": ["answer"],
+        "kind": "select_flow", "flows": [FLOW],
+        "flow_select": {"max": 2, "default": [], "infeasible": {"leave": "No Leave Types with Leave Balance"}},
+    })  # fmt: skip
+    assert ask.flow_select and ask.flow_select.infeasible == {
+        "leave": "No Leave Types with Leave Balance"
+    }

@@ -49,6 +49,72 @@
     "llm_calls": { "type": "integer", "minimum": 0, "default": 0 },
     "submit_policy": { "enum": ["stop", "allow"], "default": "stop" },
     "stop_ref": { "type": ["string", "null"], "default": null, "description": "stopped_before_submit: the button the agent stopped at (step index of its hover)" },
+    "live": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The film made while the agent ran: one clip, its logs (focus, click, inventory, actions) and what to cut out of it.",
+          "required": ["clip", "logs", "content_ms", "start_offset_ms"],
+          "properties": {
+            "clip": { "type": "string", "description": "Path relative to the job dir" },
+            "logs": { "type": "string", "description": "JSON file with focus_log, click_log, inventory, action_log, activity_ms" },
+            "content_ms": { "type": "integer", "minimum": 0 },
+            "start_offset_ms": { "type": "integer", "minimum": 0, "description": "The loading phase (and the sync pulse) ends here" },
+            "sync_offset_ms": { "type": "integer", "default": 0, "description": "video clock = log clock + this" },
+            "pulse_at_ms": { "type": "integer", "default": 0 },
+            "segments": {
+              "type": "array",
+              "default": [],
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["from_ms", "to_ms", "kind"],
+                "properties": {
+                  "from_ms": { "type": "integer", "minimum": 0 },
+                  "to_ms": { "type": "integer", "minimum": 0 },
+                  "kind": { "enum": ["llm_wait", "retry", "rejected"] },
+                  "step": { "type": ["integer", "null"], "default": null },
+                  "note": { "type": "string", "default": "" }
+                }
+              }
+            },
+            "marks": {
+              "type": "array",
+              "default": [],
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["i", "start_ms", "end_ms"],
+                "properties": {
+                  "i": { "type": "integer", "minimum": 1 },
+                  "start_ms": { "type": "integer", "minimum": 0 },
+                  "end_ms": { "type": "integer", "minimum": 0 }
+                }
+              }
+            }
+          }
+        },
+        { "type": "null" }
+      ],
+      "default": null
+    },
+    "give_up": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reason_kind", "reason"],
+          "properties": {
+            "reason_kind": { "enum": ["no_data", "no_permission", "feature_missing", "blocked_by_site", "stuck"] },
+            "reason": { "type": "string" },
+            "quote": { "type": ["string", "null"], "default": null, "description": "The site's own message, word for word" }
+          }
+        },
+        { "type": "null" }
+      ],
+      "default": null
+    },
     "report": {
       "type": ["object", "null"],
       "default": null,
@@ -62,6 +128,9 @@
         "completion_tokens": { "type": "integer", "default": 0 },
         "seconds": { "type": "number", "default": 0 },
         "write_requests": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "text_calls": { "type": "integer", "default": 0, "description": "LLM calls made without the screenshot" },
+        "vision_calls": { "type": "integer", "default": 0, "description": "LLM calls made with the screenshot" },
+        "escalated_because": { "type": ["string", "null"], "default": null, "description": "Why the agent started sending screenshots (vision=auto)" },
         "invented_refs": { "type": "integer", "default": 0, "description": "Actions that named a ref not in the list" },
         "repeat_warnings": { "type": "integer", "default": 0 }
       }
