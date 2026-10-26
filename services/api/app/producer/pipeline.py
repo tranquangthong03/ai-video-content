@@ -21,6 +21,7 @@ from app.producer.dedupe import MIN_SCENES, swap_scene, used_texts
 from app.producer.focus_plan import phrases_from_captions, plan_focus
 from app.producer.focus_rules import build_focus_track
 from app.producer.live_clip import live_usable, recording_from_live
+from app.producer.steps_coverage import steps_in_clip
 from app.producer.trim import trim_dead_time
 from app.recorder.flow import FlowRecorder
 from app.recorder.motion import idle_gaps
@@ -364,6 +365,9 @@ def flow_report(recorder: FlowRecorder, session: BrowserSession) -> dict[str, An
         "replayed": sum(1 for m in rec.marks if m.ok) if rec else 0,
         "replay_failed_at": rec.failed_at if rec else None,
         "skipped_steps": [m.i for m in rec.marks if m.skipped] if rec else [],
+        **steps_in_clip(
+            recorder.run, [m.i for m in rec.marks if m.ok and not m.skipped] if rec else []
+        ),
         "clip_ms": rec.content_ms if rec else 0,
         "clip_source": rec.source if rec else None,
         "llm_wait_cut_ms": rec.llm_wait_cut_ms if rec else 0,

@@ -1,0 +1,20 @@
+{
+ "r4-orangehrm": {
+  "steps_in_clip": 1.0,
+  "operation_steps": 5,
+  "operation_steps_in_clip": 5,
+  "missing_steps": []
+ },
+ "r4-squoosh": {
+  "steps_in_clip": 1.0,
+  "operation_steps": 4,
+  "operation_steps_in_clip": 4,
+  "missing_steps": []
+ },
+ "r4-todomvc": {
+  "steps_in_clip": 1.0,
+  "operation_steps": 5,
+  "operation_steps_in_clip": 5,
+  "missing_steps": []
+ }
+}

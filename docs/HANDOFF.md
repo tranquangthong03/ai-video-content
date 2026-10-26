@@ -67,12 +67,13 @@ Giao thức tương tác chung: `InteractionRequest(kind, …)` / `UserResponse(
 
 **Đã xong** (commit mới nhất trước lượt R: `485d3d0`): schema+codegen, explorer (demo_kind, locator nhiều tầng, upload, delta có trạng thái), proposal/outline, script writer + edit planner + scene writer, recorder, producer, render (desktop_focus), footage-first, web UI file-based, chọn tính năng, focus planner, đăng nhập 3 cách, Core Flow C0–C14 (router, discovery, select_flow, flow agent, storyboard, outline theo chương, quay một mạch + cắt chương, web cards, benchmark). pytest ~800 pass.
 
-**Đang làm — lượt R "Flow chắc chắn"** (đã duyệt, agent đang chạy R0→R4):
-- R0 đo độ lệch đồng hồ log/video bằng xung màu (xung không được lọt vào video cuối).
-- R1 quay trực tiếp lúc agent chạy; cắt llm_wait / retry (nhận diện theo phần tử đã resolve) / rejected; replay chỉ dự phòng.
-- R2 leo thang text → vision khi kẹt.
-- R3 give_up có phân loại (no_data, no_permission, …) → thẻ "Không khả thi", chọn luồng khác.
-- R4 nghiệm thu: OrangeHRM (xin nghỉ phép → không khả thi → "Thêm nhân viên mới", dừng trước Save, 0 request ghi), squoosh (footage ≥ 0.5, ≥ 4/5 bước), todomvc (allow).
+**Lượt R "Flow chắc chắn": đã xong** (quay trực tiếp, cắt llm_wait/retry/rejected, vision tự leo thang, luồng không khả thi, nghiệm thu R4 — commit `2729ab1`).
+
+**Lượt P0 + M1** (kế hoạch: `docs/plans/m1-flow.md`):
+- P0-a xong: pytest -n auto ổn định (838 pass, 3 lần liên tiếp). Nguyên nhân gốc: test chờ theo đồng hồ (300ms/7s/20s) trong khi máy tải nặng với 12 worker; đã đổi sang chờ theo điều kiện/đếm; thêm pytest-timeout (120s, test trình duyệt/ffmpeg 300s) và pytest-repeat.
+- P0-b xong: give_up `no_data`/`feature_missing` chỉ được chấp nhận khi có thông báo thật của trang hoặc đã thử mở menu khớp mô tả (code `give_up_has_evidence`, từ chối tối đa 2 lần rồi hạ thành `stuck`; prompt flow_agent.md rule 9). `normalize_flow` chọn start_url là trang đã khám phá gần mô tả nhất. Dữ liệu `out/r4-orangehrm` chỉ cho thấy luồng nghỉ phép bị đánh không khả thi (cùng start_url với luồng Discovery; chỉ khác là luồng người dùng cần điền form); hai luồng «Thêm nhân viên mới/Thêm ứng viên» không bị đánh dấu trong dữ liệu đã lưu — sửa dựa trên nguyên nhân giả định ở trên, test hồi quy dùng `tests/fixtures/orangehrm_flows.json`.
+- P0-c xong: `flow_report.steps_in_clip` (+ `scripts/steps_in_clip.py`); 3 video R4 đều 100% (`docs/core-flow/r4/steps_in_clip.json`).
+- Tiếp theo: M1-1 → M1-6.
 
 ## 6. Lộ trình tiếp theo
 
@@ -86,13 +87,13 @@ flowchart LR
     W --> D((Bảo vệ đồ án))
 ```
 
-- **M1** (viết lại theo cấu trúc chương; `docs/plans/m1.md` đã lỗi thời): proof bank (cấm bịa số), khung kể PAS/BAB/Demo-Proof, hook ≤12 từ 5 kiểu + 2 phương án, lời đọc nói lợi ích theo persona, CTA có offer thật, Copy Critic (5 tiêu chí ≥7), stat callout, shot theo câu thoại (≤3s không đổi hình), hook "kết quả trước" (hero frame), trước/sau bằng màn hình thật, kinetic text, chặn khung hình chết, marketing scorecard.
+- **M1** (đang làm; viết theo cấu trúc chương, kế hoạch `docs/plans/m1-flow.md`, `m1.md` đã lỗi thời): proof bank (cấm bịa số), khung kể PAS/BAB/Demo-Proof, hook ≤12 từ 5 kiểu + 2 phương án, lời đọc nói lợi ích theo persona, CTA có offer thật, Copy Critic (5 tiêu chí ≥7), stat callout, shot theo câu thoại (≤3s không đổi hình), hook "kết quả trước" (hero frame), trước/sau bằng màn hình thật, kinetic text, chặn khung hình chết, marketing scorecard.
 - **M2**: TTS Edge TTS (vi-VN-HoaiMyNeural / NamMinhNeural, WordBoundary) mặc định, ElevenLabs tùy chọn, fallback ước tính; nhạc nền từ **Pixabay Music** (6 bài, 4 mood: upbeat/energetic/corporate/calm, file `services/api/assets/music/` + `LICENSES.md`), ducking −18dB, loudnorm −14 LUFS; SFX sinh bằng code; xuất thêm bản không nhạc.
 - **Thử diện rộng**: `--auto-default`, batch 8–10 URL (excalidraw, tldraw, regex101, carbon.now.sh, coolors, squoosh, 2 SaaS EN, 2 site VN), bảng lớp lỗi → sửa 2–3 lớp lớn nhất.
 
 ## 7. Vấn đề đã biết / tồn đọng
 
-- Replay trên control tự vẽ (squoosh) mong manh → đang xử lý bằng quay trực tiếp (R1).
+- Replay trên control tự vẽ (squoosh) mong manh → đã xử lý bằng quay trực tiếp (R1); replay chỉ còn là dự phòng.
 - Nội dung marketing còn đơn giản, video **chưa có âm thanh** → M1, M2.
 - Hook/camera đôi lúc zoom quá sát (M1).
 - Luồng phụ (luồng thứ 2) chưa được dựng.
