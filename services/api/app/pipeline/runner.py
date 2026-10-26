@@ -87,6 +87,7 @@ class JobConfig:
     # film one core flow (chapters, one recording) instead of separate features; falls back to
     # the feature route when no flow can be found or run
     core_flow: bool = True
+    flow_film: str = "auto"  # auto | live | replay: how the flow is filmed (see producer.live_clip)
 
 
 @dataclass
@@ -408,7 +409,7 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
                 flow_result = run_core_flow(
                     FlowJob(
                         job_dir, cfg.url, cfg.app_home_url or cfg.url, cfg.storage_state,
-                        cfg.capture, lambda e: sign_in(e).storage_state,
+                        cfg.capture, lambda e: sign_in(e).storage_state, cfg.flow_film,
                     ),
                     proposal,
                     caller,
@@ -589,6 +590,7 @@ def run_produce_step(
                 extra_report=extra,
                 focus_caller=caller,
                 on_login=on_login,
+                flow_film=cfg.flow_film,
             )
             report_file = job_dir / "report.json"
             if report_file.is_file():  # what the browser was allowed to send while recording

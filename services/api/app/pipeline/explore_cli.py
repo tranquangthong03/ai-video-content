@@ -66,6 +66,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="the main features are behind a sign-in: ask for it right away",
     )  # fmt: skip
     p.add_argument(
+        "--film", choices=["auto", "live", "replay"], default="auto",
+        help="how a core flow is filmed: during the agent run (live), replayed, or auto",
+    )  # fmt: skip
+    p.add_argument(
         "--classic", action="store_true",
         help="the old route: pick separate features instead of one core flow",
     )  # fmt: skip
@@ -180,6 +184,7 @@ def main(argv: list[str] | None = None) -> int:
         capture=parse_capture(args.capture),
         requires_login=args.requires_login,
         core_flow=not args.classic,
+        flow_film=args.film,
         login_url=args.login_url,
     )
     frontend = ScriptedFrontend.from_file(args.answers) if args.auto else TerminalFrontend(console)

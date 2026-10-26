@@ -163,6 +163,7 @@ class JobRunner:
                 login_url=spec.get("login_url"),
                 app_home_url=spec.get("app_home_url"),
                 should_stop=cancel.is_set,
+                flow_film=str(spec.get("flow_film", "auto")),
                 core_flow=bool(spec.get("core_flow", True)),  # "core_flow": false = the old route
             )
             update_state(directory, status="running", error=None)

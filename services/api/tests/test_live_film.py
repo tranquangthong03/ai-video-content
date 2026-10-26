@@ -1,4 +1,5 @@
 import json
+import time
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -73,9 +74,16 @@ def live(browser_session: BrowserSession) -> Iterator[BrowserSession]:
 
 
 def run_live(
-    session: BrowserSession, site: str, tmp_path: Path, plan: list[dict[str, Any]]
+    session: BrowserSession,
+    site: str,
+    tmp_path: Path,
+    plan: list[dict[str, Any]],
+    delay: float = 0.0,
 ) -> tuple[FlowRun, LiveFilm, dict[str, Any]]:
-    caller, _ = make_caller(tmp_path, plan)
+    caller, llm = make_caller(tmp_path, plan)
+    if delay:  # a model that takes its time, like the real one
+        answer = llm.handler
+        llm.handler = lambda prompt: (time.sleep(delay), answer(prompt))[1]
     job = tmp_path / "job"
     flow = flow_for(site)
     film = LiveFilm(session, job, root_url=flow.start_url, seed="t")

@@ -17,6 +17,7 @@ from app.llm.json_call import JsonCaller
 from app.llm.router import get_client
 from app.pipeline.proposal_run import ProposalRunner
 from app.proposal.flow_outline import build_flow_ctx, flow_profile, outline_from_flow
+from app.recorder.live import LiveFilm
 from app.schemas.generated.flow_run import FlowRun
 from app.schemas.generated.outline import Outline
 from app.schemas.generated.page_insight import PageInsight
@@ -38,6 +39,7 @@ class FlowJob:
     storage_state: Path | None
     capture: tuple[int, int] | None
     sign_in: Callable[[LoginRequired], Path | None]  # asks the user to sign in again
+    film: str = "auto"  # replay: do not film while the agent runs (the steps are replayed later)
 
 
 @dataclass
@@ -61,6 +63,20 @@ def nav_by_url(pages: list) -> dict[str, list[str]]:  # type: ignore[type-arg]
 
 def page_summaries(insights: list[PageInsight], pages: list) -> list[PageSummary]:  # type: ignore[type-arg]
     return summarize_pages(insights, nav_by_url(pages))
+
+
+def live_film(
+    session: BrowserSession, job: FlowJob, start_url: str, capture: tuple[int, int]
+) -> LiveFilm | None:
+    """The film made while the agent works (None when the job asks for a replay instead)."""
+    if job.film == "replay":
+        return None
+    return LiveFilm(
+        session,
+        job.job_dir,
+        root_url=start_url,
+        viewport={"width": capture[0], "height": capture[1]},
+    )
 
 
 def _write_fallback(job_dir: Path, why: str) -> None:
@@ -110,6 +126,7 @@ def run_core_flow(
                     authenticated=job.storage_state is not None,
                     viewport={"width": capture[0], "height": capture[1]},
                     previous=previous, keep=keep,
+                    film=live_film(session, job, flow.start_url, capture),
                 )  # fmt: skip
                 try:
                     return agent.run()

@@ -20,6 +20,7 @@ from app.llm.json_call import JsonCaller
 from app.producer.dedupe import MIN_SCENES, swap_scene, used_texts
 from app.producer.focus_plan import phrases_from_captions, plan_focus
 from app.producer.focus_rules import build_focus_track
+from app.producer.live_clip import live_usable, recording_from_live
 from app.producer.trim import trim_dead_time
 from app.recorder.flow import FlowRecorder
 from app.recorder.motion import idle_gaps
@@ -364,6 +365,10 @@ def flow_report(recorder: FlowRecorder, session: BrowserSession) -> dict[str, An
         "replay_failed_at": rec.failed_at if rec else None,
         "skipped_steps": [m.i for m in rec.marks if m.skipped] if rec else [],
         "clip_ms": rec.content_ms if rec else 0,
+        "clip_source": rec.source if rec else None,
+        "llm_wait_cut_ms": rec.llm_wait_cut_ms if rec else 0,
+        "retry_segments_cut": rec.retry_cut if rec else 0,
+        "rejected_segments_cut": rec.rejected_cut if rec else 0,
         "notes": recorder.notes,
         "write_requests": list(session.guard.write_log),
     }
@@ -383,6 +388,7 @@ def produce(
     extra_report: dict[str, Any] | None = None,
     focus_caller: JsonCaller | None = None,
     on_login: Callable[[LoginRequired], Path] | None = None,
+    flow_film: str = "auto",
 ) -> ProduceResult:
     """Record every scene in order, fit the timeline, render, and write report.json."""
     say = progress or (lambda msg: None)
@@ -406,9 +412,17 @@ def produce(
     approved_flow = job_dir / "flow" / "flow_approved.json"
     if script.flow_id and recorder is record_scene and approved_flow.is_file():
         # a core flow is filmed in one go on one context and cut into its chapters
-        flow_recorder = FlowRecorder(
-            FlowRun.model_validate_json(approved_flow.read_text(encoding="utf-8")), job_dir
-        )
+        flow_run = FlowRun.model_validate_json(approved_flow.read_text(encoding="utf-8"))
+        live_recording = None
+        film_note = None
+        if flow_film != "replay":  # the clip made while the agent ran, unless told to replay
+            if live_usable(job_dir, flow_run):
+                live_recording = recording_from_live(job_dir, flow_run)
+            elif flow_film == "live":
+                film_note = "không có clip quay trực tiếp dùng được: quay lại bằng cách phát lại"
+        flow_recorder = FlowRecorder(flow_run, job_dir, live=live_recording)
+        if film_note:
+            flow_recorder.notes.append(film_note)
         recorder = flow_recorder
     elif isinstance(recorder, FlowRecorder):
         flow_recorder = recorder

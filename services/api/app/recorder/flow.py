@@ -74,6 +74,10 @@ class FlowRecording:
     warnings: list[str]
     sync_offset_ms: int = 0  # video clock = log clock + this (measured with the sync pulse)
     pulse_at_ms: int = 0  # log time at which the pulse was shown
+    source: str = "replay"  # live: made while the agent ran; replay: the steps done again
+    llm_wait_cut_ms: int = 0  # (live) waiting for the model that was cut out
+    retry_cut: int = 0  # (live) failed tries that were corrected and cut out
+    rejected_cut: int = 0  # (live) refused or made-up actions that were cut out
 
     @property
     def failed_at(self) -> int | None:
@@ -280,9 +284,10 @@ def pick_hero(run: FlowRun) -> int | None:
 class FlowRecorder:
     """A drop-in for record_scene: chapter scenes get their slice of the one flow recording."""
 
-    def __init__(self, run: FlowRun, job_dir: Path) -> None:
+    def __init__(self, run: FlowRun, job_dir: Path, live: FlowRecording | None = None) -> None:
         self.run = run
         self.job_dir = job_dir
+        self.live = live  # the film made while the agent ran: used instead of a replay
         self.recording: FlowRecording | None = None
         self.notes: list[str] = []
         self._windows: dict[str, tuple[int, int, bool]] = {}
@@ -309,6 +314,10 @@ class FlowRecorder:
     # --- internals ---------------------------------------------------------------------------
 
     def _record(self, session: BrowserSession, out_dir: Path, kw: dict[str, Any]) -> FlowRecording:
+        if self.recording is None and self.live is not None:
+            self.recording = self.live
+            self.notes += self.live.warnings
+            self._plan_windows(self.live)
         if self.recording is None:
             self.recording = record_flow(
                 session, self.run, out_dir, root_url=kw["root_url"], viewport=kw.get("viewport"),
