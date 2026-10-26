@@ -23,6 +23,7 @@ from app.producer.dedupe import MIN_SCENES, swap_scene, used_texts
 from app.producer.focus_plan import phrases_from_captions, plan_focus
 from app.producer.focus_rules import build_focus_track, enforce_hook_framing
 from app.producer.live_clip import live_usable, recording_from_live
+from app.producer.scorecard import build_scorecard, hook_is_close, proof_from_dict
 from app.producer.shots import max_static_ms, plan_shots
 from app.producer.steps_coverage import steps_in_clip
 from app.producer.text_cards import text_card_stats
@@ -509,6 +510,7 @@ def produce(
     elif isinstance(recorder, FlowRecorder):
         flow_recorder = recorder
     dropped: set[int] = set()
+    hook_close: bool | None = None  # is the camera close on the hook's first two seconds
     for i, scene in enumerate(script.scenes):
         s = scene.root
         timing = speech[s.id]
@@ -596,6 +598,10 @@ def produce(
         if plan is not None and plan.clip is not None:
             shots_info = shots_for_scene(entry, plan, rate, final_ms, captions)
             entry["shots"], entry["punches"] = shots_info["shots"], shots_info["punches"]
+            if s.type == "hook":
+                hook_close = hook_is_close(
+                    entry.get("focus_track", []), plan.start_offset_ms + plan.trim_start_ms, rate
+                )
         dead_left = (
             dead_ms(plan.clip, plan.start_offset_ms + plan.trim_start_ms)
             if plan is not None and plan.clip is not None
@@ -701,6 +707,17 @@ def produce(
         "flow": flow_report(flow_recorder, session) if flow_recorder else None,
         **(extra_report or {}),
     }
+    hook = next((x.root for x in final_script.scenes if x.root.type == "hook"), None)
+    report["scorecard"] = build_scorecard(
+        report,
+        hook_text=hook.on_screen_text if hook else None,
+        hook_close=hook_close,
+        said=" ".join(
+            t for x in final_script.scenes for t in (x.root.voiceover, x.root.on_screen_text) if t
+        ),
+        proof=proof_from_dict(report.get("proof_bank")),
+        critic=report.get("critic"),
+    )
     (job_dir / "report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )

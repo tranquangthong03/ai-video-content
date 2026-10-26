@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { ScorecardPanel } from "./scorecard";
 import { ErrorNote, Section, type JobCtx } from "./shared";
 
 /** Which step of the left-hand list is current: the pending question wins over state.step. */
@@ -195,6 +196,7 @@ export function VideoPanel({ ctx }: { ctx: JobCtx }) {
               <Badge tone="muted">Thực tế {seconds(report.actual_ms)}</Badge>
               {report.footage_ratio !== null && <Badge tone="success">Cảnh quay thật {Math.round(report.footage_ratio * 100)}%</Badge>}
             </div>
+            {report.scorecard && <ScorecardPanel card={report.scorecard} />}
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left text-sm">
                 <thead className="bg-muted text-xs text-muted-foreground">

@@ -187,6 +187,7 @@ def report_summary(directory: Path) -> dict[str, Any] | None:
         "actual_ms": report.get("actual_ms"),
         "footage_ratio": report.get("footage_ratio"),
         "idle_ok": report.get("idle_ok"),
+        "scorecard": report.get("scorecard"),
         "recommended_duration_s": report.get("recommended_duration_s"),
         "features": report.get("features", []),
         "warnings": [*report.get("script_warnings", []), *report.get("warnings", [])],

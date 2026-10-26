@@ -558,6 +558,8 @@ def run_produce_step(
         "content_budget_formula": script_report.get("content_budget_formula"),
         "recommended_duration_s": script_report.get("recommended_duration_s"),
         "footage_ratio_estimated": script_report.get("footage_ratio"),
+        "critic": script_report.get("critic"),
+        "proof_bank": script_report.get("proof_bank"),
     }
     login_report = job_dir / "login_report.json"
     if login_report.is_file():  # which hosts the sign-in posted to (no bodies, no secrets)

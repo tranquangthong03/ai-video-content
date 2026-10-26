@@ -109,6 +109,25 @@ export interface ReportSummary {
   warnings: string[];
   scenes: ReportScene[];
   features: { id: string; name: string }[];
+  scorecard?: Scorecard | null;
+}
+
+export interface ScoreLine {
+  id: string;
+  label: string;
+  target: string;
+  value: string | number | null;
+  /** pass | fail | na (nothing to judge) | info (shown, not counted) */
+  status: "pass" | "fail" | "na" | "info";
+  note: string;
+}
+
+export interface Scorecard {
+  lines: ScoreLine[];
+  passed: number;
+  failed: number;
+  total: number;
+  all_passed: boolean;
 }
 
 export interface JobDetail {
