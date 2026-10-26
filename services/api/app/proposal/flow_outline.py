@@ -5,6 +5,7 @@ chose and approved the flow."""
 from typing import Any
 
 from app.core.flow_ctx import ChapterCtx, FlowCtx
+from app.core.hero import choose_hero
 from app.schemas.generated.core_flow import CoreFlow
 from app.schemas.generated.flow_run import FlowRun
 from app.schemas.generated.outline import Beat, Outline
@@ -53,7 +54,9 @@ def plain_visual(url: str) -> dict[str, Any]:
     return {"mode": "recording", "page": url, "actions": [{"do": "goto", "url": url}]}
 
 
-def build_flow_ctx(flow: CoreFlow, run: FlowRun, home_url: str) -> FlowCtx:
+def build_flow_ctx(
+    flow: CoreFlow, run: FlowRun, home_url: str, inventory: list[dict[str, Any]] | None = None
+) -> FlowCtx:
     steps_by = chapter_steps(run)
     chapters = [
         ChapterCtx(
@@ -61,6 +64,7 @@ def build_flow_ctx(flow: CoreFlow, run: FlowRun, home_url: str) -> FlowCtx:
             title=c.title,
             notes=[s.note for s in steps_by[c.id] if s.note and s.action.do not in NO_PICTURE],
             steps=len(steps_by[c.id]),
+            value_line=c.value_line,
         )
         for c in run.chapters
     ]
@@ -71,7 +75,9 @@ def build_flow_ctx(flow: CoreFlow, run: FlowRun, home_url: str) -> FlowCtx:
     return FlowCtx(
         flow_id=flow.id, title=flow.title, persona=flow.persona, goal=flow.goal,
         success_signal=flow.success_signal, value=flow.value, needs_submit=flow.needs_submit,
-        status=run.status, chapters=chapters, visuals=visuals,
+        status=run.status, submit_policy=run.submit_policy,
+        hero_texts=list(hero.texts) if (hero := choose_hero(inventory or [])) else [],
+        chapters=chapters, visuals=visuals,
         hook_visual=plain_visual(flow.start_url),
         cta_visual=plain_visual(home_url or flow.start_url),
     )  # fmt: skip

@@ -13,7 +13,7 @@ class SetOp(BaseModel):
     )
     op: Literal['set']
     scene_id: str
-    field: Literal['voiceover', 'on_screen_text', 'layout', 'feature']
+    field: Literal['voiceover', 'on_screen_text', 'layout', 'feature', 'hook_option']
     value: str
 
 

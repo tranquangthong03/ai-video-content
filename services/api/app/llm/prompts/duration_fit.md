@@ -13,6 +13,7 @@ Bạn là biên tập viên kịch bản short video. Kịch bản hiện tại 
 {# changed: forced duration branch added to rule 2 #}2. Nếu cần KÉO DÀI: {% if forced %}video dài hơn mức sản phẩm có thể lấp bằng cảnh quay thật, nên được mở rộng voiceover của MỌI scene: feature_demo tối đa 35 từ, hook và cta tối đa 20 từ{% else %}chỉ mở rộng voiceover các scene feature_demo, mỗi scene tối đa 30 từ{% endif %}; nội dung thêm phải mô tả thao tác người xem đang thấy hoặc lợi ích cụ thể của tính năng đó, lấy từ product. Không bịa.
 3. Nếu cần RÚT NGẮN: rút gọn bắt đầu từ scene ít quan trọng nhất (importance thấp nhất trong product), giữ hook ≥ 6 từ và cta ≥ 6 từ; không xóa scene.
 4. Giữ giọng văn nói tự nhiên, mạch nối giữa các scene.
+{# changed: no new numbers or empty phrases when words are added #}5. Không thêm con số mới nào (chỉ giữ các con số đã có trong kịch bản) và không dùng: giải pháp toàn diện, tối ưu hóa trải nghiệm, nâng tầm, đột phá, hoàn hảo. Hook không quá 12 từ.
 
 ## Đầu ra
 Chỉ trả về json:

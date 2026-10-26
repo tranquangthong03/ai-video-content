@@ -12,12 +12,13 @@ from typing import Any
 from rich.markup import escape
 
 from app.core.budget import budget_for, oversize_warning
-from app.core.flow_ctx import FlowCtx
+from app.core.flow_ctx import FlowCtx, live_inventory
 from app.core.interaction import check_response, make_request
 from app.llm.json_call import JsonCaller, LLMCallError
 from app.pipeline.frontend import Frontend
 from app.pipeline.proposal_run import Cancelled
 from app.proposal import beat_mapper
+from app.schemas.generated.flow_run import FlowRun
 from app.schemas.generated.interaction import InteractionRequest
 from app.schemas.generated.outline import Outline
 from app.schemas.generated.product_profile import ProductProfile
@@ -29,6 +30,7 @@ from app.script.edit import EditOutcome, apply_edit, apply_global
 from app.script.fit_duration import FitReport, fit_duration
 from app.script.footage import SceneFacts, footage_ratio, min_ratio
 from app.script.lite import LiteContext, load_page_index
+from app.script.proof import build_proof_bank
 from app.script.theme import ThemeResult
 from app.script.versions import ScriptStore
 from app.script.view import one_liners, render_script
@@ -144,6 +146,28 @@ class ScriptRunner:
         self.report["warnings"] += mapped.warnings
         return mapped.outline
 
+    def _load_proof(self, ctx: WriterContext) -> None:
+        """The facts the words may lean on: confirmed profile, explored pages, filmed frames."""
+        confirmed = self.dir / "confirmed_profile.json"
+        profile = (
+            ProductProfile.model_validate_json(confirmed.read_text(encoding="utf-8"))
+            if confirmed.is_file()
+            else self.profile
+        )
+        pages = [
+            json.loads(f.read_text(encoding="utf-8"))
+            for f in sorted((self.dir / "explore" / "pages").glob("*.json"))
+        ]
+        approved = self.dir / "flow" / "flow_approved.json"
+        inventory: list[dict[str, Any]] = []
+        if approved.is_file():
+            inventory = live_inventory(
+                self.dir, FlowRun.model_validate_json(approved.read_text(encoding="utf-8"))
+            )
+        ctx.inventory = inventory
+        ctx.proof = build_proof_bank(profile, pages, inventory)
+        self.report["proof_bank"] = ctx.proof.to_dict()
+
     def prepare(self) -> WriterContext:
         theme = self._theme()
         outline = self.outline if self.flow else self._link_beats()
@@ -156,6 +180,7 @@ class ScriptRunner:
         )
         self.ctx.capture = self.capture
         self.ctx.flow = self.flow
+        self._load_proof(self.ctx)
         if self.flow is None:
             self.ctx.lite = LiteContext(
                 self.profile, load_page_index(self.dir / "explore"), self.url

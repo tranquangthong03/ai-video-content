@@ -183,6 +183,22 @@ def build_proof_bank(
     return bank
 
 
+def proof_used(text: str, proof: ProofBank) -> bool:
+    """Does the text lean on the proof bank: a sourced number, an offer, or a phrase of a quote?"""
+    if proof.is_empty:
+        return True  # nothing to lean on
+    folded = fold(text)
+    if any(v in {n.value for n in proof.numbers} for v, *_ in numbers_in(text)):
+        return True
+    if any(fold(o.label) in folded for o in proof.offers):
+        return True
+    for quote in proof.quotes:
+        words = fold(quote).split()
+        if any(" ".join(words[i : i + 4]) in folded for i in range(max(1, len(words) - 3))):
+            return True
+    return False
+
+
 def supported_values(proof: ProofBank, inventory: Iterable[dict[str, Any]] = ()) -> set[str]:
     values = {n.value for n in proof.numbers}
     for text in frame_texts(inventory):

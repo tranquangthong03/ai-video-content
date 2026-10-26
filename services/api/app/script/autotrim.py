@@ -26,7 +26,7 @@ def trim_scene(s, label: str, max_words: int):  # type: ignore[no-untyped-def]
             changes[field] = new
             notes.append(note(f"{label} {field}", old, new))
 
-    cut_words("voiceover", max_words)
+    cut_words("voiceover", min(max_words, cat.HOOK_MAX_WORDS) if s.type == "hook" else max_words)
     cut_words("on_screen_text", cat.ON_SCREEN_MAX_WORDS)
     if s.type == "before_after":
         cut_words("before_text", cat.BEFORE_AFTER_MAX_WORDS)

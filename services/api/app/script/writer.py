@@ -10,6 +10,7 @@ twice, with the list of what is wrong.
 import json
 from dataclasses import dataclass, field
 from typing import Any, Literal
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
@@ -23,10 +24,18 @@ from app.schemas.generated.product_profile import Feature, ProductProfile
 from app.schemas.generated.script import Script
 from app.schemas.generated.theme import Theme
 from app.script import catalog as cat
+from app.script import narrative as nar
 from app.script.autotrim import trim_draft
 from app.script.footage import SceneFacts, structure_issues
 from app.script.lite import MIN_WORDS as MIN_LITE_WORDS
 from app.script.lite import LiteContext
+from app.script.proof import (
+    ProofBank,
+    numbers_in,
+    proof_used,
+    strip_numbers,
+    unsupported_numbers,
+)
 from app.script.signature import visual_signature
 from app.script.tour import apply_tour, is_landing_only
 from app.script.validate import validate_script
@@ -34,6 +43,19 @@ from app.script.visuals import visual_for_scene
 
 MAX_REPAIRS = 2
 SceneType = Literal["hook", "feature_demo", "before_after", "cta"]
+
+
+class DraftStat(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    value: str = ""
+    label: str = ""
+
+
+class DraftHook(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    kind: str = ""
+    voiceover: str = ""
+    on_screen_text: str | None = None
 
 
 class DraftScene(BaseModel):
@@ -51,6 +73,7 @@ class DraftScene(BaseModel):
     key_point: str | None = None
     icon: str | None = None
     show_setup: bool | None = None
+    stat: DraftStat | None = None
 
 
 class DraftScript(BaseModel):
@@ -59,6 +82,7 @@ class DraftScript(BaseModel):
     badge: str | None = None
     headline: str = ""
     headline_highlight: str | None = None
+    hook_options: list[DraftHook] = []
     scenes: list[DraftScene]
 
 
@@ -88,6 +112,31 @@ class WriterContext:
     # the video is longer than the product can fill with real footage and the user insisted
     forced: bool = False
     capture: tuple[int, int] | None = None  # recording size; None = the schema default (1440x900)
+    proof: ProofBank | None = None  # real numbers / quotes / offers the words may lean on
+    inventory: list[dict[str, Any]] = field(default_factory=list)  # frames of the filmed flow
+
+    @property
+    def framework(self) -> str | None:
+        """Flow video: pain, journey, result. One-page tool: before, after, bridge."""
+        if self.flow is not None:
+            return "pain_journey_result"
+        return "before_after_bridge" if self.profile.site_type == "tool" else None
+
+    def given_numbers(self) -> list[str]:
+        """Numbers the brief itself contains (product name, approved flow, duration, counts)."""
+        texts = [self.profile.product_name, *self.outline.title.split()]
+        flow = self.flow
+        counts = [str(self.outline.duration_s)]
+        if flow is not None:
+            texts += [flow.title, flow.goal, flow.success_signal, flow.value, *flow.hero_texts]
+            for c in flow.chapters:
+                texts += [c.title, c.value_line or "", *c.notes]
+            counts += [str(len(flow.chapters)), str(sum(c.steps for c in flow.chapters))]
+        return counts + [v for t in texts for v, *_ in numbers_in(t)]
+
+    @property
+    def home_domain(self) -> str:
+        return (urlparse(self.home_url).hostname or "").removeprefix("www.")
 
     @property
     def demo_max_words(self) -> int:
@@ -156,6 +205,16 @@ def build_prompt(ctx: WriterContext) -> str:
         duration_s=outline.duration_s,
         target_words=target_words(outline.duration_s, len(outline.beats)),
         flow_json=ctx.flow.prompt_json() if ctx.flow else "",
+        proof_json=json.dumps(ctx.proof.to_dict(), ensure_ascii=False, indent=1)
+        if ctx.proof and not ctx.proof.is_empty
+        else "",
+        framework=ctx.framework or "",
+        product_name=ctx.profile.product_name,
+        home_domain=ctx.home_domain,
+        forbidden_phrases=", ".join(cat.FORBIDDEN_PHRASES),
+        hook_kinds=", ".join(cat.HOOK_KINDS),
+        hook_max_words=cat.HOOK_MAX_WORDS,
+        on_screen_max_words=cat.ON_SCREEN_MAX_WORDS,
     )
     if ctx.notes:  # appended after the template so the template itself stays as agreed
         listed = "\n".join(f"- {n}" for n in ctx.notes)
@@ -191,6 +250,18 @@ def check_scene(
         )
     if cat.word_count(s.on_screen_text) > cat.ON_SCREEN_MAX_WORDS:
         errors.append(f"{label}: on_screen_text quá {cat.ON_SCREEN_MAX_WORDS} từ")
+    for field_name, text in nar.scene_texts(s).items():
+        if hits := nar.forbidden_in(text):
+            errors.append(f"{label}: {field_name} dùng cụm sáo rỗng «{hits[0]}», hãy nói cụ thể")
+    if s.stat and (
+        not s.stat.value.strip()
+        or not s.stat.label.strip()
+        or len(s.stat.value) > cat.STAT_VALUE_MAX
+        or len(s.stat.label) > cat.STAT_LABEL_MAX
+    ):
+        errors.append(
+            f"{label}: stat cần value ≤ {cat.STAT_VALUE_MAX} và label ≤ {cat.STAT_LABEL_MAX} ký tự"
+        )
     if not s.key_point or not s.key_point.strip():
         errors.append(f"{label}: thiếu key_point")
     elif len(s.key_point) > cat.KEY_POINT_MAX:
@@ -243,6 +314,7 @@ def check_draft(draft: DraftScript, ctx: WriterContext, *, strict_min: bool = Tr
         errors.append("scene đầu phải là hook")
     if scenes and scenes[-1].type != "cta":
         errors.append("scene cuối phải là cta")
+    errors += narrative_errors(draft, ctx)
     seen: dict[str, str] = {}
     for i, scene in enumerate(scenes):
         label = f"scene {i + 1}"
@@ -265,6 +337,80 @@ def check_draft(draft: DraftScript, ctx: WriterContext, *, strict_min: bool = Tr
                 errors.append(f"{label}: key_point trùng với {seen[key]}")
             seen[key] = label
     return errors
+
+
+def narrative_errors(draft: DraftScript, ctx: WriterContext) -> list[str]:
+    """Hook, hook options, CTA and headline rules that are checked by code."""
+    errors: list[str] = []
+    name = ctx.profile.product_name
+    if hits := nar.forbidden_in(draft.headline):
+        errors.append(f"headline dùng cụm sáo rỗng «{hits[0]}»")
+    errors += nar.hook_option_issues(
+        draft.hook_options,
+        name,
+        has_numbers=bool(ctx.proof and ctx.proof.numbers),
+        required=ctx.flow is not None,
+    )
+    if draft.scenes and draft.scenes[0].type == "hook":
+        first = draft.scenes[0]
+        errors += nar.hook_line_issues("scene 1", first.voiceover, first.on_screen_text, name)
+    for i, scene in enumerate(draft.scenes, start=1):
+        if scene.type == "cta" and any(
+            nar.reads_a_url(t) for t in (scene.voiceover, scene.on_screen_text)
+        ):
+            errors.append(f"scene {i}: cta không đọc URL; nói tên miền ngắn ({ctx.home_domain})")
+    return errors
+
+
+def draft_numbers(draft: DraftScript, ctx: WriterContext) -> dict[str, list[str]]:
+    """Unsourced numbers per place ("scene 2 voiceover" ...). Empty when all have a source."""
+    proof = ctx.proof
+    if proof is None:
+        return {}
+    given = ctx.given_numbers()
+    found: dict[str, list[str]] = {}
+
+    def look(where: str, text: str) -> None:
+        bad = unsupported_numbers(text, proof, ctx.inventory, given)
+        if bad:
+            found[where] = bad
+
+    look("headline", draft.headline)
+    for n, option in enumerate(draft.hook_options, start=1):
+        look(f"hook_options[{n}]", f"{option.voiceover} {option.on_screen_text or ''}")
+    for n, scene in enumerate(draft.scenes, start=1):
+        for field_name, text in nar.scene_texts(scene, nar.CLAIM_FIELDS).items():
+            look(f"scene {n} {field_name}", text)
+    return found
+
+
+def number_errors(found: dict[str, list[str]]) -> list[str]:
+    return [
+        f"{where}: con số «{'», «'.join(bad)}» không có trong proof_bank/hình quay — bỏ hoặc "
+        "thay bằng con số có nguồn"
+        for where, bad in found.items()
+    ]
+
+
+def strip_draft_numbers(draft: DraftScript, found: dict[str, list[str]]) -> DraftScript:
+    """Last resort: remove the numbers nobody can source (the duration fit runs afterwards)."""
+    data = draft.model_copy(deep=True)
+
+    def fix(where: str, text: str) -> str:
+        return strip_numbers(text, found[where]) if where in found else text
+
+    data.headline = fix("headline", data.headline)
+    for n, option in enumerate(data.hook_options, start=1):
+        option.voiceover = fix(f"hook_options[{n}]", option.voiceover)
+        option.on_screen_text = fix(f"hook_options[{n}]", option.on_screen_text or "") or None
+    for n, scene in enumerate(data.scenes, start=1):
+        for name in ("voiceover", "on_screen_text"):
+            value = getattr(scene, name)
+            if value:
+                setattr(scene, name, fix(f"scene {n} {name}", value) or None)
+        if scene.stat and f"scene {n} stat" in found:
+            scene.stat = None  # a callout without its number is meaningless
+    return data
 
 
 def scene_facts(draft: DraftScript, ctx: WriterContext) -> list[SceneFacts]:
@@ -300,7 +446,14 @@ def build_scenes(
 
 def soft_issues(draft: DraftScript, ctx: WriterContext) -> list[str]:
     """Quality rules (footage ratio, scene mix): asked to fix twice, then only warned about."""
-    return structure_issues(scene_facts(draft, ctx), ctx.outline.duration_s)
+    issues = structure_issues(scene_facts(draft, ctx), ctx.outline.duration_s)
+    if ctx.flow is not None and ctx.proof is not None and not ctx.proof.is_empty:
+        said = " ".join(t for s in draft.scenes for t in nar.scene_texts(s).values())
+        if not proof_used(said, ctx.proof):
+            issues.append(
+                "chưa dùng bằng chứng thật (số liệu, ưu đãi hoặc câu trích) từ proof_bank"
+            )
+    return issues
 
 
 # --- building -------------------------------------------------------------------------------------
@@ -353,6 +506,8 @@ def scene_dict(
         "icon": s.icon,
         "visual": visual if flow_visual else visual.visual,
     }
+    if s.stat and s.stat.value.strip():
+        out["stat"] = {"value": s.stat.value.strip(), "label": s.stat.label.strip()}
     if s.type == "feature_demo":
         out["feature"] = s.feature
         if ctx.flow is not None and s.feature in ctx.flow.visuals:
@@ -381,6 +536,15 @@ def build_script(draft: DraftScript, ctx: WriterContext) -> tuple[Script, list[s
     }
     if ctx.flow is not None:
         data["flow_id"] = ctx.flow.flow_id
+    data["framework"] = ctx.framework
+    data["hook_options"] = [
+        {"kind": o.kind, "voiceover": o.voiceover.strip(), "on_screen_text": o.on_screen_text}
+        for o in draft.hook_options
+    ]
+    if data["hook_options"] and scenes and scenes[0]["type"] == "hook":
+        first = data["hook_options"][0]  # the hook scene shows the default (first) option
+        scenes[0]["voiceover"] = first["voiceover"]
+        scenes[0]["on_screen_text"] = first["on_screen_text"]
     if ctx.capture is not None:
         data["capture"] = {"viewport": "desktop", "width": ctx.capture[0], "height": ctx.capture[1]}
     try:
@@ -424,9 +588,17 @@ def write_script(caller: JsonCaller, ctx: WriterContext) -> WriterResult:
     history: list[list[str]] = []
     output: WriterOutput | None = None
     best: tuple[WriterOutput, Script, list[str], list[str], int] | None = None
+    numbers_asked = False
+    stripped: list[str] = []
     for attempt in range(1, MAX_REPAIRS + 2):
         output = caller.call("script", prompt, WriterOutput)
-        errors = check_draft(output.script, ctx)
+        found = draft_numbers(output.script, ctx)
+        if found and numbers_asked:  # asked once already: the code removes what has no source
+            output.script = strip_draft_numbers(output.script, found)
+            stripped += [f"auto_stripped: {w} «{'», «'.join(b)}»" for w, b in found.items()]
+            found = {}
+        errors = check_draft(output.script, ctx) + number_errors(found)
+        numbers_asked = numbers_asked or bool(found)
         script: Script | None = None
         warnings: list[str] = []
         if not errors:
@@ -440,7 +612,7 @@ def write_script(caller: JsonCaller, ctx: WriterContext) -> WriterResult:
             return WriterResult(
                 script,
                 summary_for(script, output.summary),
-                [*output.warnings, *warnings],
+                [*output.warnings, *warnings, *stripped],
                 attempt,
                 history,
             )
@@ -452,12 +624,16 @@ def write_script(caller: JsonCaller, ctx: WriterContext) -> WriterResult:
         return WriterResult(
             script,
             summary_for(script, out.summary),
-            [*out.warnings, *warnings, *[f"chưa đạt: {s}" for s in soft]],
+            [*out.warnings, *warnings, *stripped, *[f"chưa đạt: {s}" for s in soft]],
             attempt,
             history,
         )
     # the repairs are used up: formal limits are fixed by code, only structure can still fail
     assert output is not None
+    found = draft_numbers(output.script, ctx)
+    if found:
+        output.script = strip_draft_numbers(output.script, found)
+        stripped += [f"auto_stripped: {w} «{'», «'.join(b)}»" for w, b in found.items()]
     fixed, trims = trim_draft(output.script, ctx)
     errors = check_draft(fixed, ctx, strict_min=False)
     if not errors:
@@ -469,7 +645,7 @@ def write_script(caller: JsonCaller, ctx: WriterContext) -> WriterResult:
             return WriterResult(
                 script,
                 summary_for(script, output.summary),
-                [*output.warnings, *warnings, *trims],
+                [*output.warnings, *warnings, *trims, *stripped],
                 MAX_REPAIRS + 1,
                 history,
             )

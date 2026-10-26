@@ -13,7 +13,14 @@ DEMOABLE = ("interaction", "navigation", "showcase")  # demo_kind values usable 
 BADGE_MAX = 24
 HEADLINE_MAX = 40
 KEY_POINT_MAX = 60
-ON_SCREEN_MAX_WORDS = 6
+ON_SCREEN_MAX_WORDS = 5
+HOOK_MAX_WORDS = 12
+HOOK_KINDS = ("pain_question", "result_first", "shocking_number", "counterintuitive",
+              "you_are_doing_it_wrong")  # fmt: skip
+# empty marketing phrases the writer may not use (compared without accents, lower case)
+FORBIDDEN_PHRASES = ("giải pháp toàn diện", "tối ưu hóa trải nghiệm", "nâng tầm", "đột phá",
+                     "hoàn hảo")  # fmt: skip
+STAT_VALUE_MAX, STAT_LABEL_MAX = 12, 30
 BEFORE_AFTER_MAX_WORDS = 6
 VOICEOVER_MIN_WORDS = 8
 VOICEOVER_MAX_WORDS = 30
@@ -41,7 +48,7 @@ ICONS: tuple[str, ...] = _icons()
 # fields the writer sets itself; the rest of FIELDS_BY_TYPE is filled by code (visual, duration_ms)
 WRITER_FIELDS = (
     "id", "type", "layout", "feature", "before_text", "after_text", "voiceover",
-    "on_screen_text", "key_point", "icon",
+    "on_screen_text", "key_point", "icon", "stat",
 )  # fmt: skip
 
 

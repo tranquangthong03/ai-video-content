@@ -129,7 +129,9 @@ def apply_voiceovers(
 
 
 def _cap(scene_type: str, forced: bool) -> int:
-    """Most voiceover words a fit may give a scene."""
+    """Most voiceover words a fit may give a scene (a hook never goes past its 12-word limit)."""
+    if scene_type == "hook":
+        return cat.HOOK_MAX_WORDS
     if not forced:
         return cat.DEMO_VOICEOVER_MAX_WORDS
     if scene_type == "feature_demo":

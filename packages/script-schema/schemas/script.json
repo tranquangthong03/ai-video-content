@@ -25,6 +25,27 @@
     "badge": { "type": ["string", "null"], "maxLength": 24, "default": null },
     "headline": { "type": "string", "minLength": 1, "maxLength": 40 },
     "headline_highlight": { "type": ["string", "null"], "default": null },
+    "framework": {
+      "enum": ["pain_journey_result", "before_after_bridge", null],
+      "default": null,
+      "description": "The narrative frame the script follows (PAS shortened for a flow video; before/after/bridge for a one-page tool)"
+    },
+    "hook_options": {
+      "type": "array",
+      "maxItems": 2,
+      "default": [],
+      "description": "Two hooks of different kinds; the hook scene shows the chosen one",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "voiceover"],
+        "properties": {
+          "kind": { "enum": ["pain_question", "result_first", "shocking_number", "counterintuitive", "you_are_doing_it_wrong"] },
+          "voiceover": { "type": "string", "minLength": 1 },
+          "on_screen_text": { "type": ["string", "null"], "default": null }
+        }
+      }
+    },
     "theme": { "$ref": "theme.json" },
     "scenes": { "type": "array", "items": { "$ref": "scene.json" }, "minItems": 3, "maxItems": 6 }
   }

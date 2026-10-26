@@ -11,7 +11,7 @@ from pathlib import Path
 from app.browser.auth_detect import LoginRequired
 from app.browser.session import BrowserSession
 from app.core.flow_choice import FlowSelection
-from app.core.flow_ctx import FlowCtx
+from app.core.flow_ctx import FlowCtx, live_inventory
 from app.flows.agent import FlowAgent
 from app.flows.discovery import PageSummary, summarize_pages
 from app.llm.json_call import JsonCaller
@@ -184,7 +184,7 @@ def run_core_flow(
         return None
     first.append(initial)
     approved = proposal.review_storyboard(flow, run_flow)
-    ctx = build_flow_ctx(flow, approved, job.home_url)
+    ctx = build_flow_ctx(flow, approved, job.home_url, live_inventory(job.job_dir, approved))
     ctx.save(job.job_dir)
     outline = outline_from_flow(flow, approved, ctx)
     (job.job_dir / "outline_approved.json").write_text(

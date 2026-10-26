@@ -41,6 +41,8 @@ SAMPLE_VARS = {
     "script_writer": dict(
         product_profile_json="{}", outline_json="{}", theme_json="{}", scene_catalog_json="{}",
         allowed_icons="check, globe", duration_s=45, target_words=110, flow_json="",
+        proof_json="", framework="", product_name="P", home_domain="x.test",
+        forbidden_phrases="a", hook_kinds="b", hook_max_words=12, on_screen_max_words=5,
     ),
     "duration_fit": dict(
         direction="ngắn hơn", target_words=110, current_words=80, script_json="{}",
@@ -51,6 +53,7 @@ SAMPLE_VARS = {
         current_scene_json_or_null="null", prev_scene_summary_or_none="none",
         next_scene_summary_or_none="none", goal="awareness", duration_s=30, headline="h",
         product_profile_summary="s", forced=False, scene_catalog_json="{}", allowed_icons="check",
+        proof_json="",
     ),
     "flow_agent": dict(
         title="t", persona="p", goal="g", expected_steps="a; b", success_signal="s",

@@ -32,7 +32,11 @@ def make_script(
 ) -> tuple[Script, WriterContext]:
     ctx = ctx_for(make_outline(duration), setup={"filter": 2})
     out = good_output()
-    for scene, n in zip(out["script"]["scenes"], voice_words, strict=True):
+    counts = list(voice_words)
+    extra, counts[0] = max(0, counts[0] - 12), min(counts[0], 12)  # a hook is at most 12 words
+    for i in range(extra):  # the rest goes to the demo scenes, round robin
+        counts[1 + i % 3] += 1
+    for scene, n in zip(out["script"]["scenes"], counts, strict=True):
         scene["voiceover"] = words(n, "w")
     caller, _ = caller_for(out, tmp_path=tmp_path)
     return write_script(caller, ctx).script, ctx

@@ -5,6 +5,7 @@ are sent. For a rewrite, code keeps every field that was not asked for; the visu
 is always filled by code from the profile (see visuals.py).
 """
 
+import json
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
@@ -16,13 +17,17 @@ from app.llm.prompts import render
 from app.schemas.generated.scene import Scene
 from app.schemas.generated.script import Script
 from app.script import catalog as cat
+from app.script import narrative as nar
 from app.script.autotrim import trim_scene
+from app.script.proof import strip_numbers, unsupported_numbers
 from app.script.writer import (
     MAX_REPAIRS,
     DraftScene,
+    DraftStat,
     WriterContext,
     WriterError,
     check_scene,
+    number_errors,
     scene_dict,
 )
 
@@ -66,6 +71,7 @@ def draft_of(scene: Scene, show_setup: bool = False) -> DraftScene:
         key_point=s.key_point,
         icon=s.icon,
         show_setup=s.visual.show_setup if s.type == "feature_demo" else None,
+        stat=DraftStat(value=s.stat.value, label=s.stat.label) if s.stat else None,
     )
 
 
@@ -102,7 +108,31 @@ def _prompt(
         product_profile_summary=product_summary(ctx),
         scene_catalog_json=cat.scene_catalog_json(),
         allowed_icons=", ".join(cat.ICONS),
+        proof_json=json.dumps(ctx.proof.to_dict(), ensure_ascii=False, indent=1)
+        if ctx.proof and not ctx.proof.is_empty
+        else "",
     )
+
+
+def scene_errors(draft: DraftScene, ctx: WriterContext, **kw: Any) -> list[str]:
+    """check_scene plus the marketing rules: hook line and numbers with a source."""
+    errors = check_scene(draft, "scene", ctx.features, ctx.demo_max_words, **kw)
+    if draft.type == "hook":
+        errors += nar.hook_line_issues(
+            "scene", draft.voiceover, draft.on_screen_text, ctx.profile.product_name
+        )
+    return errors + number_errors(scene_numbers(draft, ctx))
+
+
+def scene_numbers(draft: DraftScene, ctx: WriterContext) -> dict[str, list[str]]:
+    if ctx.proof is None:
+        return {}
+    given = ctx.given_numbers()
+    found = {}
+    for name, text in nar.scene_texts(draft, nar.CLAIM_FIELDS).items():
+        if bad := unsupported_numbers(text, ctx.proof, ctx.inventory, given):
+            found[f"scene {name}"] = bad
+    return found
 
 
 def _merge_rewrite(current: DraftScene, written: DraftScene, fields: list[str]) -> DraftScene:
@@ -170,7 +200,7 @@ def write_scene(
             draft = _merge_rewrite(current, written, fields)
         else:
             draft = written.model_copy(update={"type": kind, "id": new_id})
-        errors = check_scene(draft, "scene", ctx.features, ctx.demo_max_words)
+        errors = scene_errors(draft, ctx)
         if not errors:
             warnings: list[str] = []
             data: dict[str, Any] = scene_dict(draft, new_id, ctx, warnings)
@@ -183,7 +213,15 @@ def write_scene(
         )
     # the repairs are used up: formal limits are fixed by code, structure errors still fail
     fixed, trims = trim_scene(draft, "scene", ctx.demo_max_words)
-    errors = check_scene(fixed, "scene", ctx.features, ctx.demo_max_words, strict_min=False)
+    for name, bad in scene_numbers(fixed, ctx).items():  # nobody can source them: remove
+        field_name = name.removeprefix("scene ")
+        if field_name == "stat":
+            fixed = fixed.model_copy(update={"stat": None})
+        else:
+            text = strip_numbers(getattr(fixed, field_name), bad)
+            fixed = fixed.model_copy(update={field_name: text or None})
+        trims.append(f"auto_stripped: {name} «{'», «'.join(bad)}»")
+    errors = scene_errors(fixed, ctx, strict_min=False)
     if errors:
         raise WriterError(errors)
     warnings = list(trims)

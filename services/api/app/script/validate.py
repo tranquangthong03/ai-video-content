@@ -19,6 +19,14 @@ def validate_script(script: Script) -> list[str]:
     return errors
 
 
+def hook_choice(script: Script, value: str) -> int | None:
+    """Index of the hook option named by its kind or by its number (1 or 2), else None."""
+    options = script.hook_options
+    if value.strip().isdigit() and 1 <= int(value) <= len(options):
+        return int(value) - 1
+    return next((i for i, o in enumerate(options) if o.kind == value.strip()), None)
+
+
 def validate_edit_op(op: EditOp, script: Script) -> list[str]:
     """Check that an EditOp refers to existing scenes and keeps layouts valid for the scene type."""
     errors: list[str] = []
@@ -30,7 +38,12 @@ def validate_edit_op(op: EditOp, script: Script) -> list[str]:
             errors.append(f"{inner.op}: unknown {attr} '{ref}'")
     if isinstance(inner, SetOp) and inner.scene_id in scenes:
         scene = scenes[inner.scene_id]
-        if inner.field not in FIELDS_BY_TYPE[scene.type]:
+        if inner.field == "hook_option":
+            if scene.type != "hook":
+                errors.append(f"set: hook_option chỉ dùng cho scene hook, không phải {scene.id}")
+            elif hook_choice(script, inner.value) is None:
+                errors.append(f"set: không có phương án hook «{inner.value}»")
+        elif inner.field not in FIELDS_BY_TYPE[scene.type]:
             errors.append(
                 f"set: field '{inner.field}' does not exist on scene {scene.id} "
                 f"(type '{scene.type}')"

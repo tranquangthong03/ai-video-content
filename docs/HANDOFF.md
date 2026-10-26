@@ -73,7 +73,9 @@ Giao thức tương tác chung: `InteractionRequest(kind, …)` / `UserResponse(
 - P0-a xong: pytest -n auto ổn định (838 pass, 3 lần liên tiếp). Nguyên nhân gốc: test chờ theo đồng hồ (300ms/7s/20s) trong khi máy tải nặng với 12 worker; đã đổi sang chờ theo điều kiện/đếm; thêm pytest-timeout (120s, test trình duyệt/ffmpeg 300s) và pytest-repeat.
 - P0-b xong: give_up `no_data`/`feature_missing` chỉ được chấp nhận khi có thông báo thật của trang hoặc đã thử mở menu khớp mô tả (code `give_up_has_evidence`, từ chối tối đa 2 lần rồi hạ thành `stuck`; prompt flow_agent.md rule 9). `normalize_flow` chọn start_url là trang đã khám phá gần mô tả nhất. Dữ liệu `out/r4-orangehrm` chỉ cho thấy luồng nghỉ phép bị đánh không khả thi (cùng start_url với luồng Discovery; chỉ khác là luồng người dùng cần điền form); hai luồng «Thêm nhân viên mới/Thêm ứng viên» không bị đánh dấu trong dữ liệu đã lưu — sửa dựa trên nguyên nhân giả định ở trên, test hồi quy dùng `tests/fixtures/orangehrm_flows.json`.
 - P0-c xong: `flow_report.steps_in_clip` (+ `scripts/steps_in_clip.py`); 3 video R4 đều 100% (`docs/core-flow/r4/steps_in_clip.json`).
-- Tiếp theo: M1-1 → M1-6.
+- M1-1 xong: `app/script/proof.py` (proof bank: numbers/quotes/offers/pains; `unsupported_numbers`, `strip_numbers`).
+- M1-2 xong: schema `script.framework`, `script.hook_options` (2 phương án), `scene.stat`, EditOp `set` field `hook_option` (chọn hook không gọi LLM); `core/hero.py` (hero frame chấm bằng code); `FlowCtx` thêm value_line/submit_policy/hero_texts; writer kiểm bằng code (`script/narrative.py`): hook 5–12 từ, không mở bằng tên sản phẩm, 2 hook khác kiểu, cụm sáo rỗng, on_screen ≤ 5 từ, CTA không đọc URL, con số có nguồn (hỏi lại 1 lần rồi code xóa → duration_fit). `hook_options` bắt buộc chỉ ở chế độ luồng; ngoài luồng là tùy chọn. Hook scene luôn lấy phương án 1; M1-3 sẽ chọn theo điểm critic.
+- Tiếp theo: M1-3 (Copy Critic) → M1-6.
 
 ## 6. Lộ trình tiếp theo
 

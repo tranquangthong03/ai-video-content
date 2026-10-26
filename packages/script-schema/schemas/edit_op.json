@@ -20,7 +20,7 @@
       "properties": {
         "op": { "const": "set" },
         "scene_id": { "type": "string" },
-        "field": { "enum": ["voiceover", "on_screen_text", "layout", "feature"] },
+        "field": { "enum": ["voiceover", "on_screen_text", "layout", "feature", "hook_option"] },
         "value": { "type": "string" }
       }
     },

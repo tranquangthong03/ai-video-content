@@ -9,6 +9,14 @@ from pydantic import BaseModel, ConfigDict, Field, RootModel
 from . import action
 
 
+class Stat(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    value: Annotated[str, Field(max_length=12, min_length=1)]
+    label: Annotated[str, Field(max_length=30, min_length=1)]
+
+
 class Visual(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -38,6 +46,12 @@ class HookScene(BaseModel):
     layout: Literal['big_text_over_blur', 'emoji_pop']
     voiceover: str
     on_screen_text: str | None = None
+    stat: Annotated[
+        Stat | None,
+        Field(
+            description='A big number callout shown over the scene (value must be sourced from the proof bank)'
+        ),
+    ] = None
     key_point: Annotated[str | None, Field(max_length=60)] = None
     icon: (
         Literal[
@@ -78,6 +92,12 @@ class FeatureDemoScene(BaseModel):
     feature: Annotated[str, Field(min_length=1)]
     voiceover: str
     on_screen_text: str | None = None
+    stat: Annotated[
+        Stat | None,
+        Field(
+            description='A big number callout shown over the scene (value must be sourced from the proof bank)'
+        ),
+    ] = None
     key_point: Annotated[str | None, Field(max_length=60)] = None
     icon: (
         Literal[
@@ -119,6 +139,12 @@ class BeforeAfterScene(BaseModel):
     after_text: Annotated[str, Field(min_length=1)]
     voiceover: str
     on_screen_text: str | None = None
+    stat: Annotated[
+        Stat | None,
+        Field(
+            description='A big number callout shown over the scene (value must be sourced from the proof bank)'
+        ),
+    ] = None
     key_point: Annotated[str | None, Field(max_length=60)] = None
     icon: (
         Literal[
@@ -158,6 +184,12 @@ class CtaScene(BaseModel):
     layout: Literal['logo_center', 'button_pulse']
     voiceover: str
     on_screen_text: str | None = None
+    stat: Annotated[
+        Stat | None,
+        Field(
+            description='A big number callout shown over the scene (value must be sourced from the proof bank)'
+        ),
+    ] = None
     key_point: Annotated[str | None, Field(max_length=60)] = None
     icon: (
         Literal[

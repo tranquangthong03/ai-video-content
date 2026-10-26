@@ -113,7 +113,7 @@ def words(n: int, prefix: str = "từ") -> str:
 def good_scene(i: int, type_: str, **extra: Any) -> dict[str, Any]:
     base: dict[str, Any] = {
         "id": f"s{i}", "type": type_, "layout": LAYOUTS_BY_TYPE[type_][0],
-        "voiceover": words(18, f"s{i}v"), "on_screen_text": "Chữ ngắn", "key_point": f"Ý chính {i}",
+        "voiceover": words(10 if type_ == "hook" else 18, f"s{i}v"), "on_screen_text": "Chữ ngắn", "key_point": f"Ý chính {i}",
         "icon": cat.ICONS[i % len(cat.ICONS)], "visual": {"mode": "auto"},
     }  # fmt: skip
     return {**base, **extra}
@@ -384,7 +384,7 @@ def test_beats_of_failed_features_do_not_force_a_feature_demo() -> None:
         ({"layout": "nope"}, "layout «nope»"),
         ({"voiceover": words(4)}, "voiceover có 4 từ"),
         ({"voiceover": words(31)}, "voiceover có 31 từ"),
-        ({"on_screen_text": words(7)}, "on_screen_text quá 6 từ"),
+        ({"on_screen_text": words(6)}, "on_screen_text quá 5 từ"),
         ({"key_point": ""}, "thiếu key_point"),
         ({"icon": "rocket"}, "icon «rocket»"),
         ({"icon": None}, "icon «None»"),

@@ -26,7 +26,9 @@ from tests.test_script_writer import (
 def fixed_output(voice_words: int = 22) -> dict[str, Any]:
     out = good_output()
     for scene in out["script"]["scenes"]:
-        scene["voiceover"] = words(voice_words, "w")
+        scene["voiceover"] = words(
+            10 if scene["type"] == "hook" else voice_words + 3, "w"
+        )  # hook <= 12 words: the demos make up the total
     return out
 
 
@@ -46,7 +48,7 @@ class Handler:
             self.writer_calls += 1
             out = fixed_output()
             if self.writer_calls > 1:  # a regeneration reads differently
-                out["script"]["scenes"][0]["voiceover"] = words(22, f"regen{self.writer_calls}")
+                out["script"]["scenes"][0]["voiceover"] = words(10, f"regen{self.writer_calls}")
             return out
         if prompt.startswith('Bạn là "Edit Planner"'):
             return self.plans.pop(0) if self.plans else self.plan

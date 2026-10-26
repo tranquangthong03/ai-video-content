@@ -33,6 +33,17 @@
         "layout": { "enum": ["big_text_over_blur", "emoji_pop"] },
         "voiceover": { "type": "string" },
         "on_screen_text": { "type": ["string", "null"], "default": null },
+        "stat": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["value", "label"],
+          "properties": {
+            "value": { "type": "string", "minLength": 1, "maxLength": 12 },
+            "label": { "type": "string", "minLength": 1, "maxLength": 30 }
+          },
+          "default": null,
+          "description": "A big number callout shown over the scene (value must be sourced from the proof bank)"
+        },
         "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
         "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },
@@ -51,6 +62,17 @@
         "feature": { "type": "string", "minLength": 1 },
         "voiceover": { "type": "string" },
         "on_screen_text": { "type": ["string", "null"], "default": null },
+        "stat": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["value", "label"],
+          "properties": {
+            "value": { "type": "string", "minLength": 1, "maxLength": 12 },
+            "label": { "type": "string", "minLength": 1, "maxLength": 30 }
+          },
+          "default": null,
+          "description": "A big number callout shown over the scene (value must be sourced from the proof bank)"
+        },
         "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
         "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },
@@ -70,6 +92,17 @@
         "after_text": { "type": "string", "minLength": 1 },
         "voiceover": { "type": "string" },
         "on_screen_text": { "type": ["string", "null"], "default": null },
+        "stat": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["value", "label"],
+          "properties": {
+            "value": { "type": "string", "minLength": 1, "maxLength": 12 },
+            "label": { "type": "string", "minLength": 1, "maxLength": 30 }
+          },
+          "default": null,
+          "description": "A big number callout shown over the scene (value must be sourced from the proof bank)"
+        },
         "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
         "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },
@@ -87,6 +120,17 @@
         "layout": { "enum": ["logo_center", "button_pulse"] },
         "voiceover": { "type": "string" },
         "on_screen_text": { "type": ["string", "null"], "default": null },
+        "stat": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["value", "label"],
+          "properties": {
+            "value": { "type": "string", "minLength": 1, "maxLength": 12 },
+            "label": { "type": "string", "minLength": 1, "maxLength": 30 }
+          },
+          "default": null,
+          "description": "A big number callout shown over the scene (value must be sourced from the proof bank)"
+        },
         "key_point": { "type": ["string", "null"], "maxLength": 60, "default": null },
         "icon": { "enum": ["check", "globe", "bolt", "link", "star", "users", "chart", "lock", "sparkles", "code", "image", "edit", "filter", "upload", null], "default": null },
         "visual": { "$ref": "#/$defs/Visual" },

@@ -23,7 +23,7 @@ from app.schemas.generated.edit_op import (
 )
 from app.schemas.generated.script import Script
 from app.script import catalog as cat
-from app.script.validate import validate_edit_op, validate_script
+from app.script.validate import hook_choice, validate_edit_op, validate_script
 from app.script.visuals import visual_for_scene
 from app.script.writer import WriterContext
 
@@ -39,6 +39,7 @@ FIELD_LABELS = {
     "on_screen_text": "chữ trên màn hình",
     "layout": "bố cục",
     "feature": "tính năng",
+    "hook_option": "phương án hook",
 }
 
 
@@ -158,6 +159,11 @@ def _set(
         )
         scene["visual"] = visual.visual
         result.warnings += visual.warnings
+    elif op.field == "hook_option":
+        chosen = data["hook_options"][hook_choice(Script.model_validate(data), value) or 0]
+        scene["voiceover"] = chosen["voiceover"]
+        scene["on_screen_text"] = chosen["on_screen_text"]
+        value = f"{chosen['kind']}: {chosen['voiceover']}"
     elif op.field == "layout":
         scene["layout"] = value
     elif op.field == "voiceover":

@@ -252,10 +252,11 @@ def test_forced_duration_lets_every_scene_grow_within_the_agreed_caps() -> None:
     ]
     grown, notes = apply_voiceovers(script, items, extend=True, forced=True)
     by_id = {s.root.id: s.root.voiceover.split() for s in grown.scenes}
-    assert len(by_id["s2"]) == 35 and len(by_id["s1"]) == 20 and len(by_id["s5"]) == 18
+    assert len(by_id["s2"]) == 35 and len(by_id["s1"]) == 10 and len(by_id["s5"]) == 18
+    assert any("s1" in n and "vượt 12" in n for n in notes)  # a hook stays a hook
     assert any("s5" in n and "vượt 20" in n for n in notes)
     plain, plain_notes = apply_voiceovers(script, items, extend=True, forced=False)
-    assert len(plain.scenes[0].root.voiceover.split()) == 18  # hook untouched
+    assert len(plain.scenes[0].root.voiceover.split()) == 10  # hook untouched
     assert any("chỉ được kéo dài scene feature_demo" in n for n in plain_notes)
     assert any("s2" in n and "vượt 30" in n for n in plain_notes)
 

@@ -19,6 +19,7 @@ from app.proposal.flow_outline import (
 from app.schemas.generated.core_flow import CoreFlow
 from app.schemas.generated.theme import Theme
 from app.script.writer import (
+    DraftHook,
     DraftScene,
     DraftScript,
     WriterContext,
@@ -114,6 +115,10 @@ def draft(*, demo_types: tuple[str, str] = ("feature_demo", "feature_demo")) -> 
     base = {"voiceover": words, "key_point": "ý", "icon": "check"}
     return DraftScript(
         title="Xin nghỉ phép", badge="HR", headline="Xin nghỉ trong một phút",
+        hook_options=[
+            DraftHook(kind="pain_question", voiceover="Xin nghỉ phép mà mất cả buổi sáng?", on_screen_text="Nghỉ phép?"),
+            DraftHook(kind="result_first", voiceover="Đơn nghỉ phép xong trong một phút", on_screen_text="Một phút"),
+        ],
         scenes=[
             DraftScene(type="hook", layout="big_text_over_blur", on_screen_text="Nghỉ phép?", **{**base, "key_point": "k0"}),
             DraftScene(type=demo_types[0], layout="full_screen", feature="c1", **{**base, "key_point": "k1"}),  # type: ignore[arg-type]

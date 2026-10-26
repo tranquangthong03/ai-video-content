@@ -98,7 +98,7 @@ def test_every_scene_field_is_brought_within_its_limit(tmp_path: Path) -> None:
     caller, _ = caller_for({**good_output(), "script": draft}, tmp_path=tmp_path)
     result = write_script(caller, ctx_for())
     s1, s2 = result.script.scenes[0].root, result.script.scenes[1].root
-    assert cat.word_count(s1.voiceover) <= cat.VOICEOVER_MAX_WORDS and s1.voiceover.endswith("x19.")
+    assert cat.word_count(s1.voiceover) <= cat.HOOK_MAX_WORDS and s1.voiceover.startswith("x0 ")
     assert cat.word_count(s1.on_screen_text or "") <= cat.ON_SCREEN_MAX_WORDS
     assert len(s1.key_point or "") <= cat.KEY_POINT_MAX and s1.icon in cat.ICONS
     assert cat.word_count(s2.voiceover) <= cat.DEMO_VOICEOVER_MAX_WORDS
