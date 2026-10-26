@@ -265,6 +265,9 @@ class TerminalFrontend:
         for f in request.flows or []:
             steps = "\n".join(f"  • {s}" for s in f.expected_steps)
             submit = "  [yellow]\\[cần gửi dữ liệu][/]" if f.needs_submit else ""
+            cannot = (request.flow_select.infeasible if request.flow_select else {}).get(f.id)
+            if cannot:
+                submit += f"  [red]Không khả thi trên tài khoản này: {cannot}[/]"
             body = (
                 f"[bold]{f.title}[/]{submit}\n{f.persona} · {f.goal}\n{steps}\n"
                 f"[dim]Thấy khi xong: {f.success_signal}\nGiá trị: {f.value}[/]"
@@ -308,7 +311,16 @@ class TerminalFrontend:
         picks = questionary.checkbox(
             f"Chọn luồng (khoảng trắng để chọn, tối đa {sel.max}):",
             choices=[
-                questionary.Choice(f"{f.title} — {f.persona}", f.id, checked=f.id in sel.default)
+                questionary.Choice(
+                    f"{f.title} — {f.persona}",
+                    f.id,
+                    checked=f.id in sel.default,
+                    **(
+                        {"disabled": f"Không khả thi: {sel.infeasible[f.id]}"}
+                        if f.id in sel.infeasible
+                        else {}
+                    ),
+                )
                 for f in request.flows or []
             ],
         ).ask()

@@ -20,7 +20,7 @@ from playwright.sync_api import Page
 from pydantic import BaseModel, Field
 
 from app.browser.auth_detect import LoginRequired, detect_login
-from app.browser.form_actions import ActionFailed, NoReadableOptions
+from app.browser.form_actions import ActionFailed, NoReadableOptions, fold
 from app.browser.locate import Unsafe, resolve
 from app.browser.page_utils import dismiss_cookie_banner, wait_for_settle
 from app.browser.session import BrowserSession
@@ -101,6 +101,7 @@ class _Run:
     invented_refs: int = 0
     repeat_warnings: int = 0
     failed_actions: int = 0
+    give_up: dict[str, Any] | None = None
     text_calls: int = 0
     vision_calls: int = 0
     escalated_because: str | None = None
@@ -253,7 +254,13 @@ class FlowAgent:
             if action.do in ("finish", "give_up"):
                 run.status = "reached_goal" if action.do == "finish" else "partial"
                 if action.do == "give_up":
-                    run.warnings.append(f"Agent bỏ cuộc: {action.reason or answer.reason or '?'}")
+                    why = action.reason or answer.reason or "?"
+                    run.warnings.append(f"Agent bỏ cuộc: {why}")
+                    run.give_up = {
+                        "reason_kind": action.reason_kind or "stuck",
+                        "reason": why,
+                        "quote": self._verified_quote(action.quote, state),
+                    }
                 return
             if action.do == "stop_before_submit":
                 if self._stop_before_submit(page, state, action, answer, run):
@@ -385,6 +392,15 @@ class FlowAgent:
             elements=format_elements(state.elements) or "(không có phần tử)",
             warnings="\n".join(warnings),
         )
+
+    @staticmethod
+    def _verified_quote(quote: str | None, state: PageState) -> str | None:
+        """The site's message, only when it really is on the page (the model may not invent it)."""
+        if not quote or not quote.strip():
+            return None
+        seen = [state.heading, state.title, *state.messages, *(e.name for e in state.elements)]
+        wanted = fold(quote)
+        return quote.strip() if any(wanted in fold(text) for text in seen if text) else None
 
     def _escalate(self, run: _Run, why: str) -> None:
         """From the next question on the screenshot goes along (vision auto only; it stays on)."""
@@ -585,6 +601,7 @@ class FlowAgent:
                 "submit_policy": self.policy,
                 "stop_ref": run.stop_name,
                 "live": live,
+                "give_up": run.give_up,
                 "report": {
                     "model": model,
                     "used_images": self.images_sent,

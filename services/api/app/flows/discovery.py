@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field
 
+from app.browser.form_actions import fold
 from app.browser.urls import normalize_url
 from app.core.subpages import is_sensitive, is_subpage
 from app.llm.json_call import JsonCaller
@@ -177,6 +178,7 @@ def _ask(
     mode: Mode,
     description: str,
     feedback: str = "",
+    avoid: list[tuple[str, str]] | None = None,
 ) -> list[CoreFlow]:
     prompt = render(
         "flow_discovery",
@@ -187,18 +189,42 @@ def _ask(
     )
     if feedback:
         prompt += f"\n\nLần trước có lỗi, hãy sửa và trả lại json:\n{feedback}"
+    if avoid:  # a second round: what the account cannot do is not offered again
+        listed = "\n".join(f"- «{title}»: {why}" for title, why in avoid)
+        prompt += (
+            f"\n\n<infeasible>\n{listed}\n</infeasible>\n"
+            "Các luồng trong <infeasible> không làm được với tài khoản này: KHÔNG đề xuất lại "
+            "(kể cả bản diễn đạt khác). Ưu tiên luồng chỉ dùng dữ liệu đã thấy trong pages "
+            "(danh sách đã có dữ liệu, form tạo mới không cần dữ liệu có sẵn). Trả về json."
+        )
     return caller.call("flow_discovery", prompt, FlowSet).flows
 
 
+def same_flow(a: str, b: str, threshold: float = 0.8) -> bool:
+    """Two titles that name the same flow (accents and case ignored, most words shared)."""
+    x, y = set(fold(a).split()), set(fold(b).split())
+    return bool(x and y) and len(x & y) / len(x | y) >= threshold
+
+
 def propose_flows(
-    caller: JsonCaller, profile: ProductProfile, pages: list[PageSummary]
+    caller: JsonCaller,
+    profile: ProductProfile,
+    pages: list[PageSummary],
+    avoid: list[tuple[str, str]] | None = None,
 ) -> list[CoreFlow]:
-    """3-5 usable flows; one retry with the reasons when none survives, then a code-made tour."""
-    flows, dropped = clean_flows(_ask(caller, profile, pages, "propose", ""), pages, profile)
+    """3-5 usable flows; one retry with the reasons when none survives, then a code-made tour.
+
+    avoid: (title, why) of flows that cannot be done on this account; they are not offered again."""
+
+    def usable(found: list[CoreFlow]) -> tuple[list[CoreFlow], list[str]]:
+        kept, dropped = clean_flows(found, pages, profile)
+        again = [f for f in kept if any(same_flow(f.title, t) for t, _ in avoid or [])]
+        return [f for f in kept if f not in again], dropped
+
+    flows, dropped = usable(_ask(caller, profile, pages, "propose", "", avoid=avoid))
     if not flows:
         feedback = "\n".join(dropped) or "Không có luồng nào."
-        retry = _ask(caller, profile, pages, "propose", "", feedback)
-        flows, dropped = clean_flows(retry, pages, profile)
+        flows, dropped = usable(_ask(caller, profile, pages, "propose", "", feedback, avoid))
     if not flows:
         tour = tour_flow(profile, pages)
         flows = [tour] if tour else []

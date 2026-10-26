@@ -7,7 +7,8 @@ export const MAX_FLOWS = 2;
 type Step = FlowRun["steps"][number];
 
 /** Adds or removes a flow id (the first picked is the main flow); never more than `max`. */
-export const toggleFlow = (order: string[], id: string, max = MAX_FLOWS): string[] => toggleSelection(order, id, max);
+export const toggleFlow = (order: string[], id: string, max = MAX_FLOWS, infeasible: Record<string, string> = {}): string[] =>
+  id in infeasible ? order : toggleSelection(order, id, max);
 
 export const FLOW_STATUS_LABEL: Record<FlowRun["status"], string> = {
   reached_goal: "Đạt mục tiêu",

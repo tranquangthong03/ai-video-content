@@ -50,6 +50,7 @@ def build_request(
     *,
     default: list[str] | None = None,
     notice: str = "",
+    infeasible: dict[str, str] | None = None,
 ) -> InteractionRequest:
     message = (
         "Chọn luồng chức năng chính sẽ xuất hiện trong video "
@@ -64,8 +65,11 @@ def build_request(
         flows=[f.model_dump() for f in flows],
         flow_select={
             "max": MAX_SELECTED_FLOWS,
-            "default": default if default is not None else default_flow_ids(flows),
+            "default": default
+            if default is not None
+            else default_flow_ids([f for f in flows if f.id not in (infeasible or {})]),
             "submit_blocked_reason": blocked,
+            "infeasible": infeasible or {},
         },
     )
 
@@ -88,6 +92,12 @@ def check_flow_answer(request: InteractionRequest, response: UserResponse) -> li
     answer = read_answer(response)
     known = {f.id for f in request.flows or []}
     errors = [f"flow '{i}' does not exist" for i in answer.selected if i not in known]
+    cannot = request.flow_select.infeasible if request.flow_select else {}
+    errors += [
+        f"flow '{i}' cannot be done on this account: {cannot[i]}"
+        for i in answer.selected
+        if i in cannot
+    ]
     if len(set(answer.selected)) != len(answer.selected):
         errors.append("a flow was picked twice")
     if not answer.description:  # a description alone is a valid answer (it adds a flow)

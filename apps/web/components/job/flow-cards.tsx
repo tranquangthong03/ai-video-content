@@ -32,6 +32,7 @@ export function SelectFlowCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
   const [description, setDescription] = useState("");
   const [allowSubmit, setAllowSubmit] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const infeasible = sel.infeasible ?? {};
   const offer = submitOffer(flows, order, sel.submit_blocked_reason);
   const main = flows.find((f) => f.id === order[0]);
 
@@ -62,12 +63,18 @@ export function SelectFlowCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
         <div className="grid gap-3 lg:grid-cols-2">
           {flows.map((f) => {
             const on = order.includes(f.id);
+            const cannot = infeasible[f.id];
             const full = !on && order.length >= sel.max;
             return (
-              <label key={f.id} className={full ? "cursor-not-allowed" : "cursor-pointer"}>
-                <Card className={on ? "border-primary/60" : full ? "opacity-40" : "opacity-80"}>
+              <label key={f.id} className={full || cannot ? "cursor-not-allowed" : "cursor-pointer"}>
+                <Card className={cannot ? "opacity-60" : on ? "border-primary/60" : full ? "opacity-40" : "opacity-80"}>
                   <CardHeader className="flex-row items-start gap-2 pb-1">
-                    <Checkbox checked={on} disabled={full} onChange={() => setOrder(toggleFlow(order, f.id, sel.max))} className="mt-0.5" />
+                    <Checkbox
+                      checked={on}
+                      disabled={full || Boolean(cannot)}
+                      onChange={() => setOrder(toggleFlow(order, f.id, sel.max, infeasible))}
+                      className="mt-0.5"
+                    />
                     <div className="min-w-0 flex-1">
                       <CardTitle className="text-sm">
                         {on && <span className="mr-1 text-primary">{order.indexOf(f.id) === 0 ? "Chính ·" : "Phụ ·"}</span>}
@@ -79,6 +86,11 @@ export function SelectFlowCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
                     {f.source === "user" && <Badge tone="success">Bạn mô tả</Badge>}
                   </CardHeader>
                   <CardContent className="space-y-2 text-xs text-muted-foreground">
+                    {cannot && (
+                      <p role="status" className="rounded-md bg-red-50 px-2 py-1.5 text-red-800">
+                        Không khả thi trên tài khoản này: {cannot}
+                      </p>
+                    )}
                     <p>{f.goal}</p>
                     <ul className="list-disc space-y-0.5 pl-4">
                       {f.expected_steps.map((s, i) => (

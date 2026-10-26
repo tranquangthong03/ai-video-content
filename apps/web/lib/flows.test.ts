@@ -33,6 +33,13 @@ describe("flow choice", () => {
     expect(toggleFlow(["a", "b"], "a")).toEqual(["b"]);
   });
 
+  it("never selects a flow that cannot be done on this account", () => {
+    const cannot = { a: "No Leave Types with Leave Balance" };
+    expect(toggleFlow([], "a", 2, cannot)).toEqual([]);
+    expect(toggleFlow([], "b", 2, cannot)).toEqual(["b"]);
+    expect(toggleFlow(["b"], "b", 2, cannot)).toEqual([]);
+  });
+
   it("offers the submit switch only when a chosen flow needs it, and carries the shared-demo reason", () => {
     const flows = [flow("a", false), flow("b", true)];
     expect(submitOffer(flows, ["a"], null)).toEqual({ offered: false, blocked: null });

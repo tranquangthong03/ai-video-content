@@ -175,12 +175,19 @@ class ProposalRunner:
     # --- 1c. core flow selection (replaces 1b when the job runs in flow mode) ----------------
 
     def select_flow(
-        self, profile: ProductProfile, pages: list[discovery.PageSummary], root_url: str
+        self,
+        profile: ProductProfile,
+        pages: list[discovery.PageSummary],
+        root_url: str,
+        infeasible: dict[str, tuple[CoreFlow, str]] | None = None,
     ) -> FlowSelection | None:
         """The flows the video shows, or None when discovery found nothing usable (the caller then
-        falls back to select_features). Asks again after a self-described flow was added."""
+        falls back to select_features). Asks again after a self-described flow was added.
+
+        infeasible: flows (with the site's message) that could not be done on this account: they
+        stay on the card, marked, and discovery is asked again without them."""
         done = self.dir / "selected_flow.json"
-        if done.is_file():
+        if done.is_file() and not infeasible:
             saved = json.loads(done.read_text(encoding="utf-8"))
             return FlowSelection(
                 flows=[CoreFlow.model_validate(f) for f in saved["flows"]],
@@ -188,25 +195,38 @@ class ProposalRunner:
                 warnings=saved.get("warnings", []),
             )
         try:
-            flows = discovery.propose_flows(self.flow_caller, profile, pages)
+            avoid = [(f.title, why) for f, why in (infeasible or {}).values()]
+            flows = discovery.propose_flows(self.flow_caller, profile, pages, avoid or None)
         except LLMCallError as e:
             self.warnings.append(
                 f"Không xác định được luồng chính ({e}); chuyển sang chọn tính năng."
             )
             return None
-        if not flows:
+        marked = {fid: why for fid, (_, why) in (infeasible or {}).items()}
+        flows = [
+            *flows,
+            *(f for f, _ in (infeasible or {}).values() if f.id not in {x.id for x in flows}),
+        ]
+        if not [f for f in flows if f.id not in marked]:
             self.warnings.append("Không tìm thấy luồng chính; chuyển sang chọn tính năng.")
             return None
         (self.dir / "flows_proposed.json").write_text(
             json.dumps([f.model_dump() for f in flows], ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
-        default = flow_choice.default_flow_ids(flows)
+        default = flow_choice.default_flow_ids([f for f in flows if f.id not in marked])
         notice = ""
+        for flow, why in (infeasible or {}).values():
+            notice += f"Luồng «{flow.title}» không khả thi trên tài khoản này: {why}\n"
         for _ in range(8):
             response = self._ask(
                 flow_choice.build_request(
-                    self.job_id, flows, root_url, default=default, notice=notice
+                    self.job_id,
+                    flows,
+                    root_url,
+                    default=default,
+                    notice=notice.strip(),
+                    infeasible=marked,
                 )
             )
             answer = flow_choice.read_answer(response)

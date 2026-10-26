@@ -40,6 +40,7 @@ Phần tử tương tác:
 - {"do":"stop_before_submit","ref":str}          — form đã điền đủ, ref là nút gửi/lưu cuối (dùng khi chính sách = stop)
 - {"do":"finish"}                                — đã thấy dấu hiệu thành công
 - {"do":"give_up","reason":str}                  — không thể tiếp tục
+{# changed: give_up says why (reason_kind) and quotes the site's message #}- Khi give_up, thêm "reason_kind" ∈ "no_data" | "no_permission" | "feature_missing" | "blocked_by_site" | "stuck" và "quote": thông báo của chính trang, trích NGUYÊN VĂN (hoặc null).
 
 ## Quy tắc
 1. Đi đúng mục tiêu, ngắn nhất có thể nhưng tự nhiên như người dùng thật; ưu tiên menu/nút có tên khớp các bước dự kiến.
@@ -50,6 +51,7 @@ Phần tử tương tác:
 6. Không lặp lại hành động đã thất bại; nếu có cảnh báo lặp, chọn cách khác hoặc give_up.
 7. Mỗi hành động kèm "chapter" là tên ngắn của chặng hiện tại (ví dụ "Mở form", "Điền thông tin", "Gửi và theo dõi") và "note" 1 câu tiếng Việt mô tả bước cho người xem.
 8. sample_data_update: các giá trị mới bạn vừa quyết định dùng (để giữ nhất quán), hoặc {}.
+{# changed: a flow that cannot be done on this account is given up at once, with the site's own words #}9. Nếu trang hiển thị thông báo kiểu "No ... available", "No ... with ... Balance", "không có dữ liệu", "you do not have permission", "bạn không có quyền", hoặc màn hình đích thiếu form/nút/dữ liệu cần thiết để làm tiếp (đã thấy ở "Nội dung trang" hoặc ảnh) → trả give_up NGAY, không thử lại: "reason_kind" = "no_data" (thiếu dữ liệu/hạn mức), "no_permission" (thiếu quyền), "feature_missing" (không có chức năng này), "blocked_by_site" (captcha, chặn tự động) hoặc "stuck" (kẹt vì lý do khác); "quote" là thông báo trích nguyên văn.
 
 ## Đầu ra
 Chỉ trả về json:

@@ -149,7 +149,8 @@ def make_pipeline(site: str, shots: list[str]):  # type: ignore[no-untyped-def]
             ),
         ]
         root = SHARED if "orangehrm" in cfg.url else cfg.url
-        ask_user(frontend, cfg.job_dir, build_request(job_id, flows, root))
+        marked = {"leave": "No Leave Types with Leave Balance"} if "infeasible" in cfg.url else {}
+        ask_user(frontend, cfg.job_dir, build_request(job_id, flows, root, infeasible=marked))
         steps = cfg.job_dir / "flow" / "steps"
         steps.mkdir(parents=True, exist_ok=True)
         for rel in shots:
@@ -176,6 +177,15 @@ def new_job(url: str) -> str:
     r = httpx.post(f"{API}/api/jobs", data={"url": url}, timeout=20)
     r.raise_for_status()
     return str(r.json()["state"]["job_id"])
+
+
+def wait_cancelled(job_id: str) -> None:
+    for _ in range(60):
+        state = httpx.get(f"{API}/api/jobs/{job_id}", timeout=10).json()["state"]
+        if state["status"] in ("cancelled", "failed", "done"):
+            return
+        time.sleep(0.5)
+    raise RuntimeError("the job did not stop")
 
 
 def main() -> int:
@@ -220,6 +230,14 @@ def main() -> int:
         page.get_by_role("heading", name="Chọn luồng chính để quay").wait_for(timeout=60_000)
         page.get_by_text("Không thể bật").wait_for()
         shot(page, "24-select-flow-shared-demo")
+        page.get_by_role("button", name="Hủy", exact=True).click()  # one job at a time
+        wait_cancelled(shared)
+
+        inf = new_job(site + "/infeasible")
+        page.goto(f"{WEB}/jobs/{inf}")
+        page.get_by_role("heading", name="Chọn luồng chính để quay").wait_for(timeout=60_000)
+        page.get_by_text("Không khả thi trên tài khoản này").first.wait_for()
+        shot(page, "25-select-flow-infeasible")
         browser.close()
     server.should_exit = True
     return 0

@@ -56,7 +56,7 @@ def scripted(plan: list[dict[str, Any]]) -> Callable[[str], dict[str, Any]]:
             action["ref"] = "e999"
         elif name:
             action["ref"] = ref_of(prompt, name)
-        for k in ("value", "direction", "reason"):
+        for k in ("value", "direction", "reason", "reason_kind", "quote"):
             if k in item:
                 action[k] = item.pop(k)
         return {

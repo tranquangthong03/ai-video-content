@@ -40,6 +40,10 @@ class FlowAction(BaseModel):
     value: str | None = None
     direction: Literal["down", "up"] | None = None
     reason: str | None = None
+    reason_kind: (
+        Literal["no_data", "no_permission", "feature_missing", "blocked_by_site", "stuck"] | None
+    ) = None
+    quote: str | None = None  # give_up: the site's own message, word for word
 
     @model_validator(mode="after")
     def _complete(self) -> "FlowAction":
@@ -49,6 +53,8 @@ class FlowAction(BaseModel):
             raise ValueError(f"{self.do} needs a value")
         if self.do == "scroll" and self.direction is None:
             self.direction = "down"
+        if self.do == "give_up" and self.reason_kind is None:
+            self.reason_kind = "stuck"
         return self
 
 
