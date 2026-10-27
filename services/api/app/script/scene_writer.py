@@ -19,6 +19,7 @@ from app.schemas.generated.script import Script
 from app.script import catalog as cat
 from app.script import narrative as nar
 from app.script.autotrim import trim_scene
+from app.script.examples import examples_for
 from app.script.proof import strip_numbers, unsupported_numbers
 from app.script.writer import (
     MAX_REPAIRS,
@@ -111,6 +112,7 @@ def _prompt(
         proof_json=json.dumps(ctx.proof.to_dict(), ensure_ascii=False, indent=1)
         if ctx.proof and not ctx.proof.is_empty
         else "",
+        examples=examples_for(ctx.profile.site_type),
     )
 
 

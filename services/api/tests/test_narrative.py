@@ -1,10 +1,12 @@
 from pathlib import Path
 from typing import Any
 
+from app.llm.json_call import JsonCaller
 from app.script import narrative as nar
 from app.script.apply import apply_ops
 from app.script.proof import NumberFact, Offer, ProofBank
 from app.script.writer import DraftScript, build_prompt, check_draft, write_script
+from tests.conftest import FakeLLM
 from tests.test_flow_script import draft as flow_draft
 from tests.test_flow_script import writer_ctx
 from tests.test_script_edit import op
@@ -180,3 +182,49 @@ def test_a_hook_option_that_stays_too_long_is_cut_by_code_not_failed(tmp_path: P
     second = result.script.hook_options[1]
     assert len(second.voiceover.split()) <= 12 and len((second.on_screen_text or "").split()) <= 5
     assert any(w.startswith("auto_trimmed: hook_options[2] voiceover") for w in result.warnings)
+
+
+def test_a_hook_over_the_limit_is_rewritten_once_by_the_model_before_the_code_cuts_it(
+    tmp_path: Path,
+) -> None:
+    ctx = writer_ctx()
+    out = output()
+    long = "Bạn mất bao lâu để dựng sơ đồ nghiệp vụ rồi gửi đồng nghiệp xem thử ngay hôm nay"
+    out["script"]["hook_options"][0]["voiceover"] = long
+    out["script"]["scenes"][0]["voiceover"] = long
+    short = "Dựng sơ đồ nghiệp vụ mất bao lâu?"
+
+    def handler(prompt: str) -> dict[str, Any]:
+        if prompt.startswith(
+            "Bạn là biên kịch short video marketing (TikTok/Reels/Shorts). Viết lại"
+        ):
+            return {"text": short}
+        return out
+
+    llm = FakeLLM(handler)
+    caller = JsonCaller(llm, cache_dir=tmp_path)
+    result = write_script(caller, ctx)
+    assert result.script.hook_options[0].voiceover == short
+    assert result.script.scenes[0].root.voiceover == short  # the scene shows the first option
+    assert any(w.startswith("auto_rewritten: hook") for w in result.warnings)
+    assert sum(1 for c in llm.calls if "Viết lại câu mở đầu" in c["prompt"]) >= 1
+
+
+def test_when_the_rewrite_is_still_too_long_the_cut_takes_over_without_a_dangling_end(
+    tmp_path: Path,
+) -> None:
+    ctx = writer_ctx()
+    out = output()
+    long = "Bạn mất bao lâu để dựng sơ đồ nghiệp vụ rồi gửi cho đồng nghiệp xem thử ngay hôm nay"
+    out["script"]["hook_options"][0]["voiceover"] = long
+    out["script"]["scenes"][0]["voiceover"] = long
+
+    def handler(prompt: str) -> dict[str, Any]:
+        if "Viết lại câu mở đầu" in prompt:
+            return {"text": long}  # the model did not shorten it
+        return out
+
+    result = write_script(JsonCaller(FakeLLM(handler), cache_dir=tmp_path), ctx)
+    hook = result.script.hook_options[0].voiceover
+    assert len(hook.rstrip(".").split()) <= 12
+    assert hook.rstrip(".").split()[-1] not in {"cho", "rồi", "để", "và", "một"}

@@ -46,12 +46,44 @@ PAIN_MARKERS = ("worried", "tired of", "slow", "hassle", "struggle", "waste", "p
                 "mat thoi gian", "cham", "kho khan", "phien", "met moi", "rac roi")  # fmt: skip
 
 
+# what a number MEANS for the viewer (only "benefit" numbers may open a hook or fill a stat):
+#   benefit    time, size, percentage, count of users / uses: a result the product gives
+#   identifier a code, an ID, a phone number, a value somebody typed into a field
+#   other      anything else (a count of items on the screen, a step number ...)
+BENEFIT_UNITS = {
+    "%", "kb", "mb", "gb", "tb", "ms", "s", "x", "k", "giây", "phút", "giờ", "ngày", "tuần",
+    "tháng", "năm", "lần", "người", "phần trăm", "second", "seconds", "minute", "minutes", "hour",
+    "hours", "day", "days", "week", "weeks", "month", "months", "year", "years", "time", "times",
+    "user", "users",
+}  # fmt: skip
+IDENTIFIER_WORDS = (
+    "id", "ma ", "ma:", "code", "so dien thoai", "phone", "email", "sku", "order", "tai khoan",
+    "account", "employee id", "ma nhan vien", "#",
+)  # fmt: skip
+
+
+def classify_number(value: str, unit: str, context: str, source: str) -> str:
+    """benefit | identifier | other, from the number, its unit and the words around it."""
+    folded = fold(context)
+    if unit.casefold() in BENEFIT_UNITS and not any(w in folded for w in IDENTIFIER_WORDS[:7]):
+        return "benefit"
+    digits = re.sub(r"\D", "", value)
+    if (re.fullmatch(r"0\d{2,}", value) or len(digits) >= 5) and not unit:
+        return "identifier"
+    if any(w in folded for w in IDENTIFIER_WORDS):
+        return "identifier"
+    if source == "frame" and not unit:  # a number on the screen the agent typed or the UI shows
+        return "identifier"
+    return "other"
+
+
 @dataclass(frozen=True)
 class NumberFact:
     value: str  # as written, e.g. "2.8"
     unit: str  # "MB", "%", "" ...
     context: str  # the words around it
     source: str  # where it was read: profile / page:<url> / frame
+    kind: str = "benefit"  # benefit | identifier | other (see classify_number)
 
 
 @dataclass(frozen=True)
@@ -152,7 +184,9 @@ def build_proof_bank(
                 continue
             seen_numbers.add((value, unit))
             ctx = text[max(0, start - CONTEXT_CHARS) : end + CONTEXT_CHARS].strip()
-            bank.numbers.append(NumberFact(value, unit, ctx, label))
+            bank.numbers.append(
+                NumberFact(value, unit, ctx, label, classify_number(value, unit, ctx, label))
+            )
 
     # verbatim quotes only: page texts and claims the site makes, never our own summaries
     quote_sources = [t for page in page_list for t in _texts_of_page(page)]
@@ -199,8 +233,12 @@ def proof_used(text: str, proof: ProofBank) -> bool:
     return False
 
 
-def supported_values(proof: ProofBank, inventory: Iterable[dict[str, Any]] = ()) -> set[str]:
-    values = {n.value for n in proof.numbers}
+def supported_values(
+    proof: ProofBank, inventory: Iterable[dict[str, Any]] = (), benefit_only: bool = False
+) -> set[str]:
+    values = {n.value for n in proof.numbers if not benefit_only or n.kind == "benefit"}
+    if benefit_only:
+        return values  # (what is merely on a screen is not a result to promise)
     for text in frame_texts(inventory):
         values |= {v for v, *_ in numbers_in(text)}
     return values
@@ -211,10 +249,11 @@ def unsupported_numbers(
     proof: ProofBank,
     inventory: Iterable[dict[str, Any]] = (),
     extra: Iterable[str] = (),
+    benefit_only: bool = False,
 ) -> list[str]:
     """Numbers written in `text` that no source backs (`extra`: counts the flow itself gives,
     e.g. the number of steps). Returns them as written, in order, without repeats."""
-    ok = supported_values(proof, inventory) | {norm_number(e) for e in extra}
+    ok = supported_values(proof, inventory, benefit_only) | {norm_number(e) for e in extra}
     bad: list[str] = []
     for value, _unit, start, end in numbers_in(text):
         if value not in ok:

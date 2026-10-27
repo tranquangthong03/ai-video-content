@@ -22,7 +22,9 @@ from app.script.writer import WriterContext, WriterError
 
 CRITERIA = ("hook_strength", "benefit_clarity", "proof_usage", "cta_strength", "flow")
 THRESHOLD = 7  # a script that can be posted scores at least this on every criterion
-MAX_REWRITES = 3  # scenes sent back to the Scene Writer in the one repair round
+MAX_REWRITES = 3  # scenes sent back to the Scene Writer in one repair round
+MAX_ROUNDS = 2  # a second round only while a criterion is still under VERY_WEAK
+VERY_WEAK = 6
 
 
 class Score(BaseModel):
@@ -63,7 +65,8 @@ class CriticResult:
     hook: dict[str, Any] | None = None
     rewritten: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
-    kept: bool = False  # the rewritten script replaced the first one
+    kept: bool = False  # a rewritten script replaced the first one
+    rounds: int = 0  # rewrite rounds that were kept
 
     def report(self) -> dict[str, Any]:
         final = self.after if self.kept and self.after else self.before
@@ -73,6 +76,7 @@ class CriticResult:
             "after": self.after,
             "final": final,
             "kept_rewrite": self.kept,
+            "rounds": self.rounds,
             "hook": self.hook,
             "rewritten": self.rewritten,
             "notes": self.notes,
@@ -216,20 +220,38 @@ def rewrite_weak(
     return script, done, notes
 
 
-def improve(caller: JsonCaller, ctx: WriterContext, script: Script) -> CriticResult:
-    """Pick the better hook, score, and when something is under the threshold fix it once."""
-    script, before, hook = choose_hook(caller, ctx, script)
-    result = CriticResult(script, before, hook=hook)
-    if not below_threshold(before) or not before["weak_scenes"]:
-        return result
-    rewritten, done, notes = rewrite_weak(caller, ctx, script, before["weak_scenes"])
-    result.notes += notes
-    if not done:
-        return result
-    after = score(caller, ctx, rewritten)
-    if total(after) >= total(before):  # the rewrite helped (or at least did no harm): keep it
-        result.script, result.after, result.rewritten, result.kept = rewritten, after, done, True
-    else:
+def improve(
+    caller: JsonCaller,
+    ctx: WriterContext,
+    script: Script,
+    writer: JsonCaller | None = None,
+) -> CriticResult:
+    """Pick the better hook, score, and fix what is under the threshold: one round of rewrites, a
+    second only while a criterion is still under VERY_WEAK. `caller` scores (role copy_critic),
+    `writer` (default: the same) rewrites the weak scenes. A rewrite is kept only if it scores no
+    lower than what it replaces."""
+    writer = writer or caller
+    script, view_now, hook = choose_hook(caller, ctx, script)
+    result = CriticResult(script, view_now, hook=hook)
+    for round_no in range(1, MAX_ROUNDS + 1):
+        under = below_threshold(view_now)
+        if not under or not view_now["weak_scenes"]:
+            break
+        if round_no > 1 and not any(
+            (view_now["scores"][k]["score"] or 10) < VERY_WEAK for k in CRITERIA
+        ):
+            break
+        rewritten, done, notes = rewrite_weak(writer, ctx, script, view_now["weak_scenes"])
+        result.notes += notes
+        if not done:
+            break
+        after = score(caller, ctx, rewritten)
         result.after = after
-        result.notes.append("bản viết lại bị chấm thấp hơn nên giữ bản gốc")
+        if total(after) < total(view_now):
+            result.notes.append("bản viết lại bị chấm thấp hơn nên giữ bản trước")
+            break
+        script, view_now = rewritten, after
+        result.script, result.kept = script, True
+        result.rewritten = [*result.rewritten, *done]
+        result.rounds += 1
     return result

@@ -54,6 +54,10 @@ SAMPLE_VARS = {
         next_scene_summary_or_none="none", goal="awareness", duration_s=30, headline="h",
         product_profile_summary="s", forced=False, scene_catalog_json="{}", allowed_icons="check",
         proof_json="",
+        examples="",
+    ),
+    "hook_rewrite": dict(
+        text="t", max_words=12, kind="pain_question", persona="p", product_name="P"
     ),
     "copy_critic": dict(
         persona="p", goal="g", value="v", chapters_summary="c", proof_bank_json_or_empty="",

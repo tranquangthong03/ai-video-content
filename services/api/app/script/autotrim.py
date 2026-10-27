@@ -50,7 +50,7 @@ def trim_scene(s, label: str, max_words: int):  # type: ignore[no-untyped-def]
 
 
 def _first_words(text: str, limit: int) -> str:
-    return tt.clean_end(" ".join(text.split()[:limit]))
+    return tt.clean_end(tt.drop_dangling(" ".join(text.split()[:limit]), keep=2))
 
 
 def _first_clause(text: str) -> str:
@@ -88,7 +88,7 @@ def trim_draft(draft, ctx):  # type: ignore[no-untyped-def]
     for n, option in enumerate(getattr(draft, "hook_options", []), start=1):
         voice, screen = option.voiceover, option.on_screen_text
         if voice and tt.words_of(voice) > cat.HOOK_MAX_WORDS:
-            voice = _first_words(voice, cat.HOOK_MAX_WORDS)
+            voice = tt.trim_words(voice, cat.HOOK_MAX_WORDS)
             notes.append(note(f"hook_options[{n}] voiceover", option.voiceover, voice))
         if screen and tt.words_of(screen) > cat.ON_SCREEN_MAX_WORDS:
             screen = _first_words(screen, cat.ON_SCREEN_MAX_WORDS)

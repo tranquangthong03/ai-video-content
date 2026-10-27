@@ -3,6 +3,7 @@ from pathlib import Path
 
 from app.schemas.generated.product_profile import ProductProfile
 from app.script.proof import (
+    NumberFact,
     ProofBank,
     build_proof_bank,
     norm_number,
@@ -81,3 +82,48 @@ def test_the_saved_r4_jobs_build_a_non_empty_bank_without_crashing() -> None:
     ]
     bank = build_proof_bank(profile, pages)
     assert bank.offers and bank.quotes
+
+
+def test_numbers_are_told_apart_by_what_they_mean_to_the_viewer() -> None:
+    from app.script.proof import classify_number
+
+    assert classify_number("80", "%", "giảm 80% dung lượng", "profile") == "benefit"
+    assert classify_number("2.8", "MB", "Large photo 2.8MB", "frame") == "benefit"
+    assert classify_number("5", "phút", "xong trong 5 phút", "page:x") == "benefit"
+    assert classify_number("0736", "", "mã nhân viên 0736", "frame") == "identifier"
+    assert classify_number("0443", "", "Employee Id 0443", "frame") == "identifier"
+    assert (
+        classify_number("123456", "", "gọi 123456", "profile") == "identifier"
+    )  # a long bare number
+    assert (
+        classify_number("3", "", "3 items left!", "frame") == "identifier"
+    )  # on the screen, typed or UI
+    assert classify_number("4", "bước", "4 bước", "profile") == "other"
+
+
+def test_only_benefit_numbers_pass_when_the_text_is_a_hook_a_headline_or_a_stat() -> None:
+    bank = ProofBank(
+        numbers=[
+            NumberFact("80", "%", "giảm 80%", "profile", "benefit"),
+            NumberFact("0736", "", "mã 0736", "frame", "identifier"),
+        ]
+    )
+    text = "Giảm 80% và mã 0736"
+    assert unsupported_numbers(text, bank) == []  # in the bank: fine in a chapter's voice-over
+    assert unsupported_numbers(text, bank, benefit_only=True) == ["0736"]  # a hook promises results
+    assert unsupported_numbers("Giảm 80%", bank, benefit_only=True) == []
+    assert (
+        unsupported_numbers("Còn 3 việc", bank, extra=["3"], benefit_only=True) == []
+    )  # the flow's own
+
+
+def test_a_long_cut_never_ends_on_a_connector() -> None:
+    from app.core.trim_text import drop_dangling, trim_words
+
+    assert (
+        drop_dangling("Bạn mất bao lâu để dựng sơ đồ rồi gửi cho")
+        == "Bạn mất bao lâu để dựng sơ đồ rồi gửi"
+    )
+    assert drop_dangling("Gửi cho") == "Gửi cho"  # keeps at least three words... or what is there
+    cut = trim_words("Bạn mất bao lâu để dựng một sơ đồ rồi gửi cho đồng nghiệp xem thử ngay", 10)
+    assert cut.rstrip(".").split()[-1] not in {"cho", "rồi", "để", "một", "và"}

@@ -258,7 +258,7 @@ class ScriptRunner:
         if self.ctx.flow is None:
             return script, fit
         try:
-            result = improve(self.critic, self.ctx, script)
+            result = improve(self.critic, self.ctx, script, self.caller)
         except (LLMCallError, ValidationError) as e:
             self.report["critic"] = {"error": str(e)[:200]}
             return script, fit

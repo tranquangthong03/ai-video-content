@@ -16,7 +16,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 
 from app.core.demo_steps import summarize_steps
 from app.core.flow_ctx import FlowCtx
-from app.llm.json_call import JsonCaller
+from app.llm.json_call import JsonCaller, LLMCallError
 from app.llm.prompts import render
 from app.schemas.generated.layouts import LAYOUTS_BY_TYPE
 from app.schemas.generated.outline import Outline
@@ -388,17 +388,20 @@ def draft_numbers(draft: DraftScript, ctx: WriterContext) -> dict[str, list[str]
     given = ctx.given_numbers()
     found: dict[str, list[str]] = {}
 
-    def look(where: str, text: str) -> None:
-        bad = unsupported_numbers(text, proof, ctx.inventory, given)
+    def look(where: str, text: str, strict: bool = False) -> None:
+        # headline, hook and stat only promise results: benefit numbers (or the flow's own counts)
+        bad = unsupported_numbers(text, proof, ctx.inventory, given, benefit_only=strict)
         if bad:
             found[where] = bad
 
-    look("headline", draft.headline)
+    look("headline", draft.headline, strict=True)
     for n, option in enumerate(draft.hook_options, start=1):
-        look(f"hook_options[{n}]", f"{option.voiceover} {option.on_screen_text or ''}")
+        look(f"hook_options[{n}]", f"{option.voiceover} {option.on_screen_text or ''}", strict=True)
     for n, scene in enumerate(draft.scenes, start=1):
         for field_name, text in nar.scene_texts(scene, nar.CLAIM_FIELDS).items():
-            look(f"scene {n} {field_name}", text)
+            look(
+                f"scene {n} {field_name}", text, strict=scene.type == "hook" or field_name == "stat"
+            )
     return found
 
 
@@ -601,6 +604,55 @@ def repair_prompt(base: str, previous: WriterOutput, errors: list[str]) -> str:
     )
 
 
+class HookText(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    text: str = ""
+
+
+def rewrite_long_hooks(
+    caller: JsonCaller, ctx: WriterContext, draft: DraftScript
+) -> tuple[DraftScript, list[str]]:
+    """Every hook line over the word limit gets ONE rewrite by the model (shorter, same idea) before
+    the code is allowed to cut it. A rewrite that is still too long is left for the cut."""
+    notes: list[str] = []
+    persona = (
+        ctx.flow.persona if ctx.flow else ", ".join(ctx.profile.target_users[:1]) or "người xem"
+    )
+
+    def shorter(text: str, kind: str) -> str:
+        if cat.word_count(text) <= cat.HOOK_MAX_WORDS:
+            return text
+        try:
+            new = caller.call(
+                "hook_rewrite",
+                render(
+                    "hook_rewrite", text=text, max_words=cat.HOOK_MAX_WORDS, kind=kind or "hook",
+                    persona=persona, product_name=ctx.profile.product_name,
+                ),
+                HookText,
+            ).text.strip()  # fmt: skip
+        except (LLMCallError, ValidationError):
+            return text
+        if new and cat.word_count(new) <= cat.HOOK_MAX_WORDS and not nar.forbidden_in(new):
+            notes.append(f"auto_rewritten: hook «{text}» → «{new}»")
+            return new
+        return text
+
+    out = draft.model_copy(deep=True)
+    original_first = draft.hook_options[0].voiceover.strip() if draft.hook_options else None
+    for option in out.hook_options:
+        option.voiceover = shorter(option.voiceover, option.kind)
+    if out.scenes and out.scenes[0].type == "hook":
+        first = out.scenes[0]
+        if out.hook_options and first.voiceover.strip() == original_first:
+            first.voiceover = out.hook_options[0].voiceover  # the scene shows the first option
+        else:
+            first.voiceover = shorter(
+                first.voiceover, out.hook_options[0].kind if out.hook_options else ""
+            )
+    return out, notes
+
+
 def write_script(caller: JsonCaller, ctx: WriterContext) -> WriterResult:
     """Ask for a script, validate, and send the errors back (at most MAX_REPAIRS times)."""
     base = build_prompt(ctx)
@@ -654,7 +706,9 @@ def write_script(caller: JsonCaller, ctx: WriterContext) -> WriterResult:
     if found:
         output.script = strip_draft_numbers(output.script, found)
         stripped += [f"auto_stripped: {w} «{'», «'.join(b)}»" for w, b in found.items()]
-    fixed, trims = trim_draft(output.script, ctx)
+    longer, rewrites = rewrite_long_hooks(caller, ctx, output.script)
+    fixed, trims = trim_draft(longer, ctx)
+    trims = [*rewrites, *trims]
     errors = check_draft(fixed, ctx, strict_min=False)
     if not errors:
         try:

@@ -24,6 +24,7 @@ from app.explorer.mapper import BlockedByChallenge
 from app.explorer.report import DeadlineExceeded
 from app.llm.client import load_settings
 from app.llm.json_call import JsonCaller, OpenAIChat
+from app.llm.router import get_client
 from app.pipeline.explore_run import ExploreRunner
 from app.pipeline.flow_run import FlowJob, page_summaries, run_core_flow
 from app.pipeline.frontend import Frontend
@@ -514,6 +515,12 @@ def run_script_step(
                 screenshot=cfg.job_dir / "explore" / "pages" / "1.png",
             )
 
+    # the critic has its own role (model) in the router; a fake caller in tests stays the only one
+    critic = (
+        get_client("copy_critic", tracker=caller.tracker)
+        if type(caller.llm).__name__ == "OpenAIChat"  # (a test's fake caller is left alone)
+        else None
+    )
     runner = ScriptRunner(
         cfg.job_dir.name,
         cfg.job_dir,
@@ -525,6 +532,7 @@ def run_script_step(
         theme_fn=derive,
         capture=cfg.capture,
         flow=flow,
+        critic=critic,
     )
     return runner.run()
 

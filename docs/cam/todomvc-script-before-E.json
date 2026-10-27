@@ -1,0 +1,282 @@
+{
+ "critic": {
+  "threshold": 7,
+  "before": {
+   "scores": {
+    "hook_strength": {
+     "score": 6,
+     "reason": "Câu hook nói được lợi ích 'không cần đăng' nhưng bị cụt ý và chung chung, chưa đánh trúng nỗi đau cụ thể của persona."
+    },
+    "benefit_clarity": {
+     "score": 5,
+     "reason": "Các scene chủ yếu kể thao tác (gõ, nhấn Enter, tích) chứ chưa làm nổi bật persona được gì về thời gian/công sức."
+    },
+    "proof_usage": {
+     "score": 4,
+     "reason": "Chỉ dùng số '2 việc còn lại' nhưng không khớp proof_bank (proof_bank có '1 item left', '2 items left', '3 items left'), và bỏ lỡ các số liệu thật khác."
+    },
+    "cta_strength": {
+     "score": 7,
+     "reason": "CTA có hành động cụ thể (todomvc.com) và lý do 'không cần tài khoản', dễ nhớ nhưng thiếu yếu tố thúc đẩy làm ngay."
+    },
+    "flow": {
+     "score": 6,
+     "reason": "Mạch từ mở đầu đến CTA cơ bản liền mạch nhưng thiếu câu nối nỗi đau → hành trình → kết quả, một số scene còn rời rạc."
+    }
+   },
+   "weak_scenes": [
+    {
+     "scene_id": "s1",
+     "problem": "Hook bị cụt ('không cần'), chung chung, chưa nêu rõ persona được gì hoặc nỗi đau cụ thể.",
+     "suggestion": "Đừng để việc trong ngày rối tung: 3 việc, một danh sách, không cần tài khoản."
+    },
+    {
+     "scene_id": "s2",
+     "problem": "Chỉ kể thao tác 'gõ ngay việc đầu tiên', chưa nói persona tiết kiệm được gì.",
+     "suggestion": "Mở trang là gõ ngay việc đầu tiên, không đăng ký, không rườm rà."
+    },
+    {
+     "scene_id": "s3",
+     "problem": "Kể lại thao tác thêm việc, chưa làm rõ lợi ích 'danh sách dài thêm' mang lại gì.",
+     "suggestion": "Thêm việc thứ hai, thứ ba chỉ bằng Enter, danh sách đầy đủ trong vài giây."
+    },
+    {
+     "scene_id": "s4",
+     "problem": "Câu 'tích là gọn' chưa đủ rõ persona được gì sau khi đánh dấu hoàn thành.",
+     "suggestion": "Việc xong rồi, tích một cái là danh sách tự gọn, bạn thấy ngay việc còn lại."
+    },
+    {
+     "scene_id": "s5",
+     "problem": "Số '2 việc còn lại' không khớp proof_bank (proof_bank có '1 item left!', '2 items left!', '3 items left!').",
+     "suggestion": "Chọn Active là chỉ còn 2 items left, tập trung đúng việc chưa xong."
+    }
+   ],
+   "issues": [
+    "Scene s5 dùng số '2 việc còn lại' nhưng proof_bank chỉ có '1 item left! AllActiveCompleted', '2 items left! AllActiveCompleted', '3 items left! AllActiveCompleted' — cần dùng đúng cụm '2 items left!' hoặc số liệu tương ứng.",
+    "Headline bị cụt 'không cần' gây khó hiểu, nên viết đầy đủ 'không cần tài khoản'.",
+    "Chưa khai thác các câu trích thật trong proof_bank như 'Double-click to edit a todo' hoặc 'A TodoMVC written in React.' để tăng độ tin cậy."
+   ],
+   "summary": "Kịch bản có cấu trúc cơ bản và CTA rõ nhưng hook còn yếu, phần thân thiên về kể thao tác hơn là lợi ích, và số liệu dùng chưa khớp proof_bank. Cần sửa hook, làm rõ lợi ích từng chương và dùng đúng số liệu thật để đạt mức có thể đăng."
+  },
+  "after": {
+   "scores": {
+    "hook_strength": {
+     "score": 6,
+     "reason": "Câu hỏi 'Việc trong ngày rối tung?' đánh vào nỗi đau nhưng còn chung chung, chưa gắn với persona không tài khoản và dễ bị lướt qua."
+    },
+    "benefit_clarity": {
+     "score": 5,
+     "reason": "Các scene chủ yếu kể lại thao tác gõ/Enter/tích/lọc, chưa làm rõ lợi ích cụ thể về thời gian, công sức và kết quả 'không cần tài khoản' cho từng chương."
+    },
+    "proof_usage": {
+     "score": 3,
+     "reason": "Chỉ dùng số '2 việc còn lại' đúng proof_bank, nhưng không khai thác các số 1/2/3 hay câu trích 'Double-click to edit a todo' một cách tự nhiên; headline bị cắt cụt."
+    },
+    "cta_strength": {
+     "score": 6,
+     "reason": "CTA có hành động cụ thể và lý do 'không cần tài khoản', nhưng thiếu yếu tố thúc đẩy làm ngay và chưa thật dễ nhớ."
+    },
+    "flow": {
+     "score": 5,
+     "reason": "Mạch từ nỗi đau đến hành trình có nhưng câu nối còn máy móc, nhịp chưa liền và chưa dẫn rõ đến kết quả tập trung vào việc còn lại."
+    }
+   },
+   "weak_scenes": [
+    {
+     "scene_id": "s1",
+     "problem": "Hook chung chung, chưa nêu rõ persona hoặc lợi ích cốt lõi 'không cần tài khoản'.",
+     "suggestion": "Đổi thành: 'Rối việc trong ngày mà không muốn tạo tài khoản?'"
+    },
+    {
+     "scene_id": "s2",
+     "problem": "Kể lại thao tác mở trang/gõ, chưa nói rõ persona được gì.",
+     "suggestion": "Đổi thành: 'Mở là gõ việc đầu tiên ngay, không đăng ký, không rườm rà.'"
+    },
+    {
+     "scene_id": "s3",
+     "problem": "Liệt kê thao tác Enter nhưng chưa nhấn lợi ích thời gian.",
+     "suggestion": "Đổi thành: 'Gõ việc hai, Enter; việc ba, Enter. Có danh sách trong vài giây.'"
+    },
+    {
+     "scene_id": "s4",
+     "problem": "Chỉ nói 'tích là gọn', chưa rõ lợi ích tập trung vào việc còn lại.",
+     "suggestion": "Đổi thành: 'Việc xong tích một cái, danh sách tự gọn để bạn thấy việc còn lại.'"
+    },
+    {
+     "scene_id": "s5",
+     "problem": "Nói 'Còn 2 việc cần làm' nhưng thiếu nhấn mạnh đây là kết quả sau khi lọc Active.",
+     "suggestion": "Đổi thành: 'Chọn Active là chỉ còn 2 việc chưa xong, đúng 2 việc cần làm.'"
+    },
+    {
+     "scene_id": "s6",
+     "problem": "CTA có địa chỉ nhưng thiếu lý do làm ngay và chưa dễ nhớ.",
+     "suggestion": "Đổi thành: 'Lập danh sách việc trong ngày tại todomvc.com ngay, không cần tài khoản.'"
+    }
+   ],
+   "issues": [
+    "Headline bị cắt cụt: 'Lập danh sách việc trong ngày, không cần' thiếu từ 'tài khoản'.",
+    "Scene s3 dùng 'Gõ việc thứ hai, nhấn Enter...' không sai nhưng chưa khai thác số liệu 1/2/3 items left có trong proof_bank.",
+    "Không có cụm sáo rỗng rõ rệt, nhưng 'rối tung' và 'gọn lại' khá chung chung."
+   ],
+   "summary": "Kịch bản đúng luồng persona nhưng nghiêng về kể thao tác hơn là lợi ích; hook và CTA cần cụ thể hơn, cần dùng proof_bank tự nhiên hơn và sửa headline bị cắt. Điểm tổng thể khoảng 5/10, cần chỉnh các scene s1-s6 trước khi đăng."
+  },
+  "final": {
+   "scores": {
+    "hook_strength": {
+     "score": 6,
+     "reason": "Câu hook nói được lợi ích 'không cần đăng' nhưng bị cụt ý và chung chung, chưa đánh trúng nỗi đau cụ thể của persona."
+    },
+    "benefit_clarity": {
+     "score": 5,
+     "reason": "Các scene chủ yếu kể thao tác (gõ, nhấn Enter, tích) chứ chưa làm nổi bật persona được gì về thời gian/công sức."
+    },
+    "proof_usage": {
+     "score": 4,
+     "reason": "Chỉ dùng số '2 việc còn lại' nhưng không khớp proof_bank (proof_bank có '1 item left', '2 items left', '3 items left'), và bỏ lỡ các số liệu thật khác."
+    },
+    "cta_strength": {
+     "score": 7,
+     "reason": "CTA có hành động cụ thể (todomvc.com) và lý do 'không cần tài khoản', dễ nhớ nhưng thiếu yếu tố thúc đẩy làm ngay."
+    },
+    "flow": {
+     "score": 6,
+     "reason": "Mạch từ mở đầu đến CTA cơ bản liền mạch nhưng thiếu câu nối nỗi đau → hành trình → kết quả, một số scene còn rời rạc."
+    }
+   },
+   "weak_scenes": [
+    {
+     "scene_id": "s1",
+     "problem": "Hook bị cụt ('không cần'), chung chung, chưa nêu rõ persona được gì hoặc nỗi đau cụ thể.",
+     "suggestion": "Đừng để việc trong ngày rối tung: 3 việc, một danh sách, không cần tài khoản."
+    },
+    {
+     "scene_id": "s2",
+     "problem": "Chỉ kể thao tác 'gõ ngay việc đầu tiên', chưa nói persona tiết kiệm được gì.",
+     "suggestion": "Mở trang là gõ ngay việc đầu tiên, không đăng ký, không rườm rà."
+    },
+    {
+     "scene_id": "s3",
+     "problem": "Kể lại thao tác thêm việc, chưa làm rõ lợi ích 'danh sách dài thêm' mang lại gì.",
+     "suggestion": "Thêm việc thứ hai, thứ ba chỉ bằng Enter, danh sách đầy đủ trong vài giây."
+    },
+    {
+     "scene_id": "s4",
+     "problem": "Câu 'tích là gọn' chưa đủ rõ persona được gì sau khi đánh dấu hoàn thành.",
+     "suggestion": "Việc xong rồi, tích một cái là danh sách tự gọn, bạn thấy ngay việc còn lại."
+    },
+    {
+     "scene_id": "s5",
+     "problem": "Số '2 việc còn lại' không khớp proof_bank (proof_bank có '1 item left!', '2 items left!', '3 items left!').",
+     "suggestion": "Chọn Active là chỉ còn 2 items left, tập trung đúng việc chưa xong."
+    }
+   ],
+   "issues": [
+    "Scene s5 dùng số '2 việc còn lại' nhưng proof_bank chỉ có '1 item left! AllActiveCompleted', '2 items left! AllActiveCompleted', '3 items left! AllActiveCompleted' — cần dùng đúng cụm '2 items left!' hoặc số liệu tương ứng.",
+    "Headline bị cụt 'không cần' gây khó hiểu, nên viết đầy đủ 'không cần tài khoản'.",
+    "Chưa khai thác các câu trích thật trong proof_bank như 'Double-click to edit a todo' hoặc 'A TodoMVC written in React.' để tăng độ tin cậy."
+   ],
+   "summary": "Kịch bản có cấu trúc cơ bản và CTA rõ nhưng hook còn yếu, phần thân thiên về kể thao tác hơn là lợi ích, và số liệu dùng chưa khớp proof_bank. Cần sửa hook, làm rõ lợi ích từng chương và dùng đúng số liệu thật để đạt mức có thể đăng."
+  },
+  "kept_rewrite": false,
+  "hook": {
+   "hook_strength": [
+    4,
+    6
+   ],
+   "chosen": 2,
+   "kinds": [
+    "pain_question",
+    "result_first"
+   ]
+  },
+  "rewritten": [],
+  "notes": [
+   "bản viết lại bị chấm thấp hơn nên giữ bản gốc"
+  ],
+  "passed": false
+ },
+ "proof_bank": {
+  "numbers": [
+   {
+    "value": "1",
+    "unit": "",
+    "context": "1 item left! AllActiveCompleted",
+    "source": "frame"
+   },
+   {
+    "value": "2",
+    "unit": "",
+    "context": "2 items left! AllActiveCompleted",
+    "source": "frame"
+   },
+   {
+    "value": "3",
+    "unit": "",
+    "context": "3 items left! AllActiveCompleted",
+    "source": "frame"
+   }
+  ],
+  "quotes": [
+   "A TodoMVC written in React.",
+   "ReactJS on Stack Overflow",
+   "Double-click to edit a todo",
+   "Created by the TodoMVC Team"
+  ],
+  "offers": [],
+  "audience_pains": []
+ },
+ "scenes": [
+  [
+   "s1",
+   "Ba việc trong ngày, gọn trong một danh sách không cần đăng",
+   "Không cần tài khoản",
+   null
+  ],
+  [
+   "s2",
+   "Mở trang là gõ ngay việc đầu tiên, một ô nhập duy nhất, không rườm rà.",
+   "Một ô nhập duy nhất",
+   null
+  ],
+  [
+   "s3",
+   "Gõ việc thứ hai rồi việc thứ ba, nhấn Enter là danh sách dài thêm.",
+   "Nhấn Enter là xong",
+   null
+  ],
+  [
+   "s4",
+   "Việc nào xong, tích một cái là danh sách tự gọn lại.",
+   "Tích là gọn",
+   null
+  ],
+  [
+   "s5",
+   "Chọn Active là chỉ còn hai việc chưa xong.",
+   "Còn 2 việc cần làm",
+   {
+    "value": "2",
+    "label": "việc còn lại"
+   }
+  ],
+  [
+   "s6",
+   "Lập danh sách việc trong ngày ngay tại todomvc.com, không cần tài khoản.",
+   "todomvc.com",
+   null
+  ]
+ ],
+ "headline": "Lập danh sách việc trong ngày, không cần",
+ "hook_options": [
+  {
+   "kind": "pain_question",
+   "voiceover": "Việc ngập đầu mà không biết bắt đầu từ đâu?",
+   "on_screen_text": "Rối quá phải không?"
+  },
+  {
+   "kind": "result_first",
+   "voiceover": "Ba việc trong ngày, gọn trong một danh sách không cần đăng",
+   "on_screen_text": "Không cần tài khoản"
+  }
+ ]
+}

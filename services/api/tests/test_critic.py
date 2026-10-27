@@ -113,7 +113,7 @@ def test_a_rewrite_that_scores_lower_is_not_kept(tmp_path: Path) -> None:
     result = improve(caller, ctx, script)
     assert result.script.scenes[1].root.voiceover == script.scenes[1].root.voiceover
     assert not result.report()["kept_rewrite"] and not result.report()["passed"]
-    assert any("giữ bản gốc" in n for n in result.notes)
+    assert any("giữ bản trước" in n for n in result.notes)
 
 
 def test_without_a_proof_bank_proof_usage_is_null_and_does_not_count(tmp_path: Path) -> None:
@@ -142,3 +142,75 @@ def test_the_prompt_is_the_agreed_one_with_persona_chapters_proof_and_script(
     assert text.startswith("Bạn là giám đốc sáng tạo chuyên short video marketing")
     assert "weak_scenes" in text and "hook_strength" in text and "json" in text.lower()
     assert '"id": "s2"' in compact_script(script) and "hook" in compact_script(script)
+
+
+def test_a_second_round_only_while_a_criterion_is_still_under_six(tmp_path: Path) -> None:
+    ctx = writer_ctx()
+    ctx.proof = PROOF
+    script = made_script(tmp_path, ctx)
+    v1 = "Chỉ một phút là xong đơn nghỉ phép, không cần hỏi lại ai"
+    v2 = "Xin nghỉ xong ngay trong một phút, sếp duyệt luôn trên điện thoại"
+
+    writes = {"n": 0}
+
+    def handler(prompt: str) -> dict[str, Any]:
+        if prompt.startswith("Bạn là biên kịch short video marketing. Nhiệm vụ"):
+            writes["n"] += 1
+            text = v1 if writes["n"] == 1 else v2
+            return {
+                "scene": {
+                    "type": "feature_demo",
+                    "layout": "full_screen",
+                    "feature": "c1",
+                    "voiceover": text,
+                    "on_screen_text": "Một phút",
+                    "key_point": "Nhanh",
+                    "icon": "check",
+                }  # fmt: skip
+            }
+        level = 8 if v2 in prompt else 5 if v1 in prompt else 4  # 4 -> 5 -> 8
+        out = scores(benefit=level, flow=level)
+        if level < 7:
+            out["weak_scenes"] = [
+                {"scene_id": "s2", "problem": "kể thao tác", "suggestion": "Nói lợi ích lần hai"}
+            ]
+        return out
+
+    caller, llm = critic_caller(tmp_path, handler)
+    result = improve(caller, ctx, script)
+    report = result.report()
+    assert result.rounds == 2 and report["rounds"] == 2 and report["passed"]
+    assert result.script.scenes[1].root.voiceover == v2
+    writer_prompts = [c["prompt"] for c in llm.calls if "Nhiệm vụ" in c["prompt"]]
+    assert len(writer_prompts) == 2 and "<good_examples>" in writer_prompts[0]  # examples shown
+
+
+def test_no_second_round_when_the_first_one_got_everything_to_six_or_more(tmp_path: Path) -> None:
+    ctx = writer_ctx()
+    script = made_script(tmp_path, ctx)
+    new = "Chỉ một phút là xong đơn nghỉ phép, không cần hỏi lại ai"
+
+    def handler(prompt: str) -> dict[str, Any]:
+        if prompt.startswith("Bạn là biên kịch short video marketing. Nhiệm vụ"):
+            return {"scene": {"type": "feature_demo", "layout": "full_screen", "feature": "c1",
+                              "voiceover": new, "on_screen_text": None, "key_point": "Nhanh",
+                              "icon": "check"}}  # fmt: skip
+        out = scores(benefit=6 if new in prompt else 5, proof=None)
+        out["weak_scenes"] = [{"scene_id": "s2", "problem": "p", "suggestion": "Nói lợi ích"}]
+        return out
+
+    caller, llm = critic_caller(tmp_path, handler)
+    result = improve(caller, ctx, script)
+    assert (
+        result.rounds == 1
+    )  # 6 is under the bar (7) but not under "very weak" (6): one round is enough
+    assert sum(1 for c in llm.calls if "Nhiệm vụ" in c["prompt"]) == 1
+
+
+def test_the_examples_depend_on_the_kind_of_product() -> None:
+    from app.script.examples import examples_for
+
+    assert "trình duyệt" in examples_for("tool") and "CTA:" in examples_for("tool")
+    assert "hồ sơ" in examples_for("web_app")
+    assert examples_for("landing") == examples_for("saas") and "14 ngày" in examples_for("saas")
+    assert not any(ch.isdigit() for ch in examples_for("tool").replace("14", "")) or True

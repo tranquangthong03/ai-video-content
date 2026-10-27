@@ -11,6 +11,23 @@ TRAILING = " \t,;:-–—…·/|(["
 SENTENCE_END = re.compile(r"(?<=[.!?…])\s+")
 
 
+# words a sentence cannot end on (Vietnamese and English connectors, prepositions, articles)
+DANGLING = {
+    "và", "rồi", "để", "của", "cho", "với", "thì", "là", "mà", "khi", "nếu", "hay", "hoặc", "các",
+    "những", "một", "đã", "sẽ", "đang", "trong", "ở", "tại", "từ", "đến", "bằng", "cũng", "vẫn",
+    "còn", "nhưng", "vì", "nên", "mọi", "như", "and", "or", "to", "of", "the", "a", "an", "in",
+    "for", "with", "that", "is",
+}  # fmt: skip
+
+
+def drop_dangling(text: str, keep: int = 3) -> str:
+    """Take connectors off the end of a cut sentence ("... rồi gửi cho" -> "... rồi gửi")."""
+    words = text.split()
+    while len(words) > keep and words[-1].strip(TRAILING + ".!?").casefold() in DANGLING:
+        words.pop()
+    return " ".join(words)
+
+
 def clean_end(text: str) -> str:
     """Drop punctuation that would dangle after a cut (a trailing comma, dash, open bracket)."""
     return text.rstrip(TRAILING)
@@ -55,7 +72,7 @@ def trim_words(text: str, limit: int) -> str:
         candidate = clean_end(",".join(clauses))
         if candidate and words_of(candidate) <= limit:
             return candidate + "."
-    return clean_end(" ".join(first.split()[:limit])) + "."
+    return clean_end(drop_dangling(" ".join(first.split()[:limit]))) + "."
 
 
 def trim_highlight(headline: str, highlight: str | None) -> str | None:

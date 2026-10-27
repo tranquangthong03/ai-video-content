@@ -1,0 +1,319 @@
+{
+ "critic": {
+  "threshold": 7,
+  "before": {
+   "scores": {
+    "hook_strength": {
+     "score": 7,
+     "reason": "Câu hỏi 'Hồ sơ nhân viên mới vẫn ghi tay lên giấy?' đánh trúng nỗi đau quản lý hồ sơ rời rạc, đủ cụ thể để HR dừng lướt, nhưng chưa nêu hậu quả mất thời gian nên chưa đạt 12 từ ấn tượng mạnh."
+    },
+    "benefit_clarity": {
+     "score": 4,
+     "reason": "Chủ yếu kể lại thao tác 'bấm Add', 'điền họ tên', 'Save' chứ chưa nói rõ HR được gì về thời gian/công sức hay lợi ích hồ sơ tập trung."
+    },
+    "proof_usage": {
+     "score": 2,
+     "reason": "Chỉ dùng được ưu đãi 'mã nguồn mở' ở cuối, còn số liệu và câu trích thật trong proof_bank chưa được khai thác tự nhiên."
+    },
+    "cta_strength": {
+     "score": 6,
+     "reason": "CTA có hành động 'dùng thử' và link demo cụ thể, nhưng thiếu lý do làm ngay (ưu đãi/lợi ích rõ) và chưa dễ nhớ."
+    },
+    "flow": {
+     "score": 5,
+     "reason": "Mạch hook → demo → CTA có, nhưng các scene demo liệt kê thao tác rời rạc, thiếu câu nối nỗi đau → hành trình → kết quả và nhịp chưa gọn."
+    }
+   },
+   "weak_scenes": [
+    {
+     "scene_id": "s2",
+     "problem": "Chỉ tả thao tác mở trang PIM và bấm Add, không cho thấy HR được lợi gì.",
+     "suggestion": "Mở PIM, bấm Add — hồ sơ nhân viên mới bắt đầu trong một bảng điều khiển, không cần giấy tờ rời."
+    },
+    {
+     "scene_id": "s3",
+     "problem": "Nói 'không cần chuyển qua lại giấy tờ' nhưng vẫn chỉ kể thao tác nhập tên, thiếu kết quả cụ thể.",
+     "suggestion": "Nhập họ tên và tên đệm ngay trên form — thông tin nhân viên mới vào thẳng hồ sơ tập trung."
+    },
+    {
+     "scene_id": "s4",
+     "problem": "Câu 'một cú bấm Save là xong hồ sơ' dễ gây hiểu nhầm đã lưu, trong khi luồng dừng trước Save.",
+     "suggestion": "Họ tên và mã nhân viên đã đầy đủ, chỉ còn một bước Save để hoàn tất hồ sơ trên hệ thống."
+    },
+    {
+     "scene_id": "s5",
+     "problem": "CTA thiếu lý do làm ngay và chưa nhấn mạnh lợi ích cốt lõi là hồ sơ tập trung thay vì giấy tờ/bảng tính.",
+     "suggestion": "Đưa người mới vào một hệ thống nhân sự tập trung với OrangeHRM mã nguồn mở — dùng thử ngay tại opensource-demo.orangehrmlive.com."
+    }
+   ],
+   "issues": [
+    "Scene s4 dùng 'một cú bấm Save là xong hồ sơ' trong khi persona_and_flow yêu cầu dừng trước nút Save để chưa tạo hồ sơ — dễ sai lệch luồng demo.",
+    "Proof_bank có nhiều số liệu và câu trích thật nhưng kịch bản chưa dùng tự nhiên, chỉ dùng ưu đãi 'mã nguồn mở'.",
+    "Cụm 'không cần chuyển qua lại giấy tờ' và 'một bảng điều' chưa được nối thành lợi ích rõ ràng; headline bị cắt cụt gây khó hiểu.",
+    "Chưa khai thác nỗi đau cụ thể trong audience_pains về chấm công/timesheet để tăng liên hệ với HR."
+   ],
+   "summary": "Kịch bản có hook đúng nỗi đau và CTA có link demo, nhưng phần thân chủ yếu kể thao tác nên lợi ích chưa rõ, proof gần như bỏ trống và scene s4 mâu thuẫn với luồng dừng trước Save. Cần viết lại s2–s5 theo hướng 'HR được gì', dùng ưu đãi mã nguồn mở và một câu trích/số liệu thật từ proof_bank, đồng thời sửa CTA để có lý do làm ngay."
+  },
+  "after": {
+   "scores": {
+    "hook_strength": {
+     "score": 7,
+     "reason": "Câu hỏi 'Hồ sơ nhân viên mới vẫn ghi tay lên giấy?' đánh trúng nỗi đau thủ công của HR, nhưng hơi chung chung và chưa đủ gây tò mò mạnh."
+    },
+    "benefit_clarity": {
+     "score": 5,
+     "reason": "Các scene 2-4 chủ yếu kể thao tác (mở PIM, bấm Add, gõ tên) mà chưa nói rõ HR được lợi gì về thời gian/công sức/kết quả tập trung."
+    },
+    "proof_usage": {
+     "score": 2,
+     "reason": "Chỉ dùng ưu đãi 'mã nguồn mở' nhưng không khai thác số liệu, câu trích hay nỗi đau cụ thể trong proof_bank (ví dụ timesheet, chấm công)."
+    },
+    "cta_strength": {
+     "score": 6,
+     "reason": "CTA có hành động 'dùng thử' và URL cụ thể, nhưng thiếu lý do làm ngay (ưu đãi thật/giá trị rõ) và chưa dễ nhớ."
+    },
+    "flow": {
+     "score": 6,
+     "reason": "Mạch nỗi đau → demo → CTA tương đối liền, nhưng thiếu kết quả rõ ràng và câu nối giữa các chương còn máy móc."
+    }
+   },
+   "weak_scenes": [
+    {
+     "scene_id": "s2",
+     "problem": "Chỉ mô tả thao tác mở PIM bấm Add, chưa nói HR được gì (tiết kiệm thời gian, tập trung hồ sơ).",
+     "suggestion": "Mở PIM, bấm Add — hồ sơ nhân viên mới vào thẳng một bảng điều khiển, không còn giấy tờ rời."
+    },
+    {
+     "scene_id": "s3",
+     "problem": "Câu dài, lặp ý 'không cần chuyển qua lại giấy tờ' và chưa làm rõ lợi ích tập trung hồ sơ.",
+     "suggestion": "Gõ họ tên và tên đệm Văn — thông tin vào thẳng hồ sơ tập trung, không cần giấy tờ rời."
+    },
+    {
+     "scene_id": "s4",
+     "problem": "Chỉ báo trạng thái 'sẵn sàng lưu', thiếu lợi ích cụ thể trước khi bấm Save.",
+     "suggestion": "Họ tên và mã nhân viên đã đủ — một bước Save là hồ sơ tập trung hoàn tất."
+    },
+    {
+     "scene_id": "s5",
+     "problem": "CTA thiếu lý do làm ngay và chưa khai thác ưu đãi 'mã nguồn mở' rõ ràng.",
+     "suggestion": "Dùng thử OrangeHRM mã nguồn mở tại opensource-demo.orangehrmlive.com — gộp hồ sơ, chấm công vào một bảng điều khiển."
+    }
+   ],
+   "issues": [
+    "Cụm sáo rỗng: 'không cần chuyển qua lại giấy tờ' (scene 3) lặp ý và không cụ thể.",
+    "Không có số liệu/câu trích nào từ proof_bank được dùng tự nhiên; proof_bank có số liệu và nỗi đau về chấm công/timesheet nhưng kịch bản bỏ qua.",
+    "CTA chưa nêu lý do làm ngay (không dùng ưu đãi 'mã nguồn mở' làm điểm nhấn).",
+    "Scene 4 mô tả trạng thái form nhưng không nói rõ lợi ích của việc dừng trước Save (kiểm tra trước khi tạo hồ sơ)."
+   ],
+   "summary": "Kịch bản có mạch cơ bản và hook tạm ổn, nhưng thiếu lợi ích rõ ràng theo persona, chưa khai thác proof_bank và CTA còn yếu. Cần sửa các scene 2-5 để nhấn vào kết quả tập trung hồ sơ, giảm thao tác kể lại, và thêm lý do dùng thử cụ thể."
+  },
+  "final": {
+   "scores": {
+    "hook_strength": {
+     "score": 7,
+     "reason": "Câu hỏi 'Hồ sơ nhân viên mới vẫn ghi tay lên giấy?' đánh trúng nỗi đau thủ công của HR, nhưng hơi chung chung và chưa đủ gây tò mò mạnh."
+    },
+    "benefit_clarity": {
+     "score": 5,
+     "reason": "Các scene 2-4 chủ yếu kể thao tác (mở PIM, bấm Add, gõ tên) mà chưa nói rõ HR được lợi gì về thời gian/công sức/kết quả tập trung."
+    },
+    "proof_usage": {
+     "score": 2,
+     "reason": "Chỉ dùng ưu đãi 'mã nguồn mở' nhưng không khai thác số liệu, câu trích hay nỗi đau cụ thể trong proof_bank (ví dụ timesheet, chấm công)."
+    },
+    "cta_strength": {
+     "score": 6,
+     "reason": "CTA có hành động 'dùng thử' và URL cụ thể, nhưng thiếu lý do làm ngay (ưu đãi thật/giá trị rõ) và chưa dễ nhớ."
+    },
+    "flow": {
+     "score": 6,
+     "reason": "Mạch nỗi đau → demo → CTA tương đối liền, nhưng thiếu kết quả rõ ràng và câu nối giữa các chương còn máy móc."
+    }
+   },
+   "weak_scenes": [
+    {
+     "scene_id": "s2",
+     "problem": "Chỉ mô tả thao tác mở PIM bấm Add, chưa nói HR được gì (tiết kiệm thời gian, tập trung hồ sơ).",
+     "suggestion": "Mở PIM, bấm Add — hồ sơ nhân viên mới vào thẳng một bảng điều khiển, không còn giấy tờ rời."
+    },
+    {
+     "scene_id": "s3",
+     "problem": "Câu dài, lặp ý 'không cần chuyển qua lại giấy tờ' và chưa làm rõ lợi ích tập trung hồ sơ.",
+     "suggestion": "Gõ họ tên và tên đệm Văn — thông tin vào thẳng hồ sơ tập trung, không cần giấy tờ rời."
+    },
+    {
+     "scene_id": "s4",
+     "problem": "Chỉ báo trạng thái 'sẵn sàng lưu', thiếu lợi ích cụ thể trước khi bấm Save.",
+     "suggestion": "Họ tên và mã nhân viên đã đủ — một bước Save là hồ sơ tập trung hoàn tất."
+    },
+    {
+     "scene_id": "s5",
+     "problem": "CTA thiếu lý do làm ngay và chưa khai thác ưu đãi 'mã nguồn mở' rõ ràng.",
+     "suggestion": "Dùng thử OrangeHRM mã nguồn mở tại opensource-demo.orangehrmlive.com — gộp hồ sơ, chấm công vào một bảng điều khiển."
+    }
+   ],
+   "issues": [
+    "Cụm sáo rỗng: 'không cần chuyển qua lại giấy tờ' (scene 3) lặp ý và không cụ thể.",
+    "Không có số liệu/câu trích nào từ proof_bank được dùng tự nhiên; proof_bank có số liệu và nỗi đau về chấm công/timesheet nhưng kịch bản bỏ qua.",
+    "CTA chưa nêu lý do làm ngay (không dùng ưu đãi 'mã nguồn mở' làm điểm nhấn).",
+    "Scene 4 mô tả trạng thái form nhưng không nói rõ lợi ích của việc dừng trước Save (kiểm tra trước khi tạo hồ sơ)."
+   ],
+   "summary": "Kịch bản có mạch cơ bản và hook tạm ổn, nhưng thiếu lợi ích rõ ràng theo persona, chưa khai thác proof_bank và CTA còn yếu. Cần sửa các scene 2-5 để nhấn vào kết quả tập trung hồ sơ, giảm thao tác kể lại, và thêm lý do dùng thử cụ thể."
+  },
+  "kept_rewrite": true,
+  "hook": {
+   "hook_strength": [
+    7,
+    6
+   ],
+   "chosen": 1,
+   "kinds": [
+    "pain_question",
+    "counterintuitive"
+   ]
+  },
+  "rewritten": [
+   "s2",
+   "s3",
+   "s4"
+  ],
+  "notes": [],
+  "passed": false
+ },
+ "proof_bank": {
+  "numbers": [
+   {
+    "value": "1",
+    "unit": "",
+    "context": "dụng; dashboard hiển thị việc cần làm '[1] Candidate to Interview' trong My Actio",
+    "source": "profile"
+   },
+   {
+    "value": "29",
+    "unit": "",
+    "context": "Punched Out: Mar 29th at 01:19 PM (GMT 7)",
+    "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index"
+   },
+   {
+    "value": "01",
+    "unit": "",
+    "context": "Punched Out: Mar 29th at 01:19 PM (GMT 7)",
+    "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index"
+   },
+   {
+    "value": "19",
+    "unit": "",
+    "context": "Punched Out: Mar 29th at 01:19 PM (GMT 7)",
+    "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index"
+   },
+   {
+    "value": "7",
+    "unit": "",
+    "context": "Punched Out: Mar 29th at 01:19 PM (GMT 7)",
+    "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index"
+   },
+   {
+    "value": "2005",
+    "unit": "",
+    "context": "© 2005 - 2026 OrangeHRM, Inc. All rights reser",
+    "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index"
+   },
+   {
+    "value": "2026",
+    "unit": "",
+    "context": "© 2005 - 2026 OrangeHRM, Inc. All rights reserved.",
+    "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index"
+   },
+   {
+    "value": "1",
+    "unit": "MB",
+    "context": "Employee Accepts jpg, .png, .gif up to 1MB. Recommended dimensions: 200px X",
+    "source": "frame"
+   },
+   {
+    "value": "200",
+    "unit": "px",
+    "context": ".gif up to 1MB. Recommended dimensions: 200px X",
+    "source": "frame"
+   },
+   {
+    "value": "0443",
+    "unit": "",
+    "context": "0443",
+    "source": "frame"
+   },
+   {
+    "value": "5.9",
+    "unit": "",
+    "context": "OrangeHRM OS 5.9",
+    "source": "frame"
+   }
+  ],
+  "quotes": [
+   "Punched Out: Mar 29th at 01:19 PM (GMT 7)",
+   "(1) Pending Self Review",
+   "(1) Candidate to Interview",
+   "Throwback Thursdays!!",
+   "Live SIMPLY Dream BIG Be GREATFULL Give LOVE Laugh LOT.......",
+   "Employees on Leave Today",
+   "No Employees are on Leave Today",
+   "Employee Distribution by Sub Unit"
+  ],
+  "offers": [
+   {
+    "id": "open_source",
+    "label": "mã nguồn mở",
+    "source_text": "Nền tảng quản trị nhân sự (HRM) mã nguồn mở gộp hồ sơ nhân viên, nghỉ phép, chấm công và tuyển dụng vào một bảng điều kh"
+   }
+  ],
+  "audience_pains": [
+   "Chấm công và timesheet theo tuần cho nhân viên lẫn người quản lý",
+   "Chấm công và timesheet theo tuần"
+  ]
+ },
+ "scenes": [
+  [
+   "s1",
+   "Hồ sơ nhân viên mới vẫn ghi tay lên giấy?",
+   "Còn ghi tay?",
+   null
+  ],
+  [
+   "s2",
+   "Mở trang PIM rồi bấm Add — hồ sơ nhân viên mới bắt đầu ngay trong một bảng điều khiển.",
+   "Mở PIM, bấm Add",
+   null
+  ],
+  [
+   "s3",
+   "Gõ họ tên và tên đệm Văn trên form, thông tin vào thẳng hồ sơ tập trung.",
+   "Vào thẳng hồ sơ",
+   null
+  ],
+  [
+   "s4",
+   "Họ tên và mã nhân viên đã đầy đủ, chỉ còn một bước Save.",
+   "Sẵn sàng lưu",
+   null
+  ],
+  [
+   "s5",
+   "Đưa người mới vào hệ thống tập trung với OrangeHRM mã nguồn mở, dùng thử tại opensource-demo.orangehrmlive.com.",
+   "Dùng thử ngay",
+   null
+  ]
+ ],
+ "headline": "Tạo hồ sơ nhân viên trên một bảng điều",
+ "hook_options": [
+  {
+   "kind": "pain_question",
+   "voiceover": "Hồ sơ nhân viên mới vẫn ghi tay lên giấy?",
+   "on_screen_text": "Còn ghi tay?"
+  },
+  {
+   "kind": "counterintuitive",
+   "voiceover": "Đừng mở bảng tính nữa, hồ sơ nên nằm một chỗ.",
+   "on_screen_text": "Một chỗ duy nhất"
+  }
+ ]
+}

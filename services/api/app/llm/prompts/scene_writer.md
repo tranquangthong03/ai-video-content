@@ -27,6 +27,10 @@ Mục tiêu: {{ goal }} | Thời lượng mục tiêu: {{ duration_s }}s | Headl
 {# changed: marketing rules and proof bank #}{% if proof_json %}<proof_bank>
 {{ proof_json }}
 </proof_bank>
+{% endif %}{# changed: examples of good benefit / CTA copy for this kind of product #}{% if examples %}<good_examples>
+Mẫu lời tốt cho loại sản phẩm này (chỉ để học GIỌNG và CẤU TRÚC: lợi ích trước, một hành động ngắn, lý do thật để làm ngay; KHÔNG sao chép nguyên văn, KHÔNG dùng lại số liệu):
+{{ examples }}
+</good_examples>
 {% endif %}<scene_catalog>
 {{ scene_catalog_json }}
 </scene_catalog>

@@ -1,0 +1,241 @@
+{
+ "critic": {
+  "threshold": 7,
+  "before": {
+   "scores": {
+    "hook_strength": {
+     "score": 8,
+     "reason": "Nêu đúng nỗi đau 2.8MB và câu hỏi chất lượng, cụ thể và khiến người dùng mới dừng lại."
+    },
+    "benefit_clarity": {
+     "score": 6,
+     "reason": "Nói rõ 'không cần cài đặt' và 'dung lượng giảm' nhưng chưa nhấn mạnh lợi ích xem khác biệt chất lượng để chọn mức nén."
+    },
+    "proof_usage": {
+     "score": 7,
+     "reason": "Dùng đúng số 2.8MB, 50, 2.79MB từ proof_bank; nhưng số 2.79MB là suy diễn từ 2.8MB, thiếu ưu đãi 'xử lý ngay trên máy' ở phần giữa."
+    },
+    "cta_strength": {
+     "score": 8,
+     "reason": "CTA có hành động cụ thể (squoosh.app), lý do riêng tư rõ ràng, dễ nhớ; nhưng thiếu từ ngữ thúc giục thử ngay."
+    },
+    "flow": {
+     "score": 7,
+     "reason": "Mạch từ nỗi đau đến trải nghiệm và kết quả khá liền, nhưng chương 2 chưa thể hiện bước xem khác biệt chất lượng trước khi lưu."
+    }
+   },
+   "weak_scenes": [
+    {
+     "scene_id": "s2",
+     "problem": "Chưa nói rõ persona được gì khi chọn ảnh mẫu, chỉ kể thao tác mở trình duyệt.",
+     "suggestion": "Thay voiceover: 'Mở trình duyệt, chọn ngay ảnh mẫu 2.8MB để thử nén, không cần cài đặt.'"
+    },
+    {
+     "scene_id": "s3",
+     "problem": "Bỏ qua bước xem khác biệt chất lượng trước khi lưu, thiếu lợi ích cốt lõi của persona.",
+     "suggestion": "Thay voiceover: 'Hạ chất lượng xuống 50, xem dung lượng giảm so với ảnh gốc 2.8MB và so sánh chất lượng trước khi lưu.'"
+    }
+   ],
+   "issues": [
+    "Voiceover s3 dùng '2.79MB' không có trong proof_bank (chỉ có 2.8MB), nên sửa thành 2.8MB.",
+    "Cụm 'nhẹ hẳn' ở on_screen_text s3 hơi chung chung, nên thay bằng 'Giảm dung lượng, xem rõ khác biệt'."
+   ],
+   "summary": "Kịch bản có hook tốt và CTA ổn, nhưng cần làm rõ lợi ích xem khác biệt chất lượng ở chương 2 và sửa số liệu 2.79MB thành 2.8MB để đúng proof_bank."
+  },
+  "after": {
+   "scores": {
+    "hook_strength": {
+     "score": 7,
+     "reason": "Câu mở đánh trúng nỗi đau dung lượng 2.8MB nhưng kết thúc bằng câu hỏi hơi chung, chưa tạo tò mò mạnh để dừng lướt."
+    },
+    "benefit_clarity": {
+     "score": 6,
+     "reason": "Scene 2 nói rõ không cần cài đặt, scene 3 nói xem dung lượng giảm và so sánh chất lượng, nhưng chưa nhấn mạnh lợi ích thời gian/công sức cụ thể cho persona."
+    },
+    "proof_usage": {
+     "score": 7,
+     "reason": "Dùng đúng số 2.8MB và mức 50 từ proof_bank, nhưng thiếu câu trích hoặc ưu đãi 'xử lý ngay trên máy bạn' một cách tự nhiên trong toàn kịch bản."
+    },
+    "cta_strength": {
+     "score": 6,
+     "reason": "CTA có hành động cụ thể (thử tại squoosh.app) và lý do riêng tư, nhưng thiếu yếu tố thúc đẩy làm ngay như ưu đãi thật hoặc kết quả nhanh."
+    },
+    "flow": {
+     "score": 7,
+     "reason": "Mạch từ nỗi đau đến trải nghiệm và CTA khá liền, nhưng scene 3 hơi liệt kê thao tác và thiếu câu nối nhấn mạnh kết quả persona đạt được."
+    }
+   },
+   "weak_scenes": [
+    {
+     "scene_id": "s1",
+     "problem": "Hook kết thúc bằng câu hỏi chung 'nén xong có mất chất lượng?' chưa đủ mạnh để giữ chân người xem.",
+     "suggestion": "Thay bằng: 'Ảnh 2.8MB làm trang tải chậm? Nén xuống 50 vẫn xem rõ chất lượng.'"
+    },
+    {
+     "scene_id": "s3",
+     "problem": "Câu thoại kể lại thao tác hạ chất lượng, chưa làm rõ persona được gì và chưa dùng ưu đãi 'xử lý ngay trên máy bạn'.",
+     "suggestion": "Thay bằng: 'Hạ chất lượng xuống 50, thấy ngay dung lượng giảm so với 2.8MB, ảnh xử lý ngay trên máy bạn.'"
+    },
+    {
+     "scene_id": "s4",
+     "problem": "CTA thiếu lý do làm ngay và chưa tận dụng câu trích 'Images never leave your device' một cách tự nhiên.",
+     "suggestion": "Thay bằng: 'Thử ngay tại squoosh.app: ảnh không rời thiết bị, không cần cài đặt.'"
+    }
+   ],
+   "issues": [
+    "Cụm 'vẫn giữ chất lượng cao' trong headline mang tính sáo rỗng, chưa được chứng minh bằng số liệu hoặc so sánh cụ thể trong kịch bản.",
+    "Scene 3 dùng 'so sánh chất lượng trước khi lưu' nhưng không nói rõ persona sẽ thấy gì, dễ thành lời hứa chung.",
+    "Chưa khai thác câu trích 'Smaller images mean faster load times' từ proof_bank để củng cố lợi ích."
+   ],
+   "summary": "Kịch bản đạt mức khá, có hook đúng nỗi đau và dùng số liệu thật, nhưng cần làm rõ lợi ích persona ở scene 3, tăng lực CTA và loại bỏ cụm sáo rỗng để đạt chuẩn đăng ngay."
+  },
+  "final": {
+   "scores": {
+    "hook_strength": {
+     "score": 8,
+     "reason": "Nêu đúng nỗi đau 2.8MB và câu hỏi chất lượng, cụ thể và khiến người dùng mới dừng lại."
+    },
+    "benefit_clarity": {
+     "score": 6,
+     "reason": "Nói rõ 'không cần cài đặt' và 'dung lượng giảm' nhưng chưa nhấn mạnh lợi ích xem khác biệt chất lượng để chọn mức nén."
+    },
+    "proof_usage": {
+     "score": 7,
+     "reason": "Dùng đúng số 2.8MB, 50, 2.79MB từ proof_bank; nhưng số 2.79MB là suy diễn từ 2.8MB, thiếu ưu đãi 'xử lý ngay trên máy' ở phần giữa."
+    },
+    "cta_strength": {
+     "score": 8,
+     "reason": "CTA có hành động cụ thể (squoosh.app), lý do riêng tư rõ ràng, dễ nhớ; nhưng thiếu từ ngữ thúc giục thử ngay."
+    },
+    "flow": {
+     "score": 7,
+     "reason": "Mạch từ nỗi đau đến trải nghiệm và kết quả khá liền, nhưng chương 2 chưa thể hiện bước xem khác biệt chất lượng trước khi lưu."
+    }
+   },
+   "weak_scenes": [
+    {
+     "scene_id": "s2",
+     "problem": "Chưa nói rõ persona được gì khi chọn ảnh mẫu, chỉ kể thao tác mở trình duyệt.",
+     "suggestion": "Thay voiceover: 'Mở trình duyệt, chọn ngay ảnh mẫu 2.8MB để thử nén, không cần cài đặt.'"
+    },
+    {
+     "scene_id": "s3",
+     "problem": "Bỏ qua bước xem khác biệt chất lượng trước khi lưu, thiếu lợi ích cốt lõi của persona.",
+     "suggestion": "Thay voiceover: 'Hạ chất lượng xuống 50, xem dung lượng giảm so với ảnh gốc 2.8MB và so sánh chất lượng trước khi lưu.'"
+    }
+   ],
+   "issues": [
+    "Voiceover s3 dùng '2.79MB' không có trong proof_bank (chỉ có 2.8MB), nên sửa thành 2.8MB.",
+    "Cụm 'nhẹ hẳn' ở on_screen_text s3 hơi chung chung, nên thay bằng 'Giảm dung lượng, xem rõ khác biệt'."
+   ],
+   "summary": "Kịch bản có hook tốt và CTA ổn, nhưng cần làm rõ lợi ích xem khác biệt chất lượng ở chương 2 và sửa số liệu 2.79MB thành 2.8MB để đúng proof_bank."
+  },
+  "kept_rewrite": false,
+  "hook": {
+   "hook_strength": [
+    8,
+    6
+   ],
+   "chosen": 1,
+   "kinds": [
+    "pain_question",
+    "result_first"
+   ]
+  },
+  "rewritten": [],
+  "notes": [
+   "bản viết lại bị chấm thấp hơn nên giữ bản gốc"
+  ],
+  "passed": false
+ },
+ "proof_bank": {
+  "numbers": [
+   {
+    "value": "2.8",
+    "unit": "MB",
+    "context": "Large photo 2.8MB",
+    "source": "profile"
+   },
+   {
+    "value": "13",
+    "unit": "KB",
+    "context": "SVG icon 13KB",
+    "source": "profile"
+   },
+   {
+    "value": "75",
+    "unit": "",
+    "context": "Quality: 75",
+    "source": "frame"
+   },
+   {
+    "value": "50",
+    "unit": "",
+    "context": "Quality: 50",
+    "source": "frame"
+   }
+  ],
+  "quotes": [
+   "Or try one of these:",
+   "Smaller images mean faster load times. Squoosh can reduce file size and maintain high quality.",
+   "Worried about privacy? Images never leave your device since Squoosh does all the work locally."
+  ],
+  "offers": [
+   {
+    "id": "no_install",
+    "label": "không cần cài đặt",
+    "source_text": "Công cụ nén ảnh chạy hoàn toàn trong trình duyệt: kéo thả ảnh vào, xem khác biệt chất lượng rồi lưu ngay, không cần máy "
+   },
+   {
+    "id": "private",
+    "label": "xử lý ngay trên máy bạn",
+    "source_text": "Worried about privacy? Images never leave your device since Squoosh does all the work locally."
+   }
+  ],
+  "audience_pains": [
+   "Worried about privacy? Images never leave your device since Squoosh does all the work locally."
+  ]
+ },
+ "scenes": [
+  [
+   "s1",
+   "Ảnh 2.8MB làm trang tải chậm, nén xong có mất chất lượng?",
+   "2.8MB quá nặng?",
+   null
+  ],
+  [
+   "s2",
+   "Mở trình duyệt là có ngay ảnh mẫu để thử, không cần cài đặt gì cả.",
+   "Thử ngay ảnh mẫu",
+   null
+  ],
+  [
+   "s3",
+   "Hạ chất lượng xuống 50, dung lượng tệp giảm hẳn so với ảnh gốc 2.79MB, và ảnh đã nén được lưu về máy.",
+   "Xuống 50, nhẹ hẳn",
+   {
+    "value": "50",
+    "label": "mức chất lượng nén"
+   }
+  ],
+  [
+   "s4",
+   "Thử nén ảnh ngay trên squoosh.app, xử lý ngay trên máy bạn, ảnh không rời khỏi thiết bị.",
+   "Thử tại squoosh.app",
+   null
+  ]
+ ],
+ "headline": "Nén ảnh nhẹ hơn, vẫn giữ chất lượng cao",
+ "hook_options": [
+  {
+   "kind": "pain_question",
+   "voiceover": "Ảnh 2.8MB làm trang tải chậm, nén xong có mất chất lượng?",
+   "on_screen_text": "2.8MB quá nặng?"
+  },
+  {
+   "kind": "result_first",
+   "voiceover": "Giảm dung lượng ảnh ngay trong trình duyệt, vẫn rõ chất lượng.",
+   "on_screen_text": "Nhẹ hơn, vẫn nét"
+  }
+ ]
+}
