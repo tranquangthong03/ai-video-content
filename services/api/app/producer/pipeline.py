@@ -23,6 +23,7 @@ from app.producer.dedupe import MIN_SCENES, swap_scene, used_texts
 from app.producer.focus_plan import phrases_from_captions, plan_focus
 from app.producer.focus_rules import build_focus_track, enforce_hook_framing
 from app.producer.live_clip import live_usable, recording_from_live
+from app.producer.motion_qa import run_qa
 from app.producer.scorecard import build_scorecard, hook_is_close, proof_from_dict
 from app.producer.shots import max_static_ms, plan_shots
 from app.producer.steps_coverage import steps_in_clip
@@ -268,6 +269,15 @@ def shots_for_scene(
 def short_domain(url: str) -> str:
     """hr.example.com for https://www.hr.example.com/app/x: what a CTA may say out loud."""
     return (urlparse(url).hostname or "").removeprefix("www.")
+
+
+def measure_motion(job_dir: Path, report: dict[str, Any]) -> dict[str, Any] | None:
+    """Motion QA of the finished video; a failure to measure never fails the job."""
+    try:
+        return run_qa(job_dir)
+    except Exception as e:  # no video to read (a fake renderer), no node, ...
+        report["motion_qa_error"] = f"{type(e).__name__}: {str(e)[:120]}"
+        return None
 
 
 def shows_login_page(inventory: list[dict[str, Any]]) -> bool:
@@ -708,6 +718,8 @@ def produce(
         **(extra_report or {}),
     }
     hook = next((x.root for x in final_script.scenes if x.root.type == "hook"), None)
+    qa = measure_motion(job_dir, report)
+    report["motion_qa"] = qa
     report["scorecard"] = build_scorecard(
         report,
         hook_text=hook.on_screen_text if hook else None,
@@ -717,6 +729,7 @@ def produce(
         ),
         proof=proof_from_dict(report.get("proof_bank")),
         critic=report.get("critic"),
+        motion=qa,
     )
     (job_dir / "report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"

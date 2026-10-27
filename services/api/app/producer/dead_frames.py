@@ -10,6 +10,7 @@ import io
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from PIL import Image, ImageFilter, ImageStat
 
@@ -110,3 +111,98 @@ def dead_ms(clip: Path, from_ms: int = 0) -> int:
 def png_stat(png: bytes, t_ms: int = 0) -> FrameStat:
     """The same numbers for a picture file (tests, stills)."""
     return stat_of(Image.open(io.BytesIO(png)).convert("L").resize(SIZE), t_ms)
+
+
+# --- media that is still loading ------------------------------------------------------------------
+# An image / canvas whose box is one flat grey or black (not white) is not decoded yet: a viewer
+# sees a grey slab where the picture should be.
+
+LOADING_STD = 5.0  # brightness spread inside the media box below this = one flat colour
+LOADING_MAX_MEAN = 235.0  # (a flat white box is an empty page, not a loading picture)
+MEDIA_KINDS = ("media", "image")
+MIN_MEDIA_SHARE = 0.03  # a media box smaller than this share of the view is an icon
+LOAD_SIZE = (320, 200)
+
+
+def is_loading_crop(crop: Image.Image) -> bool:
+    """One flat grey or black colour: the picture has not arrived."""
+    st = ImageStat.Stat(crop)
+    return bool(st.stddev[0] < LOADING_STD and st.mean[0] < LOADING_MAX_MEAN)
+
+
+def media_boxes(
+    snapshot: dict[str, Any], clip_size: tuple[int, int]
+) -> list[tuple[int, int, int, int]]:
+    """Boxes (x0, y0, x1, y1) on the LOAD_SIZE grid of the snapshot's big images and canvases."""
+    sx, sy = LOAD_SIZE[0] / clip_size[0], LOAD_SIZE[1] / clip_size[1]
+    boxes = []
+    for item in snapshot.get("items", []):
+        b = item["bbox"]
+        if (
+            item.get("kind") not in MEDIA_KINDS
+            or b["w"] * b["h"] < MIN_MEDIA_SHARE * clip_size[0] * clip_size[1]
+        ):
+            continue
+        x0, y0 = max(0, round(b["x"] * sx)), max(0, round(b["y"] * sy))
+        x1, y1 = (
+            min(LOAD_SIZE[0], round((b["x"] + b["w"]) * sx)),
+            min(LOAD_SIZE[1], round((b["y"] + b["h"]) * sy)),
+        )
+        if x1 - x0 >= 8 and y1 - y0 >= 8:
+            boxes.append((x0, y0, x1, y1))
+    return boxes
+
+
+def snapshot_for(inventory: list[dict[str, Any]], t_ms: int) -> dict[str, Any] | None:
+    """The latest snapshot at or before t_ms (the first one before any exists)."""
+    before = [s for s in inventory if s["t_ms"] <= t_ms]
+    return before[-1] if before else (inventory[0] if inventory else None)
+
+
+def flag_runs(flags: list[tuple[int, bool]], step_ms: int, min_ms: int) -> list[tuple[int, int]]:
+    """(from, to) of the runs of True that last at least min_ms."""
+    out: list[tuple[int, int]] = []
+    start: int | None = None
+    for t, flag in flags:
+        if flag and start is None:
+            start = t
+        elif not flag and start is not None:
+            out.append((start, t))
+            start = None
+    if start is not None and flags:
+        out.append((start, flags[-1][0] + step_ms))
+    return [(a, b) for a, b in out if b - a >= min_ms]
+
+
+def media_loading_runs(
+    clip: Path,
+    inventory: list[dict[str, Any]],
+    *,
+    clip_size: tuple[int, int] = (1440, 900),
+    from_ms: int = 0,
+    step_ms: int = SAMPLE_MS,
+    min_ms: int = MIN_DEAD_MS,
+) -> list[tuple[int, int]]:
+    """Stretches (clip time, at or after from_ms) where some big image or canvas is a flat slab."""
+    w, h = LOAD_SIZE
+    proc = subprocess.run(
+        ["ffmpeg", "-v", "error", "-i", str(clip), "-an",
+         "-vf", f"fps={1000 / step_ms:g},scale={w}:{h},format=gray", "-f", "rawvideo", "-"],
+        capture_output=True,
+    )  # fmt: skip
+    if proc.returncode != 0:
+        raise RuntimeError(f"ffmpeg sampling failed: {proc.stderr[:200]!r}")
+    size = w * h
+    flags: list[tuple[int, bool]] = []
+    for n, i in enumerate(range(0, len(proc.stdout) - size + 1, size)):
+        t = n * step_ms
+        if t < from_ms:
+            continue
+        snap = snapshot_for(inventory, t)
+        frame = Image.frombuffer("L", LOAD_SIZE, proc.stdout[i : i + size], "raw", "L", 0, 1)
+        loading = bool(snap) and any(
+            is_loading_crop(frame.crop(box))
+            for box in media_boxes(snap, clip_size)  # type: ignore[arg-type]
+        )
+        flags.append((t, loading))
+    return flag_runs(flags, step_ms, min_ms)

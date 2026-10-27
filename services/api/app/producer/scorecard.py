@@ -54,6 +54,7 @@ def build_scorecard(
     said: str,
     proof: ProofBank | None = None,
     critic: dict[str, Any] | None = None,
+    motion: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """The lines of the scorecard and how many pass.
 
@@ -127,6 +128,7 @@ def build_scorecard(
         judge(None if steps is None else steps >= MIN_STEPS_IN_CLIP),
     ))  # fmt: skip
 
+    lines += motion_lines(motion)
     lines.append(line("audio_present", "Âm thanh", "—", "chưa có (M2)", "info"))
 
     counted = [x for x in lines if x["status"] in ("pass", "fail")]
@@ -137,6 +139,31 @@ def build_scorecard(
         "total": len(counted),
         "all_passed": bool(counted) and all(x["status"] == "pass" for x in counted),
     }
+
+
+MOTION_LINES = (
+    # key, label, target text, how to show the number
+    ("max_zoom_rate", "Tốc độ zoom tối đa", "≤ 2.5%/khung", lambda v: f"{v * 100:.1f}%/khung"),
+    ("max_pan_rate", "Tốc độ kéo khung tối đa", "≤ 1.5%/khung", lambda v: f"{v * 100:.1f}%/khung"),
+    ("freeze_then_jump", "Đứng yên rồi giật", "0", str),
+    ("flash_shots", "Cảnh chớp (< 0,8 s)", "0", str),
+    ("loading_frames_ms", "Ảnh/canvas đang tải lọt vào hình", "0 ms", lambda v: f"{v} ms"),
+    ("static_ms_max", "Đứng yên tuyệt đối dài nhất", "≤ 400 ms", lambda v: f"{v} ms"),
+    ("focus_text_clipped", "Chữ tiêu điểm bị cắt", "0", str),
+    ("focus_match_rate", "Tiêu điểm khớp lời đọc/thao tác", "≥ 85%", lambda v: f"{v * 100:.0f}%"),
+)
+
+
+def motion_lines(motion: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """The Motion QA numbers as scorecard lines (all `na` when the check could not run)."""
+    out = []
+    for key, label, target, show in MOTION_LINES:
+        value = (motion or {}).get("metrics", {}).get(key)
+        ok = (motion or {}).get("verdict", {}).get(key)
+        out.append(
+            line(f"motion_{key}", label, target, None if value is None else show(value), judge(ok))
+        )
+    return out
 
 
 def hook_is_close(track: list[dict[str, Any]], lead_ms: int, rate: float) -> bool | None:

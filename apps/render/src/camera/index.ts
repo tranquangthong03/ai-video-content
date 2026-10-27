@@ -181,3 +181,4 @@ export * from "./focus";
 export { CAMERA_CONFIG } from "./config";
 export { pickFocus } from "./pick";
 export type { CameraConfig, FocusKind, Framing } from "./config";
+export { cameraForScene } from "./scene";

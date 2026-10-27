@@ -17,6 +17,7 @@ dependencies = [
     "questionary>=2.1.1",
     "python-multipart>=0.0.32",
     "cryptography>=50.0.2",
+    "opencv-python-headless>=5.0.0.93",
 ]
 
 [dependency-groups]

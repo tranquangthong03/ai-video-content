@@ -88,7 +88,11 @@ Giao thức tương tác chung: `InteractionRequest(kind, …)` / `UserResponse(
   Các tiêu chí dựng phim (khung hook gần, shot ≤ 3 s, 0 khung chết, thẻ chữ, footage ≥ 60%, steps_in_clip 100%) đều đạt ở cả 3 video; chỗ chưa đạt là **chất lượng lời** (DeepSeek chưa viết lợi ích/CTA đủ sắc, vòng viết lại 1 lần chỉ giúp được một phần).
   - Lỗi tìm ra khi nghiệm thu và đã sửa: hook_options dài quá 12 từ làm hỏng cả job (nay code cắt, ghi `auto_trimmed`); camera luôn mở bằng cảnh toàn trang nên «hook gần» chỉ đúng trên giấy (nay `closeOpening` cho hook, có test).
   - Kiểm tra cuối: pytest -n auto 3 lần liên tiếp 894 pass, ruff, codegen-check, tsc + vitest (render 120, web 43) đều pass. Trong lúc đó lộ thêm 3 test chờ theo đồng hồ (hàng đợi API, recorder 1440x900, login secrets) và đã đổi sang chờ theo điều kiện/dung sai rộng.
-- Tiếp theo: M2 (TTS + nhạc + SFX).
+
+**Lượt CAM «Camera & nhịp»** (kế hoạch `docs/plans/cam.md`; thứ tự D → A → B → C → nghiệm thu → E):
+- D xong: `app/producer/motion_qa.py` đo từ pixel video cuối (zoom/pan mỗi khung, đứng yên rồi giật, cảnh chớp, đứng yên tuyệt đối, ảnh đang tải, chữ tiêu điểm bị cắt, tiêu điểm khớp lời/thao tác) → `report.json["motion_qa"]` + 8 dòng scorecard; `scripts/motion_qa.py`, `scripts/camera_preview.py` (xem lộ trình camera không render), `scripts/cam_table.py`; số liệu «trước» của 3 video M1 ở `docs/cam/README.md` (đúng chẩn đoán: zoom 11–17%/khung, đứng yên 1,3–2 s, tiêu điểm khớp 28–74%). Camera đi qua một cửa duy nhất `cameraForScene` (apps/render/src/camera/scene.ts).
+- Tiếp theo: A (lộ trình camera toàn cục) → B (chọn tiêu điểm) → C (nối cảnh) → nghiệm thu → E (lời).
+- Tiếp theo sau CAM: M2 (TTS + nhạc + SFX).
 
 ## 6. Lộ trình tiếp theo
 
