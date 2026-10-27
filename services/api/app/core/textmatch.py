@@ -27,6 +27,15 @@ def words_match(a: str, b: str) -> bool:
     return stem >= 6 and SequenceMatcher(None, a, b).ratio() >= 0.88
 
 
+def match_share(text: str, speech: str) -> float:
+    """Share (0-1) of the words of `text` that are said in `speech` (fuzzy, accents ignored)."""
+    wanted = description_words(text)
+    said = description_words(speech)
+    if not wanted or not said:
+        return 0.0
+    return sum(1 for w in wanted if any(words_match(w, h) for h in said)) / len(wanted)
+
+
 def text_matches(text: str, speech: str, min_share: float = 0.5) -> bool:
     """True when (nearly) the words of `text` are said in `speech`: at least `min_share` of them
     (and one) match, fuzzily, accents ignored. Used to check a speech really mentions an item."""

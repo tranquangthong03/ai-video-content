@@ -15,11 +15,12 @@ The rules apply AFTER a plan and also when there is none:
   * a focus lasts at least MIN_FOCUS_MS; shorter stretches are merged into a neighbour
 """
 
+import re
 from dataclasses import dataclass, replace
 from typing import Any
 
 from app.core.hero import hero_item
-from app.core.textmatch import text_matches
+from app.core.textmatch import match_share, text_matches
 
 ESTABLISH_MS = 1000  # the opening shot of the whole page
 MIN_FOCUS_MS = 1500
@@ -124,64 +125,80 @@ def may_focus(item: dict[str, Any], source: str, speech: str) -> bool:
 # --- from one item to the box the camera must show ----------------------------------------------
 
 
-def text_block(item: dict[str, Any], items: list[dict[str, Any]], view_area: float) -> Box:
-    """The block of text the item belongs to: its smallest card/list item/paragraph parent, then
-    every text item that touches it, so no line of text is cut off."""
-    box: Box = dict(item["bbox"])
-    parents = [
+MEDIA_SHARE = 0.15  # an image / canvas / video this big is looked AT, never zoomed into
+LABEL_PX = 120  # a label this close (above or to the left) belongs to its field
+BUTTON_PAD = 0.12  # a button is shown with 12 % of its size around it
+SIZE_TEXT = re.compile(r"\d[\d.,]*\s?(kb|mb|gb|%|px|ms|s)\b", re.IGNORECASE)
+# the final submit of a form (not "Add" / "Create", which open the form and are worth looking at)
+FINAL_SUBMIT = re.compile(
+    r"\b(save|submit|apply|confirm|send request|lưu|gửi|xác nhận)\b", re.IGNORECASE
+)
+
+
+def is_media(item: dict[str, Any], clip: tuple[int, int]) -> bool:
+    """A picture, video or canvas big enough that zooming in would show pixels, not a control."""
+    return (
+        item["kind"] in ("image", "media") and area(item["bbox"]) >= MEDIA_SHARE * clip[0] * clip[1]
+    )
+
+
+def label_of(item: dict[str, Any], items: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """The text just above or to the left of a field: its label."""
+    b = item["bbox"]
+    near = [
         i
         for i in items
         if i["id"] != item["id"]
-        and i["kind"] in BLOCK_KINDS
-        and i["region"] == item["region"]
-        and contains(i["bbox"], box)
-        and area(box) * 1.05 < area(i["bbox"]) <= MAX_PARENT_SHARE * view_area
-    ]
-    if parents:
-        box = dict(min(parents, key=lambda i: area(i["bbox"]))["bbox"])
-    for _ in range(2):
-        touching = [
-            i["bbox"]
-            for i in items
-            if i["text"]
-            and i["kind"] in TEXT_KINDS
-            and i["region"] == item["region"]
-            and intersects(i["bbox"], box)
-            and not contains(box, i["bbox"])
-        ]
-        if not touching:
-            break
-        grown = union([box, *touching])
-        if area(grown) > MAX_BLOCK_SHARE * view_area:
-            break
-        box = grown
-    return box
-
-
-def image_block(item: dict[str, Any], items: list[dict[str, Any]]) -> Box:
-    """The whole image plus the text item closest to it (a label, a size): never zoom inside."""
-    labels = [
-        i
-        for i in items
-        if i["id"] != item["id"]
-        and i["text"]
-        and i["kind"] in TEXT_KINDS
+        and i.get("text")
+        and i["kind"] in ("paragraph", "heading")
         and not is_excluded(i)
-        and gap(i["bbox"], item["bbox"]) <= NEARBY_PX
+        and gap(i["bbox"], b) <= LABEL_PX
+        and (
+            i["bbox"]["y"] + i["bbox"]["h"] <= b["y"] + 8
+            or i["bbox"]["x"] + i["bbox"]["w"] <= b["x"] + 8
+        )
     ]
-    if not labels:
-        return dict(item["bbox"])
-    nearest = min(labels, key=lambda i: gap(i["bbox"], item["bbox"]))
-    return union([item["bbox"], nearest["bbox"]])
+    return min(near, key=lambda i: gap(i["bbox"], b)) if near else None
+
+
+def media_substitute(
+    media: dict[str, Any], items: list[dict[str, Any]], clip: tuple[int, int]
+) -> dict[str, Any] | None:
+    """What to look at instead of a big picture: the nearest figure with a unit (a file size, a
+    percentage), else the nearest button / field / heading next to it (a control panel)."""
+    pool = [
+        i
+        for i in items
+        if i["id"] != media["id"]
+        and i.get("text")
+        and not is_excluded(i)
+        and not is_media(i, clip)
+        and i["kind"] in ("heading", "paragraph", "list_item", "button", "input", "card")
+    ]
+    if not pool:
+        return None
+    sized = [i for i in pool if SIZE_TEXT.search(i["text"])]
+    pick = sized or [i for i in pool if i["kind"] in ("button", "input", "heading")] or pool
+    return min(pick, key=lambda i: gap(i["bbox"], media["bbox"]))
 
 
 def focus_box(item: dict[str, Any], items: list[dict[str, Any]], clip: tuple[int, int]) -> Box:
-    view_area = float(clip[0] * clip[1])
-    if item["kind"] in ("image", "media"):
-        return image_block(item, items)
-    if item["kind"] in ("input", "button"):
-        return dict(item["bbox"])
-    return text_block(item, items, view_area)
+    """The unit the camera frames: a field with its label, a button with a little air around it,
+    any other item as it is. The card or form around it is NOT added: only the focus's own text
+    has to stay whole, and its box already holds it."""
+    box: Box = dict(item["bbox"])
+    if item["kind"] == "input":
+        label = label_of(item, items)
+        return union([box, label["bbox"]]) if label else box
+    if item["kind"] == "button":
+        dx, dy = box["w"] * BUTTON_PAD, box["h"] * BUTTON_PAD
+        x0, y0 = max(0.0, box["x"] - dx), max(0.0, box["y"] - dy)
+        x1, y1 = (
+            min(float(clip[0]), box["x"] + box["w"] + dx),
+            min(float(clip[1]), box["y"] + box["h"] + dy),
+        )
+        return {"x": x0, "y": y0, "w": x1 - x0, "h": y1 - y0}
+    return box
 
 
 CONTEXT_PX = 160  # a label / heading this close to the focus gives it its meaning
@@ -394,6 +411,17 @@ def enforce_hook_framing(
         if e["framing"] in ("establish", "wide"):
             snap = snapshot_at(inventory, e["t_ms"] + e["hold_ms"] / 2)
             items = snap["items"] if snap else []
+            filled = [i for i in items if i.get("filled") and not is_excluded(i)]
+            if len(filled) >= 2:  # a form filled in: the hook shows its fields together
+                box = union([i["bbox"] for i in filled])
+                e = {
+                    **e, "bbox": {k: round(v) for k, v in box.items()}, "framing": "medium",
+                    "item_id": filled[0]["id"], "text": filled[0]["text"], "item_kind": "input",
+                    "region": filled[0]["region"], "source": "rule", "reason": "hook: form đã điền",
+                }  # fmt: skip
+                changed += 1
+                out.append(e)
+                continue
             item = hero_item(items, clip)
             if item is not None:
                 box = focus_box(item, items, clip)
@@ -411,6 +439,99 @@ def enforce_hook_framing(
 
 
 # --- the track -----------------------------------------------------------------------------------
+
+
+TYPED_NEIGHBOUR_PX = 320  # the field filled in just before may share the frame when this close
+
+
+def spoken_item(
+    current: dict[str, Any] | None,
+    items: list[dict[str, Any]],
+    speech: str,
+    clip: tuple[int, int],
+) -> dict[str, Any] | None:
+    """The item the voice-over names, when it is not the one in focus: the best text match among the
+    visible items (the nearest to the current focus wins ties), None when the current one fits."""
+    if not speech or (current and current.get("text") and text_matches(current["text"], speech)):
+        return None
+    named = [
+        i
+        for i in items
+        if (current is None or i["id"] != current["id"])
+        and i.get("text")
+        and not is_excluded(i)
+        and not is_media(i, clip)
+        and i["kind"] in ("button", "input", "heading", "list_item", "paragraph", "card")
+        and text_matches(i["text"], speech)
+    ]
+    if not named:
+        return None
+    # the most complete match first, a control before a heading, then the one nearest to the focus
+    rank = {"button": 0, "input": 0}
+    return min(
+        named,
+        key=lambda i: (
+            -match_share(i["text"], speech),
+            rank.get(i["kind"], 1),
+            gap(i["bbox"], current["bbox"]) if current else 0.0,
+        ),
+    )
+
+
+def typed_items(
+    action_log: list[dict[str, Any]], inventory: list[dict[str, Any]], before_ms: float
+) -> list[dict[str, Any]]:
+    """The fields typed into before `before_ms`, oldest first."""
+    found = []
+    for a in sorted(action_log, key=lambda a: a["t_ms"]):
+        if a["do"] == "type" and a.get("item_id") and a["end_ms"] <= before_ms + 1:
+            hit = find_item(inventory, a["item_id"], a["end_ms"])
+            if hit:
+                found.append(hit[0])
+    return found
+
+
+def last_typed(
+    action_log: list[dict[str, Any]], inventory: list[dict[str, Any]], before_ms: float
+) -> dict[str, Any] | None:
+    typed = typed_items(action_log, inventory, before_ms)
+    return typed[-1] if typed else None
+
+
+def previous_typed(
+    action_log: list[dict[str, Any]], inventory: list[dict[str, Any]], at_ms: float, current_id: str
+) -> dict[str, Any] | None:
+    typed = [i for i in typed_items(action_log, inventory, at_ms) if i["id"] != current_id]
+    return typed[-1] if typed else None
+
+
+def trusted_actions(
+    actions: list[dict[str, Any]], inventory: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Actions whose item_id still names what was acted on. Recordings made before ids were unique
+    per page reused them after a navigation ("e75" = Add on the list, Cancel on the form): an id
+    whose item no longer says the action's target text is dropped, not believed."""
+    out = []
+    for a in actions:
+        target = (a.get("target_text") or "").strip()
+        if target and a.get("item_id"):
+            hit = find_item(inventory, a["item_id"], a["end_ms"])
+            if hit is not None and not text_matches(hit[0].get("text") or "", target):
+                a = {**a, "item_id": None}
+        out.append(a)
+    return out
+
+
+def contradicted(item: dict[str, Any], seg: Seg, actions: list[dict[str, Any]]) -> bool:
+    """An action in the segment's time acted on `item`'s id but said another target text."""
+    return any(
+        a.get("item_id") == item["id"]
+        and (a.get("target_text") or "").strip()
+        and a["t_ms"] < seg.to_ms + HOLD_MS
+        and a["end_ms"] + HOLD_MS > seg.from_ms - HOLD_MS
+        and not text_matches(item.get("text") or "", a["target_text"])
+        for a in actions
+    )
 
 
 def center_block(items: list[dict[str, Any]], clip: tuple[int, int]) -> dict[str, Any] | None:
@@ -441,8 +562,13 @@ def build_focus_track(
     phrases: list[dict[str, Any]] | None = None,
     plan: list[dict[str, Any]] | None = None,
     legacy_focus: list[dict[str, Any]] | None = None,
+    submit_after_ms: float | None = None,
 ) -> TrackResult:
+    """`submit_after_ms`: the final submit button may be the focus from this time on (the last
+    chapter, after the filled-in form was shown); None = never."""
     phrases = phrases or []
+    raw_actions = action_log  # (kept as they were, to tell a plan that points at a reused id)
+    action_log = trusted_actions(action_log, inventory)
     legacy = [f for f in (legacy_focus or []) if f.get("kind") != "scroll"]
     typing = typing_segments(action_log)
     base = (
@@ -457,6 +583,9 @@ def build_focus_track(
         "replaced_side_focus": 0,
         "unresolved": 0,
         "context_limited": 0,  # tight frames that grew to keep their nearest label in view
+        "media_replaced": 0,  # picture / canvas focuses moved to a control or a figure next to it
+        "spoken_preferred": 0,  # focuses changed to the item the voice-over names
+        "submit_held_back": 0,  # submit-button focuses kept for the final shot
         "sources": {"plan": 0, "rule": 0, "fallback": 0},
     }
     for seg in segs:
@@ -472,11 +601,54 @@ def build_focus_track(
                 items = found[1]["items"]
             if item is None and seg.pick == "center":
                 item = center_block(items, clip)
+            if item is not None and source == "plan" and contradicted(item, seg, raw_actions):
+                # the plan's id now names another element than the one acted on: not believed
+                item = spoken_item(None, items, speech, clip) or center_block(items, clip)
+                source, reason = "rule", "id không còn khớp phần tử đã thao tác"
             if item is not None and not may_focus(item, source, speech):
                 metrics["replaced_side_focus"] += 1
                 item, source = center_block(items, clip), "rule"
             if item is None:
                 metrics["unresolved"] += 1
+            else:
+                operated = any(
+                    a.get("item_id") == item["id"]
+                    and a["t_ms"] < seg.to_ms
+                    and a["end_ms"] + HOLD_MS > seg.from_ms
+                    for a in action_log
+                )
+                if seg.priority < 2 and not operated and not item.get("is_new"):
+                    named = spoken_item(item, items, speech, clip)
+                    if named is not None:
+                        item, source, reason = named, "rule", "khớp lời đọc"
+                        metrics["spoken_preferred"] += 1
+                if is_media(item, clip):
+                    sub = media_substitute(item, items, clip)
+                    if sub is not None:
+                        item, source, reason = sub, "rule", "không zoom vào ảnh/canvas"
+                        metrics["media_replaced"] += 1
+                if (
+                    seg.priority < 2
+                    and FINAL_SUBMIT.search(item.get("text") or "")
+                    and (submit_after_ms is None or seg.from_ms < submit_after_ms)
+                ):
+                    fallback = last_typed(action_log, inventory, seg.from_ms) or center_block(
+                        items, clip
+                    )
+                    if fallback is not None:
+                        item, source, reason = fallback, "rule", "nút gửi để dành cho shot cuối"
+                        metrics["submit_held_back"] += 1
+        if (
+            item is None
+            and framing != "establish"
+            and not [f for f in legacy if f["t_ms"] <= seg.from_ms + 1]
+        ):
+            # nothing to follow on a page that is mostly a picture: its control panel, not the page
+            big = next((i for i in items if is_media(i, clip)), None)
+            item = media_substitute(big, items, clip) if big else None
+            if item is not None:
+                source, reason = "rule", "trang là ảnh/canvas: tiêu điểm là bảng điều khiển"
+                metrics["media_replaced"] += 1
         if item is None and framing != "establish":
             old = [f for f in legacy if f["t_ms"] <= seg.from_ms + 1]
             if old and seg.item_id is not None:
@@ -491,15 +663,20 @@ def build_focus_track(
             entry = {"item_id": None, "text": "", "item_kind": None, "region": None}
         else:
             box = focus_box(item, items, clip)
-            if item["kind"] in ("image", "media"):
-                framing = "wide"  # the whole image, never zoomed into
+            if is_media(item, clip):
+                framing = "wide"  # (no control found next to it) the whole image, never zoomed into
             elif source == "plan" and seg.framing != "establish":
                 framing = seg.framing
             elif seg.framing == "tight":
                 framing = "tight"
             else:
                 framing = framing_for(item, box, clip)
-            if framing == "tight":
+            if seg.priority >= 2:  # typing: the field just filled in may stay in the frame
+                before = previous_typed(action_log, inventory, seg.from_ms, item["id"])
+                if before is not None and gap(before["bbox"], box) <= TYPED_NEIGHBOUR_PX:
+                    box = union([box, before["bbox"]])
+                    framing = "medium"
+            elif framing == "tight" and item["kind"] not in ("input", "button"):
                 box, grew = with_context(item, box, items, clip)
                 metrics["context_limited"] += int(grew)
             entry = {

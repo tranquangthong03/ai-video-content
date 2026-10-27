@@ -180,3 +180,32 @@ def test_text_cards_are_short_and_a_small_share_of_the_video() -> None:
     many = text_card_stats([("thao tác", 10_000), ("chữ", 2000), ("chữ", 2000)])
     assert many["ratio"] > 0.15 and many["ok"] is False
     assert text_card_stats([("thao tác", 1000)])["count"] == 0
+
+
+def test_a_hook_over_a_filled_form_shows_the_filled_fields_together() -> None:
+    a = {**item("a", "input", "Nguyen", 480, 170, 300, 50), "filled": True}
+    b = {**item("b", "input", "Van An", 480, 240, 300, 50), "filled": True}
+    empty = {**item("c", "input", "Mã nhân viên", 480, 310, 300, 50), "filled": False}
+    side = item("s", "list_item", "PIM", 10, 100, 200, 40, region="nav")
+    inventory = [snap(0, side, a, b, empty)]
+    wide = {"t_ms": 0, "bbox": {"x": 0, "y": 0, "w": 1440, "h": 900}, "framing": "establish",
+            "hold_ms": 2000, "source": "rule", "item_id": None, "text": ""}  # fmt: skip
+    fixed, n = enforce_hook_framing([wide], inventory, CLIP)
+    assert n == 1 and fixed[0]["framing"] == "medium" and fixed[0]["reason"] == "hook: form đã điền"
+    box = fixed[0]["bbox"]
+    assert box["y"] <= 170 and box["y"] + box["h"] >= 290  # both filled fields, not the sidebar
+    assert box["y"] + box["h"] < 310  # and not the empty one under them
+
+
+def test_the_hero_frame_prefers_the_form_that_was_filled_in() -> None:
+    from app.core.hero import score_snapshot
+
+    empty = {
+        "t_ms": 0,
+        "items": [{"kind": "input", "text": "First", "is_new": False, "filled": False}],
+    }
+    filled = {
+        "t_ms": 0,
+        "items": [{"kind": "input", "text": "Nguyen", "is_new": False, "filled": True}],
+    }
+    assert score_snapshot(filled, 0.5) > score_snapshot(empty, 0.5)

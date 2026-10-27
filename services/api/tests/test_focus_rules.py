@@ -8,6 +8,8 @@ from app.producer.focus_rules import (
     contains,
     find_item,
     focus_box,
+    is_media,
+    media_substitute,
     tidy,
 )
 
@@ -89,17 +91,32 @@ def test_a_sidebar_focus_from_the_plan_is_dropped_unless_the_voice_names_it() ->
     assert focus["item_id"] == "sidetxt" and focus["source"] == "plan"
 
 
-def test_the_focus_grows_to_the_whole_text_block_so_nothing_is_cut() -> None:
+def test_the_focus_is_the_element_and_its_label_not_the_card_or_form_around_it() -> None:
     card = item("card", "card", "", 400, 300, 640, 300)
     head = item("h", "heading", "Lộ trình học", 430, 320, 300, 40)
     para = item("p", "paragraph", "Chọn vai trò của bạn", 430, 370, 560, 80)
-    overflow = item("p2", "paragraph", "để xem lộ trình", 430, 440, 600, 60)
-    box = focus_box(head, [card, head, para, overflow], CLIP)
-    assert contains(box, para["bbox"]) and contains(box, overflow["bbox"])
-    assert contains(box, head["bbox"])
+    assert (
+        focus_box(head, [card, head, para], CLIP) == head["bbox"]
+    )  # not the card, not the next paragraph
+    label = item("lab", "paragraph", "Tên nhân viên", 480, 130, 200, 30)
+    field = item("f", "input", "Nguyễn Văn An", 480, 170, 300, 50)
+    other = item(
+        "o", "input", "Mã nhân viên", 480, 260, 300, 50
+    )  # the next field: not part of this one
+    box = focus_box(field, [label, field, other], CLIP)
+    assert (
+        contains(box, label["bbox"])
+        and contains(box, field["bbox"])
+        and not contains(box, other["bbox"])
+    )
+    button = item("b", "button", "Add", 1000, 500, 100, 40)
+    pad = focus_box(button, [button], CLIP)
+    assert (
+        pad["x"] == 988 and pad["w"] == 124 and contains(pad, button["bbox"])
+    )  # 12 % of its size around it
 
 
-def test_an_image_is_shown_whole_with_its_label_and_never_zoomed_into() -> None:
+def test_a_big_picture_is_never_the_focus_the_figure_next_to_it_is() -> None:
     img = item("img", "image", "", 300, 200, 800, 500)
     label = item("lbl", "paragraph", "Large photo 2.8MB", 300, 710, 300, 30)
     far = item("far", "paragraph", "Footer text", 10, 880, 200, 20)
@@ -109,10 +126,91 @@ def test_an_image_is_shown_whole_with_its_label_and_never_zoomed_into() -> None:
         action_log=[{"t_ms": 400, "end_ms": 900, "do": "upload", "item_id": "img", "target_text": ""}],
         duration_ms=4000,
     )  # fmt: skip
-    focus = next(t for t in track.track if t["item_id"] == "img")
-    assert focus["framing"] == "wide"
-    assert contains(focus["bbox"], img["bbox"]) and contains(focus["bbox"], label["bbox"])
-    assert not contains(focus["bbox"], far["bbox"])
+    assert not any(t["item_id"] == "img" for t in track.track)  # never zoomed into the picture
+    focus = next(t for t in track.track if t["item_id"] == "lbl")
+    assert focus["item_kind"] == "paragraph" and contains(focus["bbox"], label["bbox"])
+    assert track.metrics["media_replaced"] >= 1
+
+
+def test_a_canvas_with_a_control_panel_moves_the_focus_to_the_panel() -> None:
+    canvas = item("cv", "media", "", 0, 0, 1000, 900)
+    compress = item("c", "button", "Compress", 1100, 300, 160, 44)
+    quality = item("q", "input", "Quality 75", 1100, 380, 200, 40)
+    assert is_media(canvas, CLIP)
+    assert media_substitute(canvas, [canvas, compress, quality], CLIP)["id"] == "c"  # type: ignore[index]
+    small = item("ic", "image", "", 10, 10, 40, 40)
+    assert not is_media(small, CLIP)  # an icon is just an element
+    assert media_substitute(canvas, [canvas], CLIP) is None
+
+
+def test_the_item_the_voice_names_beats_the_one_the_plan_chose() -> None:
+    add = item("add", "button", "Add", 1150, 477, 108, 32)
+    cancel = item("cancel", "button", "Cancel", 1280, 477, 108, 32)
+    inv = [snap(0, TITLE, add, cancel)]
+    plan = [
+        {"from_ms": 0, "to_ms": 1000, "item_id": None, "framing": "establish", "reason": ""},
+        {"from_ms": 1000, "to_ms": 4000, "item_id": "cancel", "framing": "tight", "reason": "x"},
+    ]
+    r = run(
+        inventory=inv, plan=plan, action_log=[], duration_ms=4000,
+        phrases=[{"from_ms": 900, "to_ms": 4000, "text": "bấm nút Add để mở form"}],
+    )  # fmt: skip
+    focus = next(t for t in r.track if t["framing"] != "establish")
+    assert focus["item_id"] == "add" and r.metrics["spoken_preferred"] == 1
+    # an item that is being operated is left alone, even when the words are about another one
+    acted = run(
+        inventory=inv, plan=plan, duration_ms=4000,
+        action_log=[{"t_ms": 1200, "end_ms": 1800, "do": "click", "item_id": "cancel", "target_text": ""}],
+        phrases=[{"from_ms": 900, "to_ms": 4000, "text": "bấm nút Add để mở form"}],
+    )  # fmt: skip
+    assert next(t for t in acted.track if t["framing"] != "establish")["item_id"] == "cancel"
+
+
+def test_the_submit_button_waits_for_the_final_shot() -> None:
+    first = item("n", "input", "Nguyễn Văn An", 480, 170, 300, 50)
+    save = item("save", "button", "Save", 1180, 760, 120, 44)
+    inv = [snap(0, TITLE, first, save), snap(3000, TITLE, first, save)]
+    plan = [
+        {"from_ms": 0, "to_ms": 1000, "item_id": None, "framing": "establish", "reason": ""},
+        {"from_ms": 1000, "to_ms": 5000, "item_id": "save", "framing": "tight", "reason": "x"},
+    ]
+    typed = [{"t_ms": 300, "end_ms": 900, "do": "type", "item_id": "n", "target_text": ""}]
+    early = run(inventory=inv, plan=plan, action_log=typed, duration_ms=5000)
+    assert (
+        not any(t["item_id"] == "save" for t in early.track)
+        and early.metrics["submit_held_back"] >= 1
+    )
+    final = run(inventory=inv, plan=plan, action_log=typed, duration_ms=5000, submit_after_ms=1000)
+    assert any(
+        t["item_id"] == "save" for t in final.track
+    )  # the last chapter may end on the button
+    add = item(
+        "add", "button", "Add", 1150, 477, 108, 32
+    )  # "Add" opens the form: not a final submit
+    opening = run(
+        inventory=[snap(0, TITLE, add)], action_log=[], duration_ms=4000,
+        plan=[{"from_ms": 0, "to_ms": 4000, "item_id": "add", "framing": "tight", "reason": ""}],
+    )  # fmt: skip
+    assert any(t["item_id"] == "add" for t in opening.track)
+
+
+def test_while_typing_the_field_filled_just_before_may_share_the_frame() -> None:
+    first = item("a", "input", "Nguyen", 480, 170, 300, 50)
+    second = item("b", "input", "Van An", 480, 240, 300, 50)
+    far = item("c", "input", "Mã", 480, 800, 300, 50)
+    inv = [snap(0, TITLE, first, second, far), snap(3000, TITLE, first, second, far)]
+    acts = [
+        {"t_ms": 300, "end_ms": 1500, "do": "type", "item_id": "a", "target_text": ""},
+        {"t_ms": 2000, "end_ms": 3200, "do": "type", "item_id": "b", "target_text": ""},
+        {"t_ms": 3600, "end_ms": 6000, "do": "type", "item_id": "c", "target_text": ""},
+    ]
+    r = run(inventory=inv, action_log=acts, duration_ms=6500)
+    second_focus = next(t for t in r.track if t["item_id"] == "b")
+    assert second_focus["framing"] == "medium" and contains(second_focus["bbox"], first["bbox"])
+    third = next(t for t in r.track if t["item_id"] == "c")
+    assert third["framing"] == "tight" and not contains(
+        third["bbox"], second["bbox"]
+    )  # too far to share
 
 
 def test_no_focus_is_shorter_than_1500_ms_except_the_opening_shot() -> None:

@@ -176,6 +176,7 @@ def focus_for_scene(
     rate: float,
     record: RecordResult,
     caller: JsonCaller | None,
+    final_chapter: bool = False,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], str]:
     """The scene's focus_track: the planner's plan (when it gave a usable one) through the rules."""
     # the track is worked out on the shown axis (0 = first shown moment of the clip) and moved
@@ -208,6 +209,12 @@ def focus_for_scene(
         phrases=phrases,
         plan=planned.plan if planned else None,
         legacy_focus=legacy,
+        # the submit button may be the focus only in the last chapter, once the form was shown
+        submit_after_ms=(
+            max([a["end_ms"] for a in actions if a["do"] == "type"], default=0.0)
+            if final_chapter
+            else None
+        ),
     )
     hook_reframed = 0
     if s.type == "hook":  # a hook is shot tight or medium on its hero, never establishing
@@ -521,6 +528,8 @@ def produce(
         flow_recorder = recorder
     dropped: set[int] = set()
     hook_close: bool | None = None  # is the camera close on the hook's first two seconds
+    demos = [x.root.id for x in script.scenes if x.root.type == "feature_demo"]
+    final_demo = demos[-1] if demos else None  # the last chapter: it may end on the submit button
     for i, scene in enumerate(script.scenes):
         s = scene.root
         timing = speech[s.id]
@@ -601,8 +610,9 @@ def produce(
         focus, focus_file = None, None
         if plan is not None and plan.clip is not None and plan.inventory:
             track, focus, focus_file = focus_for_scene(
-                work, s, plan, captions, rate, record, focus_caller
-            )
+                work, s, plan, captions, rate, record, focus_caller,
+                final_chapter=bool(final_demo) and s.id == final_demo,
+            )  # fmt: skip
             entry["focus_track"] = track
         shots_info: dict[str, Any] = {}
         if plan is not None and plan.clip is not None:

@@ -34,6 +34,7 @@ def score_snapshot(snapshot: dict[str, Any], position: float) -> float:
         6, sum(1 for i in items if i.get("kind") in DATA_KINDS)
     )  # a list / table with data
     score += min(3, sum(1 for i in items if i.get("kind") == "input"))  # a form that is there
+    score += 3.0 * min(3, sum(1 for i in items if i.get("filled")))  # ... and filled in
     score += 1.0 if any(i.get("kind") == "heading" for i in items) else 0.0
     score += 2.0 if MIN_CHARS <= chars <= MAX_CHARS else -2.0
     return score + LAST_SNAPSHOT_BONUS * position

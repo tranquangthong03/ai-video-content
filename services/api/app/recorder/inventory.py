@@ -27,8 +27,11 @@ const SEL = 'h1,h2,h3,h4,h5,h6,p,li,button,a[href],input,textarea,select,label,i
   '[class*=card],[class*=Card],td,figcaption,summary,span.count,strong';
 const ids = (window.__inv_ids = window.__inv_ids || new WeakMap());
 window.__inv_next = window.__inv_next || 1;
+// every page load has its own salt: ids restart at 1 on each navigation, so without it an id of
+// the list page ("Add") would name another element ("Cancel") on the form page
+window.__inv_salt = window.__inv_salt || Math.random().toString(36).slice(2, 5);
 const idOf = (el) => {
-  if (!ids.has(el)) ids.set(el, 'e' + window.__inv_next++);
+  if (!ids.has(el)) ids.set(el, 'e' + window.__inv_salt + window.__inv_next++);
   return ids.get(el);
 };
 const alive = (el) => {
@@ -115,6 +118,8 @@ SNAPSHOT_JS = (
       id, role: role || (tag === 'a' ? 'link' : tag), tag, text, kind,
       region: regionOf(el), is_new: base ? !base.has(id) : false, forced: !!forced,
       bbox: { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) },
+      // a field somebody typed into (the text of an empty one is only its placeholder)
+      ...(kind === 'input' ? { filled: !!(el.value && String(el.value).trim()) } : {}),
     });
   };
   if (extra) add(extra, true);
