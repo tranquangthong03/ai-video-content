@@ -25,10 +25,16 @@ AFTER_CLICK_MS = 600  # protected: after a click without a hold of its own
 class Cut:
     from_ms: int  # in the time of the original clip
     to_ms: int
+    fade_ms: int = 0  # > 0: the picture before and after dissolve into each other over this long
 
     @property
     def length(self) -> int:
         return self.to_ms - self.from_ms
+
+    @property
+    def removed_ms(self) -> int:
+        """What the cut takes off the timeline: the stretch, plus the overlap of a dissolve."""
+        return self.length + self.fade_ms
 
 
 @dataclass
@@ -65,11 +71,27 @@ def detect_freezes(clip: Path, content_ms: int) -> list[tuple[float, float]]:
     return found
 
 
+NEW_ITEM_MS = 300  # no cut within this of the moment something new shows up on the page
+
+
+def new_item_windows(inventory: list[dict[str, Any]] | None) -> list[tuple[float, float]]:
+    """Around every snapshot that holds a new item: the page changes there on its own (a row
+    appears, a form opens), and a cut next to it would look like a jump."""
+    return [
+        (s["t_ms"] - NEW_ITEM_MS, s["t_ms"] + NEW_ITEM_MS)
+        for s in inventory or []
+        if any(i.get("is_new") for i in s.get("items", []))
+    ]
+
+
 def protected_windows(
-    focus_log: list[dict[str, Any]], click_log: list[dict[str, Any]], start_ms: float
+    focus_log: list[dict[str, Any]],
+    click_log: list[dict[str, Any]],
+    start_ms: float,
+    inventory: list[dict[str, Any]] | None = None,
 ) -> list[tuple[float, float]]:
     """Stretches that must stay: the establishing shot, and around every event plus its hold."""
-    windows = [(start_ms, start_ms + ESTABLISH_MS)]
+    windows = [(start_ms, start_ms + ESTABLISH_MS), *new_item_windows(inventory)]
     for f in focus_log:
         windows.append((f["t_ms"] - BEFORE_EVENT_MS, f["t_ms"] + max(f.get("hold_ms", 0), 0) + 200))
     for c in click_log:
@@ -132,7 +154,7 @@ def shift_time(t: float, cuts: list[Cut]) -> float:
     removed = 0.0
     for c in cuts:
         if t >= c.to_ms:
-            removed += c.length
+            removed += c.removed_ms
         elif t > c.from_ms:
             removed += t - c.from_ms
     return t - removed
@@ -155,13 +177,71 @@ def shift_actions(entries: list[dict[str, Any]], cuts: list[Cut]) -> list[dict[s
 
 
 def apply_cuts(raw: Path, out: Path, cuts: list[Cut]) -> None:
-    """Re-encode `raw` without the cut stretches (exact to the frame), 30 fps yuv420p, no audio."""
+    """Re-encode `raw` without the cut stretches (exact to the frame), 30 fps yuv420p, no audio.
+    A cut with fade_ms dissolves the picture before it into the one after it."""
+    if any(c.fade_ms for c in cuts):
+        return _apply_cuts_with_fades(raw, out, cuts)
     drop = "+".join(f"gte(t\\,{c.from_ms / 1000:.3f})*lt(t\\,{c.to_ms / 1000:.3f})" for c in cuts)
     result = subprocess.run(
         ["ffmpeg", "-y", "-v", "error", "-i", str(raw),
          "-vf", f"select='not({drop})',setpts=N/(30*TB)", "-r", "30",
          "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p",
          "-an", str(out)],
+        capture_output=True, text=True,
+    )  # fmt: skip
+    if result.returncode != 0:
+        raise RuntimeError(f"ffmpeg cut failed: {result.stderr[:300]}")
+
+
+def fade_plan(cuts: list[Cut], content_ms: int) -> list[tuple[int, int, int]]:
+    """The pieces the cuts leave, as (from, to, dissolve into it): the first piece starts at 0."""
+    pieces: list[tuple[int, int, int]] = []
+    start = 0
+    fade = 0
+    for c in sorted(cuts, key=lambda c: c.from_ms):
+        if c.from_ms > start:
+            pieces.append((start, c.from_ms, fade))
+        start, fade = c.to_ms, c.fade_ms
+    if content_ms > start:
+        pieces.append((start, content_ms, fade))
+    return pieces
+
+
+def _apply_cuts_with_fades(raw: Path, out: Path, cuts: list[Cut]) -> None:
+    probe = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(raw)],
+        capture_output=True, text=True,
+    )  # fmt: skip
+    content_ms = round(float(probe.stdout.strip()) * 1000)
+    pieces = fade_plan(cuts, content_ms)
+    parts = [
+        f"[0:v]trim=start={a / 1000:.3f}:end={b / 1000:.3f},setpts=PTS-STARTPTS,fps=30,"
+        f"format=yuv420p[p{n}]"
+        for n, (a, b, _) in enumerate(pieces)
+    ]
+    chain: list[str] = []
+    acc = "p0"
+    length = (pieces[0][1] - pieces[0][0]) / 1000
+    for n in range(1, len(pieces)):
+        a, b, fade = pieces[n]
+        seconds = (b - a) / 1000
+        label = f"x{n}"
+        if fade:
+            f = fade / 1000
+            chain.append(
+                f"[{acc}][p{n}]xfade=transition=fade:duration={f:.3f}:"
+                f"offset={length - f:.3f}[{label}]"
+            )
+            length += seconds - f
+        else:
+            chain.append(f"[{acc}][p{n}]concat=n=2:v=1:a=0[{label}]")
+            length += seconds
+        acc = label
+    graph = ";".join([*parts, *chain])
+    result = subprocess.run(
+        ["ffmpeg", "-y", "-v", "error", "-i", str(raw), "-filter_complex", graph,
+         "-map", f"[{acc}]", "-r", "30", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
+         "-pix_fmt", "yuv420p", "-an", str(out)],
         capture_output=True, text=True,
     )  # fmt: skip
     if result.returncode != 0:
@@ -190,7 +270,7 @@ def trim_dead_time(
     if excess <= 0:
         return None
     freezes = detect_freezes(clip, content_ms)
-    protect = protected_windows(focus_log, click_log, lead_ms)
+    protect = protected_windows(focus_log, click_log, lead_ms, inventory)
     pieces = cuttable(freezes, protect, lead_ms, content_ms)
     cuts = plan_cuts(pieces, excess)
     if not cuts:

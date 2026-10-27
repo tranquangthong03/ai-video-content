@@ -28,7 +28,7 @@ from app.producer.scorecard import build_scorecard, hook_is_close, proof_from_di
 from app.producer.shots import max_static_ms, plan_shots
 from app.producer.steps_coverage import steps_in_clip
 from app.producer.text_cards import text_card_stats
-from app.producer.trim import Cut, shift_actions, shift_logs, shift_time, trim_dead_time
+from app.producer.trim import shift_actions, shift_logs, shift_time, trim_dead_time
 from app.recorder.flow import FlowRecorder
 from app.recorder.motion import idle_gaps
 from app.recorder.record import RecordResult, record_scene
@@ -305,15 +305,17 @@ def without_dead_frames(record: RecordResult, lead: int, scene_id: str) -> Recor
     if record.clip_path is None:
         return record
     try:
-        cut = cut_dead(record.clip_path, scene_id, lead, record.content_ms)
+        cut = cut_dead(
+            record.clip_path, scene_id, lead, record.content_ms, record.inventory,
+            (record.width or 1440, record.height or 900),
+        )  # fmt: skip
     except Exception as e:  # sampling or cutting failed: the clip as recorded is still usable
         record.warnings.append(f"{scene_id}: không dò được khung hình chết ({type(e).__name__})")
         return record
     if cut is None:
         return record
-    _, runs = cut
-    cuts = [Cut(a, b) for a, b in runs]
-    removed = sum(c.length for c in cuts)
+    _, cuts = cut
+    removed = sum(c.removed_ms for c in cuts)
     activity = [shift_time(t, cuts) for t in record.activity_ms]
     record.warnings.append(f"{scene_id}: đã cắt {removed} ms khung hình chết")
     return replace(

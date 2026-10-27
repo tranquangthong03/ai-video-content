@@ -122,7 +122,7 @@ def test_a_blank_stretch_is_cut_out_of_a_real_clip(tmp_path: Path) -> None:
     make_clip(clip, 1.2, 3.0)
     assert 1000 <= dead_ms(clip) <= 1400
     cut = cut_dead(clip, "s1", 0, 4200)
-    assert cut is not None and cut[1][0][0] == 0 and 1100 <= cut[1][0][1] <= 1300
+    assert cut is not None and cut[1][0].from_ms == 0 and 1100 <= cut[1][0].to_ms <= 1300
     assert dead_ms(clip) == 0  # the new clip has none left
     assert (tmp_path / "s1_nodead_raw.mp4").is_file()  # the raw one is kept
 

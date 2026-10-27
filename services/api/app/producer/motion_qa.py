@@ -294,7 +294,7 @@ def focus_clipped(props_file: Path) -> dict[str, Any]:
 
 def loading_report(props: dict[str, Any], produce_dir: Path) -> dict[str, Any]:
     """Time in which a big image / canvas is still a flat grey or black slab, per scene clip."""
-    from app.producer.dead_frames import media_loading_runs
+    from app.producer.dead_frames import LOADING_MIN_MS, media_loading_runs
 
     per_scene: dict[str, int] = {}
     for scene in props["script"]["scenes"]:
@@ -307,6 +307,7 @@ def loading_report(props: dict[str, Any], produce_dir: Path) -> dict[str, Any]:
         inventory = json.loads(inv_file.read_text(encoding="utf-8"))["inventory"]
         runs_ = media_loading_runs(
             Path(clip), inventory, from_ms=lead,
+            min_ms=LOADING_MIN_MS,
             clip_size=(a.get("clip_width", 1440), a.get("clip_height", 900)),
         )  # fmt: skip
         per_scene[scene["id"]] = sum(b - a_ for a_, b in runs_)
