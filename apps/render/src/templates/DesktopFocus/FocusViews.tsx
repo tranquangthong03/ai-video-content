@@ -1,10 +1,11 @@
-import React from "react";
+import React, { createContext, useContext, useMemo } from "react";
 import { AbsoluteFill, Freeze, Img, OffthreadVideo, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { resolveAsset } from "../../assets";
 import {
   CAMERA_CONFIG,
   cursorAt,
-  focusCameraAt,
+  buildCameraPath,
+  type CameraPath,
   focusFromClicks,
   insideClip,
   lerpView,
@@ -36,6 +37,7 @@ import {
   pickStatCorner,
   popOf,
   punchFactor,
+  quietWeight,
   splitHalves,
   statStartFrame,
   type Rect,
@@ -43,17 +45,33 @@ import {
 import { CAPTION_STRIP, MEDIA, OVERLAY } from "./layout";
 
 const FRAME = { w: MEDIA.w, h: MEDIA.h };
+
+/** The planned camera of every scene (built once per video in MediaStack, so scenes can continue each other). */
+export const CameraContext = createContext<Record<string, CameraPath>>({});
+
+/** The scene's planned camera; a scene rendered alone (a still, a test) plans its own. */
+function useScenePath(sceneId: string, assets: SceneAssets, closeOpening: boolean): CameraPath {
+  const planned = useContext(CameraContext)[sceneId];
+  const clip = clipSize(assets);
+  return useMemo(
+    () => planned ?? buildCameraPath(focusOf(assets), clip, FRAME, { closeOpening }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [planned, assets, closeOpening],
+  );
+}
 const DEFAULT_CLIP = { w: 1440, h: 900 };
 
 const clipSize = (a: SceneAssets) => ({ w: a.clip_width ?? DEFAULT_CLIP.w, h: a.clip_height ?? DEFAULT_CLIP.h });
 const focusOf = (a: SceneAssets): FocusLike[] => pickFocus(a);
 
 /** The recorded clip seen through the focus camera, with the drawn cursor and click ripples. */
-export const FocusClip: React.FC<{ assets: SceneAssets; durationInFrames: number; closeOpening?: boolean }> = ({
+export const FocusClip: React.FC<{ sceneId: string; assets: SceneAssets; durationInFrames: number; closeOpening?: boolean }> = ({
+  sceneId,
   assets,
   durationInFrames,
   closeOpening = false,
 }) => {
+  const path = useScenePath(sceneId, assets, closeOpening);
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { highlight } = useTheme();
@@ -61,7 +79,7 @@ export const FocusClip: React.FC<{ assets: SceneAssets; durationInFrames: number
   const { startMs, rate, lastFrame } = clipPlayback(assets, fps, durationInFrames);
   const shown = lastFrame === null ? frame : Math.min(frame, lastFrame);
   const tMs = startMs + (shown / fps) * 1000 * rate; // the logs are in clip time
-  const cam = focusCameraAt(tMs, focusOf(assets), clip, FRAME, CAMERA_CONFIG, closeOpening);
+  const cam = path.at(tMs);
   const { scale, translateX, translateY } = viewTransform(cam.view, FRAME);
   // cursor and ripples in clip pixels (frame = clip: identity mapping), then through the camera
   const clicks = assets.click_log ?? [];
@@ -71,7 +89,8 @@ export const FocusClip: React.FC<{ assets: SceneAssets; durationInFrames: number
   const src = resolveAsset(assets.clip_url!);
   const startFrom = Math.round((startMs / 1000) * fps);
 
-  const punch = punchFactor(frame, assets.punches ?? [], fps);
+  // a punch-in never stacks on a camera move: it fades out before one and returns after it
+  const punch = 1 + (punchFactor(frame, assets.punches ?? [], fps) - 1) * quietWeight(tMs, path.moves);
   return (
     <AbsoluteFill style={{ overflow: "hidden", background: "#000" }}>
       <AbsoluteFill style={{ transform: `scale(${punch})`, transformOrigin: "50% 45%" }}>
@@ -173,13 +192,14 @@ export const FocusShot: React.FC<{ assets: SceneAssets; durationInFrames: number
   );
 };
 
-const Footage: React.FC<{ assets: SceneAssets; durationInFrames: number; closeOpening?: boolean }> = ({
+const Footage: React.FC<{ sceneId: string; assets: SceneAssets; durationInFrames: number; closeOpening?: boolean }> = ({
+  sceneId,
   assets,
   durationInFrames,
   closeOpening,
 }) =>
   hasClip(assets) ? (
-    <FocusClip assets={assets} durationInFrames={durationInFrames} closeOpening={closeOpening} />
+    <FocusClip sceneId={sceneId} assets={assets} durationInFrames={durationInFrames} closeOpening={closeOpening} />
   ) : (
     <FocusShot assets={assets} durationInFrames={durationInFrames} />
   );
@@ -278,7 +298,7 @@ const CtaButton: React.FC<{ text: string; domain?: string; durationInFrames: num
 };
 
 /** The focus box on screen right now (frame pixels), to keep the callout from covering it. */
-function focusOnScreen(assets: SceneAssets, frame: number, fps: number, durationInFrames: number): Rect | null {
+function focusOnScreen(path: CameraPath, assets: SceneAssets, frame: number, fps: number, durationInFrames: number): Rect | null {
   if (!hasClip(assets)) return null;
   const clip = clipSize(assets);
   const { startMs, rate, lastFrame } = clipPlayback(assets, fps, durationInFrames);
@@ -287,7 +307,7 @@ function focusOnScreen(assets: SceneAssets, frame: number, fps: number, duration
   const list = focusOf(assets).filter((f) => f.t_ms <= tMs);
   const current = list[list.length - 1];
   if (!current) return null;
-  const cam = focusCameraAt(tMs, focusOf(assets), clip, FRAME);
+  const cam = path.at(tMs);
   const { scale } = viewTransform(cam.view, FRAME);
   const b = current.bbox;
   return { x: (b.x - cam.view.x) * scale, y: (b.y - cam.view.y) * scale, w: b.w * scale, h: b.h * scale };
@@ -304,12 +324,13 @@ const StatCallout: React.FC<{ scene: ViewProps["scene"]; assets: SceneAssets; du
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { highlight, fontFamily, motion } = useTheme();
+  const path = useScenePath(scene.id, assets, scene.type === "hook");
   const stat = scene.stat;
   if (!stat) return null;
   const start = statStartFrame(durationInFrames);
   if (frame < start) return null;
   const pop = spring({ frame: frame - start, fps, config: motion.spring, durationInFrames: STAT_POP_FRAMES });
-  const focus = focusOnScreen(assets, frame, fps, durationInFrames);
+  const focus = focusOnScreen(path, assets, frame, fps, durationInFrames);
   const corner = pickStatCorner(focus, FRAME, STAT_BOX, 28, CAPTION_STRIP.height);
   const at = cornerRect(corner, FRAME, STAT_BOX, 28, CAPTION_STRIP.height);
   return (
@@ -343,7 +364,7 @@ const HookView: React.FC<ViewProps> = ({ scene, assets, durationInFrames }) => {
   }
   return (
     <AbsoluteFill>
-      <Footage assets={assets} durationInFrames={durationInFrames} closeOpening />
+      <Footage sceneId={scene.id} assets={assets} durationInFrames={durationInFrames} closeOpening />
       <TopText text={scene.on_screen_text} assets={assets} />
       <StatCallout scene={scene} assets={assets} durationInFrames={durationInFrames} />
     </AbsoluteFill>
@@ -364,7 +385,7 @@ const CtaView: React.FC<ViewProps> = ({ scene, assets, durationInFrames, product
   }
   return (
     <AbsoluteFill>
-      <Footage assets={assets} durationInFrames={durationInFrames} />
+      <Footage sceneId={scene.id} assets={assets} durationInFrames={durationInFrames} />
       <TopText text={productName} assets={assets} />
       <StatCallout scene={scene} assets={assets} durationInFrames={durationInFrames} />
       <CtaButton text={label} domain={assets.cta_domain} durationInFrames={durationInFrames} />
@@ -449,7 +470,7 @@ const FocusBeforeAfter: React.FC<ViewProps> = (props) => {
   return (
     <AbsoluteFill>
       <AbsoluteFill style={{ filter: "blur(18px) brightness(0.5)", transform: "scale(1.08)" }}>
-        <Footage assets={assets} durationInFrames={durationInFrames} />
+        <Footage sceneId={scene.id} assets={assets} durationInFrames={durationInFrames} />
       </AbsoluteFill>
       <AbsoluteFill style={{ justifyContent: "center", padding: "0 56px", gap: 30, opacity: Math.min(1, pop * 2) }}>
         {card("TRƯỚC", scene.before_text, false)}
@@ -465,6 +486,6 @@ export const FocusSceneView: React.FC<ViewProps> = (props) => {
   if (scene.type === "before_after") return <FocusBeforeAfter {...props} />;
   if (scene.type === "cta") return <CtaView {...props} />;
   if (scene.type === "hook") return <HookView {...props} />;
-  if (hasClip(assets) || hasShot(assets)) return <Footage assets={assets} durationInFrames={durationInFrames} />;
+  if (hasClip(assets) || hasShot(assets)) return <Footage sceneId={scene.id} assets={assets} durationInFrames={durationInFrames} />;
   return <FeatureCard {...props} />;
 };

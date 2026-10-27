@@ -28,7 +28,7 @@ ANALYSIS_WIDTH = 400  # frames are reduced to this width for the fit
 DIFF_SIZE = (100, 125)
 
 CUT_DIFF = 22.0  # mean abs difference (0-255) above which two frames are different shots
-STATIC_DIFF = 0.35  # below this two frames are the same picture (video noise stays under it)
+STATIC_DIFF = 0.07  # below this two frames are the same picture (the noise floor is 0-0.05)
 MIN_FEATURES = 14  # matched features needed to trust a fit
 CUT_INLIERS = 0.45  # share of matches that must agree with the fit to call a big change motion
 

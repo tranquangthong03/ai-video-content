@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { AbsoluteFill, Audio, Sequence, interpolate, useCurrentFrame } from "remotion";
 import { resolveAsset } from "../../assets";
 import type { Script } from "../../generated";
@@ -9,7 +9,8 @@ import { FPS, KARAOKE_WORDS, captionsFromVoiceover, musicVolume, sceneDurationMs
 import { Background, Bullets, Header } from "../DesktopShowcase/Chrome";
 import { productNameOf } from "../DesktopShowcase/DesktopVideo";
 import { CROSSFADE_FRAMES } from "../DesktopShowcase/layout";
-import { FocusSceneView } from "./FocusViews";
+import { camerasOf } from "./cameras";
+import { CameraContext, FocusSceneView } from "./FocusViews";
 import { BULLET, CAPTION_STRIP, HEADER_STYLE, MEDIA } from "./layout";
 
 const NO_ASSETS: SceneAssets = {};
@@ -25,6 +26,7 @@ const MediaStack: React.FC<{ script: Script; assets: InputProps["assets"] }> = (
   const frame = useCurrentFrame();
   const { primary, captionStyle } = useTheme();
   const ranges = sceneRanges(script, FPS);
+  const cameras = useMemo(() => camerasOf(script, assets), [script, assets]);
   const appear = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
   return (
     <div
@@ -43,6 +45,7 @@ const MediaStack: React.FC<{ script: Script; assets: InputProps["assets"] }> = (
         boxSizing: "content-box",
       }}
     >
+      <CameraContext.Provider value={cameras}>
       {ranges.map((r, i) => {
         const extra = i < ranges.length - 1 ? CROSSFADE_FRAMES : 0;
         return (
@@ -58,6 +61,7 @@ const MediaStack: React.FC<{ script: Script; assets: InputProps["assets"] }> = (
           </Sequence>
         );
       })}
+      </CameraContext.Provider>
       <div
         style={{
           position: "absolute",

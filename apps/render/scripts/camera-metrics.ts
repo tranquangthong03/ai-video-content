@@ -6,10 +6,12 @@ import { CAMERA_CONFIG, establishingEndMs, focusCameraAt, pickFocus } from "../s
 import { InputPropsSchema } from "../src/props";
 import { clipPlayback } from "../src/templates/DesktopShowcase/playback";
 import { FPS, sceneRanges } from "../src/timing";
+import { camerasOf } from "../src/templates/DesktopFocus/cameras";
 import { MEDIA } from "../src/templates/DesktopFocus/layout";
 
 const props = InputPropsSchema.parse(JSON.parse(readFileSync(process.argv[2], "utf8")));
 const FRAME = { w: MEDIA.w, h: MEDIA.h };
+const cameras = camerasOf(props.script, props.assets);
 const scenes: Record<string, unknown>[] = [];
 let framesTotal = 0;
 let framesCover = 0;
@@ -26,7 +28,7 @@ for (const r of sceneRanges(props.script, FPS)) {
   for (let f = 0; f < r.frames; f++) {
     const shown = lastFrame === null ? f : Math.min(f, lastFrame);
     const t = (shown / FPS) * 1000 * rate; // clip time after the shown start
-    const cam = focusCameraAt(startMs + t, focus, clip, FRAME);
+    const cam = cameras[r.scene.id].at(startMs + t);
     if (t < establishingEndMs()) continue; // establishing shot and the move out of it
     total++;
     zoom += cam.zoom;

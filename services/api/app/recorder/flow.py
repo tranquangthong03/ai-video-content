@@ -328,7 +328,9 @@ class FlowRecorder:
             )
             return result or record_scene(session, scene, out_dir, speech_ms, **kw)
         assert chapter is not None
-        return self._chapter(rec, chapter, out_dir, s.id)
+        result = self._chapter(rec, chapter, out_dir, s.id)
+        result.continues = self.continues(chapter)
+        return result
 
     # --- internals ---------------------------------------------------------------------------
 
@@ -401,6 +403,20 @@ class FlowRecorder:
                 kind="fallback_screenshot", warnings=[note, "không có ảnh storyboard"]
             )
         return RecordResult(kind="fallback_screenshot", image_path=image, warnings=[note])
+
+    def continues(self, chapter_id: str) -> bool:
+        """Does this chapter start on the page the last one ended on? Then its camera picks up
+        where the previous one stopped instead of opening on the whole page again."""
+        chapters = self.run.chapters
+        n = next((i for i, c in enumerate(chapters) if c.id == chapter_id), 0)
+        if n == 0:
+            return False
+        steps = {s.i: s for s in self.run.steps}
+        before, now = chapters[n - 1].step_ids, chapters[n].step_ids
+        if not before or not now or before[-1] not in steps or now[0] not in steps:
+            return False
+        left, start = steps[before[-1]].url_after, steps[now[0]].url_before
+        return bool(left) and left == start
 
     def _still(self, rec: FlowRecording, out_dir: Path, name: str, t_ms: int) -> Path | None:
         """One frame of the flow clip at flow time `t_ms`."""

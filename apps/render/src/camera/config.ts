@@ -28,6 +28,24 @@ export interface CameraConfig {
   fallbackBox: { w: number; h: number };
   /** Establishing shot backdrop: the clip itself, enlarged, blurred and dimmed. */
   backdrop: { blurPx: number; brightness: number };
+  /** The planned path: one smooth route through all the focus targets of a clip (see path.ts). */
+  path: PathConfig;
+}
+
+export interface PathConfig {
+  leadMs: number; // a move starts this long BEFORE the moment its target is looked at
+  moveMinMs: number; // a move lasts at least this ...
+  moveMaxMs: number; // ... and (before the speed limits stretch it) at most this
+  maxZoomRate: number; // hard limit, share of the zoom per frame (the QA limit is 2.5 %)
+  maxPanRate: number; // hard limit, share of the view width per frame (the QA limit is 1.5 %)
+  safety: number; // the planner stays this share under the limits
+  easePeak: number; // peak speed of the ease relative to the average (smoothstep: 1.5)
+  mergeGapMs: number; // targets closer in time than this ...
+  mergeNear: number; // ... and closer in space than this share of the clip width become one
+  driftZoomPerSec: number; // while holding: zoom in very slowly (share per second) ...
+  driftPanPerSec: number; // ... and lean toward the focus (share of the view width per second)
+  punchMax: number; // a punch-in never grows the frame by more than this
+  punchFrames: number; // and takes this many frames to grow
 }
 
 export const CAMERA_CONFIG: CameraConfig = {
@@ -52,4 +70,19 @@ export const CAMERA_CONFIG: CameraConfig = {
   arrived: 0.98,
   fallbackBox: { w: 280, h: 140 },
   backdrop: { blurPx: 24, brightness: 0.6 },
+  path: {
+    leadMs: 400,
+    moveMinMs: 400,
+    moveMaxMs: 900,
+    maxZoomRate: 0.025,
+    maxPanRate: 0.015,
+    safety: 0.85,
+    easePeak: 1.5,
+    mergeGapMs: 1200,
+    mergeNear: 0.35,
+    driftZoomPerSec: 0.01,
+    driftPanPerSec: 0.01,
+    punchMax: 0.06,
+    punchFrames: 9,
+  },
 };

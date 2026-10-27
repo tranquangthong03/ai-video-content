@@ -6,6 +6,7 @@ import {
   kineticWords,
   pickStatCorner,
   popOf,
+  quietWeight,
   punchFactor,
   splitHalves,
   statStartFrame,
@@ -59,25 +60,43 @@ describe("kinetic text", () => {
 });
 
 describe("punch-ins", () => {
-  const punches = [{ t_ms: 1000, scale: 0.1 }];
-  it("does nothing before the punch, reaches +10 % after six frames and eases back", () => {
+  const punches = [{ t_ms: 1000, scale: 0.06 }];
+  it("does nothing before the punch, reaches its size after nine frames and eases back", () => {
     expect(punchFactor(20, punches, FPS)).toBe(1);
-    expect(punchFactor(30 + 6, punches, FPS)).toBeCloseTo(1.1, 2);
-    expect(punchFactor(30 + 6 + 12, punches, FPS)).toBeLessThan(1.1);
-    expect(punchFactor(30 + 6 + 40, punches, FPS)).toBe(1);
+    expect(punchFactor(30 + 9, punches, FPS)).toBeCloseTo(1.06, 3);
+    expect(punchFactor(30 + 9 + 12, punches, FPS)).toBeLessThan(1.06);
+    expect(punchFactor(30 + 9 + 40, punches, FPS)).toBe(1);
+  });
+
+  it("grows by no more than 2.5 % from one frame to the next", () => {
+    let prev = 1;
+    for (let f = 0; f < 90; f++) {
+      const x = punchFactor(f, punches, FPS);
+      expect(Math.abs(x / prev - 1)).toBeLessThanOrEqual(0.025);
+      prev = x;
+    }
+  });
+
+  it("keeps out of the way of a camera move: full strength only when the camera is quiet", () => {
+    const moves = [{ start: 2000, duration: 600 }];
+    expect(quietWeight(500, moves)).toBe(1);
+    expect(quietWeight(2300, moves)).toBe(0); // inside the move
+    expect(quietWeight(2000 - 125, moves)).toBeCloseTo(0.5, 2); // ramping out before it
+    expect(quietWeight(2600 + 250, moves)).toBe(1); // and back after it
+    expect(quietWeight(100, [])).toBe(1);
   });
   it("stays between 1 and 1+scale", () => {
     for (let f = 0; f < 120; f++) {
       const x = punchFactor(
         f,
         [
-          { t_ms: 500, scale: 0.12 },
-          { t_ms: 2000, scale: 0.08 },
+          { t_ms: 500, scale: 0.06 },
+          { t_ms: 2000, scale: 0.04 },
         ],
         FPS,
       );
       expect(x).toBeGreaterThanOrEqual(1);
-      expect(x).toBeLessThanOrEqual(1.12 + 1e-9);
+      expect(x).toBeLessThanOrEqual(1.06 + 1e-9);
     }
   });
 });

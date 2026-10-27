@@ -280,3 +280,16 @@ def test_a_before_after_needs_two_really_different_frames(
         assert before and after and before.is_file() and after.is_file() and before != after
         assert pair.image_path == after
     assert filmed._pair(replace(rec, inventory=rec.inventory[:1]), tmp_path, "s6") is None
+
+
+def test_a_chapter_continues_the_previous_one_only_on_the_same_page(
+    filmed: FlowRecorder,
+) -> None:
+    chapters = [c.id for c in filmed.run.chapters]
+    assert (
+        filmed.continues(chapters[0]) is False
+    )  # the first one follows the hook, a cut from elsewhere
+    steps = {s.i: s for s in filmed.run.steps}
+    left = steps[filmed.run.chapters[0].step_ids[-1]].url_after
+    start = steps[filmed.run.chapters[1].step_ids[0]].url_before
+    assert filmed.continues(chapters[1]) is (bool(left) and left == start)

@@ -11,6 +11,7 @@ import { focusCameraAt, pickFocus } from "../src/camera";
 import { InputPropsSchema } from "../src/props";
 import { clipPlayback } from "../src/templates/DesktopShowcase/playback";
 import { FPS, sceneRanges } from "../src/timing";
+import { camerasOf } from "../src/templates/DesktopFocus/cameras";
 import { MEDIA } from "../src/templates/DesktopFocus/layout";
 
 type Box = { x: number; y: number; w: number; h: number };
@@ -24,6 +25,7 @@ const EPS = 1.5;
 const props = InputPropsSchema.parse(JSON.parse(readFileSync(process.argv[2], "utf8")));
 const produceDir = dirname(process.argv[2]);
 const FRAME = { w: MEDIA.w, h: MEDIA.h };
+const cameras = camerasOf(props.script, props.assets);
 
 const intersects = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (outer: Box, inner: Box) =>
@@ -70,7 +72,7 @@ for (const r of sceneRanges(props.script, FPS)) {
     if (idx < 0) continue;
     const entry = track[idx];
     if (entry.framing === "establish" || t < entry.t_ms + ARRIVED_MS) continue;
-    const view = focusCameraAt(t, focus, clip, FRAME).view;
+    const view = cameras[r.scene.id].at(t).view;
     const snap = nearest(snaps, t);
     if (!snap) continue;
     sceneFrames++;

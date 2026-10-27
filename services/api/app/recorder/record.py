@@ -229,6 +229,7 @@ class RecordResult:
     activity_ms: list[float] = field(default_factory=list)  # clip times where anything happened
     dead_cut_ms: int = 0  # blank / spinner / skeleton frames cut out by the producer
     pair_images: tuple[Path, Path] | None = None  # before / after stills (split_frames)
+    continues: bool = False  # a flow chapter that picks up on the page the previous one left
 
 
 class _Recorder:

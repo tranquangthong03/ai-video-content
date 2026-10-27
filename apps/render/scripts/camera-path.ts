@@ -2,14 +2,14 @@
 // Prints one JSON object {fps, frame:{w,h}, scenes:[{id, from, frames, clip, start_ms, rate, views:[[x,y,w],...]}]}
 // (views are in clip pixels, one per scene frame; the height follows from the frame's aspect ratio).
 import { readFileSync } from "node:fs";
-import { cameraForScene } from "../src/camera";
 import { InputPropsSchema } from "../src/props";
 import { clipPlayback } from "../src/templates/DesktopShowcase/playback";
-import { MEDIA } from "../src/templates/DesktopFocus/layout";
+import { camerasOf, MEDIA_FRAME } from "../src/templates/DesktopFocus/cameras";
 import { FPS, sceneRanges } from "../src/timing";
 
 const props = InputPropsSchema.parse(JSON.parse(readFileSync(process.argv[2], "utf8")));
-const FRAME = { w: MEDIA.w, h: MEDIA.h };
+const FRAME = MEDIA_FRAME;
+const cameras = camerasOf(props.script, props.assets);
 const scenes: Record<string, unknown>[] = [];
 for (const r of sceneRanges(props.script, FPS)) {
   const a = props.assets[r.scene.id];
@@ -17,7 +17,7 @@ for (const r of sceneRanges(props.script, FPS)) {
   const clip = { w: a.clip_width ?? 1440, h: a.clip_height ?? 900 };
   const { startMs, rate, lastFrame } = clipPlayback(a, FPS, r.frames);
   const views: number[][] = [];
-  const cam = cameraForScene(a, clip, FRAME, r.scene.type === "hook");
+  const cam = (t: number) => cameras[r.scene.id].at(t);
   for (let f = 0; f < r.frames; f++) {
     const shown = lastFrame === null ? f : Math.min(f, lastFrame);
     const t = startMs + (shown / FPS) * 1000 * rate;

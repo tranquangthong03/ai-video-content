@@ -18,8 +18,10 @@ export interface Rect extends Size {
 export const STAGGER_MS = 75; // 60-90 ms between words
 export const POP_FRAMES = 8;
 export const POP_FROM = 0.85;
-export const PUNCH_GROW_FRAMES = 6;
+export const PUNCH_GROW_FRAMES = 9; // CAMERA_CONFIG.path.punchFrames
 export const PUNCH_DECAY_FRAMES = 24;
+export const PUNCH_MAX = 0.06;
+export const QUIET_RAMP_MS = 250; // a punch fades out this long before a camera move and returns after it
 export const STAT_START_SHARE = 0.15; // inside the first 30 % of the scene
 export const STAT_POP_FRAMES = 12;
 
@@ -95,6 +97,23 @@ export function punchFactor(frame: number, punches: Punch[], fps: number): numbe
   }
   return factor;
 }
+
+/**
+ * How much of a punch-in is allowed at clip time `tMs`: 0 while the camera is moving to a new focus
+ * (the two must not stack), 1 once it has been still for QUIET_RAMP_MS, a straight ramp between.
+ */
+export function quietWeight(tMs: number, moves: { start: number; duration: number }[], ramp = QUIET_RAMP_MS): number {
+  let w = 1;
+  for (const m of moves) {
+    const before = m.start - tMs; // > 0: the move is still ahead
+    const after = tMs - (m.start + m.duration); // > 0: the move is behind
+    const d = before > 0 ? before : after > 0 ? after : 0;
+    w = Math.min(w, clamp(d / ramp, 0, 1));
+  }
+  return w;
+}
+
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 export function statStartFrame(durationFrames: number): number {
   return Math.round(durationFrames * STAT_START_SHARE);

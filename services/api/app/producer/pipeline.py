@@ -617,6 +617,8 @@ def produce(
             if plan is not None and plan.clip is not None
             else 0
         )
+        if record.continues:
+            entry["same_page"] = True
         if s.type == "cta":
             entry["cta_domain"] = short_domain(url)
         assets[s.id] = entry

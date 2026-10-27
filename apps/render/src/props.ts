@@ -63,6 +63,7 @@ export const SceneAssetsSchema = z.object({
   // before_after / split_frames: two real frames of the flow (first frame, hero frame)
   before_url: z.string().optional(),
   after_url: z.string().optional(),
+  same_page: z.boolean().optional(), // continues the previous scene on the same page: no new establishing shot
   cta_domain: z.string().optional(), // short domain shown under the CTA button
   clip_width: z.number().positive().optional(),
   clip_height: z.number().positive().optional(),
