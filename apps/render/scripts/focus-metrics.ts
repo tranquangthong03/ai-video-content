@@ -1,7 +1,7 @@
 // Focus metrics of a produced job: tsx focus-metrics.ts <render_props.json>
 // Needs produce/inventory/<scene>.json next to the props (frame_inventory of every recorded scene).
 // For every frame of a recorded scene, once the camera has arrived at the current focus_track target:
-//   frames_text_clipped      the focus's own text items (items that touch the focus box) cut by the view's edge
+//   frames_text_clipped      the focus's own text items (inside the focus box: the element and its label) cut by the view's edge
 //   frames_any_text_clipped  any text item of the page cut by the view's edge (for reference)
 //   image_zoom_inside        image/media focus targets whose whole image is NOT in the view (zoomed into it)
 // Prints one JSON object.
@@ -72,13 +72,15 @@ for (const r of sceneRanges(props.script, FPS)) {
     if (idx < 0) continue;
     const entry = track[idx];
     if (entry.framing === "establish" || t < entry.t_ms + ARRIVED_MS) continue;
-    const view = cameras[r.scene.id].at(t).view;
+    const view = cameras[r.scene.id].at(startMs + (f / FPS) * 1000 * rate).view; // the camera's own clock
     const snap = nearest(snaps, t);
     if (!snap) continue;
     sceneFrames++;
     const texts = snap.items.filter((i) => TEXT_KINDS.has(i.kind) && i.text);
     if (texts.some((i) => cut(view, clip, i.bbox))) sceneAny++;
-    if (texts.filter((i) => intersects(i.bbox, entry.bbox)).some((i) => cut(view, clip, i.bbox))) sceneClipped++;
+    // the focus's own text: the element and its label, which sit inside the focus box (a card around it is not its text)
+    const own = texts.filter((i) => inside({ x: entry.bbox.x - 6, y: entry.bbox.y - 6, w: entry.bbox.w + 12, h: entry.bbox.h + 12 }, i.bbox));
+    if (own.some((i) => cut(view, clip, i.bbox))) sceneClipped++;
     if ((entry.item_kind === "image" || entry.item_kind === "media") && !inside(view, entry.bbox) && !imageSeen.has(idx)) {
       // the clip's own border may be the only thing cutting it
       const visible = { x: Math.max(view.x, 0), y: Math.max(view.y, 0), w: Math.min(view.x + view.w, clip.w) - Math.max(view.x, 0), h: Math.min(view.y + view.h, clip.h) - Math.max(view.y, 0) };

@@ -234,7 +234,8 @@ def cut_clip(src: Path, dst: Path, start_ms: int, end_ms: int, offset_ms: int = 
         [
             "ffmpeg", "-y", "-v", "error", "-ss", f"{start_ms / 1000:.3f}", "-i", str(src),
             "-t", f"{(end_ms - start_ms) / 1000:.3f}", "-c:v", "libx264", "-preset", "veryfast",
-            "-crf", "20", "-pix_fmt", "yuv420p", "-r", "30", "-an", str(dst),
+            "-crf", "20", "-bf", "0",  # no B-frames: the compositor loses frames of reordered clips
+            "-pix_fmt", "yuv420p", "-r", "30", "-an", str(dst),
         ],
         capture_output=True, text=True,
     )  # fmt: skip

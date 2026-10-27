@@ -182,3 +182,13 @@ describe("continuity", () => {
     expect(cams.s3.at(0).establishing).toBeGreaterThan(0.99);
   });
 });
+
+describe("holding for a long time", () => {
+  it("breathes out again at the maximum zoom instead of standing still", () => {
+    const p = buildCameraPath([track(500, 480, 170, 120, 40)], CLIP, FRAME, { closeOpening: true });
+    const widths = [20, 40, 60, 80, 100].map((s) => p.at(s * 1000).view.w);
+    for (let i = 1; i < widths.length; i++) expect(Math.abs(widths[i] - widths[i - 1])).toBeGreaterThan(1);
+    const max = CAMERA_CONFIG.maxZoom;
+    for (const w of widths) expect(COVER_W / w).toBeLessThanOrEqual(max + 1e-6);
+  });
+});

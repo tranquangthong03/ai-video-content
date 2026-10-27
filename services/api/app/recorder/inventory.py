@@ -90,6 +90,12 @@ SNAPSHOT_JS = (
         tag === 'strong') return 'paragraph';
     return 'other';
   };
+  // only a field one types words into counts (not a select, a checkbox, a slider or a file picker)
+  const typedInto = (el, tag) => {
+    if (tag === 'select') return false;
+    if (tag === 'input' && ['checkbox', 'radio', 'range', 'button', 'file', 'submit', 'color', 'hidden'].includes((el.type || '').toLowerCase())) return false;
+    return !!(el.value && String(el.value).trim());
+  };
   const textOf = (el, tag) => {
     if (tag === 'input' || tag === 'textarea') {
       return clean(el.value || el.placeholder || el.getAttribute('aria-label'));
@@ -119,7 +125,7 @@ SNAPSHOT_JS = (
       region: regionOf(el), is_new: base ? !base.has(id) : false, forced: !!forced,
       bbox: { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) },
       // a field somebody typed into (the text of an empty one is only its placeholder)
-      ...(kind === 'input' ? { filled: !!(el.value && String(el.value).trim()) } : {}),
+      ...(kind === 'input' ? { filled: typedInto(el, tag) } : {}),
     });
   };
   if (extra) add(extra, true);

@@ -737,7 +737,7 @@ def to_mp4(webm: Path, mp4: Path) -> None:
     result = subprocess.run(
         [
             "ffmpeg", "-y", "-v", "error", "-i", str(webm),
-            "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-bf", "0",
             "-pix_fmt", "yuv420p", "-r", "30", "-an", str(mp4),
         ],
         capture_output=True,

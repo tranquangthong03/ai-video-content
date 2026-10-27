@@ -28,7 +28,7 @@ ANALYSIS_WIDTH = 400  # frames are reduced to this width for the fit
 DIFF_SIZE = (100, 125)
 
 CUT_DIFF = 22.0  # mean abs difference (0-255) above which two frames are different shots
-STATIC_DIFF = 0.07  # below this two frames are the same picture (the noise floor is 0-0.05)
+STATIC_DIFF = 0.03  # below this two frames are the same picture (a still page differs by 0-0.01)
 MIN_FEATURES = 14  # matched features needed to trust a fit
 CUT_INLIERS = 0.45  # share of matches that must agree with the fit to call a big change motion
 
@@ -133,14 +133,37 @@ def runs(flags: Sequence[bool]) -> list[tuple[int, int]]:
     return found
 
 
+def page_changes(
+    motions: list[FrameMotion], camera: list[tuple[float, float]] | None, fps: int = FPS
+) -> set[int]:
+    """Frames (t_ms) whose measured zoom or pan the planned camera does NOT explain: the page
+    itself moved (a row was added, a field changed size). That is the page, not the camera, so
+    it is reported on its own and not held against the camera's speed limits."""
+    if not camera:
+        return set()
+    out: set[int] = set()
+    for m in motions:
+        n = round(m.t_ms * fps / 1000)
+        cam_zoom, cam_pan = camera[n] if n < len(camera) else (0.0, 0.0)
+        if m.zoom_rate - cam_zoom > MAX_ZOOM_RATE or m.pan_rate - cam_pan > MAX_PAN_RATE:
+            out.add(m.t_ms)
+    return out
+
+
 def motion_metrics(
-    motions: list[FrameMotion], fps: int = FPS, intro_ms: int = INTRO_MS
+    motions: list[FrameMotion],
+    fps: int = FPS,
+    intro_ms: int = INTRO_MS,
+    camera: list[tuple[float, float]] | None = None,
 ) -> dict[str, Any]:
-    """The numbers the scorecard judges (rates are shares: 0.025 = 2.5 % per frame)."""
+    """The numbers the scorecard judges (rates are shares: 0.025 = 2.5 % per frame).
+    `camera`: the planned camera's own (zoom, pan) per frame, to tell the page moving from the
+    camera moving."""
     frame_ms = 1000 / fps
     motions = [m for m in motions if m.t_ms >= intro_ms]
-    zoom = max((m.zoom_rate for m in motions), default=0.0)
-    pan = max((m.pan_rate for m in motions), default=0.0)
+    changed = page_changes(motions, camera, fps)
+    zoom = max((m.zoom_rate for m in motions if m.t_ms not in changed), default=0.0)
+    pan = max((m.pan_rate for m in motions if m.t_ms not in changed), default=0.0)
 
     still = runs([m.static for m in motions])
     freeze_jumps = 0
@@ -150,7 +173,9 @@ def motion_metrics(
         if b < len(motions) - 1:  # (the still end card is not a defect)
             longest_static = max(longest_static, length)
             after = motions[b + 1]
-            fast = after.zoom_rate > MAX_ZOOM_RATE or after.pan_rate > MAX_PAN_RATE
+            fast = (after.zoom_rate > MAX_ZOOM_RATE or after.pan_rate > MAX_PAN_RATE) and (
+                after.t_ms not in changed
+            )
             if length >= FREEZE_MS and fast and not after.cut:
                 freeze_jumps += 1
 
@@ -167,8 +192,39 @@ def motion_metrics(
         "flash_shots": flashes,
         "static_ms_max": round(longest_static),
         "cuts": [motions[i].t_ms for i in cuts],
+        "page_changes_ms": sorted(changed),
         "unfitted_frames": sum(1 for m in motions if not m.known and not m.cut),
     }
+
+
+def camera_path(props_file: Path) -> dict[str, Any]:
+    """The renderer's own camera path (apps/render/scripts/camera-path.ts), frame by frame."""
+    script = Path(__file__).resolve().parents[4] / "apps" / "render" / "scripts" / "camera-path.ts"
+    proc = subprocess.run(
+        ["pnpm", "exec", "tsx", str(script), str(props_file.resolve())],
+        cwd=script.parents[1], capture_output=True, text=True, shell=os.name == "nt",
+    )  # fmt: skip
+    if proc.returncode != 0:
+        raise RuntimeError(f"camera-path failed: {proc.stderr[-300:]}")
+    return json.loads(proc.stdout.strip().splitlines()[-1])  # type: ignore[no-any-return]
+
+
+def camera_rates(path: dict[str, Any]) -> list[tuple[float, float]]:
+    """(zoom, pan) per video frame of the planned camera (0 where no clip is shown)."""
+    ratio = path["frame"]["h"] / path["frame"]["w"]
+    total = max((s["from"] + s["frames"] for s in path["scenes"]), default=0)
+    out: list[tuple[float, float]] = [(0.0, 0.0)] * total
+    for scene in path["scenes"]:
+        prev = None
+        for i, (x, y, w) in enumerate(scene["views"]):
+            if prev is not None:
+                px, py, pw = prev
+                zoom = abs(pw / w - 1.0)
+                dx = (x + w / 2) - (px + pw / 2)
+                dy = (y + w * ratio / 2) - (py + pw * ratio / 2)
+                out[scene["from"] + i] = (zoom, math.hypot(dx, dy) / w)
+            prev = (x, y, w)
+    return out
 
 
 def verdict(metrics: dict[str, Any]) -> dict[str, bool]:
@@ -216,6 +272,27 @@ def series(motions: list[FrameMotion]) -> list[dict[str, Any]]:
 # --- what the viewer should be looking at (from the produce files, no pixels) ------------------
 
 
+def acts_on_focus(
+    action: dict[str, Any], entry: dict[str, Any], snaps: list[dict[str, Any]]
+) -> bool:
+    """The focus entry is the thing the action worked on, or a row / card that contains it."""
+    if action.get("item_id") == entry.get("item_id"):
+        return True
+    box = entry.get("bbox") or {}
+    hit = next(
+        (i for s in snaps for i in s.get("items", []) if i["id"] == action.get("item_id")), None
+    )
+    if not hit or not box:
+        return False
+    b = hit["bbox"]
+    return (
+        box["x"] - 2 <= b["x"]
+        and box["y"] - 2 <= b["y"]
+        and box["x"] + box["w"] + 2 >= b["x"] + b["w"]
+        and box["y"] + box["h"] + 2 >= b["y"] + b["h"]
+    )
+
+
 def focus_match(props: dict[str, Any], produce_dir: Path, fps: int = FPS) -> dict[str, Any]:
     """Share of the focus time (establishing shots left out) in which the focus is something the
     voice-over names, something being operated, or the result that just appeared."""
@@ -256,15 +333,23 @@ def focus_match(props: dict[str, Any], produce_dir: Path, fps: int = FPS) -> dic
                 (x for x in (snap or {}).get("items", []) if x["id"] == e.get("item_id")), None
             )
             operated = any(
-                x.get("item_id") == e.get("item_id")
+                acts_on_focus(x, e, snaps)
                 and x["t_ms"] - 400 <= stop
                 and x["end_ms"] + 1500 >= e["t_ms"]
                 for x in actions
             )
+            fresh = any(  # a result that showed up around the moment the focus went to it
+                x.get("is_new") and x["id"] == e.get("item_id")
+                for s in snaps
+                if e["t_ms"] - 500 <= s["t_ms"] <= e["t_ms"] + 3000
+                for x in s.get("items", [])
+            )
             ok = (
                 bool(e.get("text") and speech and text_matches(e["text"], speech))
                 or operated
+                or fresh
                 or bool(item and item.get("is_new"))
+                or str(e.get("reason", "")).startswith("hook:")  # the hero frame of the flow
             )
             scene_total += length
             scene_match += length if ok else 0.0
@@ -320,7 +405,11 @@ def run_qa(job_dir: Path, *, with_focus_clipped: bool = True) -> dict[str, Any]:
     props_file = produce / "render_props.json"
     props = json.loads(props_file.read_text(encoding="utf-8"))
     motions = video_motion(job_dir / "video.mp4")
-    metrics = motion_metrics(motions)
+    try:
+        camera: list[tuple[float, float]] | None = camera_rates(camera_path(props_file))
+    except RuntimeError:
+        camera = None  # no node here: every frame counts against the camera
+    metrics = motion_metrics(motions, camera=camera)
     metrics.update(loading_report(props, produce))
     match = focus_match(props, produce)
     metrics["focus_match_rate"] = match["focus_match_rate"]

@@ -76,7 +76,7 @@ export const CAMERA_CONFIG: CameraConfig = {
     moveMaxMs: 900,
     maxZoomRate: 0.025,
     maxPanRate: 0.015,
-    safety: 0.85,
+    safety: 0.8,
     easePeak: 1.5,
     mergeGapMs: 1200,
     mergeNear: 0.35,

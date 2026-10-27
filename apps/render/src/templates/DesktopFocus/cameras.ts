@@ -16,14 +16,13 @@ export function camerasOf(script: Script, assets: InputProps["assets"]): Record<
   for (const r of sceneRanges(script, FPS)) {
     const a = assets[r.scene.id];
     if (!a?.clip_url) continue;
-    const { startMs, rate, lastFrame } = clipPlayback(a, FPS, r.frames);
-    const last = lastFrame === null ? r.frames - 1 : Math.min(r.frames - 1, lastFrame);
+    const { startMs, rate } = clipPlayback(a, FPS, r.frames);
     inputs.push({
       id: r.scene.id,
       type: r.scene.type,
       assets: a,
       clip: { w: a.clip_width ?? 1440, h: a.clip_height ?? 900 },
-      endMs: startMs + (last / FPS) * 1000 * rate,
+      endMs: startMs + ((r.frames - 1) / FPS) * 1000 * rate, // the camera's clock runs to the scene's end
     });
   }
   return buildSceneCameras(inputs, MEDIA_FRAME);

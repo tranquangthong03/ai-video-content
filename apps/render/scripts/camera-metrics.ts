@@ -28,7 +28,7 @@ for (const r of sceneRanges(props.script, FPS)) {
   for (let f = 0; f < r.frames; f++) {
     const shown = lastFrame === null ? f : Math.min(f, lastFrame);
     const t = (shown / FPS) * 1000 * rate; // clip time after the shown start
-    const cam = cameras[r.scene.id].at(startMs + t);
+    const cam = cameras[r.scene.id].at(startMs + (f / FPS) * 1000 * rate); // the camera's own clock
     if (t < establishingEndMs()) continue; // establishing shot and the move out of it
     total++;
     zoom += cam.zoom;

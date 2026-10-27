@@ -18,22 +18,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # services/api, fo
 
 from PIL import Image, ImageDraw  # noqa: E402
 
-from app.producer.motion_qa import MAX_PAN_RATE, MAX_ZOOM_RATE  # noqa: E402
+from app.producer.motion_qa import MAX_PAN_RATE, MAX_ZOOM_RATE, camera_path  # noqa: E402
 
 RENDER = Path(__file__).resolve().parents[3] / "apps" / "render"
 STILLS = 6
 THUMB = (260, 325)
 W, PLOT_H = 1560, 330
-
-
-def camera_path(props_file: Path) -> dict[str, Any]:
-    proc = subprocess.run(
-        ["pnpm", "exec", "tsx", "scripts/camera-path.ts", str(props_file.resolve())],
-        cwd=RENDER, capture_output=True, text=True, shell=sys.platform == "win32",
-    )  # fmt: skip
-    if proc.returncode != 0:
-        raise SystemExit(f"camera-path failed: {proc.stderr[-400:]}")
-    return json.loads(proc.stdout.strip().splitlines()[-1])
 
 
 def speeds(path: dict[str, Any]) -> tuple[list[float], list[float]]:

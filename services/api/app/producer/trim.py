@@ -185,7 +185,7 @@ def apply_cuts(raw: Path, out: Path, cuts: list[Cut]) -> None:
     result = subprocess.run(
         ["ffmpeg", "-y", "-v", "error", "-i", str(raw),
          "-vf", f"select='not({drop})',setpts=N/(30*TB)", "-r", "30",
-         "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p",
+         "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-bf", "0", "-pix_fmt", "yuv420p",
          "-an", str(out)],
         capture_output=True, text=True,
     )  # fmt: skip
@@ -241,6 +241,7 @@ def _apply_cuts_with_fades(raw: Path, out: Path, cuts: list[Cut]) -> None:
     result = subprocess.run(
         ["ffmpeg", "-y", "-v", "error", "-i", str(raw), "-filter_complex", graph,
          "-map", f"[{acc}]", "-r", "30", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
+         "-bf", "0",
          "-pix_fmt", "yuv420p", "-an", str(out)],
         capture_output=True, text=True,
     )  # fmt: skip

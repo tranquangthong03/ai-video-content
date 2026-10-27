@@ -97,6 +97,18 @@ export function mergeFocus(focus: FocusLike[], clip: Size, cfg: CameraConfig = C
   return out;
 }
 
+/**
+ * Width after zooming in slowly for `travel` (log units): it goes down to `minW` (the maximum zoom),
+ * turns around and breathes out again, back and forth, instead of standing still at the limit.
+ */
+export function breathe(width: number, minW: number, travel: number): number {
+  const lnMin = Math.log(minW);
+  const top = Math.max(Math.log(width), lnMin + 0.03); // some room to breathe even at the limit
+  const span = top - lnMin;
+  const p = (((top - Math.log(width)) + travel) % (2 * span) + 2 * span) % (2 * span);
+  return Math.exp(lnMin + (p <= span ? span - p : p - span));
+}
+
 /** The view after holding `dtMs` on `base`: a very slow zoom-in and a lean toward the focus centre. */
 export function driftView(
   base: View,
@@ -108,7 +120,7 @@ export function driftView(
 ): View {
   const dt = Math.max(0, dtMs) / 1000;
   const cover = frame.w / coverScale(clip, frame);
-  const w = Math.max(cover / cfg.maxZoom, base.w * Math.exp(-cfg.path.driftZoomPerSec * dt));
+  const w = breathe(base.w, cover / cfg.maxZoom, cfg.path.driftZoomPerSec * dt);
   const c = centre(base);
   // (the establishing shot creeps in too: the whole page, a little closer, instead of standing still)
   const lean = base.w >= clip.w ? 0 : Math.min(1, cfg.path.driftPanPerSec * dt);

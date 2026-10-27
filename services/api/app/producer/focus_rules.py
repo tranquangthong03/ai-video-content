@@ -534,6 +534,37 @@ def contradicted(item: dict[str, Any], seg: Seg, actions: list[dict[str, Any]]) 
     )
 
 
+RESULT_KINDS = ("list_item", "card", "paragraph")
+
+
+def operated_item(
+    seg: "Seg",
+    actions: list[dict[str, Any]],
+    inventory: list[dict[str, Any]],
+    items: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    """The item an action was working on during the segment (the last one), if it can be found. A
+    control with no text of its own (a checkbox) is shown as the row or card that holds it."""
+    for a in sorted(actions, key=lambda a: a["t_ms"], reverse=True):
+        if a.get("item_id") and a["t_ms"] < seg.to_ms and a["end_ms"] + HOLD_MS > seg.from_ms:
+            hit = find_item(inventory, a["item_id"], a["end_ms"])
+            if not hit or is_excluded(hit[0]):
+                continue
+            if hit[0].get("text"):
+                return hit[0]
+            holders = [
+                i
+                for i in items
+                if i.get("text")
+                and i["kind"] in ("list_item", "card", "paragraph")
+                and not is_excluded(i)
+                and contains(i["bbox"], hit[0]["bbox"])
+            ]
+            if holders:
+                return min(holders, key=lambda i: area(i["bbox"]))
+    return None
+
+
 def center_block(items: list[dict[str, Any]], clip: tuple[int, int]) -> dict[str, Any] | None:
     """Scrolling without a plan: the heading (else card) of the main region nearest the middle."""
     pool = [i for i in items if not is_excluded(i) and i["kind"] in ("heading", "card")]
@@ -617,10 +648,24 @@ def build_focus_track(
                     and a["end_ms"] + HOLD_MS > seg.from_ms
                     for a in action_log
                 )
-                if seg.priority < 2 and not operated and not item.get("is_new"):
+                # a result that just appeared (a row, a card) is a good focus on its own; a heading,
+                # button or field that merely re-rendered is not
+                is_result = bool(item.get("is_new")) and item["kind"] in RESULT_KINDS
+                if seg.priority < 2 and not operated:
                     named = spoken_item(item, items, speech, clip)
+                    if (
+                        named is None
+                        and not is_result
+                        and speech
+                        and not text_matches(item.get("text") or "", speech)
+                    ):
+                        named = operated_item(seg, action_log, inventory, items)  # what is done
+                        if named is not None and named["id"] == item["id"]:
+                            named = None
+                    if named is not None and is_result and named["kind"] not in ("button", "input"):
+                        named = None  # a result that just appeared only gives way to a control
                     if named is not None:
-                        item, source, reason = named, "rule", "khớp lời đọc"
+                        item, source, reason = named, "rule", "khớp lời đọc / đang thao tác"
                         metrics["spoken_preferred"] += 1
                 if is_media(item, clip):
                     sub = media_substitute(item, items, clip)

@@ -161,3 +161,33 @@ def test_a_frame_motion_ignores_a_fit_it_does_not_trust() -> None:
     assert unknown.zoom_rate == 0.0 and unknown.pan_rate == 0.0
     cut = FrameMotion(1000, 50.0, 3.0, 0.5, True, True)
     assert cut.zoom_rate == 0.0
+
+
+def test_a_jump_the_planned_camera_does_not_explain_is_the_page_not_the_camera() -> None:
+    frames = [*zoom_path(BASE, [1.0] * 10), *zoom_path(BASE, [1.0, 1.0, 1.0])]
+    shifted = zoom_path(BASE, [1.2] * 6, [i * 40.0 for i in range(6)])  # the content slides at once
+    motions = analyze_frames([*frames[:10], *shifted])
+    camera = [(0.0, 0.0)] * len(motions)  # the plan says: the camera holds still
+    plain = motion_metrics(motions, intro_ms=0)
+    split = motion_metrics(motions, intro_ms=0, camera=camera)
+    assert (
+        plain["max_pan_rate"] > 0.03 or plain["max_zoom_rate"] > 0.03
+    )  # as a camera it would fail
+    assert split["max_pan_rate"] <= 0.015 and split["max_zoom_rate"] <= 0.025
+    assert split["page_changes_ms"]  # but it is reported
+    # when the camera DID plan that motion, it still counts against the camera
+    moving = [(1.0, 1.0)] * (len(motions) + 2)
+    assert motion_metrics(motions, intro_ms=0, camera=moving)["page_changes_ms"] == []  # fmt: skip
+
+
+def test_camera_rates_come_from_the_planned_views() -> None:
+    from app.producer.motion_qa import camera_rates
+
+    path = {
+        "frame": {"w": 1000, "h": 1250},
+        "scenes": [{"from": 2, "frames": 3, "views": [[0, 0, 800], [0, 0, 760], [40, 0, 760]]}],
+    }
+    rates = camera_rates(path)
+    assert len(rates) == 5 and rates[0] == (0.0, 0.0) and rates[2] == (0.0, 0.0)
+    assert abs(rates[3][0] - (800 / 760 - 1)) < 1e-9 and rates[3][1] > 0
+    assert rates[4][0] == 0.0 and rates[4][1] > 0.04  # a 40 px shift of a 760 px view

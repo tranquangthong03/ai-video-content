@@ -53,7 +53,7 @@ const publish = (file: string) => {
   return base + encodeURI(key);
 };
 for (const assets of Object.values<Record<string, unknown>>(raw.assets ?? {})) {
-  for (const k of ["clip_url", "screenshot_url", "audio_url"]) {
+  for (const k of ["clip_url", "screenshot_url", "audio_url", "before_url", "after_url"]) {
     if (isLocal(assets[k])) assets[k] = publish(assets[k] as string);
   }
 }

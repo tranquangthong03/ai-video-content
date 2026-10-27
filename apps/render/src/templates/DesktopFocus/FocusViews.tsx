@@ -79,7 +79,10 @@ export const FocusClip: React.FC<{ sceneId: string; assets: SceneAssets; duratio
   const { startMs, rate, lastFrame } = clipPlayback(assets, fps, durationInFrames);
   const shown = lastFrame === null ? frame : Math.min(frame, lastFrame);
   const tMs = startMs + (shown / fps) * 1000 * rate; // the logs are in clip time
-  const cam = path.at(tMs);
+  // the picture may be frozen on the clip's last frame, but the camera keeps its own clock: it goes on
+  // drifting, so a held shot is never a still image
+  const tCam = startMs + (frame / fps) * 1000 * rate;
+  const cam = path.at(tCam);
   const { scale, translateX, translateY } = viewTransform(cam.view, FRAME);
   // cursor and ripples in clip pixels (frame = clip: identity mapping), then through the camera
   const clicks = assets.click_log ?? [];
@@ -90,7 +93,7 @@ export const FocusClip: React.FC<{ sceneId: string; assets: SceneAssets; duratio
   const startFrom = Math.round((startMs / 1000) * fps);
 
   // a punch-in never stacks on a camera move: it fades out before one and returns after it
-  const punch = 1 + (punchFactor(frame, assets.punches ?? [], fps) - 1) * quietWeight(tMs, path.moves);
+  const punch = 1 + (punchFactor(frame, assets.punches ?? [], fps) - 1) * quietWeight(tCam, path.moves);
   return (
     <AbsoluteFill style={{ overflow: "hidden", background: "#000" }}>
       <AbsoluteFill style={{ transform: `scale(${punch})`, transformOrigin: "50% 45%" }}>
@@ -307,7 +310,7 @@ function focusOnScreen(path: CameraPath, assets: SceneAssets, frame: number, fps
   const list = focusOf(assets).filter((f) => f.t_ms <= tMs);
   const current = list[list.length - 1];
   if (!current) return null;
-  const cam = path.at(tMs);
+  const cam = path.at(startMs + (frame / fps) * 1000 * rate);
   const { scale } = viewTransform(cam.view, FRAME);
   const b = current.bbox;
   return { x: (b.x - cam.view.x) * scale, y: (b.y - cam.view.y) * scale, w: b.w * scale, h: b.h * scale };

@@ -19,9 +19,7 @@ for (const r of sceneRanges(props.script, FPS)) {
   const views: number[][] = [];
   const cam = (t: number) => cameras[r.scene.id].at(t);
   for (let f = 0; f < r.frames; f++) {
-    const shown = lastFrame === null ? f : Math.min(f, lastFrame);
-    const t = startMs + (shown / FPS) * 1000 * rate;
-    const v = cam(t).view;
+    const v = cam(startMs + (f / FPS) * 1000 * rate).view; // the camera's own clock runs on past a frozen frame
     views.push([+v.x.toFixed(1), +v.y.toFixed(1), +v.w.toFixed(1)]);
   }
   scenes.push({ id: r.scene.id, type: r.scene.type, from: r.from, frames: r.frames, clip: a.clip_url, start_ms: startMs, rate, clip_w: clip.w, clip_h: clip.h, views });
