@@ -93,6 +93,7 @@ Giao thức tương tác chung: `InteractionRequest(kind, …)` / `UserResponse(
 ## 6. Lộ trình tiếp theo
 
 Kế hoạch chi tiết lượt P0 + M1: docs/plans/m1-flow.md
+Kế hoạch lượt CAM: docs/plans/cam.md
 
 ```mermaid
 flowchart LR
