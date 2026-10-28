@@ -41,6 +41,7 @@ const shot = (from: number, to: number) => ({
   out_end_ms: to + 600,
   box: { x: 300, y: 200, w: 400, h: 240 },
   zoom: 1.7,
+  chain_prev: false,
 });
 
 describe("desktop_frame hand-over between scenes", () => {

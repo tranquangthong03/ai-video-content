@@ -1,6 +1,8 @@
 /**
- * The shot camera of the desktop_frame template: the whole page, standing perfectly still, except
- * for a few planned zooms (at most two per scene, decided by the producer: producer/zoom_shots.py).
+ * The shot camera of the desktop_frame template ("Action Zoom"): the whole page, standing perfectly
+ * still, except that EVERY action the browser performs gets a zoom on its element and label (planned by
+ * the producer: producer/action_zoom.py). A shot that follows another one closely and nearby is chained:
+ * the camera pans straight over instead of zooming out and in again.
  *
  *  - default = the FULL view: the clip fitted whole into the 16:9 frame (a clip of another aspect is
  *    contained, the bars are filled by the blurred backdrop). No drift, no punch-ins, no following
@@ -23,9 +25,13 @@ export type ZoomShot = {
   box: ClipBox;
   /** wanted zoom, 1.0 = the full view */
   zoom: number;
+  /** this shot starts from the view of the previous one (a pan), which then does not zoom out */
+  chain_prev?: boolean;
+  /** short caption of the action (shown while the shot is held) */
+  label?: string | null;
 };
 
-export const SHOT_CONFIG = { level: 1.7, minLevel: 1.3, padding: 0.1, inMs: 600, outMs: 500, holdMs: 1200, nearMs: 1500 };
+export const SHOT_CONFIG = { minLevel: 1.6, maxLevel: 2.6, share: 0.55, padding: 0.25, leadMs: 400, moveMs: 500, holdMs: 1200, nearMs: 1500 };
 
 /** The whole clip in the frame (contain); wider/taller than the clip when the aspects differ. */
 export function fullView(clip: Size, frame: Size): View {
@@ -64,17 +70,24 @@ type Seg = { t0: number; t1: number; from: View; to: View };
 export function buildShotPath(shots: ZoomShot[], clip: Size, frame: Size, endMs?: number): CameraPath {
   const full = fullView(clip, frame);
   const ordered = [...shots].sort((a, b) => a.in_start_ms - b.in_start_ms);
+  const views = ordered.map((s) => shotView(s, clip, frame));
   const segs: Seg[] = [];
   const moves: Move[] = [];
   const holds: { t0: number; t1: number; view: View }[] = [];
-  for (const s of ordered) {
-    const view = shotView(s, clip, frame);
-    segs.push({ t0: s.in_start_ms, t1: s.in_end_ms, from: full, to: view });
+  ordered.forEach((s, k) => {
+    const view = views[k];
+    const next = ordered[k + 1];
+    const from = s.chain_prev && k > 0 ? views[k - 1] : full;
+    segs.push({ t0: s.in_start_ms, t1: s.in_end_ms, from, to: view });
+    moves.push({ start: s.in_start_ms, duration: s.in_end_ms - s.in_start_ms, from, to: view, target: s.in_end_ms });
+    if (next?.chain_prev) {
+      holds.push({ t0: s.in_end_ms, t1: next.in_start_ms, view }); // the next shot pans on from here
+      return;
+    }
     holds.push({ t0: s.in_end_ms, t1: s.out_start_ms, view });
     segs.push({ t0: s.out_start_ms, t1: s.out_end_ms, from: view, to: full });
-    moves.push({ start: s.in_start_ms, duration: s.in_end_ms - s.in_start_ms, from: full, to: view, target: s.in_end_ms });
     moves.push({ start: s.out_start_ms, duration: s.out_end_ms - s.out_start_ms, from: view, to: full, target: s.out_end_ms });
-  }
+  });
   const finish = (view: View): FocusCamera => {
     const outside = view.w > clip.w + 0.5 || view.h > clip.h + 0.5; // bars to fill: the backdrop shows
     return { view, zoom: full.w / view.w, establishing: outside ? 1 : 0 };

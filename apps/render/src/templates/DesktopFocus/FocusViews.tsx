@@ -91,6 +91,34 @@ const DEFAULT_CLIP = { w: 1440, h: 900 };
 const clipSize = (a: SceneAssets) => ({ w: a.clip_width ?? DEFAULT_CLIP.w, h: a.clip_height ?? DEFAULT_CLIP.h });
 const focusOf = (a: SceneAssets): FocusLike[] => pickFocus(a);
 
+/** desktop_frame: a small dark pill with what the camera is looking at, while the zoom is held. */
+const ActionLabel: React.FC<{ shots: NonNullable<SceneAssets["zoom_shots"]>; tMs: number }> = ({ shots, tMs }) => {
+  const { fontFamily } = useTheme();
+  const shot = shots.find((s) => s.label && tMs >= s.in_start_ms && tMs < s.out_start_ms);
+  if (!shot) return null;
+  const fade = Math.min(1, (tMs - shot.in_start_ms) / 150, (shot.out_start_ms - tMs) / 150);
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 16,
+        top: 14,
+        maxWidth: "70%",
+        padding: "7px 18px",
+        borderRadius: 999,
+        background: "rgba(8,12,22,0.86)",
+        color: "#fff",
+        fontFamily,
+        fontWeight: 700,
+        fontSize: 26,
+        opacity: Math.max(0, fade),
+      }}
+    >
+      {shot.label}
+    </div>
+  );
+};
+
 /** The recorded clip seen through the focus camera, with the drawn cursor and click ripples. */
 export const FocusClip: React.FC<{ sceneId: string; assets: SceneAssets; durationInFrames: number; closeOpening?: boolean }> = ({
   sceneId,
@@ -164,6 +192,7 @@ export const FocusClip: React.FC<{ sceneId: string; assets: SceneAssets; duratio
           />
         </Freeze>
       </div>
+      {still && <ActionLabel shots={assets.zoom_shots ?? []} tMs={tCam} />}
       {cursor.ripples.map((r, i) => {
         const p = toScreen(r);
         const size = 30 + r.age * 130;
@@ -242,8 +271,35 @@ const TopText: React.FC<{ text: string | null | undefined; assets?: SceneAssets 
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { fontFamily, highlight } = useTheme();
-  const { overlay } = useGeometry();
+  const { overlay, still } = useGeometry();
   if (!text) return null;
+  if (still) {
+    // desktop_frame: the text just fades in, as a whole
+    const fade = Math.min(1, frame / 9);
+    return (
+      <>
+        <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: overlay.topGradient, background: "linear-gradient(to bottom, rgba(5,7,13,0.78), rgba(5,7,13,0))" }} />
+        <div
+          style={{
+            position: "absolute",
+            left: 48,
+            right: 48,
+            top: overlay.textTop,
+            textAlign: "center",
+            fontFamily,
+            fontWeight: 800,
+            fontSize: overlay.textSize,
+            lineHeight: 1.2,
+            color: "#fff",
+            textShadow: "0 4px 20px rgba(0,0,0,0.7)",
+            opacity: fade,
+          }}
+        >
+          {text}
+        </div>
+      </>
+    );
+  }
   const anchor = anchorFrame(text, assets?.captions ?? [], fps, 6);
   const words = kineticWords(text, anchor, fps);
   return (

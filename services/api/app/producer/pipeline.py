@@ -20,6 +20,7 @@ from app.core.brief import cta_domain, load_brief
 from app.core.flow_value import value_actions_of_run
 from app.core.timing import PAUSE_MS, EstimatedTimer, estimate_captions
 from app.llm.json_call import JsonCaller
+from app.producer.action_zoom import labels_for, plan_action_zooms
 from app.producer.dead_frames import cut_dead, dead_ms
 from app.producer.dedupe import MIN_SCENES, swap_scene, used_texts
 from app.producer.focus_plan import phrases_from_captions, plan_focus
@@ -31,7 +32,6 @@ from app.producer.shots import max_static_ms, plan_shots
 from app.producer.steps_coverage import steps_in_clip
 from app.producer.text_cards import text_card_stats
 from app.producer.trim import shift_actions, shift_logs, shift_time, trim_dead_time
-from app.producer.zoom_shots import plan_zoom_shots
 from app.recorder.flow import FlowRecorder
 from app.recorder.motion import idle_gaps
 from app.recorder.record import RecordResult, record_scene
@@ -279,29 +279,46 @@ def shots_for_scene(
 def zoom_for_scene(
     s: Any,
     plan: "ClipPlan",
-    captions: list[dict[str, Any]],
     rate: float,
     final_ms: int,
     record: RecordResult,
+    steps: list[Any] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """The zoom shots of a desktop_frame scene, moved onto the clip's own time axis."""
+    """The Action Zoom shots of a desktop_frame scene, moved onto the clip's own time axis.
+    `steps`: the flow steps of the scene's chapter (their notes become the labels)."""
     lead = plan.start_offset_ms + plan.trim_start_ms
-    inventory = [{**e, "t_ms": e["t_ms"] - lead} for e in plan.inventory]
-    actions = [
-        {**a, "t_ms": a["t_ms"] - lead, "end_ms": a["end_ms"] - lead} for a in plan.action_log
-    ]
-    shots, summary = plan_zoom_shots(
-        scene_type=s.type,
+
+    def moved(entries: list[dict[str, Any]], *keys: str) -> list[dict[str, Any]]:
+        return [{**e, **{k: e[k] - lead for k in keys if k in e}} for e in entries]
+
+    actions = moved(plan.action_log, "t_ms", "end_ms")
+    shots, summary = plan_action_zooms(
         limit_ms=final_ms * rate,
         clip=(record.width or 1280, record.height or 720),
         actions=actions,
-        inventory=inventory,
-        phrases=phrases_from_captions(captions, rate),
+        inventory=moved(plan.inventory, "t_ms"),
+        focus_log=moved(plan.focus_log, "t_ms"),
+        click_log=moved(plan.click_log, "t_ms"),
+        activity_ms=[t - lead for t in plan.activity_ms],
+        labels=labels_for(steps or [], actions),
     )
     for z in shots:
         for key in ("in_start_ms", "in_end_ms", "out_start_ms", "out_end_ms"):
             z[key] += lead
     return shots, summary
+
+
+def chapter_order_ok(script: Script, recorder: FlowRecorder | None) -> bool | None:
+    """The scenes of a flow video follow its chapters in order (None: not a flow video)."""
+    if recorder is None:
+        return None
+    index = {c.id: n for n, c in enumerate(recorder.run.chapters)}
+    seq = [
+        index[sc.root.chapter_id]
+        for sc in script.scenes
+        if getattr(sc.root, "chapter_id", None) in index
+    ]
+    return seq == sorted(seq)
 
 
 def short_domain(url: str) -> str:
@@ -312,7 +329,7 @@ def short_domain(url: str) -> str:
 def measure_motion(job_dir: Path, report: dict[str, Any]) -> dict[str, Any] | None:
     """Motion QA of the finished video; a failure to measure never fails the job."""
     try:
-        return run_qa(job_dir)
+        return run_qa(job_dir, report=report)
     except Exception as e:  # no video to read (a fake renderer), no node, ...
         report["motion_qa_error"] = f"{type(e).__name__}: {str(e)[:120]}"
         return None
@@ -654,8 +671,18 @@ def produce(
             shots_info = shots_for_scene(entry, plan, rate, final_ms, captions)
             entry["shots"], entry["punches"] = shots_info["shots"], shots_info["punches"]
             if script.template == "desktop_frame":
+                chapter = (
+                    next((c for c in flow_recorder.run.chapters if c.id == s.chapter_id), None)
+                    if flow_recorder is not None and getattr(s, "chapter_id", None)
+                    else None
+                )
+                chapter_steps = (
+                    [x for x in flow_recorder.run.steps if x.i in chapter.step_ids]
+                    if flow_recorder is not None and chapter is not None
+                    else []
+                )
                 entry["zoom_shots"], zoom_summary = zoom_for_scene(
-                    s, plan, captions, rate, final_ms, record
+                    s, plan, rate, final_ms, record, chapter_steps
                 )
                 entry["punches"] = []  # the still camera has no punch-ins
                 zoom_info[s.id] = zoom_summary
@@ -768,6 +795,12 @@ def produce(
         "render_ms": getattr(rendered, "render_ms", None),
         "warnings": [*dedupe.notes, *(w for o in outcomes for w in o.warnings)],
         "dropped_scenes": sorted(script.scenes[j].root.id for j in dropped),
+        "chapter_order_ok": chapter_order_ok(final_script, flow_recorder),
+        "dropped_chapter_scenes": sorted(
+            script.scenes[j].root.id
+            for j in dropped
+            if getattr(script.scenes[j].root, "chapter_id", None)
+        ),
         "tokens": token_usage,
         "flow": flow_report(flow_recorder, session) if flow_recorder else None,
         **(extra_report or {}),

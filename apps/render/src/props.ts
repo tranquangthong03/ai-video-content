@@ -49,6 +49,11 @@ export const ZoomShotSchema = z.object({
   out_end_ms: z.number().min(0),
   box: z.object({ x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() }),
   zoom: z.number().min(1),
+  chain_prev: z.boolean().default(false),
+  label: z.string().nullish(), // short caption of the action, shown while the shot is held
+  target: z.object({ x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() }).nullish(), // the element and its label: never cut while zoomed
+  action: z.string().nullish(),
+  text_px: z.number().nullish(), // estimated height of the typed text in the clip (typing shots)
   item_id: z.string().nullish(),
   text: z.string().nullish(),
   reason: z.string().nullish(),

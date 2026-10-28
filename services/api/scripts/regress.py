@@ -45,20 +45,24 @@ SENTINEL_CALLER: Any = object()  # "a planner is there": the replayed plans neve
 CRITERIA = ("hook_strength", "benefit_clarity", "proof_usage", "cta_strength", "flow")
 # (key, label, threshold text) of the Motion QA numbers shown in the T1 table
 QA_ROWS = (
-    ("max_zoom_rate", "zoom/khung", "≤ 2,5% (frame 5%)"),
-    ("max_pan_rate", "pan/khung", "≤ 1,5% (frame 3,5%)"),
-    ("static_ms_max", "đứng yên (ms)", "≤ 400 (frame 2000)"),
-    ("focus_text_clipped", "chữ bị cắt", "0"),
-    ("focus_match_rate", "tiêu điểm khớp", "≥ 85%"),
-    ("camera_moving_ratio", "camera chuyển động", "≤ 25%"),
-    ("full_view_ratio", "toàn cảnh", "≥ 50%"),
-    ("zoom_events_per_scene", "zoom/cảnh (max)", "≤ 2"),
-    ("container_cut_frames", "khối bị cắt (frame)", "0"),
-    ("crossfade_during_motion", "crossfade khi chuyển động", "0"),
+    ("actions", "số hành động", "(ghi số)"),
+    ("zoomed_actions", "số zoom", "= số hành động"),
+    ("actions_without_zoom", "hành động không zoom", "0"),
+    ("action_zoom_clipped_frames", "phần tử/nhãn bị cắt (frame)", "0"),
+    ("typing_text_px_min", "chữ gõ nhỏ nhất (px)", "≥ 18"),
+    ("steps_in_clip", "steps_in_clip", "100%"),
+    ("crossfade_during_motion", "crossfade khi camera động", "0"),
     ("ghost_frames", "ảnh chồng (frame)", "0"),
     ("freeze_then_jump", "đứng rồi giật", "0"),
     ("flash_shots", "cảnh chớp", "0"),
     ("loading_frames_ms", "ảnh đang tải (ms)", "0"),
+    ("camera_moving_ratio", "camera chuyển động", "(ghi số)"),
+    ("full_view_ratio", "toàn cảnh", "(ghi số)"),
+    ("max_zoom_rate", "zoom/khung lớn nhất", "(ghi số; focus ≤ 2,5%)"),
+    ("max_pan_rate", "pan/khung lớn nhất", "(ghi số; focus ≤ 1,5%)"),
+    ("static_ms_max", "đứng yên (ms)", "(ghi số; focus ≤ 400)"),
+    ("focus_text_clipped", "chữ bị cắt (focus)", "0"),
+    ("focus_match_rate", "tiêu điểm khớp (focus)", "≥ 85%"),
 )
 TEMPLATES = ("desktop_frame", "desktop_focus")
 SHORT = {"desktop_frame": "frame", "desktop_focus": "focus"}
@@ -270,7 +274,7 @@ def fmt(key: str, v: Any) -> str:
     if v is None:
         return "-"
     if key in (
-        "max_zoom_rate", "max_pan_rate", "focus_match_rate", "camera_moving_ratio", "full_view_ratio"
+        "max_zoom_rate", "max_pan_rate", "focus_match_rate", "camera_moving_ratio", "full_view_ratio", "steps_in_clip"
     ):  # fmt: skip
         return f"{v * 100:.1f}%"
     return str(v)
@@ -284,30 +288,41 @@ def print_table(title: str, cols: list[str], rows: list[list[str]]) -> None:
 
 
 def stills(ws: Path, out: Path, tag: str) -> list[str]:
-    """Two stills of the video: the middle of its first zoom (else of its 40 %) and a full-view moment."""
+    """Three stills of the video: while typing, at a click, and when the result is shown."""
     import subprocess
 
     from app.producer.motion_qa import camera_path
 
     video = ws / "video.mp4"
+    props_file = ws / "produce" / "render_props.json"
     try:
-        path = camera_path(ws / "produce" / "render_props.json")
+        path = camera_path(props_file)
     except RuntimeError:
         return []
-    zoomed: list[int] = []
-    full: list[int] = []
-    for scene in path["scenes"]:
-        for i, (_x, _y, w) in enumerate(scene["views"]):
-            (full if w >= scene["full_w"] * 0.98 else zoomed).append(scene["from"] + i)
+    props = json.loads(props_file.read_text(encoding="utf-8"))
     fps = path["fps"]
+    found_shots: list[tuple[str, int, int]] = []  # (action, frame of mid-hold, frame near its end)
+    for scene in path["scenes"]:
+        for z in props["assets"][scene["id"]].get("zoom_shots") or []:
+
+            def at(t: float, scene: dict[str, Any] = scene) -> int:
+                i = round((t - scene["start_ms"]) / 1000 * fps / scene["rate"])
+                return scene["from"] + max(0, min(scene["frames"] - 1, i))
+
+            mid = (z["in_end_ms"] + z["out_start_ms"]) / 2
+            found_shots.append((z.get("action") or "", at(mid), at(z["out_start_ms"] - 150)))
     total = max((sc["from"] + sc["frames"] for sc in path["scenes"]), default=0)
-    pick = [
-        zoomed[len(zoomed) // 2] if zoomed else int(total * 0.4),
-        full[len(full) // 3] if full else int(total * 0.6),
+    typing = next((f for a, f, _e in found_shots if a == "type"), None)
+    click = next((f for a, f, _e in found_shots if a != "type"), None)
+    result = found_shots[-1][2] if found_shots else None
+    picks = [
+        ("typing", typing if typing is not None else int(total * 0.3)),
+        ("click", click if click is not None else int(total * 0.5)),
+        ("result", result if result is not None else int(total * 0.7)),
     ]
     found = []
-    for n, frame in enumerate(pick):
-        file = out / f"{tag}-still{'AB'[n]}.png"
+    for name, frame in picks:
+        file = out / f"{tag}-{name}.png"
         done = subprocess.run(
             ["ffmpeg", "-y", "-v", "error", "-ss", f"{frame / fps:.3f}", "-i", str(video),
              "-frames:v", "1", str(file)],

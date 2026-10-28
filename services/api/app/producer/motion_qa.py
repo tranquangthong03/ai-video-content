@@ -60,12 +60,10 @@ EXPLAIN_PAN = 0.006
 # The speed and still-time limits are widened for it.
 TEMPLATE_LIMITS = {
     "desktop_focus": {"zoom": MAX_ZOOM_RATE, "pan": MAX_PAN_RATE, "static_ms": MAX_STATIC_MS},
-    "desktop_frame": {"zoom": 0.05, "pan": 0.035, "static_ms": 5000},
+    "desktop_frame": {"zoom": 0.12, "pan": 0.08, "static_ms": 60000},  # only a broken jump fails
 }
 # the shot-camera numbers (all templates; the limits apply to desktop_frame, the others show them)
-MAX_MOVING_RATIO = 0.25  # share of the frames in which the camera moves
-MIN_FULL_RATIO = 0.50  # share of the frames on the full view
-MAX_ZOOMS_PER_SCENE = 2
+MIN_TYPING_PX = 18  # typed text is at least this tall on the final frame
 MOVE_EPS = (
     6e-4  # a view change below this share per frame is the camera standing still (drift is 3e-4)
 )
@@ -351,15 +349,21 @@ def verdict(metrics: dict[str, Any], template: str = "desktop_focus") -> dict[st
         "static_ms_max": metrics["static_ms_max"] <= lim["static_ms"],
         "ghost_frames": metrics.get("ghost_frames", 0) == 0,
     }
-    if (
-        template == "desktop_frame"
-    ):  # the limits of the shot camera (the other templates only show them)
-        ok["camera_moving_ratio"] = metrics["camera_moving_ratio"] <= MAX_MOVING_RATIO
-        ok["full_view_ratio"] = metrics["full_view_ratio"] >= MIN_FULL_RATIO
-        ok["zoom_events_per_scene"] = metrics["zoom_events_per_scene"] <= MAX_ZOOMS_PER_SCENE
-        ok["crossfade_during_motion"] = metrics["crossfade_during_motion"] == 0
-        if "container_cut_frames" in metrics:
-            ok["container_cut_frames"] = metrics["container_cut_frames"] == 0
+    if template == "desktop_frame":
+        # Action Zoom: every action zoomed, its element + label never cut, typed text big enough,
+        # every step of the flow in the clip. (How much the camera moves, how long the whole page
+        # is shown, how many zooms a scene has and how still the page is are only recorded: they
+        # follow from the actions.)
+        ok["static_ms_max"] = True
+        ok["actions_without_zoom"] = metrics.get("actions_without_zoom", 0) == 0
+        ok["crossfade_during_motion"] = metrics.get("crossfade_during_motion", 0) == 0
+        if "action_zoom_clipped_frames" in metrics:
+            ok["action_zoom_clipped_frames"] = metrics["action_zoom_clipped_frames"] == 0
+        typing = metrics.get("typing_text_px_min")
+        if typing is not None:
+            ok["typing_text_px_min"] = typing >= MIN_TYPING_PX
+        if metrics.get("steps_in_clip") is not None:
+            ok["steps_in_clip"] = metrics["steps_in_clip"] >= 1.0
     return ok
 
 
@@ -552,7 +556,9 @@ def loading_report(props: dict[str, Any], produce_dir: Path) -> dict[str, Any]:
     return {"loading_frames_ms": sum(per_scene.values()), "per_scene": per_scene}
 
 
-def run_qa(job_dir: Path, *, with_focus_clipped: bool = True) -> dict[str, Any]:
+def run_qa(
+    job_dir: Path, *, with_focus_clipped: bool = True, report: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Every Motion QA number of a finished job, with the verdict per number."""
     produce = job_dir / "produce"
     props_file = produce / "render_props.json"
@@ -574,10 +580,22 @@ def run_qa(job_dir: Path, *, with_focus_clipped: bool = True) -> dict[str, Any]:
     metrics["focus_match_rate"] = match["focus_match_rate"]
     metrics["focus_match_per_scene"] = match["per_scene"]
     metrics["focus_unmatched"] = match["misses"]
+    if report is None and (job_dir / "report.json").is_file():
+        report = json.loads((job_dir / "report.json").read_text(encoding="utf-8"))
+    if template == "desktop_frame":
+        zooms = (report or {}).get("zoom_shots") or {}
+        metrics["actions"] = sum(z.get("actions", 0) for z in zooms.values())
+        metrics["zoomed_actions"] = sum(z.get("zoomed", 0) for z in zooms.values())
+        metrics["actions_without_zoom"] = sum(
+            z.get("actions_without_zoom", 0) for z in zooms.values()
+        )
+        metrics["without_zoom"] = [w for z in zooms.values() for w in z.get("without_zoom", [])][:8]
+        metrics["steps_in_clip"] = ((report or {}).get("flow") or {}).get("steps_in_clip")
     if with_focus_clipped and template == "desktop_frame":
         blocks = frame_blocks(props_file)
-        metrics["container_cut_frames"] = blocks["container_cut_frames"]
-        metrics["container_cut_spans"] = blocks["container_cut_spans"]
+        metrics["action_zoom_clipped_frames"] = blocks["action_zoom_clipped_frames"]
+        metrics["action_zoom_clipped_spans"] = blocks["clipped_spans"]
+        metrics["typing_text_px_min"] = blocks["typing_text_px_min"]
     elif with_focus_clipped:
         clipped = focus_clipped(props_file)
         metrics["focus_text_clipped"] = clipped["frames_text_clipped"]

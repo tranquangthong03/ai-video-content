@@ -78,4 +78,15 @@ describe("the shot camera", () => {
     }
     expect(worst).toBeLessThan(0.06);
   });
+
+  it("pans straight to the next shot of a chain (no zoom out in between) and zooms out after the last", () => {
+    const a = shot({ in_start_ms: 1000, in_end_ms: 1500, out_start_ms: 3000, out_end_ms: 3500 });
+    const b = shot({ in_start_ms: 3000, in_end_ms: 3500, out_start_ms: 5000, out_end_ms: 5500, chain_prev: true, box: { x: 700, y: 400, w: 400, h: 240 } });
+    const path = buildShotPath([a, b], CLIP, FRAME);
+    const full = fullView(CLIP, FRAME).w;
+    for (let t = 1500; t < 5000; t += 33) expect(path.at(t).view.w).toBeLessThan(full * 0.7); // never back on the full view
+    expect(path.at(2500).view.x).not.toBeCloseTo(path.at(4200).view.x, 0); // it moved over
+    expect(path.at(6000).zoom).toBeCloseTo(1, 6);
+    expect(path.moves).toHaveLength(3); // in, pan, out
+  });
 });

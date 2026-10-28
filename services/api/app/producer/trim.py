@@ -17,8 +17,8 @@ FREEZE_NOISE = 0.003  # frames that differ by less than this (share of full scal
 MIN_FREEZE_MS = 600  # only stretches longer than this are worth cutting
 KEEP_MS = 400  # a cut stretch keeps this much, so the video still "breathes"
 ESTABLISH_MS = 1000  # the first second after the loading phase is the establishing shot: keep it
-BEFORE_EVENT_MS = 250  # protected: just before an event (the cursor is already moving)
-AFTER_CLICK_MS = 600  # protected: after a click without a hold of its own
+BEFORE_EVENT_MS = 400  # protected: just before an event (Action Zoom comes in 400 ms early)
+AFTER_CLICK_MS = 1200  # protected: after a click without a hold of its own (the zoom stays 1.2 s)
 
 
 @dataclass(frozen=True)
