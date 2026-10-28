@@ -150,6 +150,21 @@ class Step(BaseModel):
     ] = ''
     chapter_id: str | None = None
     t_ms_hint: Annotated[int | None, Field(ge=0)] = None
+    blank: Annotated[
+        bool,
+        Field(
+            description='The page was still empty after waiting for its content: not a valid storyboard step'
+        ),
+    ] = False
+    no_effect: Annotated[
+        bool,
+        Field(
+            description='The page did not change after this action: not counted in the flow'
+        ),
+    ] = False
+    flag_reason: Annotated[
+        str | None, Field(description='blank_page | guard_broke_page | no_effect')
+    ] = None
 
 
 class FlowRun(BaseModel):

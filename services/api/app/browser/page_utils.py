@@ -52,6 +52,99 @@ SETTLE_JS = """
 """
 
 
+BLANK_JS = """
+() => {
+  const root = document.body ? document.body.cloneNode(true) : null;
+  if (!root) return true;
+  root.querySelectorAll('script,style,noscript,nav,header,footer,aside,[role=navigation]')
+    .forEach((n) => n.remove());
+  const text = (root.innerText || root.textContent || '').replace(/\\s+/g, ' ').trim();
+  if (text.length >= 40) return false;
+  const big = (el) => {
+    const r = el.getBoundingClientRect();
+    return r.width >= 80 && r.height >= 80;
+  };
+  const media = [...document.querySelectorAll('canvas,video,svg,iframe')].some(big);
+  const images = [...document.querySelectorAll('img')].some(
+    (i) => i.complete && i.naturalWidth > 50 && big(i));
+  return !(media || images);
+}
+"""
+
+# counts the fetch / XHR calls still waiting for an answer (window.__svaiPending); installed in
+# every context so a page is not called "loaded" while its data is on the way
+PENDING_JS = """
+(() => {
+  if (window.__svaiPending !== undefined) return;
+  window.__svaiPending = 0;
+  const f = window.fetch;
+  if (f) {
+    window.fetch = function (...a) {
+      window.__svaiPending++;
+      const done = () => { window.__svaiPending--; };
+      const p = f.apply(this, a);
+      p.then(done, done);
+      return p;
+    };
+  }
+  const send = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function (...a) {
+    window.__svaiPending++;
+    this.addEventListener('loadend', () => { window.__svaiPending--; }, { once: true });
+    return send.apply(this, a);
+  };
+})();
+"""
+
+CONTENT_JS = (
+    """
+([quietMs, maxMs, calmBlankMs]) => new Promise((resolve) => {
+  const blank = ("""
+    + BLANK_JS
+    + """);
+  const start = performance.now();
+  let quietSince = null;
+  const tick = () => {
+    const now = performance.now();
+    const pending = window.__svaiPending || 0;
+    if (pending === 0) { if (quietSince === null) quietSince = now; } else { quietSince = null; }
+    const calm = quietSince !== null && now - quietSince >= quietMs;
+    const empty = blank();
+    const giveUp = (calm && empty && now - quietSince >= calmBlankMs) || now - start >= maxMs;
+    if ((calm && !empty) || giveUp) {
+      resolve({ content: !empty, pending, waited_ms: Math.round(now - start) });
+    } else {
+      setTimeout(tick, 100);
+    }
+  };
+  tick();
+})
+"""
+)
+CONTENT_QUIET_MS = 500  # no fetch / XHR in flight for this long ...
+CONTENT_MAX_MS = 8000  # ... and the main area has content, at most this long
+CONTENT_CALM_BLANK_MS = 2500  # a quiet page that is still empty after this long will stay empty
+
+
+def page_is_blank(page: Page) -> bool:
+    """The main area has (almost) no text and no loaded picture, canvas or video."""
+    try:
+        return bool(page.evaluate(BLANK_JS))
+    except Exception:  # navigation destroyed the context: not judged
+        return False
+
+
+def wait_for_content(page: Page) -> dict[str, Any]:
+    """Wait for the data of an app that fills its page with JS: nothing in flight for 500 ms and
+    something to see in the main area (8 s at most). Never raises."""
+    try:
+        return dict(
+            page.evaluate(CONTENT_JS, [CONTENT_QUIET_MS, CONTENT_MAX_MS, CONTENT_CALM_BLANK_MS])
+        )
+    except Exception:
+        return {"content": True, "pending": 0, "waited_ms": 0}
+
+
 def wait_for_settle(page: Page, timeout: float = 3000, quiet_ms: int = 400) -> dict[str, Any]:
     """Wait until the page has stopped changing, within one shared time budget (ms).
 
@@ -70,6 +163,8 @@ def wait_for_settle(page: Page, timeout: float = 3000, quiet_ms: int = 400) -> d
         result = page.evaluate(SETTLE_JS, [quiet_ms, remaining])
     except Exception:  # navigation destroyed the context while waiting: the page has changed anyway
         result = {"settled": False, "quiet_dom": False, "images": False, "waited_ms": 0}
+    if page_is_blank(page):  # a page that fills itself with JS: wait for its data
+        result = {**result, **wait_for_content(page)}
     return {**result, "network_idle": network_idle}
 
 

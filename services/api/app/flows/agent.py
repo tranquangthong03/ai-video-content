@@ -23,7 +23,7 @@ from app.browser.auth_detect import LoginRequired, detect_login
 from app.browser.env_issue import check_env_issue
 from app.browser.form_actions import ActionFailed, NoReadableOptions, fold
 from app.browser.locate import Unsafe, resolve
-from app.browser.page_utils import dismiss_cookie_banner, wait_for_settle
+from app.browser.page_utils import dismiss_cookie_banner, page_is_blank, wait_for_settle
 from app.browser.session import BrowserSession
 from app.core.usage import BudgetExceeded
 from app.flows.actions import ActionRunner, FlowAction, StepResult, is_submit_target
@@ -98,6 +98,9 @@ class _Step:
     url_after: str
     note: str
     chapter: str
+    blank: bool = False  # the page was empty after the wait: not a valid storyboard step
+    no_effect: bool = False  # the page did not change after the action
+    flag_reason: str | None = None
 
 
 def tried_to_reach(flow: CoreFlow, steps: list[_Step]) -> bool:
@@ -344,7 +347,9 @@ class FlowAgent:
                 continue
             self._check_login(page, None)
             shot = self._shot(page, run, len(run.steps) + 1)
-            run.steps.append(self._step(result, answer, action))
+            step = self._step(result, answer, action)
+            self._flag(run, step, result)
+            run.steps.append(step)
             run.history.append(self._history_line(len(run.steps), result))
             if result.env_issue is not None:
                 self._note_env_issue(run, result.env_issue)
@@ -531,11 +536,13 @@ class FlowAgent:
         return f"{FLOW_DIR}/steps/s{index}.jpg"
 
     def _goto_step(self, page: Page) -> _Step:
+        blank = page_is_blank(page)
         return _Step(
             action={"do": "goto", "url": self.flow.start_url},
             locator=None, target_text="", value=None, url_before="",
             url_after=page.url,
             note="Mở trang bắt đầu", chapter="",
+            blank=blank, flag_reason="blank_page" if blank else None,
         )  # fmt: skip
 
     def _step(self, result: StepResult, answer: AgentAnswer, action: FlowAction) -> _Step:
@@ -558,6 +565,16 @@ class FlowAgent:
         )
 
     @staticmethod
+    def _flag(run: _Run, step: _Step, result: StepResult) -> None:
+        """A step whose page is empty after the wait is no valid storyboard step."""
+        if result.blank:
+            step.blank = True
+            step.flag_reason = "guard_broke_page" if result.env_issue else "blank_page"
+            run.warnings.append(
+                f"Bước {len(run.steps) + 1}: trang trống sau khi chờ, bước bị bỏ khỏi storyboard."
+            )
+
+    @staticmethod
     def _note_env_issue(run: _Run, issue: dict[str, Any]) -> None:
         if issue not in run.env_issues:
             run.env_issues.append(issue)
@@ -572,6 +589,8 @@ class FlowAgent:
         )
         if result.pressed_enter:
             what += " (đã nhấn Enter)"
+        if result.blank:
+            what += " (trang TRỐNG sau khi chờ)"
         return f"{n}. {what} → {result.url_after}"
 
     def _failed(self, run: _Run, action: FlowAction, name: str, why: str) -> None:
@@ -655,6 +674,9 @@ class FlowAgent:
                     "note": s.note,
                     "chapter_id": ids.get(i),
                     "t_ms_hint": (i - 1) * STEP_MS,
+                    "blank": s.blank,
+                    "no_effect": s.no_effect,
+                    "flag_reason": s.flag_reason,
                 }
             )
         return FlowRun.model_validate(

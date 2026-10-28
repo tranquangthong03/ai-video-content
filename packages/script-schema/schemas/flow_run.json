@@ -26,7 +26,10 @@
           "screenshot": { "type": ["string", "null"], "default": null, "description": "Path (relative to the job dir) of the viewport after the step" },
           "note": { "type": "string", "default": "", "description": "One Vietnamese sentence for the viewer" },
           "chapter_id": { "type": ["string", "null"], "default": null },
-          "t_ms_hint": { "type": ["integer", "null"], "minimum": 0, "default": null }
+          "t_ms_hint": { "type": ["integer", "null"], "minimum": 0, "default": null },
+          "blank": { "type": "boolean", "default": false, "description": "The page was still empty after waiting for its content: not a valid storyboard step" },
+          "no_effect": { "type": "boolean", "default": false, "description": "The page did not change after this action: not counted in the flow" },
+          "flag_reason": { "type": ["string", "null"], "default": null, "description": "blank_page | guard_broke_page | no_effect" }
         }
       }
     },

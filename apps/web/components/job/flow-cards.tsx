@@ -232,7 +232,7 @@ export function StoryboardCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
         <Section key={g.id || "other"} title={g.title}>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {g.steps.map((s) => (
-              <Card key={s.i} className="overflow-hidden">
+              <Card key={s.i} className={`overflow-hidden ${s.blank || s.no_effect ? "opacity-60" : ""}`}>
                 {s.screenshot && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={fileUrl(jobId, s.screenshot)} alt={`Bước ${s.i}`} className="h-36 w-full object-cover object-top" />
@@ -242,6 +242,11 @@ export function StoryboardCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
                     <span className="mr-1 text-primary">{s.i}.</span>
                     {stepLine(s)}
                   </p>
+                  {(s.blank || s.no_effect) && (
+                    <p className="text-amber-700">
+                      {s.blank ? "Trang trống sau khi chờ, bước này không dùng cho video." : "Bước này không làm trang đổi, không dùng cho video."}
+                    </p>
+                  )}
                   {s.url_after && <p className="truncate text-muted-foreground">{s.url_after}</p>}
                 </CardContent>
               </Card>

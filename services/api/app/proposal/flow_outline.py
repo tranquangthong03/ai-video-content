@@ -5,6 +5,7 @@ chose and approved the flow."""
 from typing import Any
 
 from app.core.flow_ctx import ChapterCtx, FlowCtx
+from app.core.flow_steps import counts
 from app.core.hero import before_after_pair, choose_hero
 from app.schemas.generated.core_flow import CoreFlow
 from app.schemas.generated.flow_run import FlowRun
@@ -22,7 +23,7 @@ NO_PICTURE = ("scroll", "wait")
 def chapter_steps(run: FlowRun) -> dict[str, list[Any]]:
     out: dict[str, list[Any]] = {c.id: [] for c in run.chapters}
     for step in run.steps:
-        if step.chapter_id in out:
+        if step.chapter_id in out and counts(step):
             out[step.chapter_id].append(step)
     return out
 

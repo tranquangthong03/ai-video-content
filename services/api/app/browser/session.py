@@ -9,6 +9,7 @@ from typing import Any
 from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
 
 from app.browser.guard import RequestGuard
+from app.browser.page_utils import PENDING_JS
 from app.browser.privacy import BLUR_JS, blur_enabled
 from app.core.env_issue import add_env_issue
 
@@ -103,6 +104,7 @@ class BrowserSession:
         context.set_default_navigation_timeout(NAV_TIMEOUT_MS)
         context.set_default_timeout(8_000)
         context.route("**/*", self.guard.handle)
+        context.add_init_script(PENDING_JS)
         context.on("page", self._watch_page)
         blur = self.blur_personal
         if blur is None:

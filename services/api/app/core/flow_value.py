@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from app.core.env_issue import env_warning
+from app.core.flow_steps import counts
 from app.schemas.generated.core_flow import CoreFlow
 from app.schemas.generated.flow_quality import FlowQuality
 from app.schemas.generated.flow_run import FlowRun
@@ -43,6 +44,8 @@ def value_actions_of_run(run: FlowRun, logs: dict[str, Any] | None = None) -> in
     fresh, pictures = _fresh_after(logs) if logs else (None, set())
     count = clicks = 0
     for step in run.steps:
+        if not counts(step):
+            continue
         do = step.action.do
         if do in STATE_DO:
             count += 1

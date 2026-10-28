@@ -18,7 +18,7 @@ from app.browser.env_issue import check_env_issue
 from app.browser.form_actions import SUBMIT_NAME, ActionFailed, Ops, check_submit_click
 from app.browser.guard import MAX_WRITE_WINDOWS, RequestGuard, WritesNotAllowed
 from app.browser.locate import ElementInfo, Target, Unsafe, check_clickable, check_typeable, resolve
-from app.browser.page_utils import wait_for_settle
+from app.browser.page_utils import page_is_blank, wait_for_settle
 from app.browser.write_intent import action_trigger
 from app.flows.page_state import PageElement, PageState
 from app.schemas.generated.locator import LocatorSpec
@@ -73,6 +73,7 @@ class StepResult:
     url_after: str = ""
     submitted: bool = False
     pressed_enter: bool = False  # typed, then Enter (the page may have added the item)
+    blank: bool = False  # the page is still empty after the wait for its content
     env_issue: dict[str, Any] | None = None  # the page stayed empty because the guard refused
 
 
@@ -134,8 +135,9 @@ class ActionRunner:
             self._act(action, element, target, result)
         wait_for_settle(self.page)
         result.url_after = self.page.url
+        result.blank = page_is_blank(self.page)
         if self.guard is not None:
-            result.env_issue = check_env_issue(self.page, self.guard, since)
+            result.env_issue = check_env_issue(self.page, self.guard, since, blank=result.blank)
         return result
 
     # --- internals ------------------------------------------------------------------------
