@@ -126,6 +126,11 @@
               "type": ["string", "null"],
               "default": null,
               "description": "Set when the explored pages show the account has no data (two or more signs)"
+            },
+            "env_warning": {
+              "type": ["string", "null"],
+              "default": null,
+              "description": "Set when a page stayed empty because the request guard refused its requests"
             }
           }
         },

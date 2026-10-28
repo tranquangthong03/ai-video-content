@@ -40,7 +40,7 @@ Phần tử tương tác:
 - {"do":"stop_before_submit","ref":str}          — form đã điền đủ, ref là nút gửi/lưu cuối (dùng khi chính sách = stop)
 - {"do":"finish"}                                — đã thấy dấu hiệu thành công
 - {"do":"give_up","reason":str}                  — không thể tiếp tục
-{# changed: give_up says why (reason_kind) and quotes the site's message #}- Khi give_up, thêm "reason_kind" ∈ "no_data" | "no_permission" | "feature_missing" | "blocked_by_site" | "stuck" và "quote": thông báo của chính trang, trích NGUYÊN VĂN (hoặc null).
+{# changed: give_up says why (reason_kind) and quotes the site's message #}- Khi give_up, thêm "reason_kind" ∈ "no_data" | "no_permission" | "feature_missing" | "blocked_by_site" | "stuck" | "env_blocked" và "quote": thông báo của chính trang, trích NGUYÊN VĂN (hoặc null).
 
 ## Quy tắc
 1. Đi đúng mục tiêu, ngắn nhất có thể nhưng tự nhiên như người dùng thật; ưu tiên menu/nút có tên khớp các bước dự kiến.
@@ -52,6 +52,7 @@ Phần tử tương tác:
 7. Mỗi hành động kèm "chapter" là tên ngắn của chặng hiện tại (ví dụ "Mở form", "Điền thông tin", "Gửi và theo dõi") và "note" 1 câu tiếng Việt mô tả bước cho người xem.
 8. sample_data_update: các giá trị mới bạn vừa quyết định dùng (để giữ nhất quán), hoặc {}.
 {# changed: a flow that cannot be done on this account is given up at once, with the site's own words; no_data/feature_missing need that message or a real try through the menu #}9. Nếu trang hiển thị thông báo kiểu "No ... available", "No ... with ... Balance", "không có dữ liệu", "you do not have permission", "bạn không có quyền", hoặc màn hình đích thiếu form/nút/dữ liệu cần thiết để làm tiếp (đã thấy ở "Nội dung trang" hoặc ảnh) → trả give_up NGAY, không thử lại (CHỈ khi bạn đã thấy thông báo đó trên trang, hoặc đã thử mở menu/mục khớp mô tả luồng mà vẫn không có; trang mới mở, chỉ thấy menu/logo hoặc chưa tải xong KHÔNG phải bằng chứng: hãy mở menu tới màn hình cần thiết trước): "reason_kind" = "no_data" (thiếu dữ liệu/hạn mức), "no_permission" (thiếu quyền), "feature_missing" (không có chức năng này), "blocked_by_site" (captcha, chặn tự động) hoặc "stuck" (kẹt vì lý do khác); "quote" là thông báo trích nguyên văn.
+{# changed: a blank page right after an action is reported by the system, not guessed #}10. Nếu trong "Cảnh báo" có dòng MÔI TRƯỜNG (trang trống vì hệ thống an toàn chặn yêu cầu), hoặc sau thao tác trang trắng/không đổi và bạn thấy dòng đó: dùng give_up với "reason_kind": "env_blocked" thay vì đi tiếp hoặc thử lại. KHÔNG dùng env_blocked khi không có dòng MÔI TRƯỜNG.
 
 ## Đầu ra
 Chỉ trả về json:

@@ -53,6 +53,7 @@ def build_request(
     notice: str = "",
     infeasible: dict[str, str] | None = None,
     empty_warning: str | None = None,
+    env_warning: str | None = None,
 ) -> InteractionRequest:
     message = (
         "Chọn luồng chức năng chính sẽ xuất hiện trong video "
@@ -74,6 +75,7 @@ def build_request(
             "infeasible": infeasible or {},
             "quality": {f.id: quality_of_flow(f).model_dump() for f in flows},
             "empty_warning": empty_warning,
+            "env_warning": env_warning,
         },
     )
 

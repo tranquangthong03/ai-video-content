@@ -88,6 +88,11 @@ export function SelectFlowCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
           {sel.empty_warning}
         </p>
       )}
+      {sel.env_warning && (
+        <p role="status" aria-label="Cảnh báo môi trường" className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          {sel.env_warning}
+        </p>
+      )}
       <Section title={`Luồng đề xuất (${order.length}/${sel.max} được chọn)`}>
         <div className="grid gap-3 lg:grid-cols-2">
           {flows.map((f) => {
@@ -261,9 +266,9 @@ export function StoryboardCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
         </div>
       </Section>
       <ErrorNote text={error} />
-      {(pending.flow_quality?.label || pending.flow_quality?.empty_warning) && (
+      {(pending.flow_quality?.label || pending.flow_quality?.empty_warning || pending.flow_quality?.env_warning) && (
         <ul role="status" aria-label="Cảnh báo chất lượng luồng" className="space-y-1">
-          {[pending.flow_quality.label, pending.flow_quality.empty_warning].filter((w): w is string => Boolean(w)).map((w) => (
+          {[pending.flow_quality.label, pending.flow_quality.empty_warning, pending.flow_quality.env_warning].filter((w): w is string => Boolean(w)).map((w) => (
             <li key={w} className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
               {w.replace(/\.?$/, ".")} Bạn vẫn có thể duyệt.
             </li>

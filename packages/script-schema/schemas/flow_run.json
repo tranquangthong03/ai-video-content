@@ -99,6 +99,21 @@
       ],
       "default": null
     },
+    "env_issues": {
+      "type": "array",
+      "default": [],
+      "description": "Pages that stayed empty because the request guard refused the requests they need (environment, not the site)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "blocked_urls", "page_url"],
+        "properties": {
+          "kind": { "enum": ["guard_broke_page"] },
+          "blocked_urls": { "type": "array", "items": { "type": "string" } },
+          "page_url": { "type": "string" }
+        }
+      }
+    },
     "give_up": {
       "oneOf": [
         {
@@ -106,7 +121,7 @@
           "additionalProperties": false,
           "required": ["reason_kind", "reason"],
           "properties": {
-            "reason_kind": { "enum": ["no_data", "no_permission", "feature_missing", "blocked_by_site", "stuck"] },
+            "reason_kind": { "enum": ["no_data", "no_permission", "feature_missing", "blocked_by_site", "stuck", "env_blocked"] },
             "reason": { "type": "string" },
             "quote": { "type": ["string", "null"], "default": null, "description": "The site's own message, word for word" }
           }
@@ -128,6 +143,7 @@
         "completion_tokens": { "type": "integer", "default": 0 },
         "seconds": { "type": "number", "default": 0 },
         "write_requests": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "guard_intents": { "type": "object", "additionalProperties": { "type": "integer" }, "default": {}, "description": "How the guard judged the non-GET requests: read / write / unknown / telemetry" },
         "text_calls": { "type": "integer", "default": 0, "description": "LLM calls made without the screenshot" },
         "vision_calls": { "type": "integer", "default": 0, "description": "LLM calls made with the screenshot" },
         "escalated_because": { "type": ["string", "null"], "default": null, "description": "Why the agent started sending screenshots (vision=auto)" },

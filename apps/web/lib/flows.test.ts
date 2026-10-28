@@ -88,8 +88,8 @@ describe("storyboard", () => {
 describe("what the select_flow card says about a flow", () => {
   it("shows the value actions, and the warning only when they are too few", () => {
     expect(qualityLine(undefined)).toBeNull();
-    expect(qualityLine({ value_actions: 4, label: null, empty_warning: null, empty_signals: [], estimated: true })).toEqual({ text: "~4 thao tác tạo kết quả", warn: null });
-    expect(qualityLine({ value_actions: 0, label: "Chỉ điều hướng — video sẽ ít hấp dẫn", empty_warning: null, empty_signals: [], estimated: false })).toEqual({
+    expect(qualityLine({ value_actions: 4, label: null, empty_warning: null, env_warning: null, empty_signals: [], estimated: true })).toEqual({ text: "~4 thao tác tạo kết quả", warn: null });
+    expect(qualityLine({ value_actions: 0, label: "Chỉ điều hướng — video sẽ ít hấp dẫn", empty_warning: null, env_warning: null, empty_signals: [], estimated: false })).toEqual({
       text: "0 thao tác tạo kết quả",
       warn: "Chỉ điều hướng — video sẽ ít hấp dẫn",
     });

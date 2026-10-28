@@ -336,6 +336,8 @@ class TerminalFrontend:
         self.console.print(Panel(request.message, title="Chọn luồng chính", border_style="cyan"))
         if request.flow_select and request.flow_select.empty_warning:
             self.console.print(f"[yellow]⚠ {request.flow_select.empty_warning}[/]")
+        if request.flow_select and request.flow_select.env_warning:
+            self.console.print(f"[yellow]⚠ {request.flow_select.env_warning}[/]")
         for f in request.flows or []:
             steps = "\n".join(f"  • {s}" for s in f.expected_steps)
             submit = "  [yellow]\\[cần gửi dữ liệu][/]" if f.needs_submit else ""
@@ -367,9 +369,10 @@ class TerminalFrontend:
         for w in run.warnings:
             self.console.print(f"[yellow]⚠ {w}[/]")
         q = request.flow_quality
-        for w in (q.label, q.empty_warning) if q else ():
-            if w:
-                self.console.print(f"[yellow]⚠ {w.rstrip('.')}. Bạn vẫn có thể duyệt.[/]")
+        warns = [q.label, q.empty_warning, q.env_warning] if q else []
+        for note in warns:
+            if note:
+                self.console.print(f"[yellow]⚠ {note.rstrip('.')}. Bạn vẫn có thể duyệt.[/]")
         shots = [s.screenshot for s in run.steps if s.screenshot]
         if shots:
             self.console.print(f"[dim]Ảnh từng bước: {Path(shots[0]).parent} ({len(shots)} ảnh)[/]")

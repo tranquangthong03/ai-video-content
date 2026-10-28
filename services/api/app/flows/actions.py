@@ -14,10 +14,12 @@ from pydantic import BaseModel, model_validator
 
 from app.browser import form_actions
 from app.browser.enter_policy import enter_decision
+from app.browser.env_issue import check_env_issue
 from app.browser.form_actions import SUBMIT_NAME, ActionFailed, Ops, check_submit_click
 from app.browser.guard import MAX_WRITE_WINDOWS, RequestGuard, WritesNotAllowed
 from app.browser.locate import ElementInfo, Target, Unsafe, check_clickable, check_typeable, resolve
 from app.browser.page_utils import wait_for_settle
+from app.browser.write_intent import action_trigger
 from app.flows.page_state import PageElement, PageState
 from app.schemas.generated.locator import LocatorSpec
 
@@ -41,7 +43,10 @@ class FlowAction(BaseModel):
     direction: Literal["down", "up"] | None = None
     reason: str | None = None
     reason_kind: (
-        Literal["no_data", "no_permission", "feature_missing", "blocked_by_site", "stuck"] | None
+        Literal[
+            "no_data", "no_permission", "feature_missing", "blocked_by_site", "stuck", "env_blocked"
+        ]
+        | None
     ) = None
     quote: str | None = None  # give_up: the site's own message, word for word
 
@@ -68,6 +73,7 @@ class StepResult:
     url_after: str = ""
     submitted: bool = False
     pressed_enter: bool = False  # typed, then Enter (the page may have added the item)
+    env_issue: dict[str, Any] | None = None  # the page stayed empty because the guard refused
 
 
 def is_submit_target(element: PageElement) -> bool:
@@ -103,7 +109,10 @@ class ActionRunner:
     def run(self, state: PageState, action: FlowAction) -> StepResult:
         """Do `action` on the page described by `state`. Raises ActionFailed or Unsafe."""
         result = StepResult(do=action.do, url_before=self.page.url, value=action.value)
+        since = self.guard.clock() if self.guard else 0.0
         if action.do == "scroll":
+            if self.guard is not None:
+                self.guard.note_action("page_load")
             if self.observer is not None:
                 self.observer.on_target("scroll", None, state, None)
             self._scroll(action)
@@ -113,11 +122,20 @@ class ActionRunner:
                 raise ActionFailed(f"ref «{action.ref}» không có trong danh sách phần tử hiện tại")
             result.locator, result.target_text = element.locator, element.name
             target = self._resolve(element)
+            if self.guard is not None:  # requests this action causes are judged by what it is
+                self.guard.note_action(
+                    action_trigger(
+                        action.do, element.role, element.name, submit_like=is_submit_target(element)
+                    ),
+                    element.name,
+                )
             if self.observer is not None:
                 self.observer.on_target(action.do, element, state, target)
             self._act(action, element, target, result)
         wait_for_settle(self.page)
         result.url_after = self.page.url
+        if self.guard is not None:
+            result.env_issue = check_env_issue(self.page, self.guard, since)
         return result
 
     # --- internals ------------------------------------------------------------------------

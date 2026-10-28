@@ -145,6 +145,7 @@ def run_core_flow(
                     flow.start_url,
                     storage_state=job.storage_state,
                     expect_session=job.storage_state is not None,
+                    events_dir=job.job_dir,
                 ) as session:
                     agent = FlowAgent(
                         session, agent_llm, flow, job.job_dir,

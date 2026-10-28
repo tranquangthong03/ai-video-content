@@ -11,6 +11,7 @@ from pathlib import Path
 
 from app.core import brief as brief_mod
 from app.core import flow_choice
+from app.core.env_issue import env_warning, load_env_issues
 from app.core.features import default_selection, merge_duplicates, restrict_profile
 from app.core.flow_choice import FlowSelection
 from app.core.flow_value import (
@@ -237,6 +238,7 @@ class ProposalRunner:
                     notice=notice.strip(),
                     infeasible=marked,
                     empty_warning=warning,
+                    env_warning=env_warning(load_env_issues(self.dir)),
                 )
             )
             answer = flow_choice.read_answer(response)

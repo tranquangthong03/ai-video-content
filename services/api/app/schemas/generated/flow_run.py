@@ -63,12 +63,26 @@ class Live(BaseModel):
     marks: Annotated[list[Mark], Field(validate_default=True)] = []
 
 
+class EnvIssue(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['guard_broke_page']
+    blocked_urls: list[str]
+    page_url: str
+
+
 class GiveUp(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     reason_kind: Literal[
-        'no_data', 'no_permission', 'feature_missing', 'blocked_by_site', 'stuck'
+        'no_data',
+        'no_permission',
+        'feature_missing',
+        'blocked_by_site',
+        'stuck',
+        'env_blocked',
     ]
     reason: str
     quote: Annotated[
@@ -87,6 +101,12 @@ class Report(BaseModel):
     completion_tokens: int = 0
     seconds: float = 0
     write_requests: list[str] = []
+    guard_intents: Annotated[
+        dict[str, int],
+        Field(
+            description='How the guard judged the non-GET requests: read / write / unknown / telemetry'
+        ),
+    ] = {}
     text_calls: Annotated[
         int, Field(description='LLM calls made without the screenshot')
     ] = 0
@@ -151,6 +171,13 @@ class FlowRun(BaseModel):
         ),
     ] = None
     live: Live | None = None
+    env_issues: Annotated[
+        list[EnvIssue],
+        Field(
+            description='Pages that stayed empty because the request guard refused the requests they need (environment, not the site)',
+            validate_default=True,
+        ),
+    ] = []
     give_up: GiveUp | None = None
     report: Annotated[
         Report | None,

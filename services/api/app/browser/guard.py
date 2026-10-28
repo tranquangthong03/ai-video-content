@@ -4,30 +4,30 @@ While a sign-in is being performed (allow_login_posts) POSTs to the site's own d
 few well-known authentication providers pass too; nothing else does.
 
 Rules (see decide()): PUT/PATCH/DELETE and document POSTs (form submits) are always blocked.
-Other POSTs pass only for GraphQL queries, telemetry/font calls (fake 204),
-or read-like paths (search|query|list|filter|graphql without create|update|delete|save|...).
+Other POSTs pass only for GraphQL queries, telemetry/font calls (fake 204), or what
+write_intent.classify_write_intent calls a read: the action that caused the request (note_action)
+and the path / body decide; unknown is blocked like a write.
 
 Inside allow_writes() (a core flow whose submit policy is "allow") POST/PUT/PATCH to the site's
 own domain pass too, except paths that delete, pay, invite or send. At most MAX_WRITE_WINDOWS
 windows per guard, never on a shared demo site; every write request is listed in the report.
 """
 
-import json
 import re
+import time
 from collections import Counter
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Any, Literal
 from urllib.parse import urlparse
 
+from app.browser.write_intent import Trigger, classify_write_intent
 from app.core.shared_demo import is_shared_demo
 
 Verdict = Literal["continue", "abort", "fake_204"]
 
 ALWAYS_BLOCKED = {"PUT", "PATCH", "DELETE"}
-READ_PATH = re.compile(r"search|query|list|filter|graphql", re.I)
-WRITE_PATH = re.compile(r"create|update|delete|save|submit|send|pay|checkout", re.I)
 # Never let through, even while writes are allowed: destructive, payment, people, outgoing mail
 FORBIDDEN_WRITE_PATH = re.compile(
     r"delete|remove|destroy|pay|checkout|billing|subscri|invite|share|send|message|mail|notify|"
@@ -36,6 +36,8 @@ FORBIDDEN_WRITE_PATH = re.compile(
 )
 WRITE_METHODS = {"POST", "PUT", "PATCH"}
 MAX_WRITE_WINDOWS = 2
+ACTION_WINDOW_S = 2.0  # a request this soon after an action is caused by it
+MAX_DECISIONS = 300
 
 
 class WritesNotAllowed(RuntimeError):
@@ -70,19 +72,6 @@ TELEMETRY_HOSTS = (
     "use.typekit.net",
     "bat.bing.com",
 )
-
-
-def _is_graphql_query(body: Any) -> bool:
-    items = body if isinstance(body, list) else [body]
-    if not items:
-        return False
-    for item in items:
-        if not isinstance(item, dict) or not isinstance(item.get("query"), str):
-            return False
-        text = item["query"].lstrip()
-        if text.startswith(("mutation", "subscription")) or re.search(r"\bmutation\b", text):
-            return False  # even with operationName we cannot tell which operation runs
-    return True
 
 
 # Identity providers a site's own sign-in form may post to (host suffix; supabase only under /auth/)
@@ -127,6 +116,15 @@ class RequestGuard:
     write_phase: bool = False
     write_windows: int = 0
     write_log: list[str] = field(default_factory=list)  # every write request let through
+    # the browser action that last caused requests: (monotonic seconds, trigger, control text)
+    last_action: tuple[float, str, str] | None = None
+    # every non-GET decision: {url, method, verdict, reason, trigger, outcome}
+    decisions: list[dict[str, str]] = field(default_factory=list)
+    intents: Counter[str] = field(default_factory=Counter)  # read / write / unknown / telemetry
+    blocked_log: list[tuple[float, str]] = field(default_factory=list)  # (monotonic s, "POST url")
+    sink: Callable[[dict[str, Any]], None] | None = None  # told every decision (the job's events)
+    env_issues: list[dict[str, Any]] = field(default_factory=list)
+    clock: Callable[[], float] = time.monotonic
 
     def _is_main_domain(self, url: str) -> bool:
         host, root = _host(url), _host(self.root_url)
@@ -155,6 +153,31 @@ class RequestGuard:
         finally:
             self.write_phase = False
 
+    def note_action(self, trigger: Trigger, text: str = "") -> None:
+        """The browser is about to do something (click, type, navigate...) that may cause requests.
+        A commit stays the cause for its window: a page load right after it does not hide it."""
+        now = self.clock()
+        last = self.last_action
+        if (
+            trigger == "page_load"
+            and last
+            and last[1] == "commit"
+            and now - last[0] < ACTION_WINDOW_S
+        ):
+            return
+        self.last_action = (now, trigger, text)
+
+    def trigger(self) -> Trigger:
+        last = self.last_action
+        if last and self.clock() - last[0] <= ACTION_WINDOW_S:
+            return last[1]  # type: ignore[return-value]
+        return "none"
+
+    def recent_blocked(self, window_s: float = 3.0) -> list[str]:
+        """Requests refused in the last `window_s` seconds (POST url), for the blank-page check."""
+        now = self.clock()
+        return [u for t, u in self.blocked_log if now - t <= window_s]
+
     def login_post_allowed(self, url: str) -> bool:
         host, root = _host(url), _host(self.root_url)
         if (
@@ -169,51 +192,73 @@ class RequestGuard:
         return False
 
     def decide(
-        self, method: str, url: str, resource_type: str, post_data: str | None
+        self,
+        method: str,
+        url: str,
+        resource_type: str,
+        post_data: str | None,
+        content_type: str = "",
     ) -> tuple[Verdict, str]:
         """Return (verdict, rule) for one request."""
+        verdict, rule, _ = self.classify(method, url, resource_type, post_data, content_type)
+        return verdict, rule
+
+    def classify(
+        self,
+        method: str,
+        url: str,
+        resource_type: str,
+        post_data: str | None,
+        content_type: str = "",
+    ) -> tuple[Verdict, str, str]:
+        """(verdict, rule, intent) with intent read | write | unknown | telemetry."""
         method = method.upper()
         if method in {"GET", "HEAD", "OPTIONS"}:
-            return "continue", "read"
+            return "continue", "read", "read"
         if (
             self.write_phase
             and method in WRITE_METHODS
             and self._is_main_domain(url)
             and not FORBIDDEN_WRITE_PATH.search(urlparse(url).path)
         ):
-            return "continue", "flow_write"
+            return "continue", "flow_write", "write"
         if method in ALWAYS_BLOCKED:
-            return "abort", f"method_{method.lower()}"
+            return "abort", f"method_{method.lower()}", "write"
         # POST from here on
         if self.login_phase:
             if self.login_post_allowed(url):
                 self.login_hosts[_host(url)] += 1
-                return "continue", "login_post"
+                return "continue", "login_post", "write"
             self.login_blocked_hosts[_host(url)] += 1
         if resource_type == "document":
-            return "abort", "document_post"
-        body: Any = None
-        if post_data:
-            try:
-                body = json.loads(post_data)
-            except ValueError:
-                body = None
-        if body is not None and _is_graphql_query(body):
-            return "continue", "graphql_query"
+            return "abort", "document_post", "write"
         host = _host(url)
         if not self._is_main_domain(url) and any(host.endswith(t) for t in TELEMETRY_HOSTS):
-            return "fake_204", "telemetry"
-        path = urlparse(url).path
-        if READ_PATH.search(path) and not WRITE_PATH.search(path):
-            return "continue", "read_path"
-        return "abort", "post_default"
+            return "fake_204", "telemetry", "telemetry"
+        intent = classify_write_intent(
+            url, post_data, content_type=content_type, trigger=self.trigger()
+        )
+        if intent.verdict == "read":
+            rule = {"graphql_query": "graphql_query", "path_read_word": "read_path"}.get(
+                intent.reason, f"read_{intent.reason}"
+            )
+            return "continue", rule, "read"
+        if intent.verdict == "write":
+            return "abort", f"write_{intent.reason}", "write"
+        return "abort", "post_default", "unknown"
 
     def handle(self, route: Any) -> None:
         """Playwright route handler."""
         request = route.request
-        verdict, rule = self.decide(
-            request.method, request.url, request.resource_type, request.post_data
+        try:
+            content_type = request.headers.get("content-type", "")
+        except Exception:
+            content_type = ""
+        verdict, rule, intent = self.classify(
+            request.method, request.url, request.resource_type, request.post_data, content_type
         )
+        if rule != "read":
+            self._log_decision(request, verdict, rule, intent)
         if rule == "read":  # plain GET/HEAD/OPTIONS: not counted
             route.continue_()
         elif self.allow_mutations or verdict == "continue":
@@ -230,7 +275,26 @@ class RequestGuard:
             self.counts[f"blocked:{rule}"] += 1
             if len(self.blocked_urls) < 10:
                 self.blocked_urls.append(f"{request.method} {request.url[:200]}")
+            self.blocked_log = self.blocked_log[-50:] + [
+                (self.clock(), f"{request.method} {request.url[:200]}")
+            ]
             route.abort("blockedbyclient")
+
+    def _log_decision(self, request: Any, verdict: Verdict, rule: str, intent: str) -> None:
+        self.intents[intent] += 1
+        event = {
+            "event": "guard_decision",
+            "url": request.url[:200].split("?")[0],  # the query string may hold tokens
+            "method": request.method,
+            "verdict": intent,
+            "reason": rule,
+            "trigger": self.trigger(),
+            "outcome": "blocked" if verdict == "abort" and not self.allow_mutations else "passed",
+        }
+        if len(self.decisions) < MAX_DECISIONS:
+            self.decisions.append({k: str(v) for k, v in event.items() if k != "event"})
+        if self.sink is not None:
+            self.sink(event)
 
     def _remember(self, key: str, request: Any) -> None:
         urls = self.passed_urls.setdefault(key, [])
@@ -252,4 +316,6 @@ class RequestGuard:
             "writes": {"windows": self.write_windows, "requests": self.write_log[:20]},
             "first_blocked_urls": self.blocked_urls,
             "first_passed_urls": self.passed_urls,
+            "intents": dict(self.intents),
+            "decisions": self.decisions,
         }

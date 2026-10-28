@@ -18,6 +18,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from app.core.env_issue import env_warning
 from app.schemas.generated.core_flow import CoreFlow
 from app.schemas.generated.flow_quality import FlowQuality
 from app.schemas.generated.flow_run import FlowRun
@@ -209,4 +210,5 @@ def quality_of_run(run: FlowRun, job_dir: Path) -> FlowQuality:
     return FlowQuality(
         value_actions=n, label=label_for(n), empty_warning=empty_warning(signals),
         empty_signals=signals[:6], estimated=False,
+        env_warning=env_warning([i.model_dump() for i in run.env_issues]),
     )  # fmt: skip

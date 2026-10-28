@@ -11,7 +11,7 @@ import hashlib
 import json
 import shutil
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -20,6 +20,7 @@ from playwright.sync_api import Page
 from pydantic import BaseModel, Field
 
 from app.browser.auth_detect import LoginRequired, detect_login
+from app.browser.env_issue import check_env_issue
 from app.browser.form_actions import ActionFailed, NoReadableOptions, fold
 from app.browser.locate import Unsafe, resolve
 from app.browser.page_utils import dismiss_cookie_banner, wait_for_settle
@@ -52,6 +53,11 @@ REPEAT_WARN, REPEAT_STOP = 2, 3
 # "the account cannot do this" needs evidence; the agent may be refused this many times first
 GIVE_UP_REFUSALS = 2
 EVIDENCE_KINDS = ("no_data", "feature_missing")
+GIVE_UP_NEEDS_ENV = "env_blocked cần cảnh báo môi trường (trang trống vì hệ thống an toàn chặn)"
+GIVE_UP_NEEDS_PROOF = (
+    "chưa có thông báo của trang và chưa thử mở menu/mục khớp mô tả luồng; "
+    "hãy điều hướng qua menu tới màn hình đó rồi mới kết luận"
+)
 STEP_MS = 2500  # a step is about this long on screen (before the hold)
 
 
@@ -107,9 +113,18 @@ def tried_to_reach(flow: CoreFlow, steps: list[_Step]) -> bool:
     )
 
 
-def give_up_has_evidence(kind: str, quote: str | None, flow: CoreFlow, steps: list[_Step]) -> bool:
+def give_up_has_evidence(
+    kind: str,
+    quote: str | None,
+    flow: CoreFlow,
+    steps: list[_Step],
+    env_issues: Sequence[object] = (),
+) -> bool:
     """no_data / feature_missing only count with the site's own message on the page, or after the
-    agent really tried to reach the screen through the menu; other kinds need no proof."""
+    agent really tried to reach the screen through the menu; env_blocked only after the guard was
+    seen breaking a page (an env_issue); other kinds need no proof."""
+    if kind == "env_blocked":
+        return bool(env_issues)
     return kind not in EVIDENCE_KINDS or bool(quote) or tried_to_reach(flow, steps)
 
 
@@ -125,6 +140,7 @@ class _Run:
     failed_actions: int = 0
     give_up: dict[str, Any] | None = None
     give_up_refused: int = 0
+    env_issues: list[dict[str, Any]] = field(default_factory=list)
     text_calls: int = 0
     vision_calls: int = 0
     escalated_because: str | None = None
@@ -216,6 +232,7 @@ class FlowAgent:
 
     def _open(self, page: Page, run: _Run) -> None:
         run.status = "partial"
+        since = self.session.guard.clock()
         try:
             response = page.goto(self.flow.start_url, wait_until="domcontentloaded")
             wait_for_settle(page)
@@ -225,6 +242,9 @@ class FlowAgent:
             run.warnings.append(f"Không mở được trang bắt đầu: {str(e)[:160]}")
             return
         self._check_login(page, response.status if response else None)
+        issue = check_env_issue(page, self.session.guard, since)
+        if issue is not None:
+            self._note_env_issue(run, issue)
         if self.film is not None:
             self.film.opened()
 
@@ -280,14 +300,15 @@ class FlowAgent:
                     why = action.reason or answer.reason or "?"
                     kind = action.reason_kind or "stuck"
                     quote = self._verified_quote(action.quote, state)
-                    if not give_up_has_evidence(kind, quote, self.flow, run.steps):
+                    if not give_up_has_evidence(kind, quote, self.flow, run.steps, run.env_issues):
                         if run.give_up_refused < GIVE_UP_REFUSALS:
                             run.give_up_refused += 1
                             run.status = "partial"
                             self._failed(
                                 run, action, "give_up",
-                                "chưa có thông báo của trang và chưa thử mở menu/mục khớp mô tả "
-                                "luồng; hãy điều hướng qua menu tới màn hình đó rồi mới kết luận",
+                                GIVE_UP_NEEDS_ENV
+                                if kind == "env_blocked"
+                                else GIVE_UP_NEEDS_PROOF,
                             )  # fmt: skip
                             continue
                         kind = "stuck"  # still no proof: the flow is not blamed on the account
@@ -325,6 +346,8 @@ class FlowAgent:
             shot = self._shot(page, run, len(run.steps) + 1)
             run.steps.append(self._step(result, answer, action))
             run.history.append(self._history_line(len(run.steps), result))
+            if result.env_issue is not None:
+                self._note_env_issue(run, result.env_issue)
             if len([s for s in run.steps if s.action["do"] != "goto"]) >= self.limits.max_actions:
                 run.warnings.append(f"Dừng: đã đủ {self.limits.max_actions} hành động.")
                 return
@@ -404,6 +427,13 @@ class FlowAgent:
 
     def _prompt(self, state: PageState, run: _Run, with_image: bool) -> str:
         warnings = [f"⚠ {w}" for w in self._repeat_warnings(run)]
+        for issue in run.env_issues[-1:]:
+            warnings.append(
+                f"⚠ MÔI TRƯỜNG: trang {issue['page_url']} trống vì hệ thống an toàn đã chặn "
+                f"{len(issue['blocked_urls'])} yêu cầu ghi dữ liệu mà trang cần để tải nội dung. "
+                'Đây không phải lỗi của bạn: dùng give_up với reason_kind "env_blocked", '
+                "đừng thử tiếp trang này."
+            )
         if with_image:
             warnings.append("Ảnh chụp màn hình hiện tại được đính kèm.")
         return render(
@@ -527,6 +557,15 @@ class FlowAgent:
             chapter=answer.chapter.strip(),
         )
 
+    @staticmethod
+    def _note_env_issue(run: _Run, issue: dict[str, Any]) -> None:
+        if issue not in run.env_issues:
+            run.env_issues.append(issue)
+        run.warnings.append(
+            f"Trang {issue['page_url']} trống vì hệ thống an toàn đã chặn "
+            f"{len(issue['blocked_urls'])} yêu cầu."
+        )
+
     def _history_line(self, n: int, result: StepResult) -> str:
         what = f"{result.do} «{result.target_text}»" + (
             f" = {result.value}" if result.value else ""
@@ -634,6 +673,7 @@ class FlowAgent:
                 "stop_ref": run.stop_name,
                 "live": live,
                 "give_up": run.give_up,
+                "env_issues": run.env_issues,
                 "report": {
                     "model": model,
                     "used_images": self.images_sent,
@@ -642,6 +682,7 @@ class FlowAgent:
                     "completion_tokens": usage.get("output", 0) - before.get("output", 0),
                     "seconds": round(self.clock() - started, 1),
                     "write_requests": list(self.session.guard.write_log),
+                    "guard_intents": dict(self.session.guard.intents),
                     "text_calls": run.text_calls,
                     "vision_calls": run.vision_calls,
                     "escalated_because": run.escalated_because,

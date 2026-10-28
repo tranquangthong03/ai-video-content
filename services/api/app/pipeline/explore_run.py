@@ -114,7 +114,10 @@ class ExploreRunner:
         """Run or resume the exploration (may raise Blocked/Budget/Deadline errors)."""
         try:
             with BrowserSession(
-                self.url, storage_state=self.storage_state, allow_mutations=self.allow_mutations
+                self.url,
+                storage_state=self.storage_state,
+                allow_mutations=self.allow_mutations,
+                events_dir=self.dir.parent,
             ) as session:
                 self._crawl(session)
                 self._analyze()
@@ -311,7 +314,10 @@ class ExploreRunner:
 
         self.deadline = Deadline(self.deadline.seconds)  # fresh budget for this interactive step
         with BrowserSession(
-            self.url, storage_state=self.storage_state, allow_mutations=self.allow_mutations
+            self.url,
+            storage_state=self.storage_state,
+            allow_mutations=self.allow_mutations,
+            events_dir=self.dir.parent,
         ) as s:
             context = s.new_context()
             page = context.new_page()

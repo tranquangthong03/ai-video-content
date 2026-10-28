@@ -85,6 +85,12 @@ class FlowSelect(BaseModel):
             description='Set when the explored pages show the account has no data (two or more signs)'
         ),
     ] = None
+    env_warning: Annotated[
+        str | None,
+        Field(
+            description='Set when a page stayed empty because the request guard refused its requests'
+        ),
+    ] = None
 
 
 class Selection(BaseModel):

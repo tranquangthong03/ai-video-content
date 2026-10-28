@@ -168,6 +168,10 @@ def test_giving_up_on_the_saved_leave_flow_needs_the_message_or_a_try_through_th
         "no_permission", None, user, only_start
     )  # not an account-data claim
     assert give_up_has_evidence("stuck", None, user, only_start)
+    # env_blocked needs the system's own warning that the guard broke a page
+    assert not give_up_has_evidence("env_blocked", None, user, only_start)
+    issue = {"kind": "guard_broke_page", "blocked_urls": ["POST https://x.io/a"], "page_url": "u"}
+    assert give_up_has_evidence("env_blocked", None, user, only_start, [issue])
     tried = [goto_step(), click_step("Apply Leave")]
     assert tried_to_reach(user, tried) and give_up_has_evidence("no_data", None, user, tried)
     assert not tried_to_reach(user, [goto_step(), click_step("Logout")])

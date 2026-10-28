@@ -134,10 +134,7 @@ def test_registrable_domains() -> None:
 
 def test_outside_the_phase_a_post_is_decided_by_the_old_rules() -> None:
     guard = RequestGuard("https://example.com/")
-    assert guard.decide("POST", "https://example.com/login", "xhr", "{}") == (
-        "abort",
-        "post_default",
-    )
+    assert guard.decide("POST", "https://example.com/login", "xhr", "{}")[0] == "abort"
     with guard.allow_login_posts():
         assert (
             guard.decide("POST", "https://example.com/login", "document", None)[1] == "login_post"

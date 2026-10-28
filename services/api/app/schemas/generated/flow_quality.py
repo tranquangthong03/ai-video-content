@@ -20,6 +20,12 @@ class FlowQuality(BaseModel):
         str | None,
         Field(description='Set when two or more signs say the pages have no data'),
     ] = None
+    env_warning: Annotated[
+        str | None,
+        Field(
+            description='Set when a page stayed empty because the request guard refused its requests'
+        ),
+    ] = None
     empty_signals: list[str] = []
     estimated: Annotated[
         bool,

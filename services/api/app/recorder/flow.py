@@ -24,6 +24,7 @@ from app.browser.form_actions import SUBMIT_NAME
 from app.browser.guard import WritesNotAllowed
 from app.browser.page_utils import dismiss_cookie_banner
 from app.browser.session import BrowserSession
+from app.browser.write_intent import action_trigger
 from app.core.hero import before_after_pair, choose_hero, hero_item, hero_window
 from app.recorder import motion, sync
 from app.recorder.record import (
@@ -106,6 +107,16 @@ def _replay_step(rec: _Recorder, step: Any) -> bool:
         before = rec.failed
         try:
             window = rec.session.guard.allow_writes() if is_submit else nullcontext()
+            loc = a.locator
+            rec.session.guard.note_action(
+                action_trigger(
+                    a.do,
+                    (loc.role or "") if loc else "",
+                    step.target_text or "",
+                    submit_like=is_submit,
+                ),
+                step.target_text or "",
+            )
             with window:
                 rec.step(a, step.i, "action")
         except WritesNotAllowed as e:
