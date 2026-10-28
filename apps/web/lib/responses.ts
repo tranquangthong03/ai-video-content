@@ -82,5 +82,8 @@ export function loginCredentialsFields(loginUrl: string | null): Fields {
   return { answers: { login_method: "credentials", ...(loginUrl ? { login_url: loginUrl } : {}) } };
 }
 
+/** login_required (login loop) → go on with the public part of the site, no session. */
+export const loginPublicFields = (): Fields => ({ answers: { login_method: "public" } });
+
 /** login_required → "answer" with just the address of the sign-in page. */
 export const loginUrlFields = (loginUrl: string): Fields => ({ answers: { login_url: loginUrl } });

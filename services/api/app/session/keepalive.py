@@ -39,7 +39,7 @@ def refresh_session(storage_state: Path, url: str) -> bool:
                 if detect_login(page, url, response.status if response else None) is not None:
                     return False  # already gone: leave the file as it is
                 tmp = storage_state.with_name(storage_state.name + ".tmp")
-                context.storage_state(path=str(tmp))
+                context.storage_state(path=str(tmp), indexed_db=True)
                 tmp.replace(storage_state)
                 return True
             finally:

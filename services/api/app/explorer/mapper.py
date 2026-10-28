@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 
 from playwright.sync_api import BrowserContext, Page
 
-from app.browser.auth_detect import LoginRequired, detect_login
+from app.browser.auth_detect import LoginRequired, detect_login, is_login_path
 from app.browser.blacklist import is_blocked, is_blocked_href
 from app.browser.locate import Unsafe, check_clickable, resolve
 from app.browser.page_utils import detect_blockers, dismiss_cookie_banner
@@ -416,6 +416,10 @@ def visit(
         report.data["blockers"].append({"url": cand.url, **blockers})
         raise BlockedByChallenge(f"CAPTCHA/Cloudflare challenge at {cand.url}")
     signal = detect_login(page, cand.url, response.status if response else None)
+    if signal is not None and authenticated and cand.origin != "root" and is_login_path(cand.url):
+        # a link to the sign-in page ("Log in" in a header) is not a sign that the session is gone
+        report.skip(cand.url, "login_page")
+        return None
     if signal is not None and (cand.origin == "root" or authenticated):
         reason = "session_expired" if authenticated else signal.reason
         raise LoginRequired(signal.login_url, reason, target_url=cand.url)

@@ -83,7 +83,7 @@
             "reason": { "type": "string" },
             "methods": {
               "type": "array",
-              "items": { "enum": ["browser_window", "credentials", "upload_state"] }
+              "items": { "enum": ["browser_window", "credentials", "upload_state", "public"] }
             },
             "can_enter_url": { "type": "boolean", "default": false },
             "failure": { "type": ["string", "null"], "default": null },

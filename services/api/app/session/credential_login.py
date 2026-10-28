@@ -32,7 +32,7 @@ def make_credential_login(job_dir: Path, root_url: str) -> CredentialLogin:
                 (job_dir / REPORT_FILE).write_text(json.dumps(login_phase), encoding="utf-8")
                 if not attempt.ok:
                     return attempt.message
-                context.storage_state(path=str(job_dir / STORAGE_FILE))
+                context.storage_state(path=str(job_dir / STORAGE_FILE), indexed_db=True)
                 (job_dir / RESULT_FILE).write_text(
                     json.dumps({"final_url": attempt.final_url}), encoding="utf-8"
                 )

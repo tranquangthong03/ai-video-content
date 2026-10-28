@@ -87,6 +87,9 @@ class Handler(BaseHTTPRequestHandler):
         path, query = url.path, parse_qs(url.query)
         if path == "/":
             return self.send(200, page("index.html"))
+        if path == "/hidden-form":  # a landing that carries a sign-in form nobody can see
+            hidden = b'<form style="display:none"><input type="password"></form>'
+            return self.send(200, b"<html><body><h1>Welcome</h1>" + hidden + b"</body></html>")
         if path == "/login":
             if self.signed_in():
                 return self.redirect("/app")

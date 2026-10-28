@@ -5,7 +5,7 @@ import { AppWindow, KeyRound, Upload } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import type { InteractionRequest } from "@/lib/generated";
 import { LOGIN_REASONS, failureText, looksLikeAuthJson, normalizeLoginUrl, tabsFor, type LoginTab } from "@/lib/login";
-import { buildResponse, loginCredentialsFields, loginDoneFields, loginUrlFields } from "@/lib/responses";
+import { buildResponse, loginCredentialsFields, loginPublicFields, loginDoneFields, loginUrlFields } from "@/lib/responses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
 import { ErrorNote, Section, useSend, type JobCtx } from "./shared";
@@ -201,6 +201,11 @@ export function LoginCard({ ctx, pending }: { ctx: JobCtx; pending: Pending }) {
       )}
 
       <ErrorNote text={error} />
+      {login.methods.includes("public") && (
+        <Button variant="outline" disabled={busy} onClick={() => send(() => buildResponse(pending, "answer", loginPublicFields()))}>
+          Tiếp tục với phần public
+        </Button>
+      )}
       {login.hint && <p className="text-xs text-muted-foreground">{login.hint}</p>}
     </div>
   );

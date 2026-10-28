@@ -13,6 +13,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, Protocol
+from urllib.parse import urlsplit
 
 from app.browser.auth_detect import LoginRequired
 from app.browser.login_find import find_login_url
@@ -137,6 +138,15 @@ def make_caller(cfg: JobConfig) -> tuple[JsonCaller, UsageTracker]:
         cache_dir=settings.cache_dir,
     )
     return caller, tracker
+
+
+def forget_session(job_dir: Path) -> None:
+    """The user went on without a session: a resumed job must not look for one either."""
+    spec_file = job_dir / "job.json"
+    if spec_file.is_file():
+        spec = json.loads(spec_file.read_text(encoding="utf-8"))
+        spec.update(storage_state=None, requires_login=False, app_home_url=None)
+        spec_file.write_text(json.dumps(spec), encoding="utf-8")
 
 
 def remember_session(
@@ -293,6 +303,12 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
         if not need.login_url and cfg.login_url:
             need.login_url = cfg.login_url  # the sign-in page learnt earlier
         outcome = gate.ask(need)
+        if outcome.public:  # the user chose the public part: the site's front door, no session
+            parts = urlsplit(cfg.url)
+            outcome.url = f"{parts.scheme}://{parts.netloc}/"
+            cfg.app_home_url, cfg.requires_login = None, False
+            forget_session(job_dir)
+            return outcome
         cfg.storage_state = outcome.storage_state
         if need.reason not in EXPIRED:  # a new sign-in tells where the app starts
             cfg.app_home_url = outcome.url
@@ -358,8 +374,9 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
                 except LoginRequired as e:
                     outcome = sign_in(e)
                     expired = e.reason in EXPIRED
-                    cfg.url = cfg.url if expired else outcome.url
-                    runner.use_session(outcome.storage_state, cfg.url)
+                    cfg.url = outcome.url if outcome.public or not expired else cfg.url
+                    cfg.storage_state = None if outcome.public else cfg.storage_state
+                    runner.use_session(None if outcome.public else outcome.storage_state, cfg.url)
             else:
                 raise RuntimeError("quá nhiều lần yêu cầu đăng nhập")
         except LoginRequired as e:

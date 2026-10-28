@@ -120,7 +120,7 @@ class LoginWindows:
                 if page.url and not page.url.startswith("about:"):
                     final_url = page.url
                     break
-            window.context.storage_state(path=str(job_dir / "storage_state.json"))
+            window.context.storage_state(path=str(job_dir / "storage_state.json"), indexed_db=True)
             (job_dir / "login_result.json").write_text(
                 json.dumps({"final_url": final_url}), encoding="utf-8"
             )

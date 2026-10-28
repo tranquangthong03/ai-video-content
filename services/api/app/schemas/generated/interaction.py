@@ -46,7 +46,7 @@ class Login(BaseModel):
     login_url: str | None = None
     target_url: str | None = None
     reason: str
-    methods: list[Literal['browser_window', 'credentials', 'upload_state']]
+    methods: list[Literal['browser_window', 'credentials', 'upload_state', 'public']]
     can_enter_url: bool = False
     failure: str | None = None
     hint: str | None = None
