@@ -32,7 +32,7 @@ def test_snapshots_list_visible_items_with_the_documented_fields(
     for snap in r.inventory:
         assert 0 < len(snap["items"]) <= MAX_ITEMS
         for it in snap["items"]:
-            assert set(it) - {"filled"} == {
+            assert set(it) - {"filled", "loaded"} == {
                 "id",
                 "role",
                 "tag",
@@ -43,6 +43,7 @@ def test_snapshots_list_visible_items_with_the_documented_fields(
                 "region",
             }
             assert ("filled" in it) == (it["kind"] == "input")  # `filled`: was it typed into
+            assert ("loaded" not in it) or it["tag"] in ("img", "video", "canvas")  # media only
             assert it["kind"] in KINDS and it["region"] in REGIONS and len(it["text"]) <= 80
             b = it["bbox"]
             assert (

@@ -191,3 +191,17 @@ def test_camera_rates_come_from_the_planned_views() -> None:
     assert len(rates) == 5 and rates[0] == (0.0, 0.0) and rates[2] == (0.0, 0.0)
     assert abs(rates[3][0] - (800 / 760 - 1)) < 1e-9 and rates[3][1] > 0
     assert rates[4][0] == 0.0 and rates[4][1] > 0.04  # a 40 px shift of a 760 px view
+
+
+def test_a_lone_jump_the_planned_camera_does_not_make_is_the_page_not_the_camera() -> None:
+    from app.producer.motion_qa import page_changes
+
+    motions = [
+        FrameMotion(i * 33, 5.0, 1.0, 0.007 if i != 3 else 0.0217, False, True) for i in range(8)
+    ]
+    camera = [(0.0, 0.007)] * 8
+    assert page_changes(motions, camera) == {99}  # 2.17 % against a camera doing 0.7 %
+    camera_fast = [(0.0, 0.0217)] * 8  # the camera itself went that fast: that is the camera's
+    assert page_changes(motions, camera_fast) == set()
+    metrics = motion_metrics(motions, intro_ms=0, camera=camera)
+    assert metrics["max_pan_rate"] == 0.007 and metrics["camera_plan_max_pan_rate"] == 0.007

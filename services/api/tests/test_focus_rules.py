@@ -1,6 +1,7 @@
 from typing import Any
 
 from app.core.textmatch import text_matches
+from app.producer import focus_rules as fr
 from app.producer.focus_rules import (
     MIN_FOCUS_MS,
     Seg,
@@ -245,8 +246,10 @@ def test_an_unknown_item_falls_back_to_the_old_focus_or_to_the_whole_page() -> N
     body = [t for t in old.track if t["framing"] != "establish"]
     assert body[0]["source"] == "fallback" and body[0]["bbox"]["x"] == 10
     none = run(plan=plan, action_log=[], legacy_focus=[], duration_ms=4000)
-    assert none.track[-1]["bbox"] == {"x": 0, "y": 0, "w": 1440, "h": 900}
-    assert none.metrics["unresolved"] == 1
+    # no old focus, but a snapshot is there: its new / middle block, not the whole page
+    assert none.track[-1]["bbox"] != {"x": 0, "y": 0, "w": 1440, "h": 900}
+    assert none.metrics["unresolved"] == 1 and none.metrics["unresolved_recovered"] == 1
+    assert none.track[-1]["source"] == "rule"
 
 
 def test_find_item_takes_the_snapshot_closest_in_time() -> None:
@@ -261,3 +264,28 @@ def test_speech_matching_ignores_accents_and_small_differences() -> None:
     assert text_matches("Official Resources", "xem official resource của React")
     assert text_matches("Lộ trình học", "lo trinh hoc theo vai tro")
     assert not text_matches("Official Resources", "gõ việc cần làm")
+
+
+def test_a_text_block_wider_than_the_tightest_window_narrows_to_the_text_the_voice_names() -> None:
+    clip = (1440, 900)
+    block = item(
+        "c1",
+        "card",
+        "Dung lượng giảm hẳn từ 2.8MB xuống 400KB và giữ nguyên nét",
+        100,
+        300,
+        900,
+        120,
+    )
+    inner = item("p1", "paragraph", "giảm từ 2.8MB xuống 400KB", 400, 340, 360, 30)
+    other = item("p2", "paragraph", "Chọn kiểu nén", 120, 320, 200, 30)
+    assert fr.too_wide(block["bbox"], clip) and not fr.too_wide(inner["bbox"], clip)
+    assert (
+        fr.narrow_to_child(block, [block, inner, other], "ảnh giảm từ 2.8MB xuống 400KB", clip)
+        == inner
+    )
+    # no phrase of the voice-over, but a figure in it: the figure wins; no figure: nothing to narrow to
+    assert fr.narrow_to_child(block, [block, inner, other], "", clip) == inner
+    assert fr.narrow_to_child(block, [block, other], "", clip) is None
+    # a block that fits is left alone
+    assert fr.narrow_to_child(inner, [inner], "giảm", clip) is None

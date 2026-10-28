@@ -269,6 +269,7 @@ def run_t1(
     render: Callable[..., Any] | None = None,
     qa: bool = True,
     work: Path = WORK,
+    sheets: Path | None = None,
 ) -> tuple[dict[str, Any], Meter, bool]:
     last = load_last().get("t1", {})
     now: dict[str, Any] = {}
@@ -280,6 +281,14 @@ def run_t1(
                 ws = workspace(name, work)
                 report = replay_produce(name, ws, render, qa)
                 now[name] = {**qa_numbers(report), "seconds": round(time.monotonic() - t, 1)}
+                if sheets is not None:
+                    from scripts import flow_report
+
+                    sheets.mkdir(parents=True, exist_ok=True)
+                    flow_report.contact_sheet(
+                        ws / "video.mp4", sheets / f"{name}-contact-sheet.png",
+                        int(report.get("actual_ms") or 0),
+                    )  # fmt: skip
             except Exception as e:  # noqa: BLE001 - a failing snapshot must not hide the others
                 ok = False
                 now[name] = {"error": f"{type(e).__name__}: {e}"[:300]}
@@ -476,13 +485,14 @@ def main() -> int:
     p.add_argument("--names", nargs="+", choices=golden.NAMES, default=list(golden.NAMES))
     p.add_argument("--paths", nargs="*", default=[], help="touched files (default: git status)")
     p.add_argument("--save", action="store_true", help="write the result to docs/regress/last.json")
-    p.add_argument("--brief", type=Path, help="t2: JSON with outline fields to override")
+    p.add_argument("--brief", type=Path, help="t2: marketing brief JSON (schema marketing_brief)")
+    p.add_argument("--sheets", type=Path, help="t1: folder for one contact sheet per video")
     args = p.parse_args()
     started = time.monotonic()
     if args.tier == "t0":
         meter, ok = run_t0(args.names, args.paths)
     elif args.tier == "t1":
-        _now, meter, ok = run_t1(args.names, save=args.save)
+        _now, meter, ok = run_t1(args.names, save=args.save, sheets=args.sheets)
     else:
         brief = json.loads(args.brief.read_text(encoding="utf-8")) if args.brief else None
         _now, meter, ok = run_t2(args.names, brief, save=args.save)

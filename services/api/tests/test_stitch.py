@@ -211,3 +211,36 @@ def test_a_cut_keeps_300_ms_away_from_the_moment_a_new_item_shows_up() -> None:
     assert all(b <= 4700 or a >= 5300 for a, b in pieces)  # nothing of it is cut
     assert pieces  # but the rest of the stretch still may be
     assert new_item_windows(None) == []
+
+
+# --- a plain colour is content, a picture that is still empty is a wait ------------------------------
+
+
+def media_snapshot(loaded: bool | None) -> list[dict[str, object]]:
+    item: dict[str, object] = {"kind": "media", "bbox": {"x": 0, "y": 0, "w": 1440, "h": 900}}
+    if loaded is not None:
+        item["loaded"] = loaded
+    return [{"t_ms": 0, "items": [item]}]
+
+
+@pytest.mark.slow
+def test_a_flat_picture_the_page_says_is_loaded_is_content_not_a_wait(tmp_path: Path) -> None:
+    clip = tmp_path / "flat.mp4"
+    noise_clip(clip, 1.0, 1500, 4.0)  # busy, then a flat stretch of 1.5 s, then busy again
+    runs = media_loading_runs(clip, media_snapshot(True), clip_size=(1440, 900))
+    assert runs == []  # the canvas / img says it has its content: a plain colour is the picture
+    waiting = media_loading_runs(clip, media_snapshot(False), clip_size=(1440, 900))
+    assert len(waiting) == 1 and 1.4 <= (waiting[0][1] - waiting[0][0]) / 1000 <= 1.8
+    unknown = media_loading_runs(clip, media_snapshot(None), clip_size=(1440, 900))
+    assert unknown == waiting  # nothing said + it turns into content within 3 s: a wait
+
+
+@pytest.mark.slow
+def test_a_flat_stretch_of_over_three_seconds_the_page_does_not_vouch_for_is_content(
+    tmp_path: Path,
+) -> None:
+    clip = tmp_path / "long.mp4"
+    noise_clip(clip, 1.0, 3600, 6.0)
+    assert media_loading_runs(clip, media_snapshot(None), clip_size=(1440, 900)) == []
+    # but a picture the page itself says is still empty is a wait however long it takes
+    assert len(media_loading_runs(clip, media_snapshot(False), clip_size=(1440, 900))) == 1

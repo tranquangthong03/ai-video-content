@@ -201,6 +201,45 @@ def focus_box(item: dict[str, Any], items: list[dict[str, Any]], clip: tuple[int
     return box
 
 
+FRAME_ASPECT = 1250 / 1000  # the media frame of the template (height / width)
+VIEW_PAD = 0.12  # the camera's padding on each side of a focus box (camera/config.ts)
+KEY_FIGURE = re.compile(r"\d")  # a number in a label is the important part of it
+
+
+def cover_width(clip: tuple[int, int]) -> float:
+    """Clip window width at the tightest framing (cover): wider text needs a smaller zoom."""
+    return min(float(clip[0]), clip[1] / FRAME_ASPECT)
+
+
+def too_wide(box: Box, clip: tuple[int, int]) -> bool:
+    return box["w"] * (1 + 2 * VIEW_PAD) > cover_width(clip)
+
+
+def narrow_to_child(
+    item: dict[str, Any], items: list[dict[str, Any]], speech: str, clip: tuple[int, int]
+) -> dict[str, Any] | None:
+    """A focus whose text block is wider than the tightest window: the text inside it that the
+    voice-over names (else the one with a figure in it) and that fits the window."""
+    if not too_wide(item["bbox"], clip):
+        return None
+    inner = [
+        i
+        for i in items
+        if i["id"] != item["id"]
+        and i.get("text")
+        and i["kind"] in TEXT_KINDS
+        and not is_excluded(i)
+        and contains(item["bbox"], i["bbox"])
+        and not too_wide(i["bbox"], clip)
+    ]
+    named = [i for i in inner if speech and text_matches(i["text"], speech)]
+    figures = [i for i in inner if KEY_FIGURE.search(i["text"])]
+    pool = named or figures
+    return (
+        max(pool, key=lambda i: match_share(i["text"], speech) if speech else 0.0) if pool else None
+    )
+
+
 CONTEXT_PX = 160  # a label / heading this close to the focus gives it its meaning
 CONTEXT_KINDS = {"heading", "paragraph", "list_item"}
 MAX_CONTEXT_SHARE = 0.6  # the frame with its context may fill at most this share of the viewport
@@ -565,6 +604,24 @@ def operated_item(
     return None
 
 
+def newest_or_center(
+    snap: dict[str, Any] | None, speech: str, clip: tuple[int, int]
+) -> dict[str, Any] | None:
+    """What the voice-over names in a snapshot, else its biggest new text block; None when neither
+    exists (an arbitrary block is no better than the whole page)."""
+    if snap is None:
+        return None
+    named = spoken_item(None, snap["items"], speech, clip)
+    if named is not None:
+        return named
+    fresh = [
+        i
+        for i in snap["items"]
+        if i.get("is_new") and i.get("text") and not is_excluded(i) and not is_media(i, clip)
+    ]
+    return max(fresh, key=lambda i: area(i["bbox"])) if fresh else None
+
+
 def center_block(items: list[dict[str, Any]], clip: tuple[int, int]) -> dict[str, Any] | None:
     """Scrolling without a plan: the heading (else card) of the main region nearest the middle."""
     pool = [i for i in items if not is_excluded(i) and i["kind"] in ("heading", "card")]
@@ -617,6 +674,9 @@ def build_focus_track(
         "media_replaced": 0,  # picture / canvas focuses moved to a control or a figure next to it
         "spoken_preferred": 0,  # focuses changed to the item the voice-over names
         "submit_held_back": 0,  # submit-button focuses kept for the final shot
+        "unresolved_recovered": 0,  # unresolved focuses that took the snapshot's new / middle block
+        "narrowed_to_child": 0,  # wide text blocks narrowed to the part the voice-over names
+        "fit_below_cover": 0,  # wide text blocks kept whole: the camera zooms out below cover
         "sources": {"plan": 0, "rule": 0, "fallback": 0},
     }
     for seg in segs:
@@ -641,7 +701,25 @@ def build_focus_track(
                 item, source = center_block(items, clip), "rule"
             if item is None:
                 metrics["unresolved"] += 1
-            else:
+                # the thing is not in any snapshot near its time (the page was still loading): look
+                # at what the nearest snapshot shows as new, else its middle block, not at the page
+                near = snapshot_at(inventory, mid)
+                if (
+                    seg.priority < 2
+                    and framing != "establish"
+                    and near is not None
+                    and not any(is_media(i, clip) for i in near["items"])  # (a picture page: below)
+                    and not [f for f in legacy if f["t_ms"] <= seg.from_ms + 1]
+                ):
+                    item = newest_or_center(near, speech, clip)
+                    if item is not None:
+                        items = near["items"]
+                        source, reason = (
+                            "rule",
+                            "phần tử không có trong ảnh chụp: lấy khối mới/giữa",
+                        )
+                        metrics["unresolved_recovered"] += 1
+            if item is not None:
                 operated = any(
                     a.get("item_id") == item["id"]
                     and a["t_ms"] < seg.to_ms
@@ -672,6 +750,14 @@ def build_focus_track(
                     if sub is not None:
                         item, source, reason = sub, "rule", "không zoom vào ảnh/canvas"
                         metrics["media_replaced"] += 1
+                if seg.priority < 2 and framing != "establish" and not is_media(item, clip):
+                    if too_wide(item["bbox"], clip):
+                        child = narrow_to_child(item, items, speech, clip)
+                        if child is not None:
+                            item, source, reason = child, "rule", "thu hẹp về phần chữ được nhắc"
+                            metrics["narrowed_to_child"] += 1
+                        else:
+                            metrics["fit_below_cover"] += 1
                 if (
                     seg.priority < 2
                     and FINAL_SUBMIT.search(item.get("text") or "")

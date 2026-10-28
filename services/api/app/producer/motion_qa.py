@@ -39,6 +39,9 @@ MIN_SHOT_MS = 800
 MAX_STATIC_MS = 400
 INTRO_MS = 600  # the media window fades in over its first half second: not camera work
 MIN_FOCUS_MATCH = 0.85
+# a measured rate this far above what the planned camera does is the page moving, not the camera
+EXPLAIN_ZOOM = 0.008
+EXPLAIN_PAN = 0.006
 
 
 @dataclass(frozen=True)
@@ -145,7 +148,7 @@ def page_changes(
     for m in motions:
         n = round(m.t_ms * fps / 1000)
         cam_zoom, cam_pan = camera[n] if n < len(camera) else (0.0, 0.0)
-        if m.zoom_rate - cam_zoom > MAX_ZOOM_RATE or m.pan_rate - cam_pan > MAX_PAN_RATE:
+        if m.zoom_rate - cam_zoom > EXPLAIN_ZOOM or m.pan_rate - cam_pan > EXPLAIN_PAN:
             out.add(m.t_ms)
     return out
 
@@ -186,6 +189,8 @@ def motion_metrics(
             flashes += 1
     return {
         "frames": len(motions),
+        "camera_plan_max_zoom_rate": round(max((z for z, _p in camera or []), default=0.0), 4),
+        "camera_plan_max_pan_rate": round(max((p for _z, p in camera or []), default=0.0), 4),
         "max_zoom_rate": round(zoom, 4),
         "max_pan_rate": round(pan, 4),
         "freeze_then_jump": freeze_jumps,
@@ -300,6 +305,7 @@ def focus_match(props: dict[str, Any], produce_dir: Path, fps: int = FPS) -> dic
 
     total = matched = 0.0
     per_scene: dict[str, float | None] = {}
+    misses: list[dict[str, Any]] = []  # the stretches that do not match, for a check by eye
     for scene in props["script"]["scenes"]:
         a = props["assets"].get(scene["id"], {})
         track = a.get("focus_track") or []
@@ -353,6 +359,15 @@ def focus_match(props: dict[str, Any], produce_dir: Path, fps: int = FPS) -> dic
             )
             scene_total += length
             scene_match += length if ok else 0.0
+            if not ok:
+                misses.append(
+                    {
+                        "scene": scene["id"], "from_ms": round(e["t_ms"]), "to_ms": round(stop),
+                        "speech": speech[:80], "focus": (e.get("text") or "")[:50],
+                        "kind": e.get("item_kind"), "source": e.get("source"),
+                        "reason": (e.get("reason") or "")[:60],
+                    }
+                )  # fmt: skip
         if scene_total:
             per_scene[scene["id"]] = round(scene_match / scene_total, 3)
             total += scene_total
@@ -360,6 +375,7 @@ def focus_match(props: dict[str, Any], produce_dir: Path, fps: int = FPS) -> dic
     return {
         "focus_match_rate": round(matched / total, 3) if total else None,
         "per_scene": per_scene,
+        "misses": misses,
     }
 
 
@@ -414,10 +430,12 @@ def run_qa(job_dir: Path, *, with_focus_clipped: bool = True) -> dict[str, Any]:
     match = focus_match(props, produce)
     metrics["focus_match_rate"] = match["focus_match_rate"]
     metrics["focus_match_per_scene"] = match["per_scene"]
+    metrics["focus_unmatched"] = match["misses"]
     if with_focus_clipped:
         clipped = focus_clipped(props_file)
         metrics["focus_text_clipped"] = clipped["frames_text_clipped"]
         metrics["image_zoom_inside"] = clipped["image_zoom_inside"]
+        metrics["focus_clipped_spans"] = clipped.get("clipped_spans", [])  # top 5
     ok = verdict(metrics)
     ok["loading_frames_ms"] = metrics["loading_frames_ms"] == 0
     if metrics["focus_match_rate"] is not None:

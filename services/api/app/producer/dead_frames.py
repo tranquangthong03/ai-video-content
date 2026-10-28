@@ -197,7 +197,9 @@ LOADING_MAX_MEAN = 235.0  # (a flat white box is an empty page, not a loading pi
 MEDIA_KINDS = ("media", "image")
 MIN_MEDIA_SHARE = 0.03  # a media box smaller than this share of the view is an icon
 LOAD_SIZE = (320, 200)
-LOADING_MAX_MS = 4000  # a slab that stays longer than this is the picture itself, not a wait
+LOADING_MAX_MS = (
+    3000  # a flat slab the page does not vouch for, staying longer than this, is the picture itself
+)
 
 
 LOADING_GRID = 8  # the box is cut into 8 x 8 cells ...
@@ -232,8 +234,16 @@ def media_boxes(
     snapshot: dict[str, Any], clip_size: tuple[int, int]
 ) -> list[tuple[int, int, int, int]]:
     """Boxes (x0, y0, x1, y1) on the LOAD_SIZE grid of the snapshot's big images and canvases."""
+    return [box for box, _loaded in media_box_states(snapshot, clip_size)]
+
+
+def media_box_states(
+    snapshot: dict[str, Any], clip_size: tuple[int, int]
+) -> list[tuple[tuple[int, int, int, int], bool | None]]:
+    """Like media_boxes, with what the page says: True = has its content, False = still empty
+    (an img that is not complete, a canvas with nothing drawn), None = cannot be told."""
     sx, sy = LOAD_SIZE[0] / clip_size[0], LOAD_SIZE[1] / clip_size[1]
-    boxes = []
+    boxes: list[tuple[tuple[int, int, int, int], bool | None]] = []
     for item in snapshot.get("items", []):
         b = item["bbox"]
         if (
@@ -247,7 +257,7 @@ def media_boxes(
             min(LOAD_SIZE[1], round((b["y"] + b["h"]) * sy)),
         )
         if x1 - x0 >= 8 and y1 - y0 >= 8:
-            boxes.append((x0, y0, x1, y1))
+            boxes.append(((x0, y0, x1, y1), item.get("loaded")))
     return boxes
 
 
@@ -291,19 +301,29 @@ def media_loading_runs(
     if proc.returncode != 0:
         raise RuntimeError(f"ffmpeg sampling failed: {proc.stderr[:200]!r}")
     size = w * h
-    flags: list[tuple[int, bool]] = []
+    told: list[tuple[int, bool]] = []  # flat, and the page says it is still empty
+    guessed: list[tuple[int, bool]] = []  # flat, and the page cannot say
     for n, i in enumerate(range(0, len(proc.stdout) - size + 1, size)):
         t = n * step_ms
         if t < from_ms:
             continue
         snap = snapshot_for(inventory, t)
         frame = Image.frombuffer("L", LOAD_SIZE, proc.stdout[i : i + size], "raw", "L", 0, 1)
-        loading = bool(snap) and any(
-            is_loading_crop(frame.crop(box))
-            for box in media_boxes(snap, clip_size)  # type: ignore[arg-type]
-        )
-        flags.append((t, loading))
-    runs = flag_runs(flags, step_ms, min_ms)
-    last = flags[-1][0] + step_ms if flags else 0
-    # a wait ends: a flat box that runs to the end of the clip, or lasts for seconds, is the picture
-    return [(a, b) for a, b in runs if b < last and b - a <= LOADING_MAX_MS]
+        flat = [
+            loaded
+            for box, loaded in (media_box_states(snap, clip_size) if snap else [])
+            if is_loading_crop(frame.crop(box))
+        ]
+        # a flat box of a picture that has its content is the picture (a plain colour), not a wait
+        told.append((t, any(x is False for x in flat)))
+        guessed.append((t, any(x is None for x in flat)))
+    last = told[-1][0] + step_ms if told else 0
+    # a wait ends: a flat box the page does not vouch for, that runs to the end of the clip or
+    # lasts for seconds, is the picture itself
+    sure = [(a, b) for a, b in flag_runs(told, step_ms, min_ms) if b < last]
+    maybe = [
+        (a, b)
+        for a, b in flag_runs(guessed, step_ms, min_ms)
+        if b < last and b - a <= LOADING_MAX_MS
+    ]
+    return merge_runs([*sure, *maybe])

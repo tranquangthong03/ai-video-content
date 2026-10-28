@@ -132,7 +132,11 @@ def open_app(session: BrowserSession, site: AuthSite):  # type: ignore[no-untype
     ctx = session.new_context()
     page = ctx.new_page()
     page.goto(site.base + "/app")
-    page.wait_for_timeout(300)
+    # wait for the condition, not the clock: on a busy machine the first frame of a new page can
+    # come late, and a screenshot taken before it fails ("Unable to capture screenshot"). Two
+    # animation frames also give the blur observer (it scans on requestAnimationFrame) its turn.
+    page.bring_to_front()
+    page.evaluate("() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))")
     return ctx, page
 
 

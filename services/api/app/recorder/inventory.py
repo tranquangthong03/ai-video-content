@@ -103,6 +103,25 @@ SNAPSHOT_JS = (
     if (tag === 'img') return clean(el.alt || el.getAttribute('aria-label'));
     return clean(el.innerText || el.getAttribute('aria-label') || el.title);
   };
+  // has a picture / canvas / video got its content: true / false, or undefined when it cannot be told
+  const loadedOf = (el, tag) => {
+    try {
+      if (tag === 'img') return !!(el.complete && el.naturalWidth > 0);
+      if (tag === 'video') return el.readyState >= 2;
+      if (tag === 'canvas') {
+        const ctx = el.getContext && el.getContext('2d');
+        if (!ctx || !el.width || !el.height) return undefined; // (a WebGL canvas gives no 2d context)
+        for (let i = 0; i < 24; i++) {
+          for (let j = 0; j < 24; j++) {
+            const px = ctx.getImageData(Math.floor((el.width - 1) * i / 23), Math.floor((el.height - 1) * j / 23), 1, 1).data;
+            if (px[3] > 0) return true;
+          }
+        }
+        return false;
+      }
+    } catch (e) { /* a tainted canvas: unknown */ }
+    return undefined;
+  };
   const out = [];
   const seen = new Set();
   const add = (el, forced) => {
@@ -126,6 +145,8 @@ SNAPSHOT_JS = (
       bbox: { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) },
       // a field somebody typed into (the text of an empty one is only its placeholder)
       ...(kind === 'input' ? { filled: typedInto(el, tag) } : {}),
+      ...(['img', 'video', 'canvas'].includes(tag) && loadedOf(el, tag) !== undefined
+        ? { loaded: loadedOf(el, tag) } : {}),
     });
   };
   if (extra) add(extra, true);

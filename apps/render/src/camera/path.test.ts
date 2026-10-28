@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CAMERA_CONFIG } from "./config";
-import { coverScale, establishingView, type FocusLike, type View } from "./focus";
-import { buildCameraPath, driftView, mergeFocus, moveDuration, smoothstep } from "./path";
+import { coverScale, establishingView, targetView, type FocusLike, type View } from "./focus";
+import { buildCameraPath, driftView, mergeFocus, moveDuration, paddedBox, smoothstep, wobble } from "./path";
 import { buildSceneCameras } from "./scene";
 
 const CLIP = { w: 1440, h: 900 };
@@ -190,5 +190,44 @@ describe("holding for a long time", () => {
     for (let i = 1; i < widths.length; i++) expect(Math.abs(widths[i] - widths[i - 1])).toBeGreaterThan(1);
     const max = CAMERA_CONFIG.maxZoom;
     for (const w of widths) expect(COVER_W / w).toBeLessThanOrEqual(max + 1e-6);
+  });
+});
+
+describe("the drift keeps the focus box whole", () => {
+  const clip = { w: 1440, h: 900 };
+  const frame = { w: 1000, h: 1250 };
+  const box = paddedBox({ x: 1140, y: 616, w: 300, h: 43 }, clip, CAMERA_CONFIG); // a button at the clip's right edge
+
+  it("pads a box and keeps it inside the clip", () => {
+    expect(box.x + box.w).toBe(1440);
+    expect(box.x).toBeLessThan(1140);
+  });
+
+  it("never lets the edge of a box out of the view, however long it holds", () => {
+    const base = targetView({ t_ms: 0, bbox: { x: 1140, y: 616, w: 300, h: 43 }, framing: "tight" }, clip, frame);
+    for (const ms of [0, 1000, 3000, 6000, 12000]) {
+      const v = driftView(base, { x: 1290, y: 637 }, ms, clip, frame, CAMERA_CONFIG, box);
+      expect(v.x).toBeLessThanOrEqual(box.x + 0.01);
+      expect(v.x + v.w).toBeGreaterThanOrEqual(box.x + box.w - 0.01);
+      expect(v.y).toBeLessThanOrEqual(box.y + 0.01);
+      expect(v.y + v.h).toBeGreaterThanOrEqual(box.y + box.h - 0.01);
+    }
+  });
+
+  it("without a box the drift is what it was", () => {
+    const base = targetView({ t_ms: 0, bbox: { x: 1140, y: 616, w: 300, h: 43 }, framing: "tight" }, clip, frame);
+    const a = driftView(base, { x: 1290, y: 637 }, 6000, clip, frame, CAMERA_CONFIG);
+    const b = driftView(base, { x: 1290, y: 637 }, 6000, clip, frame, CAMERA_CONFIG, undefined);
+    expect(a).toEqual(b);
+  });
+});
+
+describe("a view at the closest the box allows still moves", () => {
+  it("wobble goes out and back and never in", () => {
+    const ws = [0, 1, 2, 3, 4, 8].map((s) => wobble(500, 0.01 * s));
+    expect(ws[0]).toBe(500);
+    expect(Math.min(...ws)).toBeGreaterThanOrEqual(500);
+    expect(ws[2]).toBeGreaterThan(ws[1]);
+    expect(Math.max(...Array.from({ length: 100 }, (_, i) => wobble(500, 0.001 * i)))).toBeLessThanOrEqual(500 * Math.exp(0.04) + 1e-6);
   });
 });
