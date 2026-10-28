@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Golden snapshots: what is needed to rerun the script / produce steps with no LLM and no browser.
 
 Usage (from services/api):
@@ -9,6 +10,7 @@ video clips and pictures (NOT in git, see tests/golden/README.md).
 """
 
 import argparse
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -16,7 +18,12 @@ from pathlib import Path
 API = Path(__file__).resolve().parents[1]
 GOLDEN = API / "tests" / "golden"
 MEDIA = API / "tests" / "golden-media"
-NAMES = ("orangehrm", "squoosh", "todomvc")
+NAMES = ("orangehrm", "squoosh", "todomvc", "aisoeasy")
+# where each snapshot comes from (default out/cam-<name>); aisoeasy is a live job of a signed-in account
+JOB_DIRS = {"aisoeasy": "out/jobs/j70a1281ec4"}
+# nothing of the account reaches git: account slug and e-mail addresses are replaced in every JSON
+SCRUB = ((re.compile(r"quangthong[a-z0-9_-]*", re.I), "demo-user"),
+         (re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"), "user@example.com"))  # fmt: skip
 
 # files copied as they are (relative to a job dir); a trailing /* means every file of that kind
 JSON_FILES = (
@@ -39,6 +46,10 @@ MEDIA_FILES = ("flow/live/flow.mp4", "video.mp4")
 MEDIA_GLOBS = ("flow/steps/*", "produce/*.mp4", "produce/*.png")
 
 
+def job_dir(name: str) -> Path:
+    return API / JOB_DIRS.get(name, f"out/cam-{name}")
+
+
 def _files(job: Path, names: tuple[str, ...], globs: tuple[str, ...]) -> list[Path]:
     found = [job / n for n in names if (job / n).is_file()]
     for pattern in globs:
@@ -51,7 +62,13 @@ def copy_set(job: Path, dest: Path, names: tuple[str, ...], globs: tuple[str, ..
     for src in _files(job, names, globs):
         target = dest / src.relative_to(job)
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, target)
+        if src.suffix == ".json" and dest.parent == GOLDEN:
+            text = src.read_text(encoding="utf-8")
+            for pattern, repl in SCRUB:
+                text = pattern.sub(repl, text)
+            target.write_text(text, encoding="utf-8")
+        else:
+            shutil.copy2(src, target)
         count += 1
     return count
 
@@ -70,7 +87,7 @@ def restore_media(name: str) -> bool:
     """Make golden-media/<name> exist, from the job dir out/cam-<name> when it is missing."""
     if (MEDIA / name / "flow" / "live" / "flow.mp4").is_file():
         return True
-    job = API / "out" / f"cam-{name}"
+    job = job_dir(name)
     if not job.is_dir():
         return False
     return copy_set(job, MEDIA / name, MEDIA_FILES, MEDIA_GLOBS) > 0
@@ -80,10 +97,11 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("action", choices=["build", "restore"])
+    p.add_argument("--names", nargs="+", choices=NAMES, default=list(NAMES))
     args = p.parse_args()
-    for name in NAMES:
+    for name in args.names:
         if args.action == "build":
-            job = API / "out" / f"cam-{name}"
+            job = job_dir(name)
             print(name, "json/media files:", *build(name, job))
         else:
             print(name, "media", "ok" if restore_media(name) else "MISSING (no out/ job either)")

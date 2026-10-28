@@ -1,0 +1,523 @@
+{
+  "n": 8,
+  "url": "https://aisoeasy.co/terms",
+  "title": "Terms of Service — AI So Easy",
+  "meta_description": "Terms of use for the AI So Easy training platform operated by Avoca AI Joint Stock Company: rights, obligations, and account rules.",
+  "og_description": "Terms of use for the AI So Easy training platform operated by Avoca AI Joint Stock Company: rights, obligations, and account rules.",
+  "headings": [
+    {
+      "level": 1,
+      "text": "Terms of Service"
+    },
+    {
+      "level": 2,
+      "text": "1. About us"
+    },
+    {
+      "level": 2,
+      "text": "2. Service description"
+    },
+    {
+      "level": 2,
+      "text": "3. Accounts"
+    },
+    {
+      "level": 2,
+      "text": "4. Trial, contract, and payment"
+    },
+    {
+      "level": 2,
+      "text": "5. Usage rules"
+    },
+    {
+      "level": 2,
+      "text": "6. Your content"
+    },
+    {
+      "level": 2,
+      "text": "7. Intellectual property"
+    },
+    {
+      "level": 2,
+      "text": "8. AI features"
+    },
+    {
+      "level": 2,
+      "text": "9. Third-party videos & Creator Partner"
+    },
+    {
+      "level": 2,
+      "text": "10. Links & third-party applications"
+    },
+    {
+      "level": 2,
+      "text": "11. Availability & limitation of liability"
+    },
+    {
+      "level": 2,
+      "text": "12. Suspension & termination"
+    },
+    {
+      "level": 2,
+      "text": "13. Data security"
+    },
+    {
+      "level": 2,
+      "text": "14. Changes to the Terms"
+    },
+    {
+      "level": 2,
+      "text": "15. Governing law"
+    },
+    {
+      "level": 2,
+      "text": "16. Contact"
+    }
+  ],
+  "key_texts": [
+    "Terms of Service",
+    "Last updated: 05/08/2026",
+    "1. About us",
+    "2. Service description",
+    "3. Accounts",
+    "4. Trial, contract, and payment",
+    "5. Usage rules",
+    "6. Your content",
+    "7. Intellectual property",
+    "8. AI features",
+    "9. Third-party videos & Creator Partner",
+    "10. Links & third-party applications",
+    "11. Availability & limitation of liability",
+    "12. Suspension & termination",
+    "13. Data security",
+    "14. Changes to the Terms",
+    "15. Governing law",
+    "16. Contact",
+    "Avoca AI Joint Stock Company (Avoca AI JSC)",
+    "Address: 153 Dong Da, Hai Chau Ward, Da Nang City, Vietnam",
+    "Email: user@example.com",
+    "You may register yourself to create a trial workspace, or be granted an account by your company's HR/administrator.",
+    "You may log in with an email and password or with a Google account. When using Google sign-in, you also agree to comply with Google's terms of service.",
+    "Registration information must be accurate, complete, and kept up to date whenever it changes.",
+    "You are responsible for keeping your login credentials secure and for all activity arising from your account; notify us immediately if you discover unauthorized access.",
+    "Users must be 18 years of age or older.",
+    "New workspaces receive a free trial for the period announced at the time of registration.",
+    "After the trial period, continued use requires a service contract between the business and Avoca AI JSC. Pricing and the number of seats are agreed on a case-by-case basis.",
+    "Accounts are only fully activated once the contract takes effect and payment is completed.",
+    "Fees paid are non-refundable, unless otherwise agreed in writing in the contract.",
+    "If the number of seats under the contract is exceeded, the system will restrict the creation of additional accounts.",
+    "When using the Service, you agree NOT to:",
+    "Share your account or use another person's account.",
+    "Cheat on assessments, copy answers, or have someone else study or take tests on your behalf.",
+    "Copy, download, redistribute, or commercialize course content outside your organization without our prior written permission.",
+    "Interfere with, scan, attack, reverse-engineer, or disrupt the operation of the system.",
+    "Upload content that violates the law, infringes third-party rights, or contains malicious code.",
+    "Use the Service to send spam or collect data without authorization.",
+    "The AI Appstore showcases third-party AI applications; some links may be affiliate links. We do not control and are not responsible for the content, quality, or policies of those services.",
+    "We strive to keep the Service running reliably but do not guarantee uninterrupted operation; periodic maintenance may occur and will be announced in advance when feasible."
+  ],
+  "elements": [
+    {
+      "ref": "e1",
+      "role": "link",
+      "name": "AI So Easy",
+      "region": "header",
+      "tag": "a",
+      "text": "AI So Easy",
+      "href": "https://aisoeasy.co/",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "AI So Easy",
+        "text": "AI So Easy",
+        "css": "header a",
+        "nth": 0,
+        "tag": "a",
+        "fingerprint": "a|ai so easy|0.34,0.01",
+        "bbox": {
+          "x": 592.0,
+          "y": 16.0,
+          "w": 118.0,
+          "h": 28.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e2",
+      "role": "link",
+      "name": "Log in",
+      "region": "header",
+      "tag": "a",
+      "text": "Log in",
+      "href": "https://aisoeasy.co/login",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Log in",
+        "text": "Log in",
+        "css": "header a",
+        "nth": 1,
+        "tag": "a",
+        "fingerprint": "a|log in|0.68,0.01",
+        "bbox": {
+          "x": 1290.0,
+          "y": 20.0,
+          "w": 38.0,
+          "h": 20.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e3",
+      "role": "link",
+      "name": "user@example.com",
+      "region": "main",
+      "tag": "a",
+      "text": "user@example.com",
+      "href": "mailto:user@example.com",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "user@example.com",
+        "text": "user@example.com",
+        "css": "main a",
+        "nth": 0,
+        "tag": "a",
+        "fingerprint": "a|user@example.com|0.39,0.13",
+        "bbox": {
+          "x": 670.0,
+          "y": 451.0,
+          "w": 141.0,
+          "h": 21.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e4",
+      "role": "link",
+      "name": "Report / Content Removal Request",
+      "region": "main",
+      "tag": "a",
+      "text": "Report / Content Removal Request",
+      "href": "https://aisoeasy.co/report-content",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Report / Content Removal Request",
+        "text": "Report / Content Removal Request",
+        "css": "main a",
+        "nth": 1,
+        "tag": "a",
+        "fingerprint": "a|report / content removal request|0.40,0.65",
+        "bbox": {
+          "x": 642.0,
+          "y": 2335.0,
+          "w": 252.0,
+          "h": 21.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e5",
+      "role": "link",
+      "name": "Creator Partner Program",
+      "region": "main",
+      "tag": "a",
+      "text": "Creator Partner Program",
+      "href": "https://aisoeasy.co/creator-partner",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Creator Partner Program",
+        "text": "Creator Partner Program",
+        "css": "main a",
+        "nth": 2,
+        "tag": "a",
+        "fingerprint": "a|creator partner program|0.56,0.66",
+        "bbox": {
+          "x": 985.0,
+          "y": 2361.0,
+          "w": 178.0,
+          "h": 21.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e6",
+      "role": "link",
+      "name": "Delete account & data",
+      "region": "main",
+      "tag": "a",
+      "text": "Delete account & data",
+      "href": "https://aisoeasy.co/data-deletion",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Delete account & data",
+        "text": "Delete account & data",
+        "css": "main a",
+        "nth": 3,
+        "tag": "a",
+        "fingerprint": "a|delete account & data|0.42,0.80",
+        "bbox": {
+          "x": 728.0,
+          "y": 2879.0,
+          "w": 161.0,
+          "h": 21.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e7",
+      "role": "link",
+      "name": "Privacy Policy",
+      "region": "main",
+      "tag": "a",
+      "text": "Privacy Policy",
+      "href": "https://aisoeasy.co/privacy",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Privacy Policy",
+        "text": "Privacy Policy",
+        "css": "main a",
+        "nth": 4,
+        "tag": "a",
+        "fingerprint": "a|privacy policy|0.58,0.83",
+        "bbox": {
+          "x": 1059.0,
+          "y": 2977.0,
+          "w": 98.0,
+          "h": 21.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e8",
+      "role": "link",
+      "name": "user@example.com",
+      "region": "main",
+      "tag": "a",
+      "text": "user@example.com",
+      "href": "mailto:user@example.com",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "user@example.com",
+        "text": "user@example.com",
+        "css": "main a",
+        "nth": 5,
+        "tag": "a",
+        "fingerprint": "a|user@example.com|0.35,0.94",
+        "bbox": {
+          "x": 592.0,
+          "y": 3375.0,
+          "w": 141.0,
+          "h": 21.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e9",
+      "role": "link",
+      "name": "user@example.com",
+      "region": "footer",
+      "tag": "a",
+      "text": "user@example.com",
+      "href": "mailto:user@example.com",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "user@example.com",
+        "text": "user@example.com",
+        "css": "footer a",
+        "nth": 0,
+        "tag": "a",
+        "fingerprint": "a|user@example.com|0.37,0.97",
+        "bbox": {
+          "x": 647.0,
+          "y": 3472.0,
+          "w": 121.0,
+          "h": 19.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e10",
+      "role": "link",
+      "name": "Privacy Policy",
+      "region": "nav",
+      "tag": "a",
+      "text": "Privacy Policy",
+      "href": "https://aisoeasy.co/privacy",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Privacy Policy",
+        "text": "Privacy Policy",
+        "css": "nav a",
+        "nth": 0,
+        "tag": "a",
+        "fingerprint": "a|privacy policy|0.33,0.98",
+        "bbox": {
+          "x": 592.0,
+          "y": 3500.0,
+          "w": 83.0,
+          "h": 20.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e11",
+      "role": "link",
+      "name": "Terms of Service",
+      "region": "nav",
+      "tag": "a",
+      "text": "Terms of Service",
+      "href": "https://aisoeasy.co/terms",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Terms of Service",
+        "text": "Terms of Service",
+        "css": "nav a",
+        "nth": 1,
+        "tag": "a",
+        "fingerprint": "a|terms of service|0.39,0.98",
+        "bbox": {
+          "x": 691.0,
+          "y": 3500.0,
+          "w": 100.0,
+          "h": 20.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e12",
+      "role": "link",
+      "name": "Delete account & data",
+      "region": "nav",
+      "tag": "a",
+      "text": "Delete account & data",
+      "href": "https://aisoeasy.co/data-deletion",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Delete account & data",
+        "text": "Delete account & data",
+        "css": "nav a",
+        "nth": 2,
+        "tag": "a",
+        "fingerprint": "a|delete account & data|0.46,0.98",
+        "bbox": {
+          "x": 806.0,
+          "y": 3500.0,
+          "w": 139.0,
+          "h": 20.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    }
+  ],
+  "anchors": [],
+  "signals": {
+    "forms": 0,
+    "has_nav": true,
+    "has_sidebar": false,
+    "has_price": false,
+    "has_cart": false,
+    "sections": 1,
+    "big_input": 0,
+    "interactive": 12,
+    "canvas": 0,
+    "dblclick_hint": false,
+    "text_length": 6202
+  },
+  "layout": {
+    "hero": false,
+    "sidebar": false,
+    "tables": 0,
+    "forms": 0,
+    "cards": 0,
+    "images": 1,
+    "video": 0,
+    "canvas": 0,
+    "big_input": false,
+    "sections": 1
+  },
+  "screenshot": "out\\jobs\\j70a1281ec4\\explore\\pages\\8.png",
+  "depth": 2,
+  "score": -1.87,
+  "setup_steps": []
+}

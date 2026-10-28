@@ -1,0 +1,186 @@
+{
+  "flow_id": "flow-learn-dashboard-daily",
+  "title": "Bắt đầu ngày học với dashboard cá nhân hóa",
+  "persona": "Nhân viên văn phòng / nhân viên marketing muốn nâng kỹ năng AI",
+  "goal": "Biết hôm nay cần học gì và bắt đầu nhiệm vụ/challenge trong ngày",
+  "success_signal": "Dashboard hiển thị tiến độ challenge/khóa được cập nhật và chuỗi ngày học tăng",
+  "value": "Người học luôn biết rõ hôm nay cần làm gì để duy trì động lực và không mất thời gian tìm khóa phù hợp.",
+  "needs_submit": false,
+  "status": "partial",
+  "submit_policy": "stop",
+  "hero_texts": [
+    "My Learning",
+    "COURSES",
+    "Open for registration",
+    "Back",
+    "List view",
+    "Grid view",
+    "Learning path A structured sequence of courses — earn bonus ",
+    "See all (5)"
+  ],
+  "before_after_pair": true,
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "Xem dashboard",
+      "notes": [
+        "Mở trang bắt đầu"
+      ],
+      "steps": 2,
+      "value_line": null
+    },
+    {
+      "id": "c2",
+      "title": "Mở dashboard",
+      "notes": [
+        "Bấm vào Home để mở dashboard cá nhân hóa và xem lời chào, khóa học nổi bật."
+      ],
+      "steps": 1,
+      "value_line": null
+    },
+    {
+      "id": "c3",
+      "title": "Mở khu học tập",
+      "notes": [
+        "Mở mục Learn để xem dashboard học tập cá nhân hóa và nhiệm vụ hôm nay."
+      ],
+      "steps": 1,
+      "value_line": null
+    },
+    {
+      "id": "c4",
+      "title": "Mở khóa học gợi ý",
+      "notes": [
+        "Chọn khóa AI for Marketing & Productivity phù hợp với nhân viên marketing để mở bài học."
+      ],
+      "steps": 1,
+      "value_line": null
+    }
+  ],
+  "visuals": {
+    "c1": {
+      "mode": "recording",
+      "page": "https://aisoeasy.co/demo-user/app",
+      "actions": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "zoom": false
+        },
+        {
+          "do": "scroll",
+          "ms": 600,
+          "zoom": false
+        }
+      ]
+    },
+    "c2": {
+      "mode": "recording",
+      "page": "https://aisoeasy.co/demo-user/app",
+      "actions": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/demo-user/app"
+        },
+        {
+          "do": "click",
+          "target": "Home",
+          "zoom": false,
+          "locator": {
+            "role": "button",
+            "name": "Home",
+            "css": "button[aria-label=\"Home\"]",
+            "tag": "button",
+            "fingerprint": "button||0.30,0.32",
+            "bbox": {
+              "x": 417.0,
+              "y": 642.0,
+              "w": 32.0,
+              "h": 40.0
+            }
+          }
+        }
+      ]
+    },
+    "c3": {
+      "mode": "recording",
+      "page": "https://aisoeasy.co/demo-user/app",
+      "actions": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/demo-user/app"
+        },
+        {
+          "do": "click",
+          "target": "Learn",
+          "zoom": false,
+          "locator": {
+            "role": "link",
+            "name": "Learn",
+            "text": "Learn",
+            "css": "nav a",
+            "nth": 1,
+            "tag": "a",
+            "fingerprint": "a|learn|0.41,0.72",
+            "bbox": {
+              "x": 582.0,
+              "y": 1469.0,
+              "w": 31.0,
+              "h": 44.0
+            }
+          }
+        }
+      ]
+    },
+    "c4": {
+      "mode": "recording",
+      "page": "https://aisoeasy.co/demo-user/app/learn",
+      "actions": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/demo-user/app/learn"
+        },
+        {
+          "do": "click",
+          "target": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+          "zoom": false,
+          "locator": {
+            "role": "button",
+            "name": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+            "text": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+            "css": "main button",
+            "nth": 5,
+            "tag": "button",
+            "fingerprint": "button|ai for marketing & productivity marketing studio and new ai models help boost wo|0.50,0.29",
+            "bbox": {
+              "x": 417.0,
+              "y": 563.0,
+              "w": 606.0,
+              "h": 120.0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "hook_visual": {
+    "mode": "recording",
+    "page": "https://aisoeasy.co/demo-user/app",
+    "actions": [
+      {
+        "do": "goto",
+        "url": "https://aisoeasy.co/demo-user/app"
+      }
+    ]
+  },
+  "cta_visual": {
+    "mode": "recording",
+    "page": "https://aisoeasy.co/demo-user/app",
+    "actions": [
+      {
+        "do": "goto",
+        "url": "https://aisoeasy.co/demo-user/app"
+      }
+    ]
+  }
+}

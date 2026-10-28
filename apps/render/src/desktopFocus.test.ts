@@ -47,10 +47,10 @@ describe("desktop_focus layout", () => {
 });
 
 describe("desktop_focus data", () => {
-  it("is a valid template, and the default", () => {
+  it("is a valid template (desktop_frame is the default)", () => {
     expect(ScriptSchema.parse({ ...sampleJson, template: "desktop_focus" }).template).toBe("desktop_focus");
     const { template: _t, ...rest } = sampleJson;
-    expect(ScriptSchema.parse(rest).template).toBe("desktop_focus");
+    expect(ScriptSchema.parse(rest).template).toBe("desktop_frame");
     expect(ScriptSchema.safeParse({ ...sampleJson, template: "nope" }).success).toBe(false);
   });
 

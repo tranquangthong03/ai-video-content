@@ -26,7 +26,7 @@ from app.schemas.generated.outline import Outline
 from app.schemas.generated.page_insight import PageInsight
 from app.schemas.generated.product_profile import ProductProfile
 
-DEFAULT_CAPTURE = (1440, 900)
+DEFAULT_CAPTURE = (1280, 720)
 MAX_SIGN_INS = 2
 MAX_FLOW_SWITCHES = 2  # flows given up as impossible here before the old route is taken
 INFEASIBLE_KINDS = ("no_data", "no_permission", "feature_missing")

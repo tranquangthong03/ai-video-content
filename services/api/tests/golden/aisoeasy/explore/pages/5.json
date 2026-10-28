@@ -1,0 +1,111 @@
+{
+  "n": 5,
+  "url": "https://aisoeasy.co/verify",
+  "title": "Verify Certificate — AI So Easy",
+  "meta_description": "Look up and verify the validity of a training certificate issued by AI So Easy using its certificate code.",
+  "og_description": "Look up and verify the validity of a training certificate issued by AI So Easy using its certificate code.",
+  "headings": [
+    {
+      "level": 1,
+      "text": "Verify certificate"
+    }
+  ],
+  "key_texts": [
+    "Verify certificate",
+    "AI So Easy - Internal Training System"
+  ],
+  "elements": [
+    {
+      "ref": "e1",
+      "role": "textbox",
+      "name": "Enter certificate code (e.g.: TC-2026-XXXXXXXX)",
+      "region": "main",
+      "tag": "input",
+      "text": "",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "textbox",
+        "name": "Enter certificate code (e.g.: TC-2026-XXXXXXXX)",
+        "text": null,
+        "css": "input",
+        "nth": 0,
+        "tag": "input",
+        "fingerprint": "input||0.48,0.25",
+        "bbox": {
+          "x": 697.0,
+          "y": 245.0,
+          "w": 440.0,
+          "h": 40.0
+        }
+      },
+      "input_type": "text",
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e2",
+      "role": "button",
+      "name": "Check",
+      "region": "main",
+      "tag": "button",
+      "text": "Check",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "Check",
+        "text": "Check",
+        "css": "button",
+        "nth": 0,
+        "tag": "button",
+        "fingerprint": "button|check|0.62,0.25",
+        "bbox": {
+          "x": 1145.0,
+          "y": 245.0,
+          "w": 78.0,
+          "h": 40.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    }
+  ],
+  "anchors": [],
+  "signals": {
+    "forms": 0,
+    "has_nav": false,
+    "has_sidebar": false,
+    "has_price": false,
+    "has_cart": false,
+    "sections": 1,
+    "big_input": 1,
+    "interactive": 2,
+    "canvas": 0,
+    "dblclick_hint": false,
+    "text_length": 64
+  },
+  "layout": {
+    "hero": false,
+    "sidebar": false,
+    "tables": 0,
+    "forms": 0,
+    "cards": 0,
+    "images": 0,
+    "video": 0,
+    "canvas": 0,
+    "big_input": true,
+    "sections": 1
+  },
+  "screenshot": "out\\jobs\\j70a1281ec4\\explore\\pages\\5.png",
+  "depth": 1,
+  "score": 0.0,
+  "setup_steps": []
+}

@@ -91,7 +91,7 @@ def rec(
     return record_scene(session, scene(visual), tmp_path, speech_ms, root_url=site, **kw)
 
 
-def test_a_recording_is_a_1440x900_h264_mp4_with_a_click_log_of_what_was_done(
+def test_a_recording_is_a_1280x720_h264_mp4_with_a_click_log_of_what_was_done(
     browser_session: BrowserSession, site: str, tmp_path: Path
 ) -> None:
     visual = {
@@ -108,8 +108,8 @@ def test_a_recording_is_a_1440x900_h264_mp4_with_a_click_log_of_what_was_done(
     stream = info["streams"][0]
     assert (stream["codec_name"], stream["width"], stream["height"], stream["pix_fmt"]) == (
         "h264",
-        1440,
-        900,
+        1280,
+        720,
         "yuv420p",
     )
     assert stream["r_frame_rate"] == "30/1"
@@ -120,7 +120,7 @@ def test_a_recording_is_a_1440x900_h264_mp4_with_a_click_log_of_what_was_done(
     assert r.start_offset_ms > 0 and r.setup_end_ms == r.start_offset_ms
     kinds = [e["type"] for e in r.click_log]
     assert kinds[0] == "click" and "hover" in kinds  # typing focuses the field with a click first
-    assert all(0 <= e["x"] <= 1440 and 0 <= e["y"] <= 900 for e in r.click_log)
+    assert all(0 <= e["x"] <= 1280 and 0 <= e["y"] <= 720 for e in r.click_log)
     assert [e["t_ms"] for e in r.click_log] == sorted(e["t_ms"] for e in r.click_log)
     assert r.click_log[0]["t_ms"] > r.start_offset_ms - 50
     assert r.steps_ok == 2 and r.steps_failed == 0
@@ -173,8 +173,8 @@ def test_scroll_to_and_highlight_show_the_section_and_remove_the_overlay(
     r = rec(browser_session, site, tmp_path, visual, speech_ms=1000, highlight_color="#ff8800")
     assert [e["type"] for e in r.click_log] == ["scroll", "highlight"]
     hl = r.click_log[1]
-    assert 0 < hl["y"] < 900  # the section was scrolled to the middle of the viewport
-    assert 400 < hl["y"] < 700
+    assert 0 < hl["y"] < 720  # the section was scrolled to the middle of the viewport
+    assert 300 < hl["y"] < 560
     assert r.steps_ok == 2 and r.warnings == []
     assert r.content_ms >= r.click_log[1]["t_ms"] + 900  # the overlay stayed for its time
 

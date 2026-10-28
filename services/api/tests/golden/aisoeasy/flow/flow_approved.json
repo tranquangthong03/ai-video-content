@@ -1,0 +1,291 @@
+{
+  "flow_id": "flow-learn-dashboard-daily",
+  "status": "partial",
+  "steps": [
+    {
+      "i": 1,
+      "action": {
+        "do": "goto",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": "https://aisoeasy.co/demo-user/app",
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": null,
+      "url_after": "https://aisoeasy.co/demo-user/app",
+      "screenshot": "flow/steps/s1.jpg",
+      "note": "Mở trang bắt đầu",
+      "chapter_id": "c1",
+      "t_ms_hint": 0
+    },
+    {
+      "i": 2,
+      "action": {
+        "do": "scroll",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": 600,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": "https://aisoeasy.co/demo-user/app",
+      "url_after": "https://aisoeasy.co/demo-user/app",
+      "screenshot": "flow/steps/s2.jpg",
+      "note": "Cuộn xuống để xem featured course, Today's picks và Today's Challenge trên dashboard.",
+      "chapter_id": "c1",
+      "t_ms_hint": 2500
+    },
+    {
+      "i": 3,
+      "action": {
+        "do": "click",
+        "target": "Home",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "button",
+        "name": "Home",
+        "text": null,
+        "css": "button[aria-label=\"Home\"]",
+        "nth": null,
+        "tag": "button",
+        "fingerprint": "button||0.30,0.32",
+        "bbox": {
+          "x": 417.0,
+          "y": 642.0,
+          "w": 32.0,
+          "h": 40.0
+        }
+      },
+      "target_text": "Home",
+      "value": null,
+      "url_before": "https://aisoeasy.co/demo-user/app",
+      "url_after": "https://aisoeasy.co/demo-user/app",
+      "screenshot": "flow/steps/s3.jpg",
+      "note": "Bấm vào Home để mở dashboard cá nhân hóa và xem lời chào, khóa học nổi bật.",
+      "chapter_id": "c2",
+      "t_ms_hint": 5000
+    },
+    {
+      "i": 4,
+      "action": {
+        "do": "click",
+        "target": "Learn",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "link",
+        "name": "Learn",
+        "text": "Learn",
+        "css": "nav a",
+        "nth": 1,
+        "tag": "a",
+        "fingerprint": "a|learn|0.41,0.72",
+        "bbox": {
+          "x": 582.0,
+          "y": 1469.0,
+          "w": 31.0,
+          "h": 44.0
+        }
+      },
+      "target_text": "Learn",
+      "value": null,
+      "url_before": "https://aisoeasy.co/demo-user/app",
+      "url_after": "https://aisoeasy.co/demo-user/app/learn",
+      "screenshot": "flow/steps/s4.jpg",
+      "note": "Mở mục Learn để xem dashboard học tập cá nhân hóa và nhiệm vụ hôm nay.",
+      "chapter_id": "c3",
+      "t_ms_hint": 7500
+    },
+    {
+      "i": 5,
+      "action": {
+        "do": "click",
+        "target": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "button",
+        "name": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+        "text": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+        "css": "main button",
+        "nth": 5,
+        "tag": "button",
+        "fingerprint": "button|ai for marketing & productivity marketing studio and new ai models help boost wo|0.50,0.29",
+        "bbox": {
+          "x": 417.0,
+          "y": 563.0,
+          "w": 606.0,
+          "h": 120.0
+        }
+      },
+      "target_text": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+      "value": null,
+      "url_before": "https://aisoeasy.co/demo-user/app/learn",
+      "url_after": "https://aisoeasy.co/demo-user/app/course/96ea23fb-abe9-4895-a6bf-5d559840b2dc",
+      "screenshot": "flow/steps/s5.jpg",
+      "note": "Chọn khóa AI for Marketing & Productivity phù hợp với nhân viên marketing để mở bài học.",
+      "chapter_id": "c4",
+      "t_ms_hint": 10000
+    }
+  ],
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "Xem dashboard",
+      "step_ids": [
+        1,
+        2
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c2",
+      "title": "Mở dashboard",
+      "step_ids": [
+        3
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c3",
+      "title": "Mở khu học tập",
+      "step_ids": [
+        4
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c4",
+      "title": "Mở khóa học gợi ý",
+      "step_ids": [
+        5
+      ],
+      "value_line": null
+    }
+  ],
+  "sample_data": {},
+  "warnings": [
+    "Agent bỏ cuộc: Trang khóa học báo lỗi không tải được nội dung khóa học"
+  ],
+  "llm_calls": 5,
+  "submit_policy": "stop",
+  "stop_ref": null,
+  "live": {
+    "clip": "flow/live/flow.mp4",
+    "logs": "flow/live/logs.json",
+    "content_ms": 29201,
+    "start_offset_ms": 7390,
+    "sync_offset_ms": -1485,
+    "pulse_at_ms": 1485,
+    "segments": [
+      {
+        "from_ms": 7438,
+        "to_ms": 8624,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 11953,
+        "to_ms": 13261,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 17215,
+        "to_ms": 18134,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 22166,
+        "to_ms": 23427,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 27831,
+        "to_ms": 28886,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      }
+    ],
+    "marks": [
+      {
+        "i": 2,
+        "start_ms": 8628,
+        "end_ms": 11901
+      },
+      {
+        "i": 3,
+        "start_ms": 13263,
+        "end_ms": 17155
+      },
+      {
+        "i": 4,
+        "start_ms": 18148,
+        "end_ms": 22130
+      },
+      {
+        "i": 5,
+        "start_ms": 23428,
+        "end_ms": 27803
+      }
+    ]
+  },
+  "give_up": {
+    "reason_kind": "blocked_by_site",
+    "reason": "Trang khóa học báo lỗi không tải được nội dung khóa học",
+    "quote": "Failed to load the course"
+  },
+  "report": {
+    "model": "deepseek-chat",
+    "used_images": false,
+    "llm_calls": 5,
+    "prompt_tokens": 10060,
+    "completion_tokens": 385,
+    "seconds": 31.6,
+    "write_requests": [],
+    "text_calls": 5,
+    "vision_calls": 0,
+    "escalated_because": null,
+    "invented_refs": 0,
+    "repeat_warnings": 0
+  }
+}

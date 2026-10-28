@@ -334,10 +334,17 @@ class TerminalFrontend:
 
     def _show_flows(self, request: InteractionRequest) -> None:
         self.console.print(Panel(request.message, title="Chọn luồng chính", border_style="cyan"))
+        if request.flow_select and request.flow_select.empty_warning:
+            self.console.print(f"[yellow]⚠ {request.flow_select.empty_warning}[/]")
         for f in request.flows or []:
             steps = "\n".join(f"  • {s}" for s in f.expected_steps)
             submit = "  [yellow]\\[cần gửi dữ liệu][/]" if f.needs_submit else ""
             cannot = (request.flow_select.infeasible if request.flow_select else {}).get(f.id)
+            q = (request.flow_select.quality if request.flow_select else {}).get(f.id)
+            if q is not None:
+                submit += f"  [dim]~{q.value_actions} thao tác tạo kết quả[/]"
+                if q.label:
+                    submit += f"  [yellow]{q.label}[/]"
             if cannot:
                 submit += f"  [red]Không khả thi trên tài khoản này: {cannot}[/]"
             body = (
@@ -359,6 +366,10 @@ class TerminalFrontend:
         self.console.print(table)
         for w in run.warnings:
             self.console.print(f"[yellow]⚠ {w}[/]")
+        q = request.flow_quality
+        for w in (q.label, q.empty_warning) if q else ():
+            if w:
+                self.console.print(f"[yellow]⚠ {w.rstrip('.')}. Bạn vẫn có thể duyệt.[/]")
         shots = [s.screenshot for s in run.steps if s.screenshot]
         if shots:
             self.console.print(f"[dim]Ảnh từng bước: {Path(shots[0]).parent} ({len(shots)} ảnh)[/]")
@@ -379,6 +390,13 @@ class TerminalFrontend:
     def _ask_flow(self, request: InteractionRequest, questionary: Any) -> UserResponse:
         sel = request.flow_select
         assert sel is not None
+        description = (
+            questionary.text(
+                "Tự mô tả luồng muốn quay (ví dụ: «Nhân viên tạo hồ sơ nhân viên mới và lưu»; "
+                "Enter để chọn từ các luồng đề xuất):"
+            ).ask()
+            or ""
+        )
         self._show_flows(request)
         picks = questionary.checkbox(
             f"Chọn luồng (khoảng trắng để chọn, tối đa {sel.max}):",
@@ -398,7 +416,6 @@ class TerminalFrontend:
         ).ask()
         if picks is None:
             return make_response(request, "cancel")
-        description = questionary.text("Tự mô tả luồng muốn quay (Enter để bỏ qua):").ask() or ""
         answers: dict[str, Any] = {"selected_flows": list(picks)}
         if description.strip():
             answers["flow_description"] = description.strip()

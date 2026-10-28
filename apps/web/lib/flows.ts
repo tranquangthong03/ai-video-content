@@ -1,8 +1,24 @@
 /** Core flow cards (select_flow, flow_storyboard_review): pure helpers, tested in flows.test.ts. */
-import type { CoreFlow, FlowRun } from "./generated";
+import type { CoreFlow, FlowQuality, FlowRun } from "./generated";
 import { toggleSelection } from "./selection";
 
 export const MAX_FLOWS = 2;
+
+/** Two short examples under the box where the user describes a flow of their own. */
+export const FLOW_EXAMPLES = [
+  "Nhân viên tạo hồ sơ nhân viên mới và lưu",
+  "Người dùng tải ảnh lên, nén và so sánh trước/sau",
+];
+
+/** What the card says about a flow: how many steps make something appear, and the warning when too few. */
+export function qualityLine(q: FlowQuality | undefined): { text: string; warn: string | null } | null {
+  if (!q) return null;
+  const n = q.value_actions;
+  return {
+    text: `${q.estimated ? "~" : ""}${n} thao tác tạo kết quả`,
+    warn: q.label ?? null,
+  };
+}
 
 type Step = FlowRun["steps"][number];
 

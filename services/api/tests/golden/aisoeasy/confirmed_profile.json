@@ -1,0 +1,849 @@
+{
+  "site_type": "web_app",
+  "product_name": "AI So Easy",
+  "one_liner": "Nền tảng upskill lực lượng lao động bằng AI: mỗi doanh nghiệp có workspace riêng, khóa học AI theo ngành nghề, gamification và bộ công cụ AI hỗ trợ công việc hằng ngày.",
+  "target_users": [
+    "Doanh nghiệp muốn nâng cấp kỹ năng AI cho toàn bộ nhân sự",
+    "HR / L&D / quản lý đào tạo cần giao khóa học, lộ trình và theo dõi kết quả",
+    "Nhân viên marketing, design, video, motion cần học công cụ AI theo nghề",
+    "Nhân viên văn phòng muốn dùng trợ lý AI để soạn thảo, phân tích, tạo slide"
+  ],
+  "value_props": [
+    "Workspace riêng cho từng doanh nghiệp, dữ liệu giữa các workspace được cô lập hoàn toàn",
+    "Thư viện khóa học AI theo ngành nghề (Website & Landing Page, Marketing & Productivity, Video Content, Motion & Animation, Design)",
+    "Learning path có thưởng khi hoàn thành, kết hợp khóa tự học và lớp có giảng viên hướng dẫn",
+    "Gamification (điểm, cấp độ, daily quests, weekly goals, huy hiệu, bảng xếp hạng) giúp duy trì động lực học",
+    "Bộ công cụ AI đề xuất theo doanh nghiệp + trợ lý AI, tạo slide và thiết kế nhanh cho công việc hằng ngày",
+    "Chứng chỉ có thể xác thực công khai và báo cáo kết quả cho HR/quản lý"
+  ],
+  "features": [
+    {
+      "id": "my_learning_hub",
+      "name": "Quản lý khóa học, lớp học và learning path",
+      "description": "Màn hình My Learning tập trung mọi thứ người học cần: khóa tự học đang mở đăng ký, lớp có giảng viên, khóa đang học và khóa đã hoàn thành; chuyển giữa list view / grid view và vào learning path để học theo chuỗi khóa có thưởng hoàn thành.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": "e8",
+          "quote": "Learning path — A structured sequence of courses — earn bonus on completion"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": "e9",
+          "quote": "See all (5)"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": "e6",
+          "quote": "List view"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": "e7",
+          "quote": "Grid view"
+        },
+        {
+          "source": "nav",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": null,
+          "quote": "Manage your courses and classes"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": "e10",
+          "quote": "AI for Website & Landing Page — Build professional websites and landing pages featuring animations and other effects using AI tools."
+        }
+      ],
+      "importance": 0.95,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": "e8",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Learning path A structured sequence of courses — earn bonus on completion",
+            "text": "Learning path A structured sequence of courses — earn bonus on completion",
+            "css": "main button",
+            "nth": 2,
+            "tag": "button",
+            "fingerprint": "button|learning path a structured sequence of courses — earn bonus on completion|0.50,0.11",
+            "bbox": {
+              "x": 657.0,
+              "y": 196.0,
+              "w": 606.0,
+              "h": 80.0
+            }
+          }
+        },
+        {
+          "do": "click",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": "e9",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "See all (5)",
+            "text": "See all (5)",
+            "css": "main button",
+            "nth": 3,
+            "tag": "button",
+            "fingerprint": "button|see all (5)|0.64,0.19",
+            "bbox": {
+              "x": 1194.0,
+              "y": 404.0,
+              "w": 69.0,
+              "h": 16.0
+            }
+          }
+        },
+        {
+          "do": "click",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": "e10",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "AI for Website & Landing Page Build professional websites and landing pages featuring animations and other effects using",
+            "text": "AI for Website & Landing Page Build professional websites and landing pages feat",
+            "css": "main button",
+            "nth": 4,
+            "tag": "button",
+            "fingerprint": "button|ai for website & landing page build professional websites and landing pages feat|0.50,0.23",
+            "bbox": {
+              "x": 657.0,
+              "y": 432.0,
+              "w": 606.0,
+              "h": 120.0
+            }
+          }
+        }
+      ],
+      "demo_kind": "navigation",
+      "demo_score": 0.5,
+      "demo_evidence": {
+        "url_changed": true,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": null,
+        "notes": "target page not analysed: https://aisoeasy.co/demo-user/app/course/2e650b94-1b5c-4ca0-9921-7258629fb6ae"
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\jobs\\j70a1281ec4\\explore\\verify\\my_learning_hub\\step4_after.png",
+      "source": "site",
+      "intent_key": "manage_learning_path"
+    },
+    {
+      "id": "quests_gamification",
+      "name": "Daily quests, weekly goals, huy hiệu và bảng xếp hạng",
+      "description": "Trang Quest biến việc học thành thử thách hằng ngày: nhiệm vụ ngày, mục tiêu tuần (số quest, tỷ lệ duyệt bài), bài tập thực hành, peer review, top learners và recent badges — kèm điểm XP và cấp độ để tạo động lực học đều.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app/quests",
+          "ref": "e7",
+          "quote": "Quests"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app/quests",
+          "ref": "e8",
+          "quote": "Practical tasks"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app/quests",
+          "ref": "e9",
+          "quote": "Peer review"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app/quests",
+          "ref": "e10",
+          "quote": "View all — Top learners"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app/quests",
+          "ref": "e11",
+          "quote": "View all — Recent badges"
+        },
+        {
+          "source": "docs",
+          "url": "https://aisoeasy.co/privacy",
+          "ref": null,
+          "quote": "Operate gamification features (points, badges, leaderboards, mini-games, rewards)."
+        }
+      ],
+      "importance": 0.88,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/demo-user/app/quests",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://aisoeasy.co/demo-user/app/quests",
+          "ref": "e8",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "tab",
+            "name": "Practical tasks",
+            "text": "Practical tasks",
+            "css": "main [role=\"tab\"]",
+            "nth": 1,
+            "tag": "button",
+            "fingerprint": "button|practical tasks|0.50,0.32",
+            "bbox": {
+              "x": 861.0,
+              "y": 381.0,
+              "w": 199.0,
+              "h": 32.0
+            }
+          }
+        },
+        {
+          "do": "click",
+          "url": "https://aisoeasy.co/demo-user/app/quests",
+          "ref": "e9",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "tab",
+            "name": "Peer review",
+            "text": "Peer review",
+            "css": "main [role=\"tab\"]",
+            "nth": 2,
+            "tag": "button",
+            "fingerprint": "button|peer review|0.60,0.32",
+            "bbox": {
+              "x": 1059.0,
+              "y": 381.0,
+              "w": 199.0,
+              "h": 32.0
+            }
+          }
+        },
+        {
+          "do": "click",
+          "url": "https://aisoeasy.co/demo-user/app/quests",
+          "ref": "e10",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "View all",
+            "text": "View all",
+            "css": "main button",
+            "nth": 3,
+            "tag": "button",
+            "fingerprint": "button|view all|0.65,0.62",
+            "bbox": {
+              "x": 1221.0,
+              "y": 748.0,
+              "w": 42.0,
+              "h": 16.0
+            }
+          }
+        }
+      ],
+      "demo_kind": "interaction",
+      "demo_score": 0.55,
+      "demo_evidence": {
+        "url_changed": true,
+        "dom_delta": 1,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0351,
+        "target_page_type": null,
+        "notes": ""
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\jobs\\j70a1281ec4\\explore\\verify\\quests_gamification\\step4_after.png",
+      "source": "site",
+      "intent_key": "earn_rewards"
+    },
+    {
+      "id": "personal_dashboard",
+      "name": "Dashboard học tập cá nhân hóa",
+      "description": "Trang Home chào người học bằng tên, hiển thị featured course với tiến độ bài học, dải Today's picks (khóa gợi ý theo ngành), Today's Challenge kèm vòng tiến độ % và chuỗi ngày học, giúp người học biết ngay hôm nay cần làm gì.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e5",
+          "quote": "Today's picks — See all"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e8",
+          "quote": "Next"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e9",
+          "quote": "See all — Top AI tools for your business"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e7",
+          "quote": "Previous"
+        },
+        {
+          "source": "nav",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": null,
+          "quote": "FEATURED COURSE — AI for Website & Landing Page — 0/6 lessons"
+        },
+        {
+          "source": "nav",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": null,
+          "quote": "TODAY'S CHALLENGE — Complete 1 lesson — Earn points to level up"
+        }
+      ],
+      "importance": 0.85,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "scroll",
+          "url": null,
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e8",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Next",
+            "text": null,
+            "css": "button[aria-label=\"Next\"]",
+            "nth": null,
+            "tag": "button",
+            "fingerprint": "button||0.63,0.77",
+            "bbox": {
+              "x": 1188.0,
+              "y": 1580.0,
+              "w": 32.0,
+              "h": 32.0
+            }
+          }
+        },
+        {
+          "do": "click",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e5",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "See all",
+            "text": "See all",
+            "css": "main button",
+            "nth": 0,
+            "tag": "button",
+            "fingerprint": "button|see all|0.64,0.29",
+            "bbox": {
+              "x": 1201.0,
+              "y": 586.0,
+              "w": 58.0,
+              "h": 20.0
+            }
+          }
+        }
+      ],
+      "demo_kind": "interaction",
+      "demo_score": 0.55,
+      "demo_evidence": {
+        "url_changed": true,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0393,
+        "target_page_type": null,
+        "notes": ""
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\jobs\\j70a1281ec4\\explore\\verify\\personal_dashboard\\step4_after.png",
+      "source": "site",
+      "intent_key": "view_dashboard"
+    },
+    {
+      "id": "ai_tools_catalog",
+      "name": "Bộ công cụ AI đề xuất cho doanh nghiệp",
+      "description": "Khối 'Top AI tools for your business' trên dashboard giới thiệu các công cụ AI phù hợp công việc từng phòng ban (trợ lý AI đa năng, chatbot đọc hiểu tài liệu dài, tìm kiếm AI có trích dẫn nguồn, kiểm tra ngữ pháp tiếng Anh, viết nội dung theo brand voice...) kèm link truy cập và nút dùng thử.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e12",
+          "quote": "Truy cập website"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e19",
+          "quote": "Dùng thử"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e20",
+          "quote": "Trải nghiệm"
+        },
+        {
+          "source": "landing_features",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": null,
+          "quote": "Top AI tools for your business"
+        },
+        {
+          "source": "landing_claim",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": null,
+          "quote": "Copilot AI ngay trong Word, Excel, Outlook, Teams."
+        },
+        {
+          "source": "docs",
+          "url": "https://aisoeasy.co/terms",
+          "ref": null,
+          "quote": "The AI Appstore showcases third-party AI applications; some links may be affiliate links."
+        }
+      ],
+      "importance": 0.75,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "scroll",
+          "url": null,
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e9",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "See all",
+            "text": "See all",
+            "css": "main button",
+            "nth": 4,
+            "tag": "button",
+            "fingerprint": "button|see all|0.65,0.77",
+            "bbox": {
+              "x": 1228.0,
+              "y": 1584.0,
+              "w": 51.0,
+              "h": 24.0
+            }
+          }
+        },
+        {
+          "do": "hover",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e12",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Truy cập website",
+            "text": "Truy cập website",
+            "css": "main button",
+            "nth": 7,
+            "tag": "button",
+            "fingerprint": "button|truy cập website|0.66,0.89",
+            "bbox": {
+              "x": 1158.0,
+              "y": 1837.0,
+              "w": 222.0,
+              "h": 32.0
+            }
+          }
+        }
+      ],
+      "demo_kind": "navigation",
+      "demo_score": 0.8,
+      "demo_evidence": {
+        "url_changed": true,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": "app_dashboard",
+        "notes": ""
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\jobs\\j70a1281ec4\\explore\\verify\\ai_tools_catalog\\step4_after.png",
+      "source": "site",
+      "intent_key": "explore_ai_tools"
+    },
+    {
+      "id": "ai_slide_creation",
+      "name": "Tạo slide thuyết trình bằng AI",
+      "description": "Từ dashboard người dùng bấm 'Tạo slide ngay' để đi vào công cụ tạo slide thuyết trình bằng AI, phục vụ báo cáo và trình bày nội bộ mà không cần thiết kế thủ công.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e21",
+          "quote": "Tạo slide ngay"
+        },
+        {
+          "source": "landing_claim",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": null,
+          "quote": "Tạo slide thuyết trình bằng AI"
+        }
+      ],
+      "importance": 0.7,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "scroll",
+          "url": null,
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "hover",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e21",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Tạo slide ngay",
+            "text": "Tạo slide ngay",
+            "css": "main button",
+            "nth": 16,
+            "tag": "button",
+            "fingerprint": "button|tạo slide ngay|1.88,0.89",
+            "bbox": {
+              "x": 3498.0,
+              "y": 1821.0,
+              "w": 222.0,
+              "h": 32.0
+            }
+          }
+        }
+      ],
+      "demo_kind": "failed",
+      "demo_score": 0.0,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": "app_dashboard",
+        "notes": ""
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": null,
+      "source": "site",
+      "intent_key": "create_slide_presentation"
+    },
+    {
+      "id": "certificate_verify",
+      "name": "Chứng chỉ và xác thực chứng chỉ công khai",
+      "description": "Người học nhận chứng chỉ sau khóa học; bất kỳ ai (nhà tuyển dụng, HR) có thể vào trang Verify Certificate nhập mã chứng chỉ để kiểm tra tính hợp lệ. Hệ thống cũng cung cấp báo cáo kết quả cho HR/quản lý.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/verify",
+          "ref": "e2",
+          "quote": "Check"
+        },
+        {
+          "source": "docs",
+          "url": "https://aisoeasy.co/privacy",
+          "ref": null,
+          "quote": "Provide courses, learning paths, classes, certificates, and result reports for HR/managers."
+        }
+      ],
+      "importance": 0.55,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/verify",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "scroll",
+          "url": null,
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "hover",
+          "url": "https://aisoeasy.co/verify",
+          "ref": "e2",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Check",
+            "text": "Check",
+            "css": "button",
+            "nth": 0,
+            "tag": "button",
+            "fingerprint": "button|check|0.62,0.25",
+            "bbox": {
+              "x": 1145.0,
+              "y": 245.0,
+              "w": 78.0,
+              "h": 40.0
+            }
+          }
+        }
+      ],
+      "demo_kind": "failed",
+      "demo_score": 0.0,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": "other",
+        "notes": ""
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": "step 3 (hover) timeout: Locator.hover: Timeout 4000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Check\", exact=True).visibl",
+      "thumbnail": null,
+      "source": "site",
+      "intent_key": "verify_certificate"
+    },
+    {
+      "id": "workspace_privacy_control",
+      "name": "Workspace doanh nghiệp và kiểm soát dữ liệu cá nhân",
+      "description": "Mỗi doanh nghiệp có workspace riêng với dữ liệu cô lập; người dùng đăng nhập bằng email hoặc Google, có quyền yêu cầu xóa tài khoản và dữ liệu học tập qua HR hoặc email, với cam kết thời gian xử lý rõ ràng.",
+      "evidence": [
+        {
+          "source": "docs",
+          "url": "https://aisoeasy.co/privacy",
+          "ref": null,
+          "quote": "Data between workspaces is fully isolated."
+        },
+        {
+          "source": "docs",
+          "url": "https://aisoeasy.co/terms",
+          "ref": null,
+          "quote": "You may log in with an email and password or with a Google account."
+        },
+        {
+          "source": "docs",
+          "url": "https://aisoeasy.co/data-deletion",
+          "ref": "e3",
+          "quote": "If you still have an employment/collaboration relationship, please contact your HR department or system administrator directly to request account deactivation and deletion."
+        },
+        {
+          "source": "docs",
+          "url": "https://aisoeasy.co/data-deletion",
+          "ref": null,
+          "quote": "Learning progress, test results, submitted essays."
+        },
+        {
+          "source": "docs",
+          "url": "https://aisoeasy.co/data-deletion",
+          "ref": null,
+          "quote": "Expected response time: within 5 business days; deletion completed within 30 days."
+        }
+      ],
+      "importance": 0.4,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/data-deletion",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "scroll",
+          "url": null,
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "hover",
+          "url": "https://aisoeasy.co/data-deletion",
+          "ref": "e3",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "link",
+            "name": "user@example.com",
+            "text": "user@example.com",
+            "css": "main a",
+            "nth": 0,
+            "tag": "a",
+            "fingerprint": "a|user@example.com|0.40,0.34",
+            "bbox": {
+              "x": 699.0,
+              "y": 653.0,
+              "w": 141.0,
+              "h": 21.0
+            }
+          }
+        }
+      ],
+      "demo_kind": null,
+      "demo_score": 0.0,
+      "demo_evidence": null,
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": false,
+      "demo_note": null,
+      "thumbnail": null,
+      "source": "site",
+      "intent_key": "manage_account_privacy"
+    },
+    {
+      "id": "plan_upgrade",
+      "name": "Nâng cấp gói Free lên Pro",
+      "description": "Banner ở đầu mọi trang app cho biết người dùng đang ở gói Free và mời nâng cấp lên Pro ($9/mo) để mở khóa toàn bộ nội dung; với doanh nghiệp, số ghế và giá được thỏa thuận theo hợp đồng.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app",
+          "ref": "e4",
+          "quote": "Upgrade"
+        },
+        {
+          "source": "app_action",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": null,
+          "quote": "You are on the Free plan — upgrade to unlock everything. Upgrade $9/mo"
+        },
+        {
+          "source": "docs",
+          "url": "https://aisoeasy.co/terms",
+          "ref": null,
+          "quote": "Pricing and the number of seats are agreed on a case-by-case basis."
+        },
+        {
+          "source": "docs",
+          "url": "https://aisoeasy.co/terms",
+          "ref": null,
+          "quote": "New workspaces receive a free trial for the period announced at the time of registration."
+        }
+      ],
+      "importance": 0.35,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://aisoeasy.co/demo-user/app/learn",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": null,
+      "demo_score": 0.0,
+      "demo_evidence": null,
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": false,
+      "demo_note": null,
+      "thumbnail": null,
+      "source": "site",
+      "intent_key": "upgrade_plan"
+    }
+  ],
+  "open_questions": [
+    "Bộ công cụ AI (Copilot, chatbot đọc tài liệu dài, tìm kiếm AI có trích dẫn, giọng nói AI tiếng Việt, thiết kế tự động) là tích hợp thật trong app hay chỉ là danh mục link giới thiệu bên thứ ba (affiliate)? Terms có nhắc AI Appstore là ứng dụng bên thứ ba.",
+    "Có màn hình quản lý lớp học instructor-led (lịch, giảng viên, điểm danh) không? Hiện chỉ thấy mô tả trong danh sách khóa, chưa có trang chi tiết.",
+    "Báo cáo kết quả cho HR/quản lý được nêu trong Privacy Policy nhưng không có trang báo cáo nào trong dữ liệu — cần xác nhận vai trò admin/HR có dashboard riêng không.",
+    "Chưa rõ đối tượng khách hàng chính: bán cho doanh nghiệp (B2B theo ghế/hợp đồng) hay cả người học cá nhân (Pro $9/mo)? Landing nói 'mỗi doanh nghiệp có không gian riêng' nhưng app lại có upsell cá nhân.",
+    "Giao diện app dùng tiếng Anh trong khi khóa học gắn nhãn 'Tiếng Việt' — cần xác nhận ngôn ngữ UI/ nội dung cho video marketing.",
+    "Trang Verify Certificate dùng mã chứng chỉ dạng nào và chứng chỉ được cấp tự động khi hoàn thành learning path hay do giảng viên duyệt?"
+  ]
+}

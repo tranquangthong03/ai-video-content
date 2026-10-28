@@ -15,8 +15,8 @@ class Capture(BaseModel):
         extra='forbid',
     )
     viewport: Literal['desktop', 'mobile'] = 'desktop'
-    width: Annotated[int, Field(ge=320, le=3840)] = 1440
-    height: Annotated[int, Field(ge=320, le=3840)] = 900
+    width: Annotated[int, Field(ge=320, le=3840)] = 1280
+    height: Annotated[int, Field(ge=320, le=3840)] = 720
 
 
 class HookOption(BaseModel):
@@ -42,13 +42,16 @@ class Script(BaseModel):
     goal: Literal['awareness', 'conversion', 'tutorial', 'recruitment']
     aspect_ratio: Literal['9:16']
     target_duration_s: Annotated[int, Field(ge=15, le=90)]
-    template: Literal['desktop_focus', 'desktop_showcase', 'phone_showcase'] = (
-        'desktop_focus'
-    )
+    template: Annotated[
+        Literal['desktop_frame', 'desktop_focus', 'desktop_showcase', 'phone_showcase'],
+        Field(
+            description='desktop_frame: 16:9 frame, still full view, a few planned zooms. desktop_focus: 4:5 frame with the following camera.'
+        ),
+    ] = 'desktop_frame'
     capture: Annotated[Capture, Field(validate_default=True)] = {
         'viewport': 'desktop',
-        'width': 1440,
-        'height': 900,
+        'width': 1280,
+        'height': 720,
     }
     flow_id: str | None = None
     badge: Annotated[str | None, Field(max_length=24)] = None

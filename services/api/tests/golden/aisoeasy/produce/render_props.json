@@ -1,0 +1,1260 @@
+{
+ "script": {
+  "title": "Bắt đầu ngày học với dashboard cá nhân hóa",
+  "goal": "tutorial",
+  "aspect_ratio": "9:16",
+  "target_duration_s": 30,
+  "template": "desktop_focus",
+  "capture": {
+   "viewport": "desktop",
+   "width": 1440,
+   "height": 900
+  },
+  "flow_id": "flow-learn-dashboard-daily",
+  "badge": "UPSKILL AI MỖI NGÀY",
+  "headline": "Mở dashboard, biết ngay hôm nay học gì",
+  "headline_highlight": "hôm nay học gì",
+  "framework": "pain_journey_result",
+  "hook_options": [
+   {
+    "kind": "pain_question",
+    "voiceover": "Mất cả buổi sáng chỉ để tìm khóa AI phù hợp?",
+    "on_screen_text": "Tìm khóa AI mất buổi?"
+   },
+   {
+    "kind": "result_first",
+    "voiceover": "Mỗi sáng mở lên là biết ngay hôm nay học gì.",
+    "on_screen_text": "Biết ngay hôm nay học"
+   }
+  ],
+  "theme": {
+   "primary": "#58E600",
+   "accent": "#A71AFF",
+   "font": "Be Vietnam Pro",
+   "logo_asset": "out\\jobs\\j70a1281ec4\\theme\\logo.png",
+   "motion_preset": "energetic",
+   "caption_style": "karaoke",
+   "music_mood": "upbeat",
+   "voice_id": "vi_female_01",
+   "language": "vi"
+  },
+  "scenes": [
+   {
+    "id": "s1",
+    "type": "hook",
+    "layout": "big_text_over_blur",
+    "voiceover": "Mất cả buổi sáng chỉ để tìm khóa AI phù hợp?",
+    "on_screen_text": "Tìm khóa AI mất buổi?",
+    "stat": null,
+    "key_point": "Không còn mất thời gian tìm khóa phù hợp",
+    "icon": "filter",
+    "visual": {
+     "mode": "recording",
+     "page": "https://aisoeasy.co/demo-user/app",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://aisoeasy.co/demo-user/app",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 4650,
+    "chapter_id": null
+   },
+   {
+    "id": "s2",
+    "type": "feature_demo",
+    "layout": "full_screen",
+    "feature": "c1",
+    "voiceover": "Mở một trang, thấy ngay khóa AI cho dân marketing.",
+    "on_screen_text": "Khóa AI đúng việc",
+    "stat": null,
+    "key_point": "Trang bắt đầu gom mọi thứ cần học vào một chỗ",
+    "icon": "globe",
+    "visual": {
+     "mode": "recording",
+     "page": "https://aisoeasy.co/demo-user/app",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://aisoeasy.co/demo-user/app",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "scroll",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": null,
+       "text": null,
+       "ms": 600,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 4250,
+    "chapter_id": "c1"
+   },
+   {
+    "id": "s3",
+    "type": "feature_demo",
+    "layout": "full_screen",
+    "feature": "c2",
+    "voiceover": "Vào Home, thấy khóa AI nổi bật đúng việc của bạn.",
+    "on_screen_text": "Khóa AI đúng việc",
+    "stat": null,
+    "key_point": "Dashboard cá nhân hóa hiện khóa học nổi bật",
+    "icon": "sparkles",
+    "visual": {
+     "mode": "recording",
+     "page": "https://aisoeasy.co/demo-user/app",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://aisoeasy.co/demo-user/app",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "click",
+       "target": "Home",
+       "selector": null,
+       "locator": {
+        "role": "button",
+        "name": "Home",
+        "text": null,
+        "css": "button[aria-label=\"Home\"]",
+        "nth": null,
+        "tag": "button",
+        "fingerprint": "button||0.30,0.32",
+        "bbox": {
+         "x": 417.0,
+         "y": 642.0,
+         "w": 32.0,
+         "h": 40.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 4650,
+    "chapter_id": "c2"
+   },
+   {
+    "id": "s4",
+    "type": "feature_demo",
+    "layout": "full_screen",
+    "feature": "c3",
+    "voiceover": "Mục Learn chỉ rõ hôm nay làm 1 bài, nhận điểm và lên cấp.",
+    "on_screen_text": "1 bài hôm nay",
+    "stat": null,
+    "key_point": "Mục Learn hiện nhiệm vụ hôm nay và động lực học",
+    "icon": "chart",
+    "visual": {
+     "mode": "recording",
+     "page": "https://aisoeasy.co/demo-user/app",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://aisoeasy.co/demo-user/app",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "click",
+       "target": "Learn",
+       "selector": null,
+       "locator": {
+        "role": "link",
+        "name": "Learn",
+        "text": "Learn",
+        "css": "nav a",
+        "nth": 1,
+        "tag": "a",
+        "fingerprint": "a|learn|0.41,0.72",
+        "bbox": {
+         "x": 582.0,
+         "y": 1469.0,
+         "w": 31.0,
+         "h": 44.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 5850,
+    "chapter_id": "c3"
+   },
+   {
+    "id": "s5",
+    "type": "feature_demo",
+    "layout": "full_screen",
+    "feature": "c4",
+    "voiceover": "Chọn khóa AI for Marketing & Productivity, xem tiến độ và vào bài đầu tiên.",
+    "on_screen_text": "Tiến độ 0/6 bài",
+    "stat": null,
+    "key_point": "Mở khóa gợi ý, học xong là cập nhật tiến độ",
+    "icon": "bolt",
+    "visual": {
+     "mode": "recording",
+     "page": "https://aisoeasy.co/demo-user/app/learn",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://aisoeasy.co/demo-user/app/learn",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "click",
+       "target": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+       "selector": null,
+       "locator": {
+        "role": "button",
+        "name": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+        "text": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+        "css": "main button",
+        "nth": 5,
+        "tag": "button",
+        "fingerprint": "button|ai for marketing & productivity marketing studio and new ai models help boost wo|0.50,0.29",
+        "bbox": {
+         "x": 417.0,
+         "y": 563.0,
+         "w": 606.0,
+         "h": 120.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 6250,
+    "chapter_id": "c4"
+   },
+   {
+    "id": "s6",
+    "type": "cta",
+    "layout": "button_pulse",
+    "voiceover": "Dùng thử miễn phí workspace doanh nghiệp tại aisoeasy.co — bắt đầu ngay.",
+    "on_screen_text": "Miễn phí, bắt đầu ngay",
+    "stat": null,
+    "key_point": "Dùng thử miễn phí workspace doanh nghiệp trên trình duyệt",
+    "icon": "check",
+    "visual": {
+     "mode": "recording",
+     "page": "https://aisoeasy.co/demo-user/app",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://aisoeasy.co/demo-user/app",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 5450,
+    "chapter_id": null
+   }
+  ]
+ },
+ "assets": {
+  "s1": {
+   "captions": [
+    {
+     "text": "Mất cả buổi sáng chỉ",
+     "start_ms": 0,
+     "end_ms": 2133,
+     "words": [
+      {
+       "text": "Mất",
+       "start_ms": 0,
+       "end_ms": 400
+      },
+      {
+       "text": "cả",
+       "start_ms": 400,
+       "end_ms": 667
+      },
+      {
+       "text": "buổi",
+       "start_ms": 667,
+       "end_ms": 1200
+      },
+      {
+       "text": "sáng",
+       "start_ms": 1200,
+       "end_ms": 1733
+      },
+      {
+       "text": "chỉ",
+       "start_ms": 1733,
+       "end_ms": 2133
+      }
+     ]
+    },
+    {
+     "text": "để tìm khóa",
+     "start_ms": 2133,
+     "end_ms": 3333,
+     "words": [
+      {
+       "text": "để",
+       "start_ms": 2133,
+       "end_ms": 2400
+      },
+      {
+       "text": "tìm",
+       "start_ms": 2400,
+       "end_ms": 2800
+      },
+      {
+       "text": "khóa",
+       "start_ms": 2800,
+       "end_ms": 3333
+      }
+     ]
+    },
+    {
+     "text": "AI phù hợp?",
+     "start_ms": 3333,
+     "end_ms": 4400,
+     "words": [
+      {
+       "text": "AI",
+       "start_ms": 3333,
+       "end_ms": 3600
+      },
+      {
+       "text": "phù",
+       "start_ms": 3600,
+       "end_ms": 4000
+      },
+      {
+       "text": "hợp?",
+       "start_ms": 4000,
+       "end_ms": 4400
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\jobs\\j70a1281ec4\\produce\\s1.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 2000,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [],
+   "focus_log": [],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 417,
+      "y": 128,
+      "w": 176,
+      "h": 28
+     },
+     "framing": "medium",
+     "hold_ms": 2000,
+     "source": "rule",
+     "reason": "hook: khung gần",
+     "item_id": "e7pf155",
+     "text": "My Learning",
+     "item_kind": "heading",
+     "region": "main"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 2133,
+     "change": "cut"
+    },
+    {
+     "from_ms": 2133,
+     "to_ms": 3333,
+     "change": "action"
+    },
+    {
+     "from_ms": 3333,
+     "to_ms": 4650,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 3333,
+     "scale": 0.08
+    }
+   ]
+  },
+  "s2": {
+   "captions": [
+    {
+     "text": "Mở một trang,",
+     "start_ms": 0,
+     "end_ms": 1026,
+     "words": [
+      {
+       "text": "Mở",
+       "start_ms": 0,
+       "end_ms": 205
+      },
+      {
+       "text": "một",
+       "start_ms": 205,
+       "end_ms": 513
+      },
+      {
+       "text": "trang,",
+       "start_ms": 513,
+       "end_ms": 1026
+      }
+     ]
+    },
+    {
+     "text": "thấy ngay khóa AI",
+     "start_ms": 1026,
+     "end_ms": 2462,
+     "words": [
+      {
+       "text": "thấy",
+       "start_ms": 1026,
+       "end_ms": 1436
+      },
+      {
+       "text": "ngay",
+       "start_ms": 1436,
+       "end_ms": 1846
+      },
+      {
+       "text": "khóa",
+       "start_ms": 1846,
+       "end_ms": 2256
+      },
+      {
+       "text": "AI",
+       "start_ms": 2256,
+       "end_ms": 2462
+      }
+     ]
+    },
+    {
+     "text": "cho dân marketing.",
+     "start_ms": 2462,
+     "end_ms": 4000,
+     "words": [
+      {
+       "text": "cho",
+       "start_ms": 2462,
+       "end_ms": 2769
+      },
+      {
+       "text": "dân",
+       "start_ms": 2769,
+       "end_ms": 3077
+      },
+      {
+       "text": "marketing.",
+       "start_ms": 3077,
+       "end_ms": 4000
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\jobs\\j70a1281ec4\\produce\\s2.mp4",
+   "start_offset_ms": 5905,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 9630,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 6358,
+     "x": 720,
+     "y": 513,
+     "type": "scroll"
+    }
+   ],
+   "focus_log": [],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 5905,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 1026,
+     "source": "plan",
+     "reason": "Mở đầu clip, cho người xem định hướng toàn trang trước khi tập trung.",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 6931,
+     "bbox": {
+      "x": 421,
+      "y": 168,
+      "w": 280,
+      "h": 20
+     },
+     "framing": "medium",
+     "hold_ms": 2699,
+     "source": "plan",
+     "reason": "Lời đọc nhắc 'cho dân marketing', tiêu điểm giữ ở khóa AI for Marketing & Productivity.",
+     "item_id": "e7pf19",
+     "text": "AI for Marketing & Productivity",
+     "item_kind": "heading",
+     "region": "main"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 1026,
+     "change": "cut"
+    },
+    {
+     "from_ms": 1026,
+     "to_ms": 2462,
+     "change": "focus"
+    },
+    {
+     "from_ms": 2462,
+     "to_ms": 4250,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 2462,
+     "scale": 0.08
+    }
+   ]
+  },
+  "s3": {
+   "captions": [
+    {
+     "text": "Vào Home, thấy khóa AI",
+     "start_ms": 0,
+     "end_ms": 2022,
+     "words": [
+      {
+       "text": "Vào",
+       "start_ms": 0,
+       "end_ms": 357
+      },
+      {
+       "text": "Home,",
+       "start_ms": 357,
+       "end_ms": 832
+      },
+      {
+       "text": "thấy",
+       "start_ms": 832,
+       "end_ms": 1308
+      },
+      {
+       "text": "khóa",
+       "start_ms": 1308,
+       "end_ms": 1784
+      },
+      {
+       "text": "AI",
+       "start_ms": 1784,
+       "end_ms": 2022
+      }
+     ]
+    },
+    {
+     "text": "nổi bật đúng",
+     "start_ms": 2022,
+     "end_ms": 3211,
+     "words": [
+      {
+       "text": "nổi",
+       "start_ms": 2022,
+       "end_ms": 2378
+      },
+      {
+       "text": "bật",
+       "start_ms": 2378,
+       "end_ms": 2735
+      },
+      {
+       "text": "đúng",
+       "start_ms": 2735,
+       "end_ms": 3211
+      }
+     ]
+    },
+    {
+     "text": "việc của bạn.",
+     "start_ms": 3211,
+     "end_ms": 4400,
+     "words": [
+      {
+       "text": "việc",
+       "start_ms": 3211,
+       "end_ms": 3686
+      },
+      {
+       "text": "của",
+       "start_ms": 3686,
+       "end_ms": 4043
+      },
+      {
+       "text": "bạn.",
+       "start_ms": 4043,
+       "end_ms": 4400
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\jobs\\j70a1281ec4\\produce\\s3.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 4346,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 2288,
+     "x": 433,
+     "y": 32,
+     "type": "click"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 2293,
+     "bbox": {
+      "x": 417,
+      "y": 12,
+      "w": 32,
+      "h": 40
+     },
+     "kind": "click",
+     "hold_ms": 1500
+    }
+   ],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 1000,
+     "source": "rule",
+     "reason": "",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 1000,
+     "bbox": {
+      "x": 413,
+      "y": 7,
+      "w": 40,
+      "h": 50
+     },
+     "framing": "tight",
+     "hold_ms": 3346,
+     "source": "rule",
+     "reason": "khớp lời đọc / đang thao tác",
+     "item_id": "e7pf2",
+     "text": "Home",
+     "item_kind": "button",
+     "region": "header"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 2022,
+     "change": "cut"
+    },
+    {
+     "from_ms": 2022,
+     "to_ms": 3211,
+     "change": "punch"
+    },
+    {
+     "from_ms": 3211,
+     "to_ms": 4650,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 2022,
+     "scale": 0.08
+    },
+    {
+     "t_ms": 3211,
+     "scale": 0.1
+    }
+   ],
+   "same_page": true
+  },
+  "s4": {
+   "captions": [
+    {
+     "text": "Mục Learn chỉ rõ hôm",
+     "start_ms": 0,
+     "end_ms": 2133,
+     "words": [
+      {
+       "text": "Mục",
+       "start_ms": 0,
+       "end_ms": 400
+      },
+      {
+       "text": "Learn",
+       "start_ms": 400,
+       "end_ms": 1067
+      },
+      {
+       "text": "chỉ",
+       "start_ms": 1067,
+       "end_ms": 1467
+      },
+      {
+       "text": "rõ",
+       "start_ms": 1467,
+       "end_ms": 1733
+      },
+      {
+       "text": "hôm",
+       "start_ms": 1733,
+       "end_ms": 2133
+      }
+     ]
+    },
+    {
+     "text": "nay làm 1 bài,",
+     "start_ms": 2133,
+     "end_ms": 3467,
+     "words": [
+      {
+       "text": "nay",
+       "start_ms": 2133,
+       "end_ms": 2533
+      },
+      {
+       "text": "làm",
+       "start_ms": 2533,
+       "end_ms": 2933
+      },
+      {
+       "text": "1",
+       "start_ms": 2933,
+       "end_ms": 3067
+      },
+      {
+       "text": "bài,",
+       "start_ms": 3067,
+       "end_ms": 3467
+      }
+     ]
+    },
+    {
+     "text": "nhận điểm và lên cấp.",
+     "start_ms": 3467,
+     "end_ms": 5600,
+     "words": [
+      {
+       "text": "nhận",
+       "start_ms": 3467,
+       "end_ms": 4000
+      },
+      {
+       "text": "điểm",
+       "start_ms": 4000,
+       "end_ms": 4533
+      },
+      {
+       "text": "và",
+       "start_ms": 4533,
+       "end_ms": 4800
+      },
+      {
+       "text": "lên",
+       "start_ms": 4800,
+       "end_ms": 5200
+      },
+      {
+       "text": "cấp.",
+       "start_ms": 5200,
+       "end_ms": 5600
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\jobs\\j70a1281ec4\\produce\\s4.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 3696,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 2400,
+     "x": 597,
+     "y": 860,
+     "type": "click"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 2400,
+     "bbox": {
+      "x": 582,
+      "y": 838,
+      "w": 31,
+      "h": 44
+     },
+     "kind": "click",
+     "hold_ms": 1500
+    }
+   ],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 494,
+     "source": "rule",
+     "reason": "",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 494,
+     "bbox": {
+      "x": 421,
+      "y": 486,
+      "w": 598,
+      "h": 142
+     },
+     "framing": "medium",
+     "hold_ms": 3202,
+     "source": "rule",
+     "reason": "",
+     "item_id": "e7pf32",
+     "text": "Learning streak 0 days in a row Record: 0 days Study now to keep your streak",
+     "item_kind": "card",
+     "region": "main"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 2133,
+     "change": "cut"
+    },
+    {
+     "from_ms": 2133,
+     "to_ms": 3467,
+     "change": "punch"
+    },
+    {
+     "from_ms": 3467,
+     "to_ms": 5850,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 2133,
+     "scale": 0.08
+    },
+    {
+     "t_ms": 3467,
+     "scale": 0.1
+    }
+   ],
+   "same_page": true
+  },
+  "s5": {
+   "captions": [
+    {
+     "text": "Chọn khóa AI for Marketing",
+     "start_ms": 0,
+     "end_ms": 2237,
+     "words": [
+      {
+       "text": "Chọn",
+       "start_ms": 0,
+       "end_ms": 407
+      },
+      {
+       "text": "khóa",
+       "start_ms": 407,
+       "end_ms": 814
+      },
+      {
+       "text": "AI",
+       "start_ms": 814,
+       "end_ms": 1017
+      },
+      {
+       "text": "for",
+       "start_ms": 1017,
+       "end_ms": 1322
+      },
+      {
+       "text": "Marketing",
+       "start_ms": 1322,
+       "end_ms": 2237
+      }
+     ]
+    },
+    {
+     "text": "& Productivity, xem tiến độ",
+     "start_ms": 2237,
+     "end_ms": 4475,
+     "words": [
+      {
+       "text": "&",
+       "start_ms": 2237,
+       "end_ms": 2339
+      },
+      {
+       "text": "Productivity,",
+       "start_ms": 2339,
+       "end_ms": 3559
+      },
+      {
+       "text": "xem",
+       "start_ms": 3559,
+       "end_ms": 3864
+      },
+      {
+       "text": "tiến",
+       "start_ms": 3864,
+       "end_ms": 4271
+      },
+      {
+       "text": "độ",
+       "start_ms": 4271,
+       "end_ms": 4475
+      }
+     ]
+    },
+    {
+     "text": "và vào bài đầu tiên.",
+     "start_ms": 4475,
+     "end_ms": 6000,
+     "words": [
+      {
+       "text": "và",
+       "start_ms": 4475,
+       "end_ms": 4678
+      },
+      {
+       "text": "vào",
+       "start_ms": 4678,
+       "end_ms": 4983
+      },
+      {
+       "text": "bài",
+       "start_ms": 4983,
+       "end_ms": 5288
+      },
+      {
+       "text": "đầu",
+       "start_ms": 5288,
+       "end_ms": 5593
+      },
+      {
+       "text": "tiên.",
+       "start_ms": 5593,
+       "end_ms": 6000
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\jobs\\j70a1281ec4\\produce\\s5.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 2300,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 2300,
+     "x": 720,
+     "y": 623,
+     "type": "click"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 2300,
+     "bbox": {
+      "x": 417,
+      "y": 563,
+      "w": 606,
+      "h": 120
+     },
+     "kind": "click",
+     "hold_ms": 1500
+    }
+   ],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 2300,
+     "source": "plan",
+     "reason": "Mở đầu định hướng toàn cảnh trang My Learning trước khi vào thao tác.",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 2237,
+     "change": "cut"
+    },
+    {
+     "from_ms": 2237,
+     "to_ms": 4475,
+     "change": "punch"
+    },
+    {
+     "from_ms": 4475,
+     "to_ms": 6250,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 2237,
+     "scale": 0.08
+    },
+    {
+     "t_ms": 4475,
+     "scale": 0.1
+    }
+   ],
+   "same_page": true
+  },
+  "s6": {
+   "captions": [
+    {
+     "text": "Dùng thử miễn phí workspace",
+     "start_ms": 0,
+     "end_ms": 2062,
+     "words": [
+      {
+       "text": "Dùng",
+       "start_ms": 0,
+       "end_ms": 359
+      },
+      {
+       "text": "thử",
+       "start_ms": 359,
+       "end_ms": 628
+      },
+      {
+       "text": "miễn",
+       "start_ms": 628,
+       "end_ms": 986
+      },
+      {
+       "text": "phí",
+       "start_ms": 986,
+       "end_ms": 1255
+      },
+      {
+       "text": "workspace",
+       "start_ms": 1255,
+       "end_ms": 2062
+      }
+     ]
+    },
+    {
+     "text": "doanh nghiệp tại aisoeasy.co —",
+     "start_ms": 2062,
+     "end_ms": 4303,
+     "words": [
+      {
+       "text": "doanh",
+       "start_ms": 2062,
+       "end_ms": 2510
+      },
+      {
+       "text": "nghiệp",
+       "start_ms": 2510,
+       "end_ms": 3048
+      },
+      {
+       "text": "tại",
+       "start_ms": 3048,
+       "end_ms": 3317
+      },
+      {
+       "text": "aisoeasy.co",
+       "start_ms": 3317,
+       "end_ms": 4214
+      },
+      {
+       "text": "—",
+       "start_ms": 4214,
+       "end_ms": 4303
+      }
+     ]
+    },
+    {
+     "text": "bắt đầu ngay.",
+     "start_ms": 4303,
+     "end_ms": 5200,
+     "words": [
+      {
+       "text": "bắt",
+       "start_ms": 4303,
+       "end_ms": 4572
+      },
+      {
+       "text": "đầu",
+       "start_ms": 4572,
+       "end_ms": 4841
+      },
+      {
+       "text": "ngay.",
+       "start_ms": 4841,
+       "end_ms": 5200
+      }
+     ]
+    }
+   ],
+   "screenshot_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\jobs\\j70a1281ec4\\produce\\s6.png",
+   "clip_width": 1440,
+   "clip_height": 900,
+   "focus_log": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 417,
+      "y": 128,
+      "w": 176,
+      "h": 28
+     },
+     "kind": "section",
+     "hold_ms": 0
+    }
+   ],
+   "cta_domain": "aisoeasy.co"
+  }
+ }
+}

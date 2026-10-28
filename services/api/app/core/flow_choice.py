@@ -8,6 +8,7 @@ Answers of the UserResponse (all strings): selected_flows (ordered id list), flo
 from dataclasses import dataclass, field
 from typing import Literal
 
+from app.core.flow_value import quality_of_flow
 from app.core.interaction import make_request
 from app.core.shared_demo import SHARED_DEMO_REASON, is_shared_demo
 from app.schemas.generated.core_flow import CoreFlow
@@ -51,6 +52,7 @@ def build_request(
     default: list[str] | None = None,
     notice: str = "",
     infeasible: dict[str, str] | None = None,
+    empty_warning: str | None = None,
 ) -> InteractionRequest:
     message = (
         "Chọn luồng chức năng chính sẽ xuất hiện trong video "
@@ -70,6 +72,8 @@ def build_request(
             else default_flow_ids([f for f in flows if f.id not in (infeasible or {})]),
             "submit_blocked_reason": blocked,
             "infeasible": infeasible or {},
+            "quality": {f.id: quality_of_flow(f).model_dump() for f in flows},
+            "empty_warning": empty_warning,
         },
     )
 

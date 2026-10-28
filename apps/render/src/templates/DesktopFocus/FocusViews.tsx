@@ -5,8 +5,10 @@ import {
   CAMERA_CONFIG,
   cursorAt,
   buildCameraPath,
+  buildShotPath,
   type CameraPath,
   focusFromClicks,
+  fullView,
   insideClip,
   lerpView,
   pickFocus,
@@ -44,7 +46,27 @@ import {
 } from "./finish";
 import { CAPTION_STRIP, MEDIA, OVERLAY } from "./layout";
 
-const FRAME = { w: MEDIA.w, h: MEDIA.h };
+/**
+ * What differs between the templates that share these views: the media frame, the room the
+ * captions take on it, the text laid over it, and whether the camera ever moves on its own.
+ * desktop_focus (the default here) crops a 4:5 frame with a following camera; desktop_frame is a
+ * 16:9 frame with a still camera (see ../DesktopFrame).
+ */
+export type Geometry = {
+  frame: { w: number; h: number };
+  captionStrip: number;
+  overlay: { topGradient: number; textTop: number; textSize: number; ctaBottom: number };
+  /** true: no drift, no punch-ins, no Ken Burns - the camera only moves where the shot plan says */
+  still: boolean;
+};
+export const FOCUS_GEOMETRY: Geometry = {
+  frame: { w: MEDIA.w, h: MEDIA.h },
+  captionStrip: CAPTION_STRIP.height,
+  overlay: { ...OVERLAY, textSize: 58 },
+  still: false,
+};
+export const GeometryContext = createContext<Geometry>(FOCUS_GEOMETRY);
+const useGeometry = () => useContext(GeometryContext);
 
 /** The planned camera of every scene (built once per video in MediaStack, so scenes can continue each other). */
 export const CameraContext = createContext<Record<string, CameraPath>>({});
@@ -52,9 +74,14 @@ export const CameraContext = createContext<Record<string, CameraPath>>({});
 /** The scene's planned camera; a scene rendered alone (a still, a test) plans its own. */
 function useScenePath(sceneId: string, assets: SceneAssets, closeOpening: boolean): CameraPath {
   const planned = useContext(CameraContext)[sceneId];
+  const { frame: FRAME, still } = useGeometry();
   const clip = clipSize(assets);
   return useMemo(
-    () => planned ?? buildCameraPath(focusOf(assets), clip, FRAME, { closeOpening }),
+    () =>
+      planned ??
+      (still
+        ? buildShotPath(assets.zoom_shots ?? [], clip, FRAME)
+        : buildCameraPath(focusOf(assets), clip, FRAME, { closeOpening })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [planned, assets, closeOpening],
   );
@@ -72,6 +99,7 @@ export const FocusClip: React.FC<{ sceneId: string; assets: SceneAssets; duratio
   closeOpening = false,
 }) => {
   const path = useScenePath(sceneId, assets, closeOpening);
+  const { frame: FRAME, still } = useGeometry();
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { highlight } = useTheme();
@@ -93,7 +121,7 @@ export const FocusClip: React.FC<{ sceneId: string; assets: SceneAssets; duratio
   const startFrom = Math.round((startMs / 1000) * fps);
 
   // a punch-in never stacks on a camera move: it fades out before one and returns after it
-  const punch = 1 + (punchFactor(frame, assets.punches ?? [], fps) - 1) * quietWeight(tCam, path.moves);
+  const punch = still ? 1 : 1 + (punchFactor(frame, assets.punches ?? [], fps) - 1) * quietWeight(tCam, path.moves);
   return (
     <AbsoluteFill style={{ overflow: "hidden", background: "#000" }}>
       <AbsoluteFill style={{ transform: `scale(${punch})`, transformOrigin: "50% 45%" }}>
@@ -167,6 +195,7 @@ export const FocusClip: React.FC<{ sceneId: string; assets: SceneAssets; duratio
 export const FocusShot: React.FC<{ assets: SceneAssets; durationInFrames: number }> = ({ assets, durationInFrames }) => {
   const frame = useCurrentFrame();
   const { motion } = useTheme();
+  const { frame: FRAME, still } = useGeometry();
   const clip = clipSize(assets);
   const progress = interpolate(frame, [0, durationInFrames], [0, 1], { extrapolateRight: "clamp" });
   const reach = 1 + 4 * motion.kenBurns; // how far in it may go (cover units)
@@ -176,7 +205,8 @@ export const FocusShot: React.FC<{ assets: SceneAssets; durationInFrames: number
     ? targetView(first, clip, FRAME, { ...CAMERA_CONFIG, maxZoom: Math.min(CAMERA_CONFIG.maxZoom, reach) })
     : insideClip(clip.w / 2, clip.h / 2, 1 + 2 * motion.kenBurns, clip, FRAME);
   const ease = progress * progress * (3 - 2 * progress);
-  const { scale, translateX, translateY } = viewTransform(lerpView(start, end, ease), FRAME);
+  const view = still ? fullView(clip, FRAME) : lerpView(start, end, ease);
+  const { scale, translateX, translateY } = viewTransform(view, FRAME);
   return (
     <AbsoluteFill style={{ overflow: "hidden", background: "#000" }}>
       <Img
@@ -212,6 +242,7 @@ const TopText: React.FC<{ text: string | null | undefined; assets?: SceneAssets 
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { fontFamily, highlight } = useTheme();
+  const { overlay } = useGeometry();
   if (!text) return null;
   const anchor = anchorFrame(text, assets?.captions ?? [], fps, 6);
   const words = kineticWords(text, anchor, fps);
@@ -223,7 +254,7 @@ const TopText: React.FC<{ text: string | null | undefined; assets?: SceneAssets 
           left: 0,
           right: 0,
           top: 0,
-          height: OVERLAY.topGradient,
+          height: overlay.topGradient,
           background: "linear-gradient(to bottom, rgba(5,7,13,0.78), rgba(5,7,13,0))",
         }}
       />
@@ -232,11 +263,11 @@ const TopText: React.FC<{ text: string | null | undefined; assets?: SceneAssets 
           position: "absolute",
           left: 48,
           right: 48,
-          top: OVERLAY.textTop,
+          top: overlay.textTop,
           textAlign: "center",
           fontFamily,
           fontWeight: 800,
-          fontSize: 58,
+          fontSize: overlay.textSize,
           lineHeight: 1.2,
           color: "#fff",
           textShadow: "0 4px 20px rgba(0,0,0,0.7)",
@@ -269,13 +300,14 @@ const CtaButton: React.FC<{ text: string; domain?: string; durationInFrames: num
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { accent, fontFamily, motion } = useTheme();
+  const { overlay } = useGeometry();
   const from = Math.round((durationInFrames * 2) / 3);
   if (frame < from) return null;
   const pop = spring({ frame: frame - from, fps, config: motion.spring, durationInFrames: 18 });
   const pulse = 1 + 0.045 * Math.sin((frame / fps) * Math.PI * 2 * 1.4);
   const glow = 0.45 + 0.35 * (0.5 + 0.5 * Math.sin((frame / fps) * Math.PI * 2 * 1.4));
   return (
-    <div style={{ position: "absolute", left: 0, right: 0, bottom: OVERLAY.ctaBottom, display: "flex", justifyContent: "center", opacity: Math.min(1, pop * 2) }}>
+    <div style={{ position: "absolute", left: 0, right: 0, bottom: overlay.ctaBottom, display: "flex", justifyContent: "center", opacity: Math.min(1, pop * 2) }}>
       <div
         style={{
           padding: "22px 60px",
@@ -301,7 +333,7 @@ const CtaButton: React.FC<{ text: string; domain?: string; durationInFrames: num
 };
 
 /** The focus box on screen right now (frame pixels), to keep the callout from covering it. */
-function focusOnScreen(path: CameraPath, assets: SceneAssets, frame: number, fps: number, durationInFrames: number): Rect | null {
+function focusOnScreen(path: CameraPath, assets: SceneAssets, frame: number, fps: number, durationInFrames: number, FRAME: { w: number; h: number }): Rect | null {
   if (!hasClip(assets)) return null;
   const clip = clipSize(assets);
   const { startMs, rate, lastFrame } = clipPlayback(assets, fps, durationInFrames);
@@ -328,14 +360,15 @@ const StatCallout: React.FC<{ scene: ViewProps["scene"]; assets: SceneAssets; du
   const { fps } = useVideoConfig();
   const { highlight, fontFamily, motion } = useTheme();
   const path = useScenePath(scene.id, assets, scene.type === "hook");
+  const { frame: FRAME, captionStrip } = useGeometry();
   const stat = scene.stat;
   if (!stat) return null;
   const start = statStartFrame(durationInFrames);
   if (frame < start) return null;
   const pop = spring({ frame: frame - start, fps, config: motion.spring, durationInFrames: STAT_POP_FRAMES });
-  const focus = focusOnScreen(path, assets, frame, fps, durationInFrames);
-  const corner = pickStatCorner(focus, FRAME, STAT_BOX, 28, CAPTION_STRIP.height);
-  const at = cornerRect(corner, FRAME, STAT_BOX, 28, CAPTION_STRIP.height);
+  const focus = focusOnScreen(path, assets, frame, fps, durationInFrames, FRAME);
+  const corner = pickStatCorner(focus, FRAME, STAT_BOX, 28, captionStrip);
+  const at = cornerRect(corner, FRAME, STAT_BOX, 28, captionStrip);
   return (
     <div
       style={{
@@ -412,6 +445,7 @@ const CtaButtonStatic: React.FC<{ text: string }> = ({ text }) => {
 const SplitFrames: React.FC<{ beforeUrl: string; afterUrl: string; before: string; after: string }> = ({ beforeUrl, afterUrl, before, after }) => {
   const frame = useCurrentFrame();
   const { primary, fontFamily } = useTheme();
+  const { frame: FRAME } = useGeometry();
   const { left, right } = splitHalves(FRAME);
   const appear = Math.min(1, frame / POP_FRAMES);
   const half = (r: Rect, url: string, label: string, after: boolean): React.ReactNode => (

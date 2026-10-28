@@ -1,0 +1,324 @@
+{
+  "title": "Bắt đầu ngày học với dashboard cá nhân hóa",
+  "goal": "tutorial",
+  "aspect_ratio": "9:16",
+  "target_duration_s": 30,
+  "template": "desktop_focus",
+  "capture": {
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900
+  },
+  "flow_id": "flow-learn-dashboard-daily",
+  "badge": "UPSKILL AI MỖI NGÀY",
+  "headline": "Mở dashboard, biết ngay hôm nay học gì",
+  "headline_highlight": "hôm nay học gì",
+  "framework": "pain_journey_result",
+  "hook_options": [
+    {
+      "kind": "pain_question",
+      "voiceover": "Mất cả buổi sáng chỉ để tìm khóa AI phù hợp?",
+      "on_screen_text": "Tìm khóa AI mất buổi?"
+    },
+    {
+      "kind": "result_first",
+      "voiceover": "Mỗi sáng mở lên là biết ngay hôm nay học gì.",
+      "on_screen_text": "Biết ngay hôm nay học"
+    }
+  ],
+  "theme": {
+    "primary": "#58E600",
+    "accent": "#A71AFF",
+    "font": "Be Vietnam Pro",
+    "logo_asset": "out\\jobs\\j70a1281ec4\\theme\\logo.png",
+    "motion_preset": "energetic",
+    "caption_style": "karaoke",
+    "music_mood": "upbeat",
+    "voice_id": "vi_female_01",
+    "language": "vi"
+  },
+  "scenes": [
+    {
+      "id": "s1",
+      "type": "hook",
+      "layout": "big_text_over_blur",
+      "voiceover": "Mất cả buổi sáng chỉ để tìm khóa AI phù hợp?",
+      "on_screen_text": "Tìm khóa AI mất buổi?",
+      "stat": null,
+      "key_point": "Không còn mất thời gian tìm khóa phù hợp",
+      "icon": "filter",
+      "visual": {
+        "mode": "recording",
+        "page": "https://aisoeasy.co/demo-user/app",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://aisoeasy.co/demo-user/app",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": null
+    },
+    {
+      "id": "s2",
+      "type": "feature_demo",
+      "layout": "full_screen",
+      "feature": "c1",
+      "voiceover": "Mở một trang, thấy ngay khóa AI cho dân marketing.",
+      "on_screen_text": "Khóa AI đúng việc",
+      "stat": null,
+      "key_point": "Trang bắt đầu gom mọi thứ cần học vào một chỗ",
+      "icon": "globe",
+      "visual": {
+        "mode": "recording",
+        "page": "https://aisoeasy.co/demo-user/app",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://aisoeasy.co/demo-user/app",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          },
+          {
+            "do": "scroll",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": null,
+            "text": null,
+            "ms": 600,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": "c1"
+    },
+    {
+      "id": "s3",
+      "type": "feature_demo",
+      "layout": "full_screen",
+      "feature": "c2",
+      "voiceover": "Vào Home, thấy khóa AI nổi bật đúng việc của bạn.",
+      "on_screen_text": "Khóa AI đúng việc",
+      "stat": null,
+      "key_point": "Dashboard cá nhân hóa hiện khóa học nổi bật",
+      "icon": "sparkles",
+      "visual": {
+        "mode": "recording",
+        "page": "https://aisoeasy.co/demo-user/app",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://aisoeasy.co/demo-user/app",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          },
+          {
+            "do": "click",
+            "target": "Home",
+            "selector": null,
+            "locator": {
+              "role": "button",
+              "name": "Home",
+              "text": null,
+              "css": "button[aria-label=\"Home\"]",
+              "nth": null,
+              "tag": "button",
+              "fingerprint": "button||0.30,0.32",
+              "bbox": {
+                "x": 417.0,
+                "y": 642.0,
+                "w": 32.0,
+                "h": 40.0
+              }
+            },
+            "file": null,
+            "url": null,
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": "c2"
+    },
+    {
+      "id": "s4",
+      "type": "feature_demo",
+      "layout": "full_screen",
+      "feature": "c3",
+      "voiceover": "Mục Learn chỉ rõ hôm nay làm 1 bài, nhận điểm và lên cấp.",
+      "on_screen_text": "1 bài hôm nay",
+      "stat": null,
+      "key_point": "Mục Learn hiện nhiệm vụ hôm nay và động lực học",
+      "icon": "chart",
+      "visual": {
+        "mode": "recording",
+        "page": "https://aisoeasy.co/demo-user/app",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://aisoeasy.co/demo-user/app",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          },
+          {
+            "do": "click",
+            "target": "Learn",
+            "selector": null,
+            "locator": {
+              "role": "link",
+              "name": "Learn",
+              "text": "Learn",
+              "css": "nav a",
+              "nth": 1,
+              "tag": "a",
+              "fingerprint": "a|learn|0.41,0.72",
+              "bbox": {
+                "x": 582.0,
+                "y": 1469.0,
+                "w": 31.0,
+                "h": 44.0
+              }
+            },
+            "file": null,
+            "url": null,
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": "c3"
+    },
+    {
+      "id": "s5",
+      "type": "feature_demo",
+      "layout": "full_screen",
+      "feature": "c4",
+      "voiceover": "Chọn khóa AI for Marketing & Productivity, xem tiến độ và vào bài đầu tiên.",
+      "on_screen_text": "Tiến độ 0/6 bài",
+      "stat": null,
+      "key_point": "Mở khóa gợi ý, học xong là cập nhật tiến độ",
+      "icon": "bolt",
+      "visual": {
+        "mode": "recording",
+        "page": "https://aisoeasy.co/demo-user/app/learn",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://aisoeasy.co/demo-user/app/learn",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          },
+          {
+            "do": "click",
+            "target": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+            "selector": null,
+            "locator": {
+              "role": "button",
+              "name": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+              "text": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+              "css": "main button",
+              "nth": 5,
+              "tag": "button",
+              "fingerprint": "button|ai for marketing & productivity marketing studio and new ai models help boost wo|0.50,0.29",
+              "bbox": {
+                "x": 417.0,
+                "y": 563.0,
+                "w": 606.0,
+                "h": 120.0
+              }
+            },
+            "file": null,
+            "url": null,
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": "c4"
+    },
+    {
+      "id": "s6",
+      "type": "cta",
+      "layout": "button_pulse",
+      "voiceover": "Dùng thử miễn phí workspace doanh nghiệp tại aisoeasy.co — bắt đầu ngay.",
+      "on_screen_text": "Miễn phí, bắt đầu ngay",
+      "stat": null,
+      "key_point": "Dùng thử miễn phí workspace doanh nghiệp trên trình duyệt",
+      "icon": "check",
+      "visual": {
+        "mode": "recording",
+        "page": "https://aisoeasy.co/demo-user/app",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://aisoeasy.co/demo-user/app",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": null
+    }
+  ]
+}

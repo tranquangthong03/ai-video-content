@@ -1,0 +1,52 @@
+{
+  "flows": [
+    {
+      "id": "flow-learn-dashboard-daily",
+      "title": "Bắt đầu ngày học với dashboard cá nhân hóa",
+      "persona": "Nhân viên văn phòng / nhân viên marketing muốn nâng kỹ năng AI",
+      "goal": "Biết hôm nay cần học gì và bắt đầu nhiệm vụ/challenge trong ngày",
+      "start_url": "https://aisoeasy.co/demo-user/app",
+      "expected_steps": [
+        "Vào app, thấy lời chào kèm tên và featured course với tiến độ bài học",
+        "Xem dải Today's picks để chọn khóa gợi ý theo ngành",
+        "Xem Today's Challenge với vòng tiến độ % và chuỗi ngày học",
+        "Bấm vào challenge/khóa để mở bài học và bắt đầu học",
+        "Theo dõi tiến độ % và chuỗi ngày học cập nhật trên dashboard"
+      ],
+      "success_signal": "Dashboard hiển thị tiến độ challenge/khóa được cập nhật và chuỗi ngày học tăng",
+      "needs_submit": false,
+      "value": "Người học luôn biết rõ hôm nay cần làm gì để duy trì động lực và không mất thời gian tìm khóa phù hợp.",
+      "related_feature_ids": [
+        "personal_dashboard"
+      ],
+      "source": "proposed",
+      "confidence": 0.9,
+      "notes": null
+    },
+    {
+      "id": "flow-learning-path",
+      "title": "Theo learning path có thưởng hoàn thành",
+      "persona": "Nhân viên muốn lộ trình học bài bản theo chuỗi khóa",
+      "goal": "Đi theo learning path gồm nhiều khóa liên tiếp và nhận thưởng khi hoàn thành chuỗi",
+      "start_url": "https://aisoeasy.co/demo-user/app/learn",
+      "expected_steps": [
+        "Mở mục Learn",
+        "Bấm nút Learning path để vào chế độ xem lộ trình",
+        "Xem các khóa thành phần trong chuỗi và thứ tự cần học",
+        "Mở khóa đầu tiên và hoàn thành bài học",
+        "Quay lại learning path để thấy tiến độ chuỗi được cập nhật"
+      ],
+      "success_signal": "Learning path hiển thị tiến độ từng khóa và phần thưởng hoàn thành chuỗi",
+      "needs_submit": false,
+      "value": "Người học có lộ trình rõ ràng theo chuỗi khóa và được thưởng khi hoàn thành, giảm bỏ dở giữa chừng.",
+      "related_feature_ids": [
+        "my_learning_hub"
+      ],
+      "source": "proposed",
+      "confidence": 0.8,
+      "notes": null
+    }
+  ],
+  "submit_policy": "stop",
+  "warnings": []
+}

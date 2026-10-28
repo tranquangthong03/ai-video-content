@@ -85,7 +85,7 @@ def test_the_chapters_are_cut_without_gaps_and_every_log_is_retimed(
         results.append(r)
         assert r.kind == "recording" and r.clip_path and r.clip_path.is_file()
         assert all(0 <= e["t_ms"] <= r.content_ms for e in r.focus_log + r.click_log + r.inventory)
-        assert r.inventory and r.focus_log and r.action_log and r.width == 1440
+        assert r.inventory and r.focus_log and r.action_log and r.width == 1280
     assert results[0].start_offset_ms > 0 and results[1].start_offset_ms == 0
     total = sum(r.content_ms for r in results)
     assert abs(total - filmed.recording.content_ms) < 400  # type: ignore[union-attr]

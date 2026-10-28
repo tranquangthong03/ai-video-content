@@ -6,7 +6,9 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from . import brief_suggestions, core_flow, flow_run, marketing_brief
+from . import brief_suggestions, core_flow
+from . import flow_quality as flow_quality_1
+from . import flow_run, marketing_brief
 from . import outline as outline_1
 from . import product_profile, video_concept
 
@@ -70,6 +72,19 @@ class FlowSelect(BaseModel):
             description="flow id -> the site's own message: this flow cannot be done with this account"
         ),
     ] = {}
+    quality: Annotated[
+        dict[str, flow_quality_1.FlowQuality],
+        Field(
+            description='flow id -> how many steps make something visible appear (value_actions) and the label when it is too few',
+            validate_default=True,
+        ),
+    ] = {}
+    empty_warning: Annotated[
+        str | None,
+        Field(
+            description='Set when the explored pages show the account has no data (two or more signs)'
+        ),
+    ] = None
 
 
 class Selection(BaseModel):
@@ -134,6 +149,12 @@ class InteractionRequest(BaseModel):
         flow_run.FlowRun | None,
         Field(
             description='flow_storyboard_review: the run to look at (steps carry screenshot paths)'
+        ),
+    ] = None
+    flow_quality: Annotated[
+        flow_quality_1.FlowQuality | None,
+        Field(
+            description='flow_storyboard_review: is the run worth filming (value actions, empty pages)'
         ),
     ] = None
     brief_form: BriefForm | None = None

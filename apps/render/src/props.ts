@@ -41,6 +41,20 @@ export const FocusTrackSchema = z.object({
 });
 export type FocusTrackEntry = z.infer<typeof FocusTrackSchema>;
 
+/** desktop_frame: one planned zoom (clip time, ms): in, hold perfectly still, out; `box` = the UI block held whole. */
+export const ZoomShotSchema = z.object({
+  in_start_ms: z.number().min(0),
+  in_end_ms: z.number().min(0),
+  out_start_ms: z.number().min(0),
+  out_end_ms: z.number().min(0),
+  box: z.object({ x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() }),
+  zoom: z.number().min(1),
+  item_id: z.string().nullish(),
+  text: z.string().nullish(),
+  reason: z.string().nullish(),
+});
+export type ZoomShotEntry = z.infer<typeof ZoomShotSchema>;
+
 /** Per-scene media. URLs are absolute (http/data) or paths relative to the bundle's public dir. */
 export const SceneAssetsSchema = z.object({
   audio_url: z.string().optional(),
@@ -54,6 +68,7 @@ export const SceneAssetsSchema = z.object({
   click_log: z.array(ClickSchema).optional(), // x,y in source clip pixels, t_ms in clip time
   focus_log: z.array(FocusSchema).optional(), // what the camera should look at, clip pixels / clip time
   focus_track: z.array(FocusTrackSchema).optional(), // the producer's final focus plan; wins over focus_log
+  zoom_shots: z.array(ZoomShotSchema).optional(), // desktop_frame: the only moments the camera leaves the full view
   // stretches the producer already cut out of clip_url (original clip time); informational only
   segments: z.array(z.object({ from_ms: z.number(), to_ms: z.number() })).optional(),
   // punch-ins at the start of shots (scene time): the frame grows by `scale` within 6 frames

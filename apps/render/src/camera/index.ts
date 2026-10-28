@@ -183,3 +183,4 @@ export { pickFocus } from "./pick";
 export type { CameraConfig, FocusKind, Framing } from "./config";
 export { buildSceneCameras, cameraForScene, pathForScene, type SceneCameraInput } from "./scene";
 export { buildCameraPath, driftView, mergeFocus, moveDuration, smoothstep, type CameraPath, type Move } from "./path";
+export { buildShotPath, fitZoom, fullView, shotView, SHOT_CONFIG, type ZoomShot } from "./shot";

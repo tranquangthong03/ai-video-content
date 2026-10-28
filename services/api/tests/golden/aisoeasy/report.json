@@ -1,0 +1,1154 @@
+{
+  "video": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\jobs\\j70a1281ec4\\video.mp4",
+  "target_ms": 30000,
+  "estimated_ms": 31100,
+  "planned_ms": 31100,
+  "footage_ratio": 0.825,
+  "actual_ms": 31200,
+  "ffprobe": {
+    "codec_name": "h264",
+    "width": 1080,
+    "height": 1920,
+    "pix_fmt": "yuv420p",
+    "r_frame_rate": "30/1"
+  },
+  "speedup_used": 1.0,
+  "trimmed_ms": 0,
+  "actions_per_scene": {
+    "s1": 0,
+    "s2": 0,
+    "s3": 1,
+    "s4": 1,
+    "s5": 1
+  },
+  "hold_avg_ms": 1500,
+  "idle_limit_ms": 2500,
+  "idle_ok": false,
+  "scenes": [
+    {
+      "id": "s1",
+      "type": "hook",
+      "kind": "thao tác",
+      "speech_ms": 4650,
+      "usable_ms": 2000,
+      "final_ms": 4650,
+      "playback_rate": 1.0,
+      "freeze": true,
+      "idle_max_ms": 2841,
+      "warnings": [],
+      "steps_ok": 0,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": null,
+      "recording": "recording",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 0,
+      "hold_avg_ms": null,
+      "inventory_snapshots": 2,
+      "inventory_file": "produce\\inventory\\s1.json",
+      "focus": {
+        "planner": "plan",
+        "planner_attempts": 1,
+        "planner_errors": [],
+        "hook_reframed": 1,
+        "replaced_side_focus": 0,
+        "unresolved": 0,
+        "context_limited": 0,
+        "media_replaced": 0,
+        "spoken_preferred": 0,
+        "submit_held_back": 0,
+        "unresolved_recovered": 0,
+        "narrowed_to_child": 0,
+        "fit_below_cover": 0,
+        "sources": {
+          "plan": 1,
+          "rule": 0,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s1.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 3,
+      "punches": 1,
+      "max_static_ms": 1787
+    },
+    {
+      "id": "s2",
+      "type": "feature_demo",
+      "kind": "thao tác",
+      "speech_ms": 4250,
+      "usable_ms": 3725,
+      "final_ms": 4250,
+      "playback_rate": 1.0,
+      "freeze": true,
+      "idle_max_ms": 3293,
+      "warnings": [],
+      "steps_ok": 1,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": "c1",
+      "recording": "recording",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 0,
+      "hold_avg_ms": null,
+      "inventory_snapshots": 2,
+      "inventory_file": "produce\\inventory\\s2.json",
+      "focus": {
+        "planner": "plan",
+        "planner_attempts": 1,
+        "planner_errors": [],
+        "hook_reframed": 0,
+        "replaced_side_focus": 0,
+        "unresolved": 0,
+        "context_limited": 0,
+        "media_replaced": 0,
+        "spoken_preferred": 0,
+        "submit_held_back": 0,
+        "unresolved_recovered": 0,
+        "narrowed_to_child": 0,
+        "fit_below_cover": 0,
+        "sources": {
+          "plan": 2,
+          "rule": 0,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s2.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 3,
+      "punches": 1,
+      "max_static_ms": 1788
+    },
+    {
+      "id": "s3",
+      "type": "feature_demo",
+      "kind": "thao tác",
+      "speech_ms": 4650,
+      "usable_ms": 4346,
+      "final_ms": 4650,
+      "playback_rate": 1.0,
+      "freeze": true,
+      "idle_max_ms": 2362,
+      "warnings": [],
+      "steps_ok": 1,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": "c2",
+      "recording": "recording",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 1,
+      "hold_avg_ms": 1500,
+      "inventory_snapshots": 3,
+      "inventory_file": "produce\\inventory\\s3.json",
+      "focus": {
+        "planner": "plan",
+        "planner_attempts": 1,
+        "planner_errors": [],
+        "hook_reframed": 0,
+        "replaced_side_focus": 0,
+        "unresolved": 0,
+        "context_limited": 0,
+        "media_replaced": 0,
+        "spoken_preferred": 1,
+        "submit_held_back": 0,
+        "unresolved_recovered": 0,
+        "narrowed_to_child": 0,
+        "fit_below_cover": 0,
+        "sources": {
+          "plan": 0,
+          "rule": 2,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s3.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 3,
+      "punches": 2,
+      "max_static_ms": 1439
+    },
+    {
+      "id": "s4",
+      "type": "feature_demo",
+      "kind": "thao tác",
+      "speech_ms": 5850,
+      "usable_ms": 3696,
+      "final_ms": 5850,
+      "playback_rate": 1.0,
+      "freeze": true,
+      "idle_max_ms": 2563,
+      "warnings": [
+        "s4: đã cắt 760 ms khung hình chết"
+      ],
+      "steps_ok": 1,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": "c3",
+      "recording": "recording",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 1,
+      "hold_avg_ms": 1500,
+      "inventory_snapshots": 2,
+      "inventory_file": "produce\\inventory\\s4.json",
+      "focus": {
+        "planner": "failed",
+        "planner_attempts": 2,
+        "planner_errors": [
+          "plan[1]: item_id 'e7pf145' is not in frame_inventory near 2800"
+        ],
+        "hook_reframed": 0,
+        "replaced_side_focus": 1,
+        "unresolved": 0,
+        "context_limited": 0,
+        "media_replaced": 0,
+        "spoken_preferred": 0,
+        "submit_held_back": 0,
+        "unresolved_recovered": 0,
+        "narrowed_to_child": 0,
+        "fit_below_cover": 1,
+        "sources": {
+          "plan": 0,
+          "rule": 2,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s4.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 3,
+      "punches": 2,
+      "max_static_ms": 2383
+    },
+    {
+      "id": "s5",
+      "type": "feature_demo",
+      "kind": "thao tác",
+      "speech_ms": 6250,
+      "usable_ms": 2300,
+      "final_ms": 6250,
+      "playback_rate": 1.0,
+      "freeze": true,
+      "idle_max_ms": 3950,
+      "warnings": [
+        "s5: đã cắt 4501 ms khung hình chết"
+      ],
+      "steps_ok": 1,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": "c4",
+      "recording": "recording",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 1,
+      "hold_avg_ms": 1500,
+      "inventory_snapshots": 3,
+      "inventory_file": "produce\\inventory\\s5.json",
+      "focus": {
+        "planner": "plan",
+        "planner_attempts": 1,
+        "planner_errors": [],
+        "hook_reframed": 0,
+        "replaced_side_focus": 0,
+        "unresolved": 0,
+        "context_limited": 0,
+        "media_replaced": 0,
+        "spoken_preferred": 0,
+        "submit_held_back": 0,
+        "unresolved_recovered": 0,
+        "narrowed_to_child": 0,
+        "fit_below_cover": 0,
+        "sources": {
+          "plan": 1,
+          "rule": 0,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s5.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 3,
+      "punches": 2,
+      "max_static_ms": 2238
+    },
+    {
+      "id": "s6",
+      "type": "cta",
+      "kind": "thao tác",
+      "speech_ms": 5450,
+      "usable_ms": null,
+      "final_ms": 5450,
+      "playback_rate": 1.0,
+      "freeze": false,
+      "idle_max_ms": 0,
+      "warnings": [],
+      "steps_ok": 0,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": null,
+      "recording": "screenshot",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 0,
+      "hold_avg_ms": null,
+      "inventory_snapshots": 0,
+      "inventory_file": null,
+      "focus": null,
+      "focus_file": null,
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 0,
+      "punches": 0,
+      "max_static_ms": null
+    }
+  ],
+  "dead_frames_ms": 0,
+  "dead_frames_cut_ms": 0,
+  "max_static_shot_s": 2.38,
+  "punch_ins": 8,
+  "text_cards": {
+    "count": 0,
+    "longest_ms": 0,
+    "ratio": 0.0,
+    "ok": true
+  },
+  "features": [
+    {
+      "id": "c1",
+      "name": "Xem dashboard"
+    },
+    {
+      "id": "c2",
+      "name": "Mở dashboard"
+    },
+    {
+      "id": "c3",
+      "name": "Mở khu học tập"
+    },
+    {
+      "id": "c4",
+      "name": "Mở khóa học gợi ý"
+    }
+  ],
+  "phases_s": {
+    "timing": 0.0,
+    "record": 16.9,
+    "render": 78.9,
+    "total": 95.8
+  },
+  "render_ms": 70284,
+  "warnings": [
+    "s4: đã cắt 760 ms khung hình chết",
+    "s5: đã cắt 4501 ms khung hình chết"
+  ],
+  "dropped_scenes": [],
+  "tokens": {
+    "max_tokens": 400000,
+    "total": 168052,
+    "steps": {
+      "classify": {
+        "input": 469,
+        "output": 114,
+        "calls": 1
+      },
+      "analyze": {
+        "input": 10908,
+        "output": 4034,
+        "calls": 8
+      },
+      "synthesize": {
+        "input": 9131,
+        "output": 5793,
+        "calls": 1
+      },
+      "flow_discovery": {
+        "input": 2849,
+        "output": 3052,
+        "calls": 1
+      },
+      "flow_agent": {
+        "input": 10060,
+        "output": 385,
+        "calls": 5
+      },
+      "brief_suggest": {
+        "input": 1925,
+        "output": 263,
+        "calls": 1
+      },
+      "verify": {
+        "input": 0,
+        "output": 0,
+        "calls": 0
+      },
+      "delta": {
+        "input": 0,
+        "output": 0,
+        "calls": 0
+      },
+      "concepts": {
+        "input": 0,
+        "output": 0,
+        "calls": 0
+      },
+      "outline": {
+        "input": 0,
+        "output": 0,
+        "calls": 0
+      },
+      "beat_map": {
+        "input": 0,
+        "output": 0,
+        "calls": 0
+      },
+      "script": {
+        "input": 45004,
+        "output": 8418,
+        "calls": 6
+      },
+      "fit": {
+        "input": 12366,
+        "output": 2041,
+        "calls": 8
+      },
+      "scene": {
+        "input": 33807,
+        "output": 2214,
+        "calls": 10
+      },
+      "edit_plan": {
+        "input": 0,
+        "output": 0,
+        "calls": 0
+      },
+      "hook_rewrite": {
+        "input": 300,
+        "output": 32,
+        "calls": 1
+      },
+      "copy_critic": {
+        "input": 9734,
+        "output": 5153,
+        "calls": 4
+      },
+      "focus_plan": {
+        "input": 19504,
+        "output": 979,
+        "calls": 6
+      }
+    }
+  },
+  "flow": {
+    "flow_id": "flow-learn-dashboard-daily",
+    "steps": 5,
+    "replayed": 4,
+    "replay_failed_at": null,
+    "skipped_steps": [],
+    "steps_in_clip": 1.0,
+    "operation_steps": 4,
+    "operation_steps_in_clip": 4,
+    "missing_steps": [],
+    "hero": {
+      "t_ms": 17918,
+      "from_ms": 17118,
+      "to_ms": 19118,
+      "score": 39.0
+    },
+    "clip_ms": 25233,
+    "clip_source": "live",
+    "llm_wait_cut_ms": 3729,
+    "retry_segments_cut": 0,
+    "rejected_segments_cut": 0,
+    "notes": [],
+    "write_requests": []
+  },
+  "url": "https://aisoeasy.co/demo-user/app",
+  "headline": "Mở dashboard, biết ngay hôm nay học gì",
+  "theme": {
+    "source": "css",
+    "primary": "#58E600",
+    "accent": "#A71AFF",
+    "accent_source": "opposite_hue",
+    "highlight": "#58e600",
+    "logo": "out\\jobs\\j70a1281ec4\\theme\\logo.png",
+    "candidates": [
+      {
+        "color": "#58e600",
+        "area": 42962
+      }
+    ],
+    "notes": []
+  },
+  "fit": {
+    "target_ms": 30000,
+    "estimated_ms": 31100,
+    "initial_ms": 44300,
+    "deviation": 0.037,
+    "within_tolerance": true,
+    "rounds": 4,
+    "actions": [
+      "rút gọn voiceover",
+      "rút gọn voiceover",
+      "rút gọn voiceover",
+      "rút gọn voiceover"
+    ],
+    "warnings": [
+      "s3: không ngắn hơn bản cũ, bỏ qua",
+      "s4: không ngắn hơn bản cũ, bỏ qua",
+      "s3: không ngắn hơn bản cũ, bỏ qua",
+      "s5: không ngắn hơn bản cũ, bỏ qua"
+    ]
+  },
+  "fit_generation": {
+    "target_ms": 30000,
+    "estimated_ms": 31100,
+    "initial_ms": 44300,
+    "deviation": 0.037,
+    "within_tolerance": true,
+    "rounds": 4,
+    "actions": [
+      "rút gọn voiceover",
+      "rút gọn voiceover",
+      "rút gọn voiceover",
+      "rút gọn voiceover"
+    ],
+    "warnings": [
+      "s3: không ngắn hơn bản cũ, bỏ qua",
+      "s4: không ngắn hơn bản cũ, bỏ qua",
+      "s3: không ngắn hơn bản cũ, bỏ qua",
+      "s5: không ngắn hơn bản cũ, bỏ qua"
+    ]
+  },
+  "script_versions": [
+    1
+  ],
+  "script_warnings": [
+    "Flow status là partial và không có bước submit; voiceover không khẳng định đã lưu dữ liệu, chỉ nói tiến độ được cập nhật theo success_signal.",
+    "Đã bỏ stat ở scene 4 vì con số '1' không có trong proof_bank/hình quay.",
+    "Đã rút gọn on_screen_text của hook_options[2] xuống còn 5 từ để đúng giới hạn.",
+    "auto_trimmed: hook_options[2] on_screen_text «Biết ngay hôm nay học gì» → «Biết ngay hôm nay học»",
+    "s3: không ngắn hơn bản cũ, bỏ qua",
+    "s4: không ngắn hơn bản cũ, bỏ qua",
+    "s3: không ngắn hơn bản cũ, bỏ qua",
+    "s5: không ngắn hơn bản cũ, bỏ qua"
+  ],
+  "content_budget_s": 53,
+  "content_budget_formula": "content_budget_s = 4 (hook) + 4 (cta) + 5 (one before_after) + sum over demonstrable features: interaction 10, navigation 6, showcase 5",
+  "recommended_duration_s": 45,
+  "footage_ratio_estimated": 1.0,
+  "critic": {
+    "threshold": 7,
+    "before": {
+      "scores": {
+        "hook_strength": {
+          "score": 7,
+          "reason": "Câu hỏi 'Mất cả buổi sáng chỉ để tìm khóa AI phù hợp?' đánh trúng nỗi đau mất thời gian của persona, cụ thể và không mở bằng tên sản phẩm."
+        },
+        "benefit_clarity": {
+          "score": 5,
+          "reason": "Các chương chỉ kể lại thao tác mở Home/Learn, chưa nói rõ persona được gì (tiết kiệm thời gian, biết ngay việc hôm nay) và không hề nhắc lợi ích chính trong brief là giảm thời gian làm thủ công."
+        },
+        "proof_usage": {
+          "score": 3,
+          "reason": "Chỉ dùng ưu đãi 'dùng thử miễn phí workspace doanh nghiệp trên trình duyệt' ở CTA, không tận dụng số liệu thật như '1 lesson', '6 lessons', 'earn points to level up' từ proof_bank; không có số liệu nào được đưa vào lời thoại."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể (dùng thử miễn phí workspace trên trình duyệt tại aisoeasy.co) và dùng đúng ưu đãi trong brief, nhưng thiếu lý do cấp bách hoặc lợi ích tức thì khiến người dùng bấm ngay."
+        },
+        "flow": {
+          "score": 6,
+          "reason": "Mạch hook → mở trang → Home → Learn → khóa học → CTA khá liền, nhưng câu nối còn chung chung và chưa dẫn đến kết quả rõ ràng cho persona."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s2",
+          "problem": "Chỉ nói 'gom mọi thứ bạn cần' chung chung, chưa nêu lợi ích thời gian/công sức của persona.",
+          "suggestion": "Viết lại: 'Không cần lục tìm khóa AI, mọi thứ đã sẵn trên một trang.' (≤25 từ)"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Kể lại thao tác 'Mở Home là thấy...' mà không nói persona được gì.",
+          "suggestion": "Viết lại: 'Vào Home, thấy ngay khóa AI nổi bật đúng việc marketing của bạn.' (≤25 từ)"
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Có nhắc 'nhiệm vụ hôm nay', 'điểm và cấp độ' nhưng chưa gắn với lợi ích cụ thể (ví dụ hoàn thành 1 bài để lên cấp).",
+          "suggestion": "Viết lại: 'Learn chỉ rõ hôm nay làm 1 bài, nhận điểm và lên cấp — không mất thời gian chọn.' (≤25 từ)"
+        },
+        {
+          "scene_id": "s5",
+          "problem": "Chỉ nói 'mở bài ngay', thiếu kết quả học tập hoặc lợi ích giảm thủ công.",
+          "suggestion": "Viết lại: 'Chọn AI for Marketing & Productivity, vào bài ngay và thấy tiến độ 0/6 bài.' (≤25 từ, dùng số liệu true)"
+        },
+        {
+          "scene_id": "s6",
+          "problem": "CTA đúng ưu đãi nhưng thiếu lý do làm ngay và chưa nhắc lợi ích chính (giảm thời gian làm thủ công).",
+          "suggestion": "Viết lại: 'Dùng thử miễn phí workspace doanh nghiệp trên trình duyệt tại aisoeasy.co — bắt đầu giảm việc thủ công ngay hôm nay.' (≤25 từ)"
+        }
+      ],
+      "issues": [
+        "Cụm sáo rỗng: 'Một chỗ, đủ việc', 'Vào việc ngay' — không mang thông tin cụ thể.",
+        "Không có số liệu thật nào từ proof_bank trong voiceover/on-screen text (ví dụ: 1 lesson, 6 lessons, earn points).",
+        "Benefit chính 'giảm thời gian làm thủ công' trong brief không xuất hiện trong bất kỳ scene nào.",
+        "Các scene feature_demo chỉ liệt kê thao tác UI, thiếu kết quả persona nhận được."
+      ],
+      "summary": "Kịch bản có hook ổn và CTA dùng đúng ưu đãi, nhưng phần thân chỉ kể thao tác, thiếu lợi ích rõ ràng và gần như không dùng số liệu thật từ proof_bank. Cần viết lại các scene 2–6 để nói rõ persona được gì (tiết kiệm thời gian, biết ngay việc hôm nay, giảm thủ công) và chèn số liệu thật như '1 lesson', '0/6 lessons' để tăng độ tin cậy."
+    },
+    "after": {
+      "scores": {
+        "hook_strength": {
+          "score": 7,
+          "reason": "Nỗi đau 'mất cả buổi sáng tìm khóa AI' khá cụ thể và đúng persona, nhưng chưa gây bất ngờ/đau đủ mạnh để dừng lướt."
+        },
+        "benefit_clarity": {
+          "score": 6,
+          "reason": "Các chương nói đúng luồng nhưng chủ yếu kể thao tác và lặp 'khóa AI đúng việc'; lợi ích chính 'giảm thời gian làm thủ công / ứng dụng AI vào việc thật' chưa được nói rõ."
+        },
+        "proof_usage": {
+          "score": 6,
+          "reason": "Có dùng số thật '0/6 bài' và '1 bài hôm nay' từ proof_bank, nhưng chưa tận dụng câu trích/ưu đãi mạnh và số liệu còn sơ sài."
+        },
+        "cta_strength": {
+          "score": 8,
+          "reason": "CTA có ưu đãi thật 'dùng thử miễn phí workspace doanh nghiệp trên trình duyệt' + hành động cụ thể 'bắt đầu hôm nay, học xong bài đầu tiên', khá dễ nhớ."
+        },
+        "flow": {
+          "score": 6,
+          "reason": "Mạch nỗi đau → demo → CTA rõ nhưng giữa các scene bị lặp ý 'khóa AI đúng việc', thiếu câu nối dẫn tới kết quả 'biết hôm nay học gì'."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chỉ nêu nỗi đau tìm khóa, chưa gắn với hậu quả cụ thể (mất thời gian, trễ việc) hoặc kết quả hấp dẫn.",
+          "suggestion": "Đổi voiceover: 'Mỗi sáng mất 30 phút lục tìm khóa AI? Đừng để việc thủ công cướp thời gian của bạn.' (dùng '30 phút' là ví dụ, không có trong proof_bank — nên thay bằng 'cả buổi sáng' đã có). Gợi ý an toàn: 'Mỗi sáng mất cả buổi chỉ để tìm khóa AI phù hợp? Việc thật đang chờ.'"
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Câu 'Mở một trang, thấy ngay khóa AI cho dân marketing' trùng ý s3 và chưa nói lợi ích giảm thời gian.",
+          "suggestion": "Đổi thành: 'Mở trang bắt đầu, thấy ngay khóa AI for Marketing & Productivity — không cần lục tìm.'"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Lặp lại 'khóa AI đúng việc' và 'nổi bật' nhưng không nêu persona được gì cụ thể.",
+          "suggestion": "Đổi on_screen_text thành 'Home: khóa nổi bật cho marketing'; voiceover: 'Vào Home, dashboard cá nhân hóa gợi ý khóa AI for Marketing & Productivity đúng việc của bạn.'"
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Có số '1 bài hôm nay' nhưng chưa nối với lợi ích 'duy trì động lực, không mất thời gian chọn'.",
+          "suggestion": "Thêm câu: 'Learn chỉ rõ hôm nay làm 1 bài, nhận điểm lên cấp — không mất thời gian chọn, chỉ việc bắt đầu.'"
+        },
+        {
+          "scene_id": "s5",
+          "problem": "Nêu '0/6 bài' nhưng chưa nhấn lợi ích cuối: ứng dụng AI vào việc thật, giảm thủ công.",
+          "suggestion": "Đổi voiceover: 'Chọn khóa AI for Marketing & Productivity, thấy tiến độ 0/6 bài — bắt đầu bài đầu tiên để ứng dụng AI vào việc thật, giảm thời gian làm thủ công.'"
+        }
+      ],
+      "issues": [
+        "Cụm sáo rỗng: 'không cần lục tìm đâu xa', 'đúng việc' lặp nhiều lần, 'nổi bật' chung chung.",
+        "Chưa dùng câu trích thật từ proof_bank như 'Nhân viên ứng dụng AI vào việc thật, giảm thời gian làm thủ công' để làm rõ lợi ích.",
+        "Chưa dùng ưu đãi 'dùng thử miễn phí workspace doanh nghiệp trên trình duyệt' ở phần giữa mà chỉ ở CTA; có thể nhắc sớm hơn để tăng lý do xem tiếp.",
+        "Số liệu '0/6 bài' và '1 bài hôm nay' có trong proof_bank, nhưng chưa có số liệu về thời gian tiết kiệm — không nên bịa thêm."
+      ],
+      "summary": "Kịch bản đúng luồng và có CTA mạnh với ưu đãi thật, nhưng hook chưa đủ sắc, phần thân lặp thao tác và thiếu nói rõ lợi ích chính 'giảm thời gian làm thủ công / ứng dụng AI vào việc thật'. Cần sửa s1–s5 để mỗi chương gắn với kết quả persona được hưởng, dùng câu trích và số liệu thật tự nhiên hơn."
+    },
+    "final": {
+      "scores": {
+        "hook_strength": {
+          "score": 7,
+          "reason": "Nỗi đau 'mất cả buổi sáng tìm khóa AI' khá cụ thể và đúng persona, nhưng chưa gây bất ngờ/đau đủ mạnh để dừng lướt."
+        },
+        "benefit_clarity": {
+          "score": 6,
+          "reason": "Các chương nói đúng luồng nhưng chủ yếu kể thao tác và lặp 'khóa AI đúng việc'; lợi ích chính 'giảm thời gian làm thủ công / ứng dụng AI vào việc thật' chưa được nói rõ."
+        },
+        "proof_usage": {
+          "score": 6,
+          "reason": "Có dùng số thật '0/6 bài' và '1 bài hôm nay' từ proof_bank, nhưng chưa tận dụng câu trích/ưu đãi mạnh và số liệu còn sơ sài."
+        },
+        "cta_strength": {
+          "score": 8,
+          "reason": "CTA có ưu đãi thật 'dùng thử miễn phí workspace doanh nghiệp trên trình duyệt' + hành động cụ thể 'bắt đầu hôm nay, học xong bài đầu tiên', khá dễ nhớ."
+        },
+        "flow": {
+          "score": 6,
+          "reason": "Mạch nỗi đau → demo → CTA rõ nhưng giữa các scene bị lặp ý 'khóa AI đúng việc', thiếu câu nối dẫn tới kết quả 'biết hôm nay học gì'."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chỉ nêu nỗi đau tìm khóa, chưa gắn với hậu quả cụ thể (mất thời gian, trễ việc) hoặc kết quả hấp dẫn.",
+          "suggestion": "Đổi voiceover: 'Mỗi sáng mất 30 phút lục tìm khóa AI? Đừng để việc thủ công cướp thời gian của bạn.' (dùng '30 phút' là ví dụ, không có trong proof_bank — nên thay bằng 'cả buổi sáng' đã có). Gợi ý an toàn: 'Mỗi sáng mất cả buổi chỉ để tìm khóa AI phù hợp? Việc thật đang chờ.'"
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Câu 'Mở một trang, thấy ngay khóa AI cho dân marketing' trùng ý s3 và chưa nói lợi ích giảm thời gian.",
+          "suggestion": "Đổi thành: 'Mở trang bắt đầu, thấy ngay khóa AI for Marketing & Productivity — không cần lục tìm.'"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Lặp lại 'khóa AI đúng việc' và 'nổi bật' nhưng không nêu persona được gì cụ thể.",
+          "suggestion": "Đổi on_screen_text thành 'Home: khóa nổi bật cho marketing'; voiceover: 'Vào Home, dashboard cá nhân hóa gợi ý khóa AI for Marketing & Productivity đúng việc của bạn.'"
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Có số '1 bài hôm nay' nhưng chưa nối với lợi ích 'duy trì động lực, không mất thời gian chọn'.",
+          "suggestion": "Thêm câu: 'Learn chỉ rõ hôm nay làm 1 bài, nhận điểm lên cấp — không mất thời gian chọn, chỉ việc bắt đầu.'"
+        },
+        {
+          "scene_id": "s5",
+          "problem": "Nêu '0/6 bài' nhưng chưa nhấn lợi ích cuối: ứng dụng AI vào việc thật, giảm thủ công.",
+          "suggestion": "Đổi voiceover: 'Chọn khóa AI for Marketing & Productivity, thấy tiến độ 0/6 bài — bắt đầu bài đầu tiên để ứng dụng AI vào việc thật, giảm thời gian làm thủ công.'"
+        }
+      ],
+      "issues": [
+        "Cụm sáo rỗng: 'không cần lục tìm đâu xa', 'đúng việc' lặp nhiều lần, 'nổi bật' chung chung.",
+        "Chưa dùng câu trích thật từ proof_bank như 'Nhân viên ứng dụng AI vào việc thật, giảm thời gian làm thủ công' để làm rõ lợi ích.",
+        "Chưa dùng ưu đãi 'dùng thử miễn phí workspace doanh nghiệp trên trình duyệt' ở phần giữa mà chỉ ở CTA; có thể nhắc sớm hơn để tăng lý do xem tiếp.",
+        "Số liệu '0/6 bài' và '1 bài hôm nay' có trong proof_bank, nhưng chưa có số liệu về thời gian tiết kiệm — không nên bịa thêm."
+      ],
+      "summary": "Kịch bản đúng luồng và có CTA mạnh với ưu đãi thật, nhưng hook chưa đủ sắc, phần thân lặp thao tác và thiếu nói rõ lợi ích chính 'giảm thời gian làm thủ công / ứng dụng AI vào việc thật'. Cần sửa s1–s5 để mỗi chương gắn với kết quả persona được hưởng, dùng câu trích và số liệu thật tự nhiên hơn."
+    },
+    "kept_rewrite": true,
+    "rounds": 2,
+    "hook": {
+      "hook_strength": [
+        7,
+        6
+      ],
+      "chosen": 1,
+      "kinds": [
+        "pain_question",
+        "result_first"
+      ]
+    },
+    "rewritten": [
+      "s2",
+      "s3",
+      "s4",
+      "s2",
+      "s5",
+      "s6"
+    ],
+    "notes": [],
+    "passed": false
+  },
+  "proof_bank": {
+    "numbers": [
+      {
+        "value": "0",
+        "unit": "",
+        "context": "OURSE — AI for Website & Landing Page — 0/6 lessons",
+        "source": "profile",
+        "kind": "other"
+      },
+      {
+        "value": "6",
+        "unit": "",
+        "context": "RSE — AI for Website & Landing Page — 0/6 lessons",
+        "source": "profile",
+        "kind": "other"
+      },
+      {
+        "value": "1",
+        "unit": "",
+        "context": "TODAY'S CHALLENGE — Complete 1 lesson — Earn points to level up",
+        "source": "profile",
+        "kind": "other"
+      },
+      {
+        "value": "5",
+        "unit": "",
+        "context": "Expected response time: within 5 business days; deletion completed withi",
+        "source": "profile",
+        "kind": "other"
+      },
+      {
+        "value": "30",
+        "unit": "days",
+        "context": "usiness days; deletion completed within 30 days.",
+        "source": "profile",
+        "kind": "benefit"
+      },
+      {
+        "value": "9",
+        "unit": "",
+        "context": "ng ở gói Free và mời nâng cấp lên Pro ($9/mo) để mở khóa toàn bộ nội dung; với do",
+        "source": "profile",
+        "kind": "other"
+      },
+      {
+        "value": "2",
+        "unit": "",
+        "context": "2. How to make a request",
+        "source": "page:https://aisoeasy.co/data-deletion",
+        "kind": "other"
+      },
+      {
+        "value": "3",
+        "unit": "",
+        "context": "3. Data that will be deleted",
+        "source": "page:https://aisoeasy.co/data-deletion",
+        "kind": "other"
+      },
+      {
+        "value": "4",
+        "unit": "",
+        "context": "4. Data retained (anonymized)",
+        "source": "page:https://aisoeasy.co/data-deletion",
+        "kind": "other"
+      },
+      {
+        "value": "05",
+        "unit": "",
+        "context": "Last updated: 05/08/2026",
+        "source": "page:https://aisoeasy.co/data-deletion",
+        "kind": "other"
+      },
+      {
+        "value": "08",
+        "unit": "",
+        "context": "Last updated: 05/08/2026",
+        "source": "page:https://aisoeasy.co/data-deletion",
+        "kind": "other"
+      },
+      {
+        "value": "2026",
+        "unit": "",
+        "context": "Last updated: 05/08/2026",
+        "source": "page:https://aisoeasy.co/data-deletion",
+        "kind": "other"
+      }
+    ],
+    "quotes": [
+      "Nhân viên ứng dụng AI vào việc thật, giảm thời gian làm thủ công",
+      "AI So Easy — Workforce Upskill Platform",
+      "Nền tảng upskill lực lượng lao động bằng AI cho doanh nghiệp.",
+      "AI for Website & Landing Page",
+      "HƯỚNG DẪN CÀI ĐẶT JEV",
+      "Earn points to level up",
+      "0/1 courses completed",
+      "Top AI tools for your business"
+    ],
+    "offers": [
+      {
+        "id": "user",
+        "label": "Dùng thử miễn phí workspace doanh nghiệp trên trình duyệt",
+        "source_text": "Dùng thử miễn phí workspace doanh nghiệp trên trình duyệt"
+      },
+      {
+        "id": "free",
+        "label": "miễn phí",
+        "source_text": "Nâng cấp gói Free lên Pro"
+      },
+      {
+        "id": "trial",
+        "label": "dùng thử",
+        "source_text": "Khối 'Top AI tools for your business' trên dashboard giới thiệu các công cụ AI phù hợp công việc từng phòng ban (trợ lý "
+      }
+    ],
+    "audience_pains": []
+  },
+  "motion_qa": {
+    "metrics": {
+      "frames": 918,
+      "camera_plan_max_zoom_rate": 0.0202,
+      "camera_plan_max_pan_rate": 0.011,
+      "max_zoom_rate": 0.0202,
+      "max_pan_rate": 0.0113,
+      "freeze_then_jump": 0,
+      "flash_shots": 0,
+      "static_ms_max": 0,
+      "cuts": [],
+      "page_changes_ms": [
+        3367,
+        5100,
+        5133,
+        5200,
+        5233,
+        5333,
+        5367,
+        5400,
+        5433,
+        5533,
+        5600,
+        7167,
+        7200,
+        7233,
+        11000,
+        11033,
+        11067,
+        12167,
+        12200,
+        12233,
+        12267,
+        12300,
+        15767,
+        15800,
+        15833,
+        15867,
+        17100,
+        17133,
+        17167,
+        17200,
+        17233,
+        21733,
+        21767,
+        21800,
+        21833,
+        23967,
+        24000,
+        24033,
+        24067,
+        24100,
+        24133
+      ],
+      "unfitted_frames": 0,
+      "loading_frames_ms": 0,
+      "per_scene": {
+        "s1": 0,
+        "s2": 0,
+        "s3": 0,
+        "s4": 0,
+        "s5": 0
+      },
+      "focus_match_rate": 0.715,
+      "focus_match_per_scene": {
+        "s1": 1.0,
+        "s2": 1.0,
+        "s3": 1.0,
+        "s4": 0.0
+      },
+      "focus_unmatched": [
+        {
+          "scene": "s4",
+          "from_ms": 494,
+          "to_ms": 3696,
+          "speech": "Mục Learn chỉ rõ hôm nay làm 1 bài, nhận điểm và lên cấp.",
+          "focus": "Learning streak 0 days in a row Record: 0 days Stu",
+          "kind": "card",
+          "source": "rule",
+          "reason": ""
+        }
+      ],
+      "focus_text_clipped": 128,
+      "image_zoom_inside": 0,
+      "focus_clipped_spans": [
+        {
+          "scene": "s4",
+          "from_ms": 1600,
+          "to_ms": 5833.333333333333,
+          "text": "Marketing Studio and new AI models help boost work productiv",
+          "item": "e7pf181",
+          "view": [
+            275,
+            0,
+            642,
+            803
+          ],
+          "box": [
+            522,
+            600,
+            488,
+            17
+          ]
+        }
+      ]
+    },
+    "verdict": {
+      "max_zoom_rate": true,
+      "max_pan_rate": true,
+      "freeze_then_jump": true,
+      "flash_shots": true,
+      "static_ms_max": true,
+      "loading_frames_ms": true,
+      "focus_match_rate": false,
+      "focus_text_clipped": false
+    },
+    "passed": false
+  },
+  "scorecard": {
+    "lines": [
+      {
+        "id": "hook_visual",
+        "label": "Hook: khung gần + chữ ngắn trong 2 giây đầu",
+        "target": "khung tight/medium, chữ ≤ 5 từ",
+        "value": "gần, 5 từ",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "max_static_shot_s",
+        "label": "Không cảnh nào đứng yên quá lâu",
+        "target": "≤ 3.0 s",
+        "value": 2.38,
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "dead_frames_ms",
+        "label": "Không có khung hình chết",
+        "target": "0 ms",
+        "value": 0,
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "fullscreen_text_ratio",
+        "label": "Thẻ chữ toàn màn hình",
+        "target": "mỗi thẻ ≤ 3 s, tổng ≤ 15%",
+        "value": "0%, max 0ms",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "critic_hook_strength",
+        "label": "Critic: hook",
+        "target": "≥ 7",
+        "value": 7,
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "critic_benefit_clarity",
+        "label": "Critic: lợi ích",
+        "target": "≥ 7",
+        "value": 6,
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "critic_cta_strength",
+        "label": "Critic: kêu gọi",
+        "target": "≥ 7",
+        "value": 8,
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "proof_used",
+        "label": "Dùng bằng chứng thật",
+        "target": "có",
+        "value": "có",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "footage_ratio",
+        "label": "Tỉ lệ cảnh quay thật",
+        "target": "≥ 60%",
+        "value": "82%",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "steps_in_clip",
+        "label": "Bước thao tác có trong video",
+        "target": "≥ 80%",
+        "value": "100%",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_max_zoom_rate",
+        "label": "Tốc độ zoom tối đa",
+        "target": "≤ 2.5%/khung",
+        "value": "2.0%/khung",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_max_pan_rate",
+        "label": "Tốc độ kéo khung tối đa",
+        "target": "≤ 1.5%/khung",
+        "value": "1.1%/khung",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_freeze_then_jump",
+        "label": "Đứng yên rồi giật",
+        "target": "0",
+        "value": "0",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_flash_shots",
+        "label": "Cảnh chớp (< 0,8 s)",
+        "target": "0",
+        "value": "0",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_loading_frames_ms",
+        "label": "Ảnh/canvas đang tải lọt vào hình",
+        "target": "0 ms",
+        "value": "0 ms",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_static_ms_max",
+        "label": "Đứng yên tuyệt đối dài nhất",
+        "target": "≤ 400 ms",
+        "value": "0 ms",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_focus_text_clipped",
+        "label": "Chữ tiêu điểm bị cắt",
+        "target": "0",
+        "value": "128",
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "motion_focus_match_rate",
+        "label": "Tiêu điểm khớp lời đọc/thao tác",
+        "target": "≥ 85%",
+        "value": "72%",
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "audio_present",
+        "label": "Âm thanh",
+        "target": "—",
+        "value": "chưa có (M2)",
+        "status": "info",
+        "note": ""
+      }
+    ],
+    "passed": 15,
+    "failed": 3,
+    "total": 18,
+    "all_passed": false
+  },
+  "request_guard": {
+    "allow_mutations": false,
+    "blocked": {},
+    "allowed": {},
+    "faked_204": {},
+    "login_phase": {
+      "posts_allowed": {},
+      "hosts_refused": {}
+    },
+    "writes": {
+      "windows": 0,
+      "requests": []
+    },
+    "first_blocked_urls": [],
+    "first_passed_urls": {}
+  }
+}

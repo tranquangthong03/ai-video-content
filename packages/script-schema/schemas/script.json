@@ -10,16 +10,20 @@
     "goal": { "enum": ["awareness", "conversion", "tutorial", "recruitment"] },
     "aspect_ratio": { "const": "9:16" },
     "target_duration_s": { "type": "integer", "minimum": 15, "maximum": 90 },
-    "template": { "enum": ["desktop_focus", "desktop_showcase", "phone_showcase"], "default": "desktop_focus" },
+    "template": {
+      "enum": ["desktop_frame", "desktop_focus", "desktop_showcase", "phone_showcase"],
+      "default": "desktop_frame",
+      "description": "desktop_frame: 16:9 frame, still full view, a few planned zooms. desktop_focus: 4:5 frame with the following camera."
+    },
     "capture": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "viewport": { "enum": ["desktop", "mobile"], "default": "desktop" },
-        "width": { "type": "integer", "minimum": 320, "maximum": 3840, "default": 1440 },
-        "height": { "type": "integer", "minimum": 320, "maximum": 3840, "default": 900 }
+        "width": { "type": "integer", "minimum": 320, "maximum": 3840, "default": 1280 },
+        "height": { "type": "integer", "minimum": 320, "maximum": 3840, "default": 720 }
       },
-      "default": { "viewport": "desktop", "width": 1440, "height": 900 }
+      "default": { "viewport": "desktop", "width": 1280, "height": 720 }
     },
     "flow_id": { "type": ["string", "null"], "default": null },
     "badge": { "type": ["string", "null"], "maxLength": 24, "default": null },

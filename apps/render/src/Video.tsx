@@ -1,5 +1,6 @@
 import React from "react";
 import { InputPropsSchema, type InputPropsInput } from "./props";
+import { DesktopFrameVideo } from "./templates/DesktopFrame/DesktopFrameVideo";
 import { DesktopFocusVideo } from "./templates/DesktopFocus/DesktopFocusVideo";
 import { DesktopVideo } from "./templates/DesktopShowcase/DesktopVideo";
 import { PhoneVideo } from "./templates/PhoneShowcase/PhoneVideo";
@@ -13,7 +14,9 @@ export const Video: React.FC<InputPropsInput> = (raw) => {
       ? PhoneVideo
       : props.script.template === "desktop_showcase"
         ? DesktopVideo
-        : DesktopFocusVideo;
+        : props.script.template === "desktop_focus"
+          ? DesktopFocusVideo
+          : DesktopFrameVideo;
   return (
     <ThemeProvider theme={props.script.theme}>
       <Template {...props} />

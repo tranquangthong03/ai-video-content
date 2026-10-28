@@ -1,4 +1,4 @@
-"""Calm pacing, the focus log the camera follows, and the 1440x900 capture."""
+"""Calm pacing, the focus log the camera follows, and the 1280x720 capture."""
 
 import random
 from pathlib import Path
@@ -28,14 +28,14 @@ def test_main_actions_leave_a_focus_log_with_boxes_and_a_hold(
         ],
     }
     r = rec(browser_session, site, tmp_path, visual, speech_ms=1000)
-    assert (r.width, r.height) == (1440, 900)
+    assert (r.width, r.height) == (1280, 720)
     assert [f["kind"] for f in r.focus_log] == ["type", "hover"]
     assert [f["hold_ms"] for f in r.focus_log] == [1500, 1500]
     assert [f["t_ms"] for f in r.focus_log] == sorted(f["t_ms"] for f in r.focus_log)
     for f in r.focus_log:
         b = f["bbox"]
-        assert b["w"] > 0 and b["h"] > 0 and 0 <= b["x"] and b["x"] + b["w"] <= 1440
-        assert 0 <= b["y"] and b["y"] + b["h"] <= 900
+        assert b["w"] > 0 and b["h"] > 0 and 0 <= b["x"] and b["x"] + b["w"] <= 1280
+        assert 0 <= b["y"] and b["y"] + b["h"] <= 720
     assert r.focus_log[0]["bbox"]["w"] > 100  # the input box, not a point
 
 
@@ -75,7 +75,7 @@ def test_scrolling_logs_no_centre_block_and_scroll_to_logs_the_section_content(
     ]  # what is looked at while scrolling comes from the plan
     section = r.focus_log[-1]
     assert section["hold_ms"] == 1500 and section["bbox"]["w"] > 0
-    assert all(0 <= f["bbox"]["x"] and f["bbox"]["y"] + f["bbox"]["h"] <= 900 for f in r.focus_log)
+    assert all(0 <= f["bbox"]["x"] and f["bbox"]["y"] + f["bbox"]["h"] <= 720 for f in r.focus_log)
 
 
 def test_a_capture_size_other_than_the_default_is_honoured(

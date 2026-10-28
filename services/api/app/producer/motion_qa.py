@@ -13,7 +13,7 @@ import math
 import os
 import subprocess
 from collections.abc import Iterable, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -21,8 +21,19 @@ import cv2
 import numpy as np
 
 FPS = 30
-# the 4:5 media window of the desktop_focus template inside the 1080x1920 canvas (see layout.ts)
-MEDIA_BOX = (40, 365, 1000, 1250)  # left, top, width, height
+# the media window of each template inside the 1080x1920 canvas (layout.ts of the template)
+MEDIA_BOXES = {
+    "desktop_focus": (
+        40,
+        365,
+        1000,
+        1250,
+    ),  # left, top, width, height; 4:5, captions on its bottom edge
+    "desktop_frame": (24, 474, 1032, 580),  # 16:9 (inside the 2 px border), captions are below it
+}
+MEDIA_BOX = MEDIA_BOXES["desktop_focus"]
+# rows of the window the fit looks at (share of its height): above the captions of desktop_focus
+FIT_ROWS = {"desktop_focus": (0.04, 0.72), "desktop_frame": (0.03, 0.97)}
 CAPTION_STRIP = 340  # the dark strip with the captions along the window's bottom edge
 ANALYSIS_WIDTH = 400  # frames are reduced to this width for the fit
 DIFF_SIZE = (100, 125)
@@ -43,6 +54,25 @@ MIN_FOCUS_MATCH = 0.85
 EXPLAIN_ZOOM = 0.008
 EXPLAIN_PAN = 0.006
 
+# desktop_frame: the camera is still by design and zooms with a 0.5-0.7 s ease, so a zoom of 1.7x
+# peaks at ~4.5 % of the width per frame; and a page that is just being held stays still for its
+# whole hold because nothing drifts (the longest a page is held while one sentence is spoken).
+# The speed and still-time limits are widened for it.
+TEMPLATE_LIMITS = {
+    "desktop_focus": {"zoom": MAX_ZOOM_RATE, "pan": MAX_PAN_RATE, "static_ms": MAX_STATIC_MS},
+    "desktop_frame": {"zoom": 0.05, "pan": 0.035, "static_ms": 5000},
+}
+# the shot-camera numbers (all templates; the limits apply to desktop_frame, the others show them)
+MAX_MOVING_RATIO = 0.25  # share of the frames in which the camera moves
+MIN_FULL_RATIO = 0.50  # share of the frames on the full view
+MAX_ZOOMS_PER_SCENE = 2
+MOVE_EPS = (
+    6e-4  # a view change below this share per frame is the camera standing still (drift is 3e-4)
+)
+GHOST_MIN_DIFF = 3.0  # both neighbours of a ghost differ from it by at least this (0-255)
+GHOST_RATIO = 0.35  # and a blend of them is this much closer than either one
+CROSSFADE_FRAMES = 10
+
 
 @dataclass(frozen=True)
 class FrameMotion:
@@ -52,6 +82,7 @@ class FrameMotion:
     pan: float  # shift of the window centre, as a share of the width
     cut: bool  # a different shot (not camera motion)
     known: bool  # the fit worked (False: too flat to tell, treated as no motion)
+    ghost: bool = False  # a blend of its two neighbours: two pictures on top of each other
 
     @property
     def zoom_rate(self) -> float:
@@ -93,14 +124,40 @@ def fit_motion(
     return scale, pan, float(inliers.mean())
 
 
-def analyze_frames(frames: Iterable[np.ndarray], fps: int = FPS) -> list[FrameMotion]:
+def ghost_frames(smalls: Sequence[np.ndarray]) -> set[int]:
+    """Indices of frames that look like a blend of the frame before and the one after.
+
+    A crossfade shows two pictures on top of each other; a frame of it is, pixel by pixel, a
+    weighted mean of its neighbours. Camera motion is not: the mean of two shifted pictures is not
+    the picture in between. So a frame whose neighbours both differ from it clearly, yet a blend of
+    the two matches it far better than either, is a ghost."""
+    found: set[int] = set()
+    for i in range(1, len(smalls) - 1):
+        a, b, c = (x.astype(np.float32) for x in smalls[i - 1 : i + 2])
+        d1 = float(np.mean(np.abs(b - a)))
+        d2 = float(np.mean(np.abs(c - b)))
+        if min(d1, d2) < GHOST_MIN_DIFF:
+            continue
+        best = min(float(np.mean(np.abs(b - ((1 - t) * a + t * c)))) for t in (0.25, 0.5, 0.75))
+        if best < GHOST_RATIO * min(d1, d2):
+            found.add(i)
+    return found
+
+
+def analyze_frames(
+    frames: Iterable[np.ndarray],
+    fps: int = FPS,
+    rows: tuple[float, float] = FIT_ROWS["desktop_focus"],
+) -> list[FrameMotion]:
     """Motion of every frame against the one before it (the first frame has none)."""
     out: list[FrameMotion] = []
     prev: np.ndarray | None = None
     prev_small: np.ndarray | None = None
     mask: np.ndarray | None = None
+    smalls: list[np.ndarray] = []
     for n, frame in enumerate(frames):
         small = cv2.resize(frame, DIFF_SIZE, interpolation=cv2.INTER_AREA)
+        smalls.append(small)
         if prev is not None and prev_small is not None:
             diff = float(np.mean(np.abs(small.astype(np.int16) - prev_small.astype(np.int16))))
             fit = (1.0, 0.0, 1.0) if diff < STATIC_DIFF else fit_motion(prev, frame, mask)
@@ -114,11 +171,11 @@ def analyze_frames(frames: Iterable[np.ndarray], fps: int = FPS) -> list[FrameMo
             )  # fmt: skip
         if mask is None:
             mask = np.zeros(frame.shape[:2], np.uint8)
-            mask[int(frame.shape[0] * 0.04) : int(frame.shape[0] * 0.72), :] = (
-                255  # above the captions
-            )
+            mask[int(frame.shape[0] * rows[0]) : int(frame.shape[0] * rows[1]), :] = 255
         prev, prev_small = frame, small
-    return out
+    ghosts = ghost_frames(smalls)
+    # out[k] is frame k + 1 (the first frame has no motion entry)
+    return [replace(m, ghost=True) if (k + 1) in ghosts else m for k, m in enumerate(out)]
 
 
 def runs(flags: Sequence[bool]) -> list[tuple[int, int]]:
@@ -158,11 +215,13 @@ def motion_metrics(
     fps: int = FPS,
     intro_ms: int = INTRO_MS,
     camera: list[tuple[float, float]] | None = None,
+    template: str = "desktop_focus",
 ) -> dict[str, Any]:
     """The numbers the scorecard judges (rates are shares: 0.025 = 2.5 % per frame).
     `camera`: the planned camera's own (zoom, pan) per frame, to tell the page moving from the
     camera moving."""
     frame_ms = 1000 / fps
+    lim = TEMPLATE_LIMITS.get(template, TEMPLATE_LIMITS["desktop_focus"])
     motions = [m for m in motions if m.t_ms >= intro_ms]
     changed = page_changes(motions, camera, fps)
     zoom = max((m.zoom_rate for m in motions if m.t_ms not in changed), default=0.0)
@@ -176,7 +235,7 @@ def motion_metrics(
         if b < len(motions) - 1:  # (the still end card is not a defect)
             longest_static = max(longest_static, length)
             after = motions[b + 1]
-            fast = (after.zoom_rate > MAX_ZOOM_RATE or after.pan_rate > MAX_PAN_RATE) and (
+            fast = (after.zoom_rate > lim["zoom"] or after.pan_rate > lim["pan"]) and (
                 after.t_ms not in changed
             )
             if length >= FREEZE_MS and fast and not after.cut:
@@ -199,6 +258,55 @@ def motion_metrics(
         "cuts": [motions[i].t_ms for i in cuts],
         "page_changes_ms": sorted(changed),
         "unfitted_frames": sum(1 for m in motions if not m.known and not m.cut),
+        "ghost_frames": sum(1 for m in motions if m.ghost and moving_at(camera, m.t_ms, fps)),
+    }
+
+
+def moving_at(camera: list[tuple[float, float]] | None, t_ms: int, fps: int = FPS) -> bool:
+    """The planned camera moves around this frame (or there is no plan: then every blend counts)."""
+    if camera is None:
+        return True
+    n = round(t_ms * fps / 1000)
+    near = camera[max(0, n - 1) : n + 2]
+    return any(z > MOVE_EPS or p > MOVE_EPS for z, p in near)
+
+
+def shot_metrics(path: dict[str, Any]) -> dict[str, Any]:
+    """How much of the time the camera moves / is on the full view, the zooms of every scene, and
+    the crossfades laid over a moving camera - from the renderer's own camera path."""
+    frames = moving = full = 0
+    zooms: dict[str, int] = {}
+    for scene in path["scenes"]:
+        views = scene["views"]
+        full_w = scene["full_w"]
+        zoom_ins = 0
+        zooming_in = False
+        for i, (x, y, w) in enumerate(views):
+            frames += 1
+            if w >= full_w * 0.98:
+                full += 1
+            if i == 0:
+                continue
+            px, py, pw = views[i - 1]
+            step = max(abs(math.log(pw / w)), math.hypot(x - px, y - py) / w)
+            if step > MOVE_EPS:
+                moving += 1
+            closer = math.log(pw / w) > MOVE_EPS
+            if closer and not zooming_in:
+                zoom_ins += 1  # a new move towards a closer view
+            zooming_in = closer or (zooming_in and abs(math.log(pw / w)) <= MOVE_EPS)
+        zooms[scene["id"]] = zoom_ins
+    blended = sum(
+        1
+        for b in path.get("boundaries", [])
+        if b.get("crossfade") and b.get("moving_frames", 0) > 0
+    )
+    return {
+        "camera_moving_ratio": round(moving / frames, 3) if frames else 0.0,
+        "full_view_ratio": round(full / frames, 3) if frames else 1.0,
+        "zoom_events_per_scene": max(zooms.values(), default=0),
+        "zoom_events": sum(zooms.values()),
+        "crossfade_during_motion": blended,
     }
 
 
@@ -232,15 +340,27 @@ def camera_rates(path: dict[str, Any]) -> list[tuple[float, float]]:
     return out
 
 
-def verdict(metrics: dict[str, Any]) -> dict[str, bool]:
+def verdict(metrics: dict[str, Any], template: str = "desktop_focus") -> dict[str, bool]:
     """pass / fail per measured number."""
-    return {
-        "max_zoom_rate": metrics["max_zoom_rate"] <= MAX_ZOOM_RATE,
-        "max_pan_rate": metrics["max_pan_rate"] <= MAX_PAN_RATE,
+    lim = TEMPLATE_LIMITS.get(template, TEMPLATE_LIMITS["desktop_focus"])
+    ok = {
+        "max_zoom_rate": metrics["max_zoom_rate"] <= lim["zoom"],
+        "max_pan_rate": metrics["max_pan_rate"] <= lim["pan"],
         "freeze_then_jump": metrics["freeze_then_jump"] == 0,
         "flash_shots": metrics["flash_shots"] == 0,
-        "static_ms_max": metrics["static_ms_max"] <= MAX_STATIC_MS,
+        "static_ms_max": metrics["static_ms_max"] <= lim["static_ms"],
+        "ghost_frames": metrics.get("ghost_frames", 0) == 0,
     }
+    if (
+        template == "desktop_frame"
+    ):  # the limits of the shot camera (the other templates only show them)
+        ok["camera_moving_ratio"] = metrics["camera_moving_ratio"] <= MAX_MOVING_RATIO
+        ok["full_view_ratio"] = metrics["full_view_ratio"] >= MIN_FULL_RATIO
+        ok["zoom_events_per_scene"] = metrics["zoom_events_per_scene"] <= MAX_ZOOMS_PER_SCENE
+        ok["crossfade_during_motion"] = metrics["crossfade_during_motion"] == 0
+        if "container_cut_frames" in metrics:
+            ok["container_cut_frames"] = metrics["container_cut_frames"] == 0
+    return ok
 
 
 def read_media_frames(
@@ -263,11 +383,14 @@ def read_media_frames(
         cap.release()
 
 
-def video_motion(video: Path) -> list[FrameMotion]:
+def video_motion(video: Path, template: str = "desktop_focus") -> list[FrameMotion]:
     cap = cv2.VideoCapture(str(video))
     fps = int(round(cap.get(cv2.CAP_PROP_FPS))) or FPS
     cap.release()
-    return analyze_frames(read_media_frames(video), fps)
+    box = MEDIA_BOXES.get(template, MEDIA_BOX)
+    return analyze_frames(
+        read_media_frames(video, box), fps, FIT_ROWS.get(template, FIT_ROWS["desktop_focus"])
+    )
 
 
 def series(motions: list[FrameMotion]) -> list[dict[str, Any]]:
@@ -393,6 +516,20 @@ def focus_clipped(props_file: Path) -> dict[str, Any]:
     return json.loads(proc.stdout.strip().splitlines()[-1])
 
 
+def frame_blocks(props_file: Path) -> dict[str, Any]:
+    """desktop_frame: frames in which the block of a zoom is cut (apps/render/scripts)."""
+    script = (
+        Path(__file__).resolve().parents[4] / "apps" / "render" / "scripts" / "frame-metrics.ts"
+    )
+    proc = subprocess.run(
+        ["pnpm", "exec", "tsx", str(script), str(props_file.resolve())],
+        cwd=script.parents[1], capture_output=True, text=True, shell=os.name == "nt",
+    )  # fmt: skip
+    if proc.returncode != 0:
+        raise RuntimeError(f"frame-metrics failed: {proc.stderr[-300:]}")
+    return json.loads(proc.stdout.strip().splitlines()[-1])  # type: ignore[no-any-return]
+
+
 def loading_report(props: dict[str, Any], produce_dir: Path) -> dict[str, Any]:
     """Time in which a big image / canvas is still a flat grey or black slab, per scene clip."""
     from app.producer.dead_frames import LOADING_MIN_MS, media_loading_runs
@@ -420,25 +557,36 @@ def run_qa(job_dir: Path, *, with_focus_clipped: bool = True) -> dict[str, Any]:
     produce = job_dir / "produce"
     props_file = produce / "render_props.json"
     props = json.loads(props_file.read_text(encoding="utf-8"))
-    motions = video_motion(job_dir / "video.mp4")
+    template = props["script"].get("template", "desktop_frame")
+    motions = video_motion(job_dir / "video.mp4", template)
+    path: dict[str, Any] | None
     try:
-        camera: list[tuple[float, float]] | None = camera_rates(camera_path(props_file))
+        path = camera_path(props_file)
+        camera: list[tuple[float, float]] | None = camera_rates(path)
     except RuntimeError:
-        camera = None  # no node here: every frame counts against the camera
-    metrics = motion_metrics(motions, camera=camera)
+        path, camera = None, None  # no node here: every frame counts against the camera
+    metrics = motion_metrics(motions, camera=camera, template=template)
+    metrics["template"] = template
+    if path is not None:
+        metrics.update(shot_metrics(path))
     metrics.update(loading_report(props, produce))
     match = focus_match(props, produce)
     metrics["focus_match_rate"] = match["focus_match_rate"]
     metrics["focus_match_per_scene"] = match["per_scene"]
     metrics["focus_unmatched"] = match["misses"]
-    if with_focus_clipped:
+    if with_focus_clipped and template == "desktop_frame":
+        blocks = frame_blocks(props_file)
+        metrics["container_cut_frames"] = blocks["container_cut_frames"]
+        metrics["container_cut_spans"] = blocks["container_cut_spans"]
+    elif with_focus_clipped:
         clipped = focus_clipped(props_file)
         metrics["focus_text_clipped"] = clipped["frames_text_clipped"]
         metrics["image_zoom_inside"] = clipped["image_zoom_inside"]
         metrics["focus_clipped_spans"] = clipped.get("clipped_spans", [])  # top 5
-    ok = verdict(metrics)
+    ok = verdict(metrics, template)
     ok["loading_frames_ms"] = metrics["loading_frames_ms"] == 0
-    if metrics["focus_match_rate"] is not None:
+    if metrics["focus_match_rate"] is not None and template != "desktop_frame":
+        # (desktop_frame zooms only where the planner found the voice-over talking about the block)
         ok["focus_match_rate"] = metrics["focus_match_rate"] >= MIN_FOCUS_MATCH
     if "focus_text_clipped" in metrics:
         ok["focus_text_clipped"] = metrics["focus_text_clipped"] == 0

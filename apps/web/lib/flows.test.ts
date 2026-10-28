@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { CoreFlow, FlowRun } from "./generated";
 import { FlowRunSchema, CoreFlowSchema } from "./generated";
 import { buildResponse } from "./responses";
-import { canApprove, flowAnswers, groupByChapter, stepLine, submitOffer, toggleFlow } from "./flows";
+import { FLOW_EXAMPLES, canApprove, flowAnswers, groupByChapter, qualityLine, stepLine, submitOffer, toggleFlow } from "./flows";
 
 const flow = (id: string, needsSubmit: boolean): CoreFlow =>
   CoreFlowSchema.parse({
@@ -82,5 +82,21 @@ describe("storyboard", () => {
     expect(canApprove(run())).toBe(true);
     expect(canApprove(run({ status: "failed" }))).toBe(false);
     expect(canApprove(run({ steps: run().steps.slice(0, 1) }))).toBe(false);
+  });
+});
+
+describe("what the select_flow card says about a flow", () => {
+  it("shows the value actions, and the warning only when they are too few", () => {
+    expect(qualityLine(undefined)).toBeNull();
+    expect(qualityLine({ value_actions: 4, label: null, empty_warning: null, empty_signals: [], estimated: true })).toEqual({ text: "~4 thao tác tạo kết quả", warn: null });
+    expect(qualityLine({ value_actions: 0, label: "Chỉ điều hướng — video sẽ ít hấp dẫn", empty_warning: null, empty_signals: [], estimated: false })).toEqual({
+      text: "0 thao tác tạo kết quả",
+      warn: "Chỉ điều hướng — video sẽ ít hấp dẫn",
+    });
+  });
+
+  it("offers two short examples for describing a flow", () => {
+    expect(FLOW_EXAMPLES).toHaveLength(2);
+    expect(FLOW_EXAMPLES.every((e) => e.length < 60)).toBe(true);
   });
 });

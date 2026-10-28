@@ -5,11 +5,13 @@ import type { InteractionRequest } from "@/lib/generated";
 import { fileUrl } from "@/lib/api";
 import {
   EDIT_EXAMPLES,
+  FLOW_EXAMPLES,
   FLOW_STATUS_LABEL,
   canApprove,
   flowAnswers,
   flowStatusTone,
   groupByChapter,
+  qualityLine,
   stepLine,
   submitOffer,
   toggleFlow,
@@ -59,6 +61,33 @@ export function SelectFlowCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
         </p>
       </div>
       <Notices message={pending.message} />
+      <Section title="Tự mô tả luồng muốn quay">
+        <p className="text-xs text-muted-foreground">
+          Cách nhanh nhất để có video hay: nói bạn muốn khách thấy việc gì được làm xong. Hệ thống sẽ thử đúng việc đó.
+        </p>
+        <Textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder={FLOW_EXAMPLES[0]}
+          aria-label="Mô tả luồng muốn quay"
+          disabled={busy}
+        />
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Ví dụ">
+          {FLOW_EXAMPLES.map((e) => (
+            <Button key={e} variant="outline" size="sm" disabled={busy} onClick={() => setDescription(e)}>
+              {e}
+            </Button>
+          ))}
+        </div>
+        <Button variant="outline" disabled={busy || !description.trim()} onClick={() => answer(true)}>
+          {busy ? "Đang xử lý..." : "Thêm luồng này"}
+        </Button>
+      </Section>
+      {sel.empty_warning && (
+        <p role="status" className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          {sel.empty_warning}
+        </p>
+      )}
       <Section title={`Luồng đề xuất (${order.length}/${sel.max} được chọn)`}>
         <div className="grid gap-3 lg:grid-cols-2">
           {flows.map((f) => {
@@ -86,6 +115,15 @@ export function SelectFlowCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
                     {f.source === "user" && <Badge tone="success">Bạn mô tả</Badge>}
                   </CardHeader>
                   <CardContent className="space-y-2 text-xs text-muted-foreground">
+                    {(() => {
+                      const q = qualityLine(sel.quality?.[f.id]);
+                      return q ? (
+                        <p className="flex flex-wrap items-center gap-2">
+                          <span className="font-medium text-foreground">{q.text}</span>
+                          {q.warn && <Badge tone="warning">{q.warn}</Badge>}
+                        </p>
+                      ) : null;
+                    })()}
                     {cannot && (
                       <p role="status" className="rounded-md bg-red-50 px-2 py-1.5 text-red-800">
                         Không khả thi trên tài khoản này: {cannot}
@@ -107,18 +145,6 @@ export function SelectFlowCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
             );
           })}
         </div>
-      </Section>
-      <Section title="Tự mô tả luồng muốn quay">
-        <Textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Ví dụ: Nhân viên xin nghỉ phép 2 ngày rồi xem trạng thái đơn"
-          aria-label="Mô tả luồng muốn quay"
-          disabled={busy}
-        />
-        <Button variant="outline" disabled={busy || !description.trim()} onClick={() => answer(true)}>
-          {busy ? "Đang xử lý..." : "Thêm luồng này"}
-        </Button>
       </Section>
       {offer.offered && (
         <Section title="Gửi dữ liệu trong luồng">
@@ -235,6 +261,15 @@ export function StoryboardCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
         </div>
       </Section>
       <ErrorNote text={error} />
+      {(pending.flow_quality?.label || pending.flow_quality?.empty_warning) && (
+        <ul role="status" aria-label="Cảnh báo chất lượng luồng" className="space-y-1">
+          {[pending.flow_quality.label, pending.flow_quality.empty_warning].filter((w): w is string => Boolean(w)).map((w) => (
+            <li key={w} className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              {w.replace(/\.?$/, ".")} Bạn vẫn có thể duyệt.
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="flex flex-wrap gap-2">
         <Button disabled={busy || !canApprove(run)} onClick={() => send(() => buildResponse(pending, "approve"))}>
           {busy ? "Đang gửi..." : "Duyệt luồng này"}

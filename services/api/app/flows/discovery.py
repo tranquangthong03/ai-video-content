@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 from app.browser.form_actions import fold
 from app.browser.urls import normalize_url
+from app.core.flow_value import rank_by_value
 from app.core.subpages import is_sensitive, is_subpage
 from app.llm.json_call import JsonCaller
 from app.llm.prompts import render
@@ -256,7 +257,7 @@ def propose_flows(
         tour = tour_flow(profile, pages)
         if tour:
             flows.append(tour)
-    return flows
+    return rank_by_value(flows)
 
 
 def normalize_flow(

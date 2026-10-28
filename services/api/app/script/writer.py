@@ -114,7 +114,7 @@ class WriterContext:
 
     # the video is longer than the product can fill with real footage and the user insisted
     forced: bool = False
-    capture: tuple[int, int] | None = None  # recording size; None = the schema default (1440x900)
+    capture: tuple[int, int] | None = None  # recording size; None = the schema default (1280x720)
     proof: ProofBank | None = None  # real numbers / quotes / offers the words may lean on
     brief: MarketingBrief | None = None  # what the user told us the website does not say
     inventory: list[dict[str, Any]] = field(default_factory=list)  # frames of the filmed flow

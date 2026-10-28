@@ -6,6 +6,7 @@ export * from "./concept_set";
 export * from "./core_flow";
 export * from "./edit_op";
 export * from "./edit_plan";
+export * from "./flow_quality";
 export * from "./flow_run";
 export * from "./focus_plan";
 export * from "./interaction";

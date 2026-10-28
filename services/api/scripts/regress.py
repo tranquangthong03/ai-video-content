@@ -45,12 +45,23 @@ SENTINEL_CALLER: Any = object()  # "a planner is there": the replayed plans neve
 CRITERIA = ("hook_strength", "benefit_clarity", "proof_usage", "cta_strength", "flow")
 # (key, label, threshold text) of the Motion QA numbers shown in the T1 table
 QA_ROWS = (
-    ("max_zoom_rate", "zoom/khung", "≤ 2,5%"),
-    ("max_pan_rate", "pan/khung", "≤ 1,5%"),
-    ("static_ms_max", "đứng yên (ms)", "≤ 400"),
+    ("max_zoom_rate", "zoom/khung", "≤ 2,5% (frame 5%)"),
+    ("max_pan_rate", "pan/khung", "≤ 1,5% (frame 3,5%)"),
+    ("static_ms_max", "đứng yên (ms)", "≤ 400 (frame 2000)"),
     ("focus_text_clipped", "chữ bị cắt", "0"),
     ("focus_match_rate", "tiêu điểm khớp", "≥ 85%"),
+    ("camera_moving_ratio", "camera chuyển động", "≤ 25%"),
+    ("full_view_ratio", "toàn cảnh", "≥ 50%"),
+    ("zoom_events_per_scene", "zoom/cảnh (max)", "≤ 2"),
+    ("container_cut_frames", "khối bị cắt (frame)", "0"),
+    ("crossfade_during_motion", "crossfade khi chuyển động", "0"),
+    ("ghost_frames", "ảnh chồng (frame)", "0"),
+    ("freeze_then_jump", "đứng rồi giật", "0"),
+    ("flash_shots", "cảnh chớp", "0"),
+    ("loading_frames_ms", "ảnh đang tải (ms)", "0"),
 )
+TEMPLATES = ("desktop_frame", "desktop_focus")
+SHORT = {"desktop_frame": "frame", "desktop_focus": "focus"}
 
 
 class LLMForbidden(RuntimeError):
@@ -187,7 +198,11 @@ def saved_plans(name: str, script: Any) -> list[list[dict[str, Any]] | None]:
 
 
 def replay_produce(
-    name: str, ws: Path, render: Callable[..., Any] | None = None, qa: bool = True
+    name: str,
+    ws: Path,
+    render: Callable[..., Any] | None = None,
+    qa: bool = True,
+    template: str = "desktop_frame",
 ) -> dict[str, Any]:
     """producer.produce() on the snapshot: saved script, live clip and focus plans; no LLM, no browser."""
     from app.core.flow_ctx import FlowCtx
@@ -203,6 +218,7 @@ def replay_produce(
     if flow is not None:
         profile = flow_profile(profile, flow)
     script = Script.model_validate_json((ws / "script_approved.json").read_text(encoding="utf-8"))
+    script = Script.model_validate({**script.model_dump(), "template": template})
     report = json.loads((ws / "report.json").read_text(encoding="utf-8"))
     script_report = json.loads((ws / "script_report.json").read_text(encoding="utf-8"))
     queue = saved_plans(name, script)
@@ -243,6 +259,8 @@ def qa_numbers(report: dict[str, Any]) -> dict[str, Any]:
     qa = report.get("motion_qa") or {}
     m = qa.get("metrics", qa)
     out = {k: m.get(k) for k, _l, _t in QA_ROWS}
+    out["passed"] = qa.get("passed")
+    out["template"] = m.get("template")
     out["footage_ratio"] = report.get("footage_ratio")
     out["video_s"] = round((report.get("actual_ms") or 0) / 1000, 1)
     return out
@@ -251,7 +269,9 @@ def qa_numbers(report: dict[str, Any]) -> dict[str, Any]:
 def fmt(key: str, v: Any) -> str:
     if v is None:
         return "-"
-    if key in ("max_zoom_rate", "max_pan_rate", "focus_match_rate"):
+    if key in (
+        "max_zoom_rate", "max_pan_rate", "focus_match_rate", "camera_moving_ratio", "full_view_ratio"
+    ):  # fmt: skip
         return f"{v * 100:.1f}%"
     return str(v)
 
@@ -263,6 +283,41 @@ def print_table(title: str, cols: list[str], rows: list[list[str]]) -> None:
         print("  " + "  ".join(str(c).ljust(w) for c, w in zip(r, widths, strict=True)))
 
 
+def stills(ws: Path, out: Path, tag: str) -> list[str]:
+    """Two stills of the video: the middle of its first zoom (else of its 40 %) and a full-view moment."""
+    import subprocess
+
+    from app.producer.motion_qa import camera_path
+
+    video = ws / "video.mp4"
+    try:
+        path = camera_path(ws / "produce" / "render_props.json")
+    except RuntimeError:
+        return []
+    zoomed: list[int] = []
+    full: list[int] = []
+    for scene in path["scenes"]:
+        for i, (_x, _y, w) in enumerate(scene["views"]):
+            (full if w >= scene["full_w"] * 0.98 else zoomed).append(scene["from"] + i)
+    fps = path["fps"]
+    total = max((sc["from"] + sc["frames"] for sc in path["scenes"]), default=0)
+    pick = [
+        zoomed[len(zoomed) // 2] if zoomed else int(total * 0.4),
+        full[len(full) // 3] if full else int(total * 0.6),
+    ]
+    found = []
+    for n, frame in enumerate(pick):
+        file = out / f"{tag}-still{'AB'[n]}.png"
+        done = subprocess.run(
+            ["ffmpeg", "-y", "-v", "error", "-ss", f"{frame / fps:.3f}", "-i", str(video),
+             "-frames:v", "1", str(file)],
+            capture_output=True, text=True, check=False,
+        )  # fmt: skip
+        if done.returncode == 0 and file.is_file():
+            found.append(file.name)
+    return found
+
+
 def run_t1(
     names: list[str],
     *,
@@ -271,43 +326,63 @@ def run_t1(
     qa: bool = True,
     work: Path = WORK,
     sheets: Path | None = None,
+    template: str = "desktop_frame",
+    qa_only: bool = False,
 ) -> tuple[dict[str, Any], Meter, bool]:
-    last = load_last().get("t1", {})
+    key = f"t1_{SHORT[template]}"
+    saved = load_last()
+    # the run is compared with the last run of the same template; desktop_frame also with desktop_focus
+    last = saved.get(key) or (saved.get("t1", {}) if template == "desktop_focus" else {})
+    other = saved.get("t1_focus", {}) if template == "desktop_frame" else {}
     now: dict[str, Any] = {}
     ok = True
     with llm_meter(False) as meter:
         for name in names:
             t = time.monotonic()
             try:
-                ws = workspace(name, work)
-                report = replay_produce(name, ws, render, qa)
+                if qa_only:  # measure the videos of the last run again (no render)
+                    from app.producer.motion_qa import run_qa
+
+                    ws = work / name
+                    report = {"motion_qa": run_qa(ws)}
+                else:
+                    ws = workspace(name, work)
+                    report = replay_produce(name, ws, render, qa, template)
                 now[name] = {**qa_numbers(report), "seconds": round(time.monotonic() - t, 1)}
                 if sheets is not None:
                     from scripts import flow_report
 
                     sheets.mkdir(parents=True, exist_ok=True)
                     flow_report.contact_sheet(
-                        ws / "video.mp4", sheets / f"{name}-contact-sheet.png",
-                        int(report.get("actual_ms") or 0),
+                        ws / "video.mp4", sheets / f"{name}-{SHORT[template]}-sheet.png",
+                        int(report.get("actual_ms") or 0), 16,
                     )  # fmt: skip
+                    now[name]["stills"] = stills(ws, sheets, f"{name}-{SHORT[template]}")
+                now[name]["video"] = str(ws / "video.mp4")
             except Exception as e:  # noqa: BLE001 - a failing snapshot must not hide the others
                 ok = False
                 now[name] = {"error": f"{type(e).__name__}: {e}"[:300]}
     rows = []
-    for key, label, limit in QA_ROWS:
+    for qa_key, label, limit in QA_ROWS:
         row = [label, limit]
         for name in names:
-            cur, old = now[name].get(key), last.get(name, {}).get(key)
-            cell = fmt(key, cur) + ("" if old is None else f" (trước {fmt(key, old)})")
+            cur, old = now[name].get(qa_key), last.get(name, {}).get(qa_key)
+            cell = fmt(qa_key, cur) + ("" if old is None else f" (trước {fmt(qa_key, old)})")
+            if other.get(name, {}).get(qa_key) is not None:
+                cell += f" [focus {fmt(qa_key, other[name][qa_key])}]"
             row.append(cell)
         rows.append(row)
-    print_table("T1 – Motion QA từ snapshot", ["chỉ số", "ngưỡng", *names], rows)
+    rows.append(["Motion QA đạt", "", *[str(now[n].get("passed")) for n in names]])
+    print_table(f"T1 ({template}) – Motion QA từ snapshot", ["chỉ số", "ngưỡng", *names], rows)
     for name in names:
         if "error" in now[name]:
             print(f"  LỖI {name}: {now[name]['error']}")
     if save and ok:
         data = load_last()
-        data["t1"] = {**data.get("t1", {}), **now}
+        data[key] = {
+            **data.get(key, {}),
+            **{n: {k: v for k, v in d.items() if k != "stills"} for n, d in now.items()},
+        }
         save_last(data)
         print(f"\nĐã lưu mốc: {LAST}")
     return now, meter, ok
@@ -512,12 +587,22 @@ def main() -> int:
     p.add_argument("--save", action="store_true", help="write the result to docs/regress/last.json")
     p.add_argument("--brief", type=Path, help="t2: marketing brief JSON (schema marketing_brief)")
     p.add_argument("--sheets", type=Path, help="t1: folder for one contact sheet per video")
+    p.add_argument("--template", choices=TEMPLATES, default="desktop_frame", help="t1: template")
+    p.add_argument(
+        "--qa-only", action="store_true", help="t1: measure the last videos again, no render"
+    )
     args = p.parse_args()
     started = time.monotonic()
     if args.tier == "t0":
         meter, ok = run_t0(args.names, args.paths)
     elif args.tier == "t1":
-        _now, meter, ok = run_t1(args.names, save=args.save, sheets=args.sheets)
+        _now, meter, ok = run_t1(
+            args.names,
+            save=args.save,
+            sheets=args.sheets,
+            template=args.template,
+            qa_only=args.qa_only,
+        )
     else:
         _now, meter, ok = run_t2(args.names, args.brief, save=args.save)
     print(

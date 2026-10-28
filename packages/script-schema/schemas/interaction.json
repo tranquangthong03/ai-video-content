@@ -115,6 +115,17 @@
               "additionalProperties": { "type": "string" },
               "default": {},
               "description": "flow id -> the site's own message: this flow cannot be done with this account"
+            },
+            "quality": {
+              "type": "object",
+              "additionalProperties": { "$ref": "flow_quality.json" },
+              "default": {},
+              "description": "flow id -> how many steps make something visible appear (value_actions) and the label when it is too few"
+            },
+            "empty_warning": {
+              "type": ["string", "null"],
+              "default": null,
+              "description": "Set when the explored pages show the account has no data (two or more signs)"
             }
           }
         },
@@ -126,6 +137,11 @@
       "oneOf": [{ "$ref": "flow_run.json" }, { "type": "null" }],
       "default": null,
       "description": "flow_storyboard_review: the run to look at (steps carry screenshot paths)"
+    },
+    "flow_quality": {
+      "oneOf": [{ "$ref": "flow_quality.json" }, { "type": "null" }],
+      "default": null,
+      "description": "flow_storyboard_review: is the run worth filming (value actions, empty pages)"
     },
     "brief_form": {
       "oneOf": [

@@ -1,6 +1,6 @@
 """Record one scene of a script: drive the page like a person and write an mp4 plus a click log.
 
-A new context per scene (the script's capture size, 1440x900 by default, video recording, request
+A new context per scene (the script's capture size, 1280x720 by default, video recording, request
 guard on). Besides the click log it writes a focus log: boxes (clip pixels) the camera should
 frame, with how long to stay (hold_ms). Steps come from the verified data in the script; a step
 that fails is skipped with a warning and a screenshot, it never breaks the scene. The real
@@ -39,7 +39,7 @@ INVENTORY_EVERY_MS = 1000  # scrolling, holding, filling: one frame_inventory sn
 TARGET_WAIT_S = 10  # how long an element may take to show up (widgets loading after the settle)
 FILL_THRESHOLD_MS = 2000  # shorter than this and the renderer just holds the last frame
 MAX_FILL_HOVERS = 3
-CAPTURE = {"width": 1440, "height": 900}  # same as the schema default of script.capture
+CAPTURE = {"width": 1280, "height": 720}  # same as the schema default of script.capture
 HOME_FRACTION = (0.5, 0.57)  # where the real mouse rests before the first move
 HOLD_ACTIONS = (
     "select",

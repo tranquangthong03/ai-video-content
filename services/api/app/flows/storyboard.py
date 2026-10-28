@@ -10,6 +10,7 @@ from app.browser.form_actions import fold
 from app.core.interaction import make_request
 from app.flows.actions import SUBMIT_NAME
 from app.schemas.generated.core_flow import CoreFlow
+from app.schemas.generated.flow_quality import FlowQuality
 from app.schemas.generated.flow_run import FlowRun
 from app.schemas.generated.interaction import InteractionRequest
 
@@ -29,7 +30,13 @@ STOP_WORDS = {
 
 
 def build_request(
-    job_id: str, flow: CoreFlow, run: FlowRun, *, notice: str = "", version: int = 1
+    job_id: str,
+    flow: CoreFlow,
+    run: FlowRun,
+    *,
+    notice: str = "",
+    version: int = 1,
+    quality: FlowQuality | None = None,
 ) -> InteractionRequest:
     # the web shows every line but the last as a notice: only the server's notice goes before it
     text = (
@@ -48,6 +55,7 @@ def build_request(
         flows=[flow.model_dump()],
         flow_review=run.model_dump(mode="json"),
         script_version=version,
+        flow_quality=quality.model_dump() if quality else None,
     )
 
 

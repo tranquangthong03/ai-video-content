@@ -6,6 +6,7 @@ export * from "./concept_set.js";
 export * from "./core_flow.js";
 export * from "./edit_op.js";
 export * from "./edit_plan.js";
+export * from "./flow_quality.js";
 export * from "./flow_run.js";
 export * from "./focus_plan.js";
 export * from "./interaction.js";

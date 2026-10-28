@@ -13,6 +13,12 @@ from app.core import brief as brief_mod
 from app.core import flow_choice
 from app.core.features import default_selection, merge_duplicates, restrict_profile
 from app.core.flow_choice import FlowSelection
+from app.core.flow_value import (
+    empty_signals,
+    empty_warning,
+    explored_texts,
+    quality_of_run,
+)
 from app.core.interaction import make_request
 from app.flows import discovery, storyboard
 from app.llm.json_call import JsonCaller, LLMCallError
@@ -217,6 +223,7 @@ class ProposalRunner:
             encoding="utf-8",
         )
         default = flow_choice.default_flow_ids([f for f in flows if f.id not in marked])
+        warning = empty_warning(empty_signals(explored_texts(self.dir)))  # an account with no data
         notice = ""
         for flow, why in (infeasible or {}).values():
             notice += f"Luồng «{flow.title}» không khả thi trên tài khoản này: {why}\n"
@@ -229,6 +236,7 @@ class ProposalRunner:
                     default=default,
                     notice=notice.strip(),
                     infeasible=marked,
+                    empty_warning=warning,
                 )
             )
             answer = flow_choice.read_answer(response)
@@ -325,7 +333,14 @@ class ProposalRunner:
                 run.model_dump_json(indent=2), encoding="utf-8"
             )
             response = self._ask(
-                storyboard.build_request(self.job_id, flow, run, notice=notice, version=version)
+                storyboard.build_request(
+                    self.job_id,
+                    flow,
+                    run,
+                    notice=notice,
+                    version=version,
+                    quality=quality_of_run(run, self.dir),
+                )  # fmt: skip
             )
             if response.action == "approve":
                 if run.status == "failed" or len(run.steps) < 2:

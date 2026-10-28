@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "flow_quality.json",
+  "title": "FlowQuality",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Is a flow worth filming: steps that make something visible appear (not mere navigation), and signs that the account or pages are empty.",
+  "required": ["value_actions"],
+  "properties": {
+    "value_actions": { "type": "integer", "minimum": 0 },
+    "label": { "type": ["string", "null"], "default": null, "description": "Set when value_actions is below 2: the flow only navigates" },
+    "empty_warning": { "type": ["string", "null"], "default": null, "description": "Set when two or more signs say the pages have no data" },
+    "empty_signals": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "estimated": { "type": "boolean", "default": false, "description": "true: counted from the expected steps of a proposal, nothing has run yet" }
+  }
+}

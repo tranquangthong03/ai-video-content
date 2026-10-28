@@ -81,7 +81,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )  # fmt: skip
     p.add_argument("--login-url", help="where to sign in (otherwise the login link is searched)")
     p.add_argument(
-        "--capture", metavar="WxH", help="recording size, e.g. 1280x800 (default 1440x900)"
+        "--capture", metavar="WxH", help="recording size, e.g. 1280x800 (default 1280x720)"
     )
     return p.parse_args(argv)
 

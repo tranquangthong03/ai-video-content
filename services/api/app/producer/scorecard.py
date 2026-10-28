@@ -6,6 +6,7 @@ report.json after the render and shown next to the video on the review page.
 
 from typing import Any
 
+from app.core.flow_value import MIN_VALUE_ACTIONS
 from app.script import catalog as cat
 from app.script.proof import NumberFact, Offer, ProofBank, proof_used
 
@@ -113,6 +114,14 @@ def build_scorecard(
         lines.append(
             line("proof_used", "Dùng bằng chứng thật", "có", "có" if used else "không", judge(used))
         )
+
+    flow = report.get("flow") or {}
+    if flow.get("value_actions") is not None:
+        value = flow["value_actions"]
+        lines.append(line(
+            "value_actions", "Luồng có thao tác tạo kết quả", f"≥ {MIN_VALUE_ACTIONS}",
+            value, judge(value >= MIN_VALUE_ACTIONS),
+        ))  # fmt: skip
 
     footage = report.get("footage_ratio")
     lines.append(line(

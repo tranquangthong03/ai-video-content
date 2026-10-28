@@ -17,6 +17,7 @@ from urllib.parse import urlparse
 from app.browser.auth_detect import LoginRequired
 from app.browser.session import BrowserSession
 from app.core.brief import cta_domain, load_brief
+from app.core.flow_value import value_actions_of_run
 from app.core.timing import PAUSE_MS, EstimatedTimer, estimate_captions
 from app.llm.json_call import JsonCaller
 from app.producer.dead_frames import cut_dead, dead_ms
@@ -30,6 +31,7 @@ from app.producer.shots import max_static_ms, plan_shots
 from app.producer.steps_coverage import steps_in_clip
 from app.producer.text_cards import text_card_stats
 from app.producer.trim import shift_actions, shift_logs, shift_time, trim_dead_time
+from app.producer.zoom_shots import plan_zoom_shots
 from app.recorder.flow import FlowRecorder
 from app.recorder.motion import idle_gaps
 from app.recorder.record import RecordResult, record_scene
@@ -274,6 +276,34 @@ def shots_for_scene(
     }
 
 
+def zoom_for_scene(
+    s: Any,
+    plan: "ClipPlan",
+    captions: list[dict[str, Any]],
+    rate: float,
+    final_ms: int,
+    record: RecordResult,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """The zoom shots of a desktop_frame scene, moved onto the clip's own time axis."""
+    lead = plan.start_offset_ms + plan.trim_start_ms
+    inventory = [{**e, "t_ms": e["t_ms"] - lead} for e in plan.inventory]
+    actions = [
+        {**a, "t_ms": a["t_ms"] - lead, "end_ms": a["end_ms"] - lead} for a in plan.action_log
+    ]
+    shots, summary = plan_zoom_shots(
+        scene_type=s.type,
+        limit_ms=final_ms * rate,
+        clip=(record.width or 1280, record.height or 720),
+        actions=actions,
+        inventory=inventory,
+        phrases=phrases_from_captions(captions, rate),
+    )
+    for z in shots:
+        for key in ("in_start_ms", "in_end_ms", "out_start_ms", "out_end_ms"):
+            z[key] += lead
+    return shots, summary
+
+
 def short_domain(url: str) -> str:
     """hr.example.com for https://www.hr.example.com/app/x: what a CTA may say out loud."""
     return (urlparse(url).hostname or "").removeprefix("www.")
@@ -467,6 +497,7 @@ def flow_report(recorder: FlowRecorder, session: BrowserSession) -> dict[str, An
             recorder.run, [m.i for m in rec.marks if m.ok and not m.skipped] if rec else []
         ),
         "hero": recorder.hero,
+        "value_actions": value_actions_of_run(recorder.run),
         "clip_ms": rec.content_ms if rec else 0,
         "clip_source": rec.source if rec else None,
         "llm_wait_cut_ms": rec.llm_wait_cut_ms if rec else 0,
@@ -507,6 +538,7 @@ def produce(
 
     outcomes: list[SceneOutcome] = []
     assets: dict[str, dict[str, Any]] = {}
+    zoom_info: dict[str, dict[str, Any]] = {}  # desktop_frame: zoom shots per scene (summary)
     data = script.model_dump()
     started = time.monotonic()
     viewport = {"width": script.capture.width, "height": script.capture.height}
@@ -621,6 +653,12 @@ def produce(
         if plan is not None and plan.clip is not None:
             shots_info = shots_for_scene(entry, plan, rate, final_ms, captions)
             entry["shots"], entry["punches"] = shots_info["shots"], shots_info["punches"]
+            if script.template == "desktop_frame":
+                entry["zoom_shots"], zoom_summary = zoom_for_scene(
+                    s, plan, captions, rate, final_ms, record
+                )
+                entry["punches"] = []  # the still camera has no punch-ins
+                zoom_info[s.id] = zoom_summary
             if s.type == "hook":
                 hook_close = hook_is_close(
                     entry.get("focus_track", []), plan.start_offset_ms + plan.trim_start_ms, rate
@@ -722,6 +760,8 @@ def produce(
             max((o.max_static_ms or 0 for o in outcomes), default=0) / 1000, 2
         ),
         "punch_ins": sum(o.punches for o in outcomes),
+        "template": final_script.template,
+        "zoom_shots": zoom_info,
         "text_cards": text_card_stats([(o.kind, o.final_ms) for o in outcomes]),
         "features": features,
         "phases_s": phases,

@@ -83,7 +83,7 @@ class JobConfig:
     from_step: Literal["explore", "script", "produce"] = "explore"
     # polled while a step reports progress: True makes the job stop with Cancelled (web: Hủy)
     should_stop: Callable[[], bool] | None = None
-    capture: tuple[int, int] | None = None  # recording size (width, height); None = 1440x900
+    capture: tuple[int, int] | None = None  # recording size (width, height); None = 1280x720
     requires_login: bool = False  # the user says the main features are behind a sign-in
     login_url: str | None = None  # where to sign in, when the user knows
     app_home_url: str | None = None  # the app's main page after the sign-in (not the landing)

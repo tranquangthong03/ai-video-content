@@ -1,0 +1,781 @@
+{
+  "n": 2,
+  "url": "https://aisoeasy.co/demo-user/app/learn",
+  "title": "AI So Easy — Workforce Upskill Platform",
+  "meta_description": "AI So Easy — nền tảng upskill lực lượng lao động bằng AI. Mỗi doanh nghiệp có không gian riêng, chia sẻ ngân hàng bài học AI theo ngành nghề.",
+  "og_description": "Nền tảng upskill lực lượng lao động bằng AI cho doanh nghiệp.",
+  "headings": [
+    {
+      "level": 1,
+      "text": "My Learning"
+    },
+    {
+      "level": 2,
+      "text": "COURSES"
+    },
+    {
+      "level": 2,
+      "text": "Open for registration"
+    },
+    {
+      "level": 2,
+      "text": "In progress"
+    },
+    {
+      "level": 2,
+      "text": "Completed"
+    },
+    {
+      "level": 2,
+      "text": "CLASSES"
+    },
+    {
+      "level": 2,
+      "text": "Open for registration"
+    },
+    {
+      "level": 2,
+      "text": "In progress"
+    },
+    {
+      "level": 2,
+      "text": "Completed"
+    }
+  ],
+  "key_texts": [
+    "My Learning",
+    "Manage your courses and classes",
+    "COURSES",
+    "Open for registration",
+    "In progress",
+    "Completed",
+    "CLASSES",
+    "Self-paced online learning",
+    "Open courses you can register for",
+    "Build professional websites and landing pages featuring animations and other effects using AI tools.",
+    "Marketing Studio and new AI models help boost work productivity.",
+    "Create videos using AI tools such as Higgsfield, Seedance, and Gemini Omni, along with practical, real-world prompts.",
+    "Create motion graphics and animations using CapCut AI, Higgsfield, Agent Opus, and various other AI tools.",
+    "Rapid design using AI tools such as Canva AI, ChatGPT, Adobe, and Claude, and how to integrate them.",
+    "Courses you've enrolled in or been assigned",
+    "Courses you've finished",
+    "Instructor-led learning (online or in person)",
+    "Open classes you can register for",
+    "Classes you've enrolled in that haven't ended",
+    "Classes that have ended"
+  ],
+  "elements": [
+    {
+      "ref": "e1",
+      "role": "button",
+      "name": "Back",
+      "region": "header",
+      "tag": "button",
+      "text": "",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "Back",
+        "text": null,
+        "css": "header button",
+        "nth": 0,
+        "tag": "button",
+        "fingerprint": "button||0.35,0.01",
+        "bbox": {
+          "x": 649.0,
+          "y": 12.0,
+          "w": 40.0,
+          "h": 40.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e2",
+      "role": "button",
+      "name": "Home",
+      "region": "header",
+      "tag": "button",
+      "text": "",
+      "href": null,
+      "selector": "button[aria-label=\"Home\"]",
+      "locator": {
+        "role": "button",
+        "name": "Home",
+        "text": null,
+        "css": "button[aria-label=\"Home\"]",
+        "nth": null,
+        "tag": "button",
+        "fingerprint": "button||0.37,0.01",
+        "bbox": {
+          "x": 693.0,
+          "y": 12.0,
+          "w": 32.0,
+          "h": 40.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e3",
+      "role": "button",
+      "name": "🇺🇸",
+      "region": "header",
+      "tag": "button",
+      "text": "🇺🇸",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "🇺🇸",
+        "text": "🇺🇸",
+        "css": "header button",
+        "nth": 2,
+        "tag": "button",
+        "fingerprint": "button|🇺🇸|0.62,0.01",
+        "bbox": {
+          "x": 1154.0,
+          "y": 14.0,
+          "w": 71.0,
+          "h": 36.0
+        }
+      },
+      "input_type": null,
+      "button_type": "button",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e4",
+      "role": "button",
+      "name": "Notifications",
+      "region": "header",
+      "tag": "button",
+      "text": "",
+      "href": null,
+      "selector": "button[aria-label=\"Notifications\"]",
+      "locator": {
+        "role": "button",
+        "name": "Notifications",
+        "text": null,
+        "css": "button[aria-label=\"Notifications\"]",
+        "nth": null,
+        "tag": "button",
+        "fingerprint": "button||0.65,0.01",
+        "bbox": {
+          "x": 1227.0,
+          "y": 14.0,
+          "w": 36.0,
+          "h": 36.0
+        }
+      },
+      "input_type": null,
+      "button_type": "button",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e5",
+      "role": "link",
+      "name": "You are on the Free plan — upgrade to unlock everything. Upgrade $9/mo",
+      "region": "main",
+      "tag": "a",
+      "text": "You are on the Free plan — upgrade to unlock everything. Upgrade $9/mo",
+      "href": "https://aisoeasy.co/demo-user/app/upgrade",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "You are on the Free plan — upgrade to unlock everything. Upgrade $9/mo",
+        "text": "You are on the Free plan — upgrade to unlock everything. Upgrade $9/mo",
+        "css": "a",
+        "nth": 0,
+        "tag": "a",
+        "fingerprint": "a|you are on the free plan — upgrade to unlock everything. upgrade $9/mo|0.50,0.04",
+        "bbox": {
+          "x": 641.0,
+          "y": 64.0,
+          "w": 638.0,
+          "h": 44.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e6",
+      "role": "button",
+      "name": "List view",
+      "region": "main",
+      "tag": "button",
+      "text": "",
+      "href": null,
+      "selector": "button[aria-label=\"List view\"]",
+      "locator": {
+        "role": "button",
+        "name": "List view",
+        "text": null,
+        "css": "button[aria-label=\"List view\"]",
+        "nth": null,
+        "tag": "button",
+        "fingerprint": "button||0.63,0.07",
+        "bbox": {
+          "x": 1198.0,
+          "y": 136.0,
+          "w": 28.0,
+          "h": 28.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e7",
+      "role": "button",
+      "name": "Grid view",
+      "region": "main",
+      "tag": "button",
+      "text": "",
+      "href": null,
+      "selector": "button[aria-label=\"Grid view\"]",
+      "locator": {
+        "role": "button",
+        "name": "Grid view",
+        "text": null,
+        "css": "button[aria-label=\"Grid view\"]",
+        "nth": null,
+        "tag": "button",
+        "fingerprint": "button||0.65,0.07",
+        "bbox": {
+          "x": 1230.0,
+          "y": 136.0,
+          "w": 28.0,
+          "h": 28.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e8",
+      "role": "button",
+      "name": "Learning path A structured sequence of courses — earn bonus on completion",
+      "region": "main",
+      "tag": "button",
+      "text": "Learning path A structured sequence of courses — earn bonus on completion",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "Learning path A structured sequence of courses — earn bonus on completion",
+        "text": "Learning path A structured sequence of courses — earn bonus on completion",
+        "css": "main button",
+        "nth": 2,
+        "tag": "button",
+        "fingerprint": "button|learning path a structured sequence of courses — earn bonus on completion|0.50,0.11",
+        "bbox": {
+          "x": 657.0,
+          "y": 196.0,
+          "w": 606.0,
+          "h": 80.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e9",
+      "role": "button",
+      "name": "See all (5)",
+      "region": "main",
+      "tag": "button",
+      "text": "See all (5)",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "See all (5)",
+        "text": "See all (5)",
+        "css": "main button",
+        "nth": 3,
+        "tag": "button",
+        "fingerprint": "button|see all (5)|0.64,0.19",
+        "bbox": {
+          "x": 1194.0,
+          "y": 404.0,
+          "w": 69.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e10",
+      "role": "button",
+      "name": "AI for Website & Landing Page Build professional websites and landing pages featuring animations and other effects using",
+      "region": "main",
+      "tag": "button",
+      "text": "AI for Website & Landing Page Build professional websites and landing pages feat",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "AI for Website & Landing Page Build professional websites and landing pages featuring animations and other effects using",
+        "text": "AI for Website & Landing Page Build professional websites and landing pages feat",
+        "css": "main button",
+        "nth": 4,
+        "tag": "button",
+        "fingerprint": "button|ai for website & landing page build professional websites and landing pages feat|0.50,0.23",
+        "bbox": {
+          "x": 657.0,
+          "y": 432.0,
+          "w": 606.0,
+          "h": 120.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e11",
+      "role": "button",
+      "name": "AI for Marketing & Productivity Marketing Studio and new AI models help boost work productivity. Tự học online EN 3 less",
+      "region": "main",
+      "tag": "button",
+      "text": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "AI for Marketing & Productivity Marketing Studio and new AI models help boost work productivity. Tự học online EN 3 less",
+        "text": "AI for Marketing & Productivity Marketing Studio and new AI models help boost wo",
+        "css": "main button",
+        "nth": 5,
+        "tag": "button",
+        "fingerprint": "button|ai for marketing & productivity marketing studio and new ai models help boost wo|0.50,0.29",
+        "bbox": {
+          "x": 657.0,
+          "y": 563.0,
+          "w": 606.0,
+          "h": 120.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e12",
+      "role": "button",
+      "name": "AI for Video Content Create videos using AI tools such as Higgsfield, Seedance, and Gemini Omni, along with practical, r",
+      "region": "main",
+      "tag": "button",
+      "text": "AI for Video Content Create videos using AI tools such as Higgsfield, Seedance, ",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "AI for Video Content Create videos using AI tools such as Higgsfield, Seedance, and Gemini Omni, along with practical, r",
+        "text": "AI for Video Content Create videos using AI tools such as Higgsfield, Seedance, ",
+        "css": "main button",
+        "nth": 6,
+        "tag": "button",
+        "fingerprint": "button|ai for video content create videos using ai tools such as higgsfield, seedance, |0.50,0.35",
+        "bbox": {
+          "x": 657.0,
+          "y": 695.0,
+          "w": 606.0,
+          "h": 136.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e13",
+      "role": "button",
+      "name": "AI for Motion & Animation Create motion graphics and animations using CapCut AI, Higgsfield, Agent Opus, and various oth",
+      "region": "main",
+      "tag": "button",
+      "text": "AI for Motion & Animation Create motion graphics and animations using CapCut AI,",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "AI for Motion & Animation Create motion graphics and animations using CapCut AI, Higgsfield, Agent Opus, and various oth",
+        "text": "AI for Motion & Animation Create motion graphics and animations using CapCut AI,",
+        "css": "main button",
+        "nth": 7,
+        "tag": "button",
+        "fingerprint": "button|ai for motion & animation create motion graphics and animations using capcut ai,|0.50,0.42",
+        "bbox": {
+          "x": 657.0,
+          "y": 843.0,
+          "w": 606.0,
+          "h": 136.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e14",
+      "role": "button",
+      "name": "AI for Design Rapid design using AI tools such as Canva AI, ChatGPT, Adobe, and Claude, and how to integrate them. Tự họ",
+      "region": "main",
+      "tag": "button",
+      "text": "AI for Design Rapid design using AI tools such as Canva AI, ChatGPT, Adobe, and ",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "AI for Design Rapid design using AI tools such as Canva AI, ChatGPT, Adobe, and Claude, and how to integrate them. Tự họ",
+        "text": "AI for Design Rapid design using AI tools such as Canva AI, ChatGPT, Adobe, and ",
+        "css": "main button",
+        "nth": 8,
+        "tag": "button",
+        "fingerprint": "button|ai for design rapid design using ai tools such as canva ai, chatgpt, adobe, and |0.50,0.49",
+        "bbox": {
+          "x": 657.0,
+          "y": 991.0,
+          "w": 606.0,
+          "h": 136.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e15",
+      "role": "button",
+      "name": "Try again",
+      "region": "main",
+      "tag": "button",
+      "text": "Try again",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "Try again",
+        "text": "Try again",
+        "css": "main button",
+        "nth": 9,
+        "tag": "button",
+        "fingerprint": "button|try again|0.50,0.59",
+        "bbox": {
+          "x": 912.0,
+          "y": 1250.0,
+          "w": 96.0,
+          "h": 30.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e16",
+      "role": "button",
+      "name": "Try again",
+      "region": "main",
+      "tag": "button",
+      "text": "Try again",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "Try again",
+        "text": "Try again",
+        "css": "main button",
+        "nth": 10,
+        "tag": "button",
+        "fingerprint": "button|try again|0.50,0.66",
+        "bbox": {
+          "x": 912.0,
+          "y": 1420.0,
+          "w": 96.0,
+          "h": 30.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e17",
+      "role": "button",
+      "name": "See all (0)",
+      "region": "main",
+      "tag": "button",
+      "text": "See all (0)",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "See all (0)",
+        "text": "See all (0)",
+        "css": "main button",
+        "nth": 11,
+        "tag": "button",
+        "fingerprint": "button|see all (0)|0.64,0.74",
+        "bbox": {
+          "x": 1194.0,
+          "y": 1594.0,
+          "w": 69.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e18",
+      "role": "link",
+      "name": "Home",
+      "region": "nav",
+      "tag": "a",
+      "text": "Home",
+      "href": "https://aisoeasy.co/demo-user/app",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Home",
+        "text": "Home",
+        "css": "nav a",
+        "nth": 0,
+        "tag": "a",
+        "fingerprint": "a|home|0.37,0.48",
+        "bbox": {
+          "x": 700.0,
+          "y": 1019.0,
+          "w": 34.0,
+          "h": 44.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e19",
+      "role": "link",
+      "name": "Learn",
+      "region": "nav",
+      "tag": "a",
+      "text": "Learn",
+      "href": "https://aisoeasy.co/demo-user/app/learn",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Learn",
+        "text": "Learn",
+        "css": "nav a",
+        "nth": 1,
+        "tag": "a",
+        "fingerprint": "a|learn|0.44,0.48",
+        "bbox": {
+          "x": 822.0,
+          "y": 1014.0,
+          "w": 31.0,
+          "h": 54.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e20",
+      "role": "link",
+      "name": "Quest",
+      "region": "nav",
+      "tag": "a",
+      "text": "Quest",
+      "href": "https://aisoeasy.co/demo-user/app/quests",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Quest",
+        "text": "Quest",
+        "css": "nav a",
+        "nth": 2,
+        "tag": "a",
+        "fingerprint": "a|quest|0.50,0.48",
+        "bbox": {
+          "x": 941.0,
+          "y": 1019.0,
+          "w": 33.0,
+          "h": 44.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e21",
+      "role": "link",
+      "name": "Ranking",
+      "region": "nav",
+      "tag": "a",
+      "text": "Ranking",
+      "href": "https://aisoeasy.co/demo-user/app/leaderboard",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Ranking",
+        "text": "Ranking",
+        "css": "nav a",
+        "nth": 3,
+        "tag": "a",
+        "fingerprint": "a|ranking|0.57,0.48",
+        "bbox": {
+          "x": 1062.0,
+          "y": 1019.0,
+          "w": 46.0,
+          "h": 44.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e22",
+      "role": "link",
+      "name": "Me",
+      "region": "nav",
+      "tag": "a",
+      "text": "Me",
+      "href": "https://aisoeasy.co/demo-user/app/profile",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Me",
+        "text": "Me",
+        "css": "nav a",
+        "nth": 4,
+        "tag": "a",
+        "fingerprint": "a|me|0.63,0.48",
+        "bbox": {
+          "x": 1196.0,
+          "y": 1019.0,
+          "w": 24.0,
+          "h": 44.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    }
+  ],
+  "anchors": [],
+  "signals": {
+    "forms": 0,
+    "has_nav": true,
+    "has_sidebar": false,
+    "has_price": true,
+    "has_cart": false,
+    "sections": 7,
+    "big_input": 1,
+    "interactive": 22,
+    "canvas": 0,
+    "dblclick_hint": false,
+    "text_length": 1641
+  },
+  "layout": {
+    "hero": false,
+    "sidebar": false,
+    "tables": 0,
+    "forms": 0,
+    "cards": 5,
+    "images": 6,
+    "video": 0,
+    "canvas": 0,
+    "big_input": true,
+    "sections": 7
+  },
+  "screenshot": "out\\jobs\\j70a1281ec4\\explore\\pages\\2.png",
+  "depth": 1,
+  "score": 4.95,
+  "setup_steps": []
+}

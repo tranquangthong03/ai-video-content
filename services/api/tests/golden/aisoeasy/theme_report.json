@@ -1,0 +1,15 @@
+{
+  "source": "css",
+  "primary": "#58E600",
+  "accent": "#A71AFF",
+  "accent_source": "opposite_hue",
+  "highlight": "#58e600",
+  "logo": "out\\jobs\\j70a1281ec4\\theme\\logo.png",
+  "candidates": [
+    {
+      "color": "#58e600",
+      "area": 42962
+    }
+  ],
+  "notes": []
+}

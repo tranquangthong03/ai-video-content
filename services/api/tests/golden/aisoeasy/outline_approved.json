@@ -1,0 +1,45 @@
+{
+  "concept_id": "flow:flow-learn-dashboard-daily",
+  "title": "Bắt đầu ngày học với dashboard cá nhân hóa",
+  "goal": "tutorial",
+  "duration_s": 30,
+  "feature_ids": [
+    "c1",
+    "c2",
+    "c3",
+    "c4"
+  ],
+  "version": 1,
+  "beats": [
+    {
+      "id": "b1",
+      "text": "Nỗi đau hoặc kết quả của Nhân viên văn phòng / nhân viên marketing muốn nâng kỹ năng AI: Biết hôm nay cần học gì và bắt đầu nhiệm vụ/challenge trong ngày",
+      "feature_id": null
+    },
+    {
+      "id": "b2",
+      "text": "Xem dashboard: Mở trang bắt đầu",
+      "feature_id": "c1"
+    },
+    {
+      "id": "b3",
+      "text": "Mở dashboard: Bấm vào Home để mở dashboard cá nhân hóa và xem lời chào, khóa học nổi bật.",
+      "feature_id": "c2"
+    },
+    {
+      "id": "b4",
+      "text": "Mở khu học tập: Mở mục Learn để xem dashboard học tập cá nhân hóa và nhiệm vụ hôm nay.",
+      "feature_id": "c3"
+    },
+    {
+      "id": "b5",
+      "text": "Mở khóa học gợi ý: Chọn khóa AI for Marketing & Productivity phù hợp với nhân viên marketing để mở bài học. → kết quả: Dashboard hiển thị tiến độ challenge/khóa được cập nhật và chuỗi ngày học tăng",
+      "feature_id": "c4"
+    },
+    {
+      "id": "b6",
+      "text": "Kêu gọi hành động: Người học luôn biết rõ hôm nay cần làm gì để duy trì động lực và không mất thời gian tìm khóa phù hợp.",
+      "feature_id": null
+    }
+  ]
+}

@@ -1,0 +1,560 @@
+{
+  "n": 3,
+  "url": "https://aisoeasy.co/demo-user/app/quests",
+  "title": "AI So Easy — Workforce Upskill Platform",
+  "meta_description": "AI So Easy — nền tảng upskill lực lượng lao động bằng AI. Mỗi doanh nghiệp có không gian riêng, chia sẻ ngân hàng bài học AI theo ngành nghề.",
+  "og_description": "Nền tảng upskill lực lượng lao động bằng AI cho doanh nghiệp.",
+  "headings": [
+    {
+      "level": 2,
+      "text": "Daily quests"
+    },
+    {
+      "level": 2,
+      "text": "Weekly goals"
+    },
+    {
+      "level": 2,
+      "text": "Top learners"
+    },
+    {
+      "level": 2,
+      "text": "Recent badges"
+    }
+  ],
+  "key_texts": [
+    "Daily quests",
+    "Weekly goals",
+    "Top learners",
+    "Recent badges",
+    "[empty state] No quests yet"
+  ],
+  "elements": [
+    {
+      "ref": "e1",
+      "role": "button",
+      "name": "Back",
+      "region": "header",
+      "tag": "button",
+      "text": "",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "Back",
+        "text": null,
+        "css": "header button",
+        "nth": 0,
+        "tag": "button",
+        "fingerprint": "button||0.35,0.03",
+        "bbox": {
+          "x": 649.0,
+          "y": 12.0,
+          "w": 40.0,
+          "h": 40.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e2",
+      "role": "button",
+      "name": "Home",
+      "region": "header",
+      "tag": "button",
+      "text": "",
+      "href": null,
+      "selector": "button[aria-label=\"Home\"]",
+      "locator": {
+        "role": "button",
+        "name": "Home",
+        "text": null,
+        "css": "button[aria-label=\"Home\"]",
+        "nth": null,
+        "tag": "button",
+        "fingerprint": "button||0.37,0.03",
+        "bbox": {
+          "x": 693.0,
+          "y": 12.0,
+          "w": 32.0,
+          "h": 40.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e3",
+      "role": "button",
+      "name": "🇺🇸",
+      "region": "header",
+      "tag": "button",
+      "text": "🇺🇸",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "🇺🇸",
+        "text": "🇺🇸",
+        "css": "header button",
+        "nth": 2,
+        "tag": "button",
+        "fingerprint": "button|🇺🇸|0.62,0.03",
+        "bbox": {
+          "x": 1154.0,
+          "y": 14.0,
+          "w": 71.0,
+          "h": 36.0
+        }
+      },
+      "input_type": null,
+      "button_type": "button",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e4",
+      "role": "button",
+      "name": "Notifications",
+      "region": "header",
+      "tag": "button",
+      "text": "",
+      "href": null,
+      "selector": "button[aria-label=\"Notifications\"]",
+      "locator": {
+        "role": "button",
+        "name": "Notifications",
+        "text": null,
+        "css": "button[aria-label=\"Notifications\"]",
+        "nth": null,
+        "tag": "button",
+        "fingerprint": "button||0.65,0.03",
+        "bbox": {
+          "x": 1227.0,
+          "y": 14.0,
+          "w": 36.0,
+          "h": 36.0
+        }
+      },
+      "input_type": null,
+      "button_type": "button",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e5",
+      "role": "link",
+      "name": "You are on the Free plan — upgrade to unlock everything. Upgrade $9/mo",
+      "region": "main",
+      "tag": "a",
+      "text": "You are on the Free plan — upgrade to unlock everything. Upgrade $9/mo",
+      "href": "https://aisoeasy.co/demo-user/app/upgrade",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "You are on the Free plan — upgrade to unlock everything. Upgrade $9/mo",
+        "text": "You are on the Free plan — upgrade to unlock everything. Upgrade $9/mo",
+        "css": "a",
+        "nth": 0,
+        "tag": "a",
+        "fingerprint": "a|you are on the free plan — upgrade to unlock everything. upgrade $9/mo|0.50,0.07",
+        "bbox": {
+          "x": 641.0,
+          "y": 64.0,
+          "w": 638.0,
+          "h": 44.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e6",
+      "role": "link",
+      "name": "Nâng cấp Pro",
+      "region": "main",
+      "tag": "a",
+      "text": "Nâng cấp Pro",
+      "href": "https://aisoeasy.co/demo-user/app/upgrade",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Nâng cấp Pro",
+        "text": "Nâng cấp Pro",
+        "css": "main a",
+        "nth": 0,
+        "tag": "a",
+        "fingerprint": "a|nâng cấp pro|0.61,0.28",
+        "bbox": {
+          "x": 1141.0,
+          "y": 335.0,
+          "w": 74.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e7",
+      "role": "tab",
+      "name": "Quests",
+      "region": "main",
+      "tag": "button",
+      "text": "Quests",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "tab",
+        "name": "Quests",
+        "text": "Quests",
+        "css": "main [role=\"tab\"]",
+        "nth": 0,
+        "tag": "button",
+        "fingerprint": "button|quests|0.40,0.32",
+        "bbox": {
+          "x": 662.0,
+          "y": 381.0,
+          "w": 199.0,
+          "h": 32.0
+        }
+      },
+      "input_type": null,
+      "button_type": "button",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e8",
+      "role": "tab",
+      "name": "Practical tasks",
+      "region": "main",
+      "tag": "button",
+      "text": "Practical tasks",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "tab",
+        "name": "Practical tasks",
+        "text": "Practical tasks",
+        "css": "main [role=\"tab\"]",
+        "nth": 1,
+        "tag": "button",
+        "fingerprint": "button|practical tasks|0.50,0.32",
+        "bbox": {
+          "x": 861.0,
+          "y": 381.0,
+          "w": 199.0,
+          "h": 32.0
+        }
+      },
+      "input_type": null,
+      "button_type": "button",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e9",
+      "role": "tab",
+      "name": "Peer review",
+      "region": "main",
+      "tag": "button",
+      "text": "Peer review",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "tab",
+        "name": "Peer review",
+        "text": "Peer review",
+        "css": "main [role=\"tab\"]",
+        "nth": 2,
+        "tag": "button",
+        "fingerprint": "button|peer review|0.60,0.32",
+        "bbox": {
+          "x": 1059.0,
+          "y": 381.0,
+          "w": 199.0,
+          "h": 32.0
+        }
+      },
+      "input_type": null,
+      "button_type": "button",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e10",
+      "role": "button",
+      "name": "View all",
+      "region": "main",
+      "tag": "button",
+      "text": "View all",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "View all",
+        "text": "View all",
+        "css": "main button",
+        "nth": 3,
+        "tag": "button",
+        "fingerprint": "button|view all|0.65,0.62",
+        "bbox": {
+          "x": 1221.0,
+          "y": 748.0,
+          "w": 42.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e11",
+      "role": "button",
+      "name": "View all",
+      "region": "main",
+      "tag": "button",
+      "text": "View all",
+      "href": null,
+      "selector": null,
+      "locator": {
+        "role": "button",
+        "name": "View all",
+        "text": "View all",
+        "css": "main button",
+        "nth": 4,
+        "tag": "button",
+        "fingerprint": "button|view all|0.65,0.73",
+        "bbox": {
+          "x": 1221.0,
+          "y": 882.0,
+          "w": 42.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": "submit",
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e12",
+      "role": "link",
+      "name": "Home",
+      "region": "nav",
+      "tag": "a",
+      "text": "Home",
+      "href": "https://aisoeasy.co/demo-user/app",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Home",
+        "text": "Home",
+        "css": "nav a",
+        "nth": 0,
+        "tag": "a",
+        "fingerprint": "a|home|0.37,0.85",
+        "bbox": {
+          "x": 700.0,
+          "y": 1019.0,
+          "w": 34.0,
+          "h": 44.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e13",
+      "role": "link",
+      "name": "Learn",
+      "region": "nav",
+      "tag": "a",
+      "text": "Learn",
+      "href": "https://aisoeasy.co/demo-user/app/learn",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Learn",
+        "text": "Learn",
+        "css": "nav a",
+        "nth": 1,
+        "tag": "a",
+        "fingerprint": "a|learn|0.44,0.85",
+        "bbox": {
+          "x": 822.0,
+          "y": 1019.0,
+          "w": 31.0,
+          "h": 44.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e14",
+      "role": "link",
+      "name": "Quest",
+      "region": "nav",
+      "tag": "a",
+      "text": "Quest",
+      "href": "https://aisoeasy.co/demo-user/app/quests",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Quest",
+        "text": "Quest",
+        "css": "nav a",
+        "nth": 2,
+        "tag": "a",
+        "fingerprint": "a|quest|0.50,0.85",
+        "bbox": {
+          "x": 941.0,
+          "y": 1014.0,
+          "w": 33.0,
+          "h": 54.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e15",
+      "role": "link",
+      "name": "Ranking",
+      "region": "nav",
+      "tag": "a",
+      "text": "Ranking",
+      "href": "https://aisoeasy.co/demo-user/app/leaderboard",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Ranking",
+        "text": "Ranking",
+        "css": "nav a",
+        "nth": 3,
+        "tag": "a",
+        "fingerprint": "a|ranking|0.57,0.85",
+        "bbox": {
+          "x": 1062.0,
+          "y": 1019.0,
+          "w": 46.0,
+          "h": 44.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e16",
+      "role": "link",
+      "name": "Me",
+      "region": "nav",
+      "tag": "a",
+      "text": "Me",
+      "href": "https://aisoeasy.co/demo-user/app/profile",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Me",
+        "text": "Me",
+        "css": "nav a",
+        "nth": 4,
+        "tag": "a",
+        "fingerprint": "a|me|0.63,0.85",
+        "bbox": {
+          "x": 1196.0,
+          "y": 1019.0,
+          "w": 24.0,
+          "h": 44.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    }
+  ],
+  "anchors": [],
+  "signals": {
+    "forms": 0,
+    "has_nav": true,
+    "has_sidebar": false,
+    "has_price": true,
+    "has_cart": false,
+    "sections": 1,
+    "big_input": 1,
+    "interactive": 16,
+    "canvas": 0,
+    "dblclick_hint": false,
+    "text_length": 467
+  },
+  "layout": {
+    "hero": false,
+    "sidebar": false,
+    "tables": 0,
+    "forms": 0,
+    "cards": 3,
+    "images": 1,
+    "video": 0,
+    "canvas": 0,
+    "big_input": true,
+    "sections": 1
+  },
+  "screenshot": "out\\jobs\\j70a1281ec4\\explore\\pages\\3.png",
+  "depth": 1,
+  "score": 4.95,
+  "setup_steps": []
+}

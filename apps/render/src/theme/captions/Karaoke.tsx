@@ -5,9 +5,10 @@ import type { Caption } from "../../props";
 import { useTheme } from "../context";
 
 /** Group of 3-5 words; the word being spoken is painted in the primary color. */
-export const Karaoke: React.FC<{ captions: Caption[]; paddingBottom?: number }> = ({
+export const Karaoke: React.FC<{ captions: Caption[]; paddingBottom?: number; fontSize?: number }> = ({
   captions,
   paddingBottom = 300,
+  fontSize = 48,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -23,11 +24,11 @@ export const Karaoke: React.FC<{ captions: Caption[]; paddingBottom?: number }> 
     <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom }}>
       <div
         style={{
-          maxWidth: 960,
+          maxWidth: 1000,
           textAlign: "center",
           fontFamily,
           fontWeight: 800,
-          fontSize: 48,
+          fontSize,
           lineHeight: 1.25,
           color: "#fff",
           textShadow: "0 4px 18px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.9)",
