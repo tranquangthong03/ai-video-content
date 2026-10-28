@@ -1,0 +1,11 @@
+{
+  "primary": "#FF3385",
+  "accent": "#1AFFA3",
+  "font": "Be Vietnam Pro",
+  "logo_asset": "out\\cam-squoosh\\theme\\logo.png",
+  "motion_preset": "energetic",
+  "caption_style": "karaoke",
+  "music_mood": "upbeat",
+  "voice_id": "vi_female_01",
+  "language": "vi"
+}

@@ -1,0 +1,31 @@
+{
+  "flows": [
+    {
+      "id": "user_l_n_danh_s_ch_vi_c_trong",
+      "title": "Lên danh sách việc trong ngày và lọc việc còn lại",
+      "persona": "Người dùng cá nhân cần danh sách việc cần làm đơn giản, không tài khoản",
+      "goal": "Thêm 3 việc cần làm, đánh dấu hoàn thành 1 việc, rồi lọc để chỉ xem các việc còn lại (Active)",
+      "start_url": "https://todomvc.com/examples/react/dist/",
+      "expected_steps": [
+        "Mở trang TodoMVC: React, thấy ô nhập chính với placeholder “What needs to be done?”",
+        "Gõ việc thứ nhất vào ô nhập và nhấn Enter để thêm vào danh sách",
+        "Lặp lại để thêm việc thứ hai và việc thứ ba, danh sách hiển thị đủ 3 mục",
+        "Đánh dấu hoàn thành một việc bằng cách tích vào ô tròn bên trái mục đó, mục chuyển sang trạng thái đã xong",
+        "Nhấp bộ lọc “Active” ở cuối danh sách để chỉ hiển thị các việc chưa hoàn thành",
+        "Kiểm tra danh sách chỉ còn 2 việc chưa xong, việc đã đánh dấu không còn hiển thị"
+      ],
+      "success_signal": "Danh sách chỉ hiển thị 2 việc chưa hoàn thành sau khi chọn bộ lọc Active; bộ lọc Active được đánh dấu đang chọn",
+      "needs_submit": false,
+      "value": "Người dùng nhanh chóng lập danh sách việc trong ngày và tập trung vào những việc còn phải làm mà không cần tài khoản hay thao tác phức tạp",
+      "related_feature_ids": [
+        "create_todo",
+        "f1"
+      ],
+      "source": "user",
+      "confidence": 0.9,
+      "notes": null
+    }
+  ],
+  "submit_policy": "stop",
+  "warnings": []
+}

@@ -1,0 +1,1431 @@
+{
+ "script": {
+  "title": "Lên danh sách việc trong ngày và lọc việc còn lại",
+  "goal": "tutorial",
+  "aspect_ratio": "9:16",
+  "target_duration_s": 30,
+  "template": "desktop_focus",
+  "capture": {
+   "viewport": "desktop",
+   "width": 1440,
+   "height": 900
+  },
+  "flow_id": "user_l_n_danh_s_ch_vi_c_trong",
+  "badge": "TODO NHANH",
+  "headline": "Lên việc trong ngày, lọc việc còn lại",
+  "headline_highlight": "lọc việc còn lại",
+  "framework": "pain_journey_result",
+  "hook_options": [
+   {
+    "kind": "pain_question",
+    "voiceover": "Bạn có đang quên việc cần làm mỗi ngày?",
+    "on_screen_text": "Quên việc mỗi ngày?"
+   },
+   {
+    "kind": "you_are_doing_it_wrong",
+    "voiceover": "Đừng ghi việc lên giấy nữa, thử cách này xem.",
+    "on_screen_text": "Ghi giấy lộn xộn?"
+   }
+  ],
+  "theme": {
+   "primary": "#B83F45",
+   "accent": "#42D7CF",
+   "font": "Be Vietnam Pro",
+   "logo_asset": null,
+   "motion_preset": "energetic",
+   "caption_style": "karaoke",
+   "music_mood": "upbeat",
+   "voice_id": "vi_female_01",
+   "language": "vi"
+  },
+  "scenes": [
+   {
+    "id": "s1",
+    "type": "hook",
+    "layout": "big_text_over_blur",
+    "voiceover": "Đừng ghi việc lên giấy nữa, thử cách này xem.",
+    "on_screen_text": "Ghi giấy lộn xộn?",
+    "stat": null,
+    "key_point": "Nỗi đau quên việc mỗi ngày",
+    "icon": "bolt",
+    "visual": {
+     "mode": "recording",
+     "page": "https://todomvc.com/examples/react/dist/",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://todomvc.com/examples/react/dist/",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 4250,
+    "chapter_id": null
+   },
+   {
+    "id": "s2",
+    "type": "feature_demo",
+    "layout": "full_screen",
+    "feature": "c1",
+    "voiceover": "Mở trang là thêm ngay việc đầu tiên, không cần tài khoản.",
+    "on_screen_text": "Thêm việc tức thì",
+    "stat": null,
+    "key_point": "Thêm việc đầu tiên ngay khi mở trang",
+    "icon": "check",
+    "visual": {
+     "mode": "recording",
+     "page": "https://todomvc.com/examples/react/dist/",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://todomvc.com/examples/react/dist/",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "type",
+       "target": "New Todo Input",
+       "selector": null,
+       "locator": {
+        "role": "textbox",
+        "name": "New Todo Input",
+        "text": null,
+        "css": "[data-testid=\"text-input\"]",
+        "nth": null,
+        "tag": "input",
+        "fingerprint": "input||0.60,0.18",
+        "bbox": {
+         "x": 595.0,
+         "y": 130.0,
+         "w": 550.0,
+         "h": 65.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": "Mua sữa",
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 5050,
+    "chapter_id": "c1"
+   },
+   {
+    "id": "s3",
+    "type": "feature_demo",
+    "layout": "full_screen",
+    "feature": "c2",
+    "voiceover": "Gõ thêm hai việc nữa, danh sách tự cập nhật ngay tại dòng nhập.",
+    "on_screen_text": "Thêm nhanh hai việc",
+    "stat": null,
+    "key_point": "Thêm nhiều việc liên tiếp, danh sách tự cập nhật",
+    "icon": "edit",
+    "visual": {
+     "mode": "recording",
+     "page": "https://todomvc.com/examples/react/dist/",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://todomvc.com/examples/react/dist/",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "type",
+       "target": "New Todo Input",
+       "selector": null,
+       "locator": {
+        "role": "textbox",
+        "name": "New Todo Input",
+        "text": null,
+        "css": "[data-testid=\"text-input\"]",
+        "nth": null,
+        "tag": "input",
+        "fingerprint": "input||0.60,0.18",
+        "bbox": {
+         "x": 595.0,
+         "y": 130.0,
+         "w": 550.0,
+         "h": 65.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": "Đặt lịch khám bác sĩ",
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "type",
+       "target": "New Todo Input",
+       "selector": null,
+       "locator": {
+        "role": "textbox",
+        "name": "New Todo Input",
+        "text": null,
+        "css": "[data-testid=\"text-input\"]",
+        "nth": null,
+        "tag": "input",
+        "fingerprint": "input||0.60,0.18",
+        "bbox": {
+         "x": 595.0,
+         "y": 130.0,
+         "w": 550.0,
+         "h": 65.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": "Gọi điện cho mẹ",
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 10348,
+    "chapter_id": "c2"
+   },
+   {
+    "id": "s4",
+    "type": "feature_demo",
+    "layout": "phone_mockup",
+    "feature": "c3",
+    "voiceover": "Đánh dấu xong việc Mua sữa, bạn thấy ngay một việc đã hoàn thành.",
+    "on_screen_text": "Xong một việc",
+    "stat": null,
+    "key_point": "Đánh dấu hoàn thành để theo dõi tiến độ",
+    "icon": "check",
+    "visual": {
+     "mode": "recording",
+     "page": "https://todomvc.com/examples/react/dist/",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://todomvc.com/examples/react/dist/",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "check",
+       "target": "Mua sữa",
+       "selector": null,
+       "locator": {
+        "role": "checkbox",
+        "name": "Mua sữa",
+        "text": null,
+        "css": "main input",
+        "nth": 1,
+        "tag": "input",
+        "fingerprint": "input||0.43,0.25",
+        "bbox": {
+         "x": 595.0,
+         "y": 205.0,
+         "w": 40.0,
+         "h": 40.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 5850,
+    "chapter_id": "c3"
+   },
+   {
+    "id": "s5",
+    "type": "feature_demo",
+    "layout": "full_screen",
+    "feature": "c4",
+    "voiceover": "Chọn lọc Active, chỉ còn hai việc chưa làm hiện ra, tập trung liền.",
+    "on_screen_text": "Chỉ xem việc còn lại",
+    "stat": {
+     "value": "2",
+     "label": "việc còn lại"
+    },
+    "key_point": "Lọc Active chỉ hiển thị việc chưa hoàn thành",
+    "icon": "filter",
+    "visual": {
+     "mode": "recording",
+     "page": "https://todomvc.com/examples/react/dist/",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://todomvc.com/examples/react/dist/",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "click",
+       "target": "Active",
+       "selector": null,
+       "locator": {
+        "role": "link",
+        "name": "Active",
+        "text": "Active",
+        "css": "footer a",
+        "nth": 3,
+        "tag": "a",
+        "fingerprint": "a|active|0.58,0.44",
+        "bbox": {
+         "x": 814.0,
+         "y": 382.0,
+         "w": 57.0,
+         "h": 25.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 5850,
+    "chapter_id": "c4"
+   },
+   {
+    "id": "s6",
+    "type": "cta",
+    "layout": "button_pulse",
+    "voiceover": "Lập danh sách việc trong ngày ngay tại todomvc.com, không cần đăng ký.",
+    "on_screen_text": "todomvc.com",
+    "stat": null,
+    "key_point": "Bắt đầu ngay không cần tài khoản",
+    "icon": "globe",
+    "visual": {
+     "mode": "recording",
+     "page": "https://todomvc.com/examples/react/dist/",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://todomvc.com/examples/react/dist/",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 5450,
+    "chapter_id": null
+   }
+  ]
+ },
+ "assets": {
+  "s1": {
+   "captions": [
+    {
+     "text": "Đừng ghi việc lên giấy",
+     "start_ms": 0,
+     "end_ms": 2118,
+     "words": [
+      {
+       "text": "Đừng",
+       "start_ms": 0,
+       "end_ms": 471
+      },
+      {
+       "text": "ghi",
+       "start_ms": 471,
+       "end_ms": 824
+      },
+      {
+       "text": "việc",
+       "start_ms": 824,
+       "end_ms": 1294
+      },
+      {
+       "text": "lên",
+       "start_ms": 1294,
+       "end_ms": 1647
+      },
+      {
+       "text": "giấy",
+       "start_ms": 1647,
+       "end_ms": 2118
+      }
+     ]
+    },
+    {
+     "text": "nữa, thử cách này xem.",
+     "start_ms": 2118,
+     "end_ms": 4000,
+     "words": [
+      {
+       "text": "nữa,",
+       "start_ms": 2118,
+       "end_ms": 2471
+      },
+      {
+       "text": "thử",
+       "start_ms": 2471,
+       "end_ms": 2824
+      },
+      {
+       "text": "cách",
+       "start_ms": 2824,
+       "end_ms": 3294
+      },
+      {
+       "text": "này",
+       "start_ms": 3294,
+       "end_ms": 3647
+      },
+      {
+       "text": "xem.",
+       "start_ms": 3647,
+       "end_ms": 4000
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-todomvc\\produce\\s1.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 2000,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [],
+   "focus_log": [],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 595,
+      "y": 196,
+      "w": 550,
+      "h": 59
+     },
+     "framing": "medium",
+     "hold_ms": 2000,
+     "source": "rule",
+     "reason": "hook: khung gần",
+     "item_id": "eje533",
+     "text": "Mua sữa",
+     "item_kind": "list_item",
+     "region": "main"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 2118,
+     "change": "cut"
+    },
+    {
+     "from_ms": 2118,
+     "to_ms": 4250,
+     "change": "action"
+    }
+   ],
+   "punches": []
+  },
+  "s2": {
+   "captions": [
+    {
+     "text": "Mở trang là thêm ngay",
+     "start_ms": 0,
+     "end_ms": 1855,
+     "words": [
+      {
+       "text": "Mở",
+       "start_ms": 0,
+       "end_ms": 218
+      },
+      {
+       "text": "trang",
+       "start_ms": 218,
+       "end_ms": 764
+      },
+      {
+       "text": "là",
+       "start_ms": 764,
+       "end_ms": 982
+      },
+      {
+       "text": "thêm",
+       "start_ms": 982,
+       "end_ms": 1418
+      },
+      {
+       "text": "ngay",
+       "start_ms": 1418,
+       "end_ms": 1855
+      }
+     ]
+    },
+    {
+     "text": "việc đầu tiên,",
+     "start_ms": 1855,
+     "end_ms": 3055,
+     "words": [
+      {
+       "text": "việc",
+       "start_ms": 1855,
+       "end_ms": 2291
+      },
+      {
+       "text": "đầu",
+       "start_ms": 2291,
+       "end_ms": 2618
+      },
+      {
+       "text": "tiên,",
+       "start_ms": 2618,
+       "end_ms": 3055
+      }
+     ]
+    },
+    {
+     "text": "không cần tài khoản.",
+     "start_ms": 3055,
+     "end_ms": 4800,
+     "words": [
+      {
+       "text": "không",
+       "start_ms": 3055,
+       "end_ms": 3600
+      },
+      {
+       "text": "cần",
+       "start_ms": 3600,
+       "end_ms": 3927
+      },
+      {
+       "text": "tài",
+       "start_ms": 3927,
+       "end_ms": 4255
+      },
+      {
+       "text": "khoản.",
+       "start_ms": 4255,
+       "end_ms": 4800
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-todomvc\\produce\\s2.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": false,
+   "clip_duration_ms": 5050,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 1652,
+     "x": 870,
+     "y": 162,
+     "type": "click"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 1666,
+     "bbox": {
+      "x": 595,
+      "y": 130,
+      "w": 550,
+      "h": 65
+     },
+     "kind": "type",
+     "hold_ms": 1500
+    }
+   ],
+   "segments": [
+    {
+     "from_ms": 0,
+     "to_ms": 2073
+    },
+    {
+     "from_ms": 3475,
+     "to_ms": 3809
+    }
+   ],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 1855,
+     "source": "plan",
+     "reason": "Mở đầu định hướng toàn cảnh trang trước khi nói về việc thêm việc đầu tiên.",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 1855,
+     "bbox": {
+      "x": 595,
+      "y": 44,
+      "w": 550,
+      "h": 151
+     },
+     "framing": "tight",
+     "hold_ms": 3195,
+     "source": "plan",
+     "reason": "Lời đọc nói về việc thêm việc đầu tiên, tiêu điểm là ô nhập 'What needs to be done?' để người xem thấy nơi nhập việc.",
+     "item_id": "eje526",
+     "text": "What needs to be done?",
+     "item_kind": "input",
+     "region": "header"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 1855,
+     "change": "cut"
+    },
+    {
+     "from_ms": 1855,
+     "to_ms": 3055,
+     "change": "focus"
+    },
+    {
+     "from_ms": 3055,
+     "to_ms": 5050,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 3055,
+     "scale": 0.08
+    }
+   ]
+  },
+  "s3": {
+   "captions": [
+    {
+     "text": "Gõ thêm hai việc nữa,",
+     "start_ms": 0,
+     "end_ms": 1867,
+     "words": [
+      {
+       "text": "Gõ",
+       "start_ms": 0,
+       "end_ms": 233
+      },
+      {
+       "text": "thêm",
+       "start_ms": 233,
+       "end_ms": 700
+      },
+      {
+       "text": "hai",
+       "start_ms": 700,
+       "end_ms": 1050
+      },
+      {
+       "text": "việc",
+       "start_ms": 1050,
+       "end_ms": 1517
+      },
+      {
+       "text": "nữa,",
+       "start_ms": 1517,
+       "end_ms": 1867
+      }
+     ]
+    },
+    {
+     "text": "danh sách tự cập nhật",
+     "start_ms": 1867,
+     "end_ms": 3850,
+     "words": [
+      {
+       "text": "danh",
+       "start_ms": 1867,
+       "end_ms": 2333
+      },
+      {
+       "text": "sách",
+       "start_ms": 2333,
+       "end_ms": 2800
+      },
+      {
+       "text": "tự",
+       "start_ms": 2800,
+       "end_ms": 3033
+      },
+      {
+       "text": "cập",
+       "start_ms": 3033,
+       "end_ms": 3383
+      },
+      {
+       "text": "nhật",
+       "start_ms": 3383,
+       "end_ms": 3850
+      }
+     ]
+    },
+    {
+     "text": "ngay tại dòng nhập.",
+     "start_ms": 3850,
+     "end_ms": 5600,
+     "words": [
+      {
+       "text": "ngay",
+       "start_ms": 3850,
+       "end_ms": 4317
+      },
+      {
+       "text": "tại",
+       "start_ms": 4317,
+       "end_ms": 4667
+      },
+      {
+       "text": "dòng",
+       "start_ms": 4667,
+       "end_ms": 5133
+      },
+      {
+       "text": "nhập.",
+       "start_ms": 5133,
+       "end_ms": 5600
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-todomvc\\produce\\s3.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": false,
+   "clip_duration_ms": 10348,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 1650,
+     "x": 870,
+     "y": 162,
+     "type": "click"
+    },
+    {
+     "t_ms": 6192,
+     "x": 870,
+     "y": 162,
+     "type": "click"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 1657,
+     "bbox": {
+      "x": 595,
+      "y": 130,
+      "w": 550,
+      "h": 65
+     },
+     "kind": "type",
+     "hold_ms": 1500
+    },
+    {
+     "t_ms": 6197,
+     "bbox": {
+      "x": 595,
+      "y": 130,
+      "w": 550,
+      "h": 65
+     },
+     "kind": "type",
+     "hold_ms": 1500
+    }
+   ],
+   "segments": [
+    {
+     "from_ms": 1400,
+     "to_ms": 1745
+    },
+    {
+     "from_ms": 4102,
+     "to_ms": 4733
+    },
+    {
+     "from_ms": 6918,
+     "to_ms": 8443
+    }
+   ],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 1000,
+     "source": "rule",
+     "reason": "",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 1000,
+     "bbox": {
+      "x": 595,
+      "y": 44,
+      "w": 550,
+      "h": 151
+     },
+     "framing": "tight",
+     "hold_ms": 2850,
+     "source": "rule",
+     "reason": "khớp lời đọc / đang thao tác",
+     "item_id": "eje526",
+     "text": "What needs to be done?",
+     "item_kind": "input",
+     "region": "header"
+    },
+    {
+     "t_ms": 3850,
+     "bbox": {
+      "x": 595,
+      "y": 256,
+      "w": 550,
+      "h": 59
+     },
+     "framing": "medium",
+     "hold_ms": 2092,
+     "source": "plan",
+     "reason": "Mục việc mới xuất hiện tại dòng nhập thể hiện danh sách tự cập nhật.",
+     "item_id": "eje543",
+     "text": "Đặt lịch khám bác sĩ",
+     "item_kind": "paragraph",
+     "region": "main"
+    },
+    {
+     "t_ms": 5942,
+     "bbox": {
+      "x": 595,
+      "y": 316,
+      "w": 550,
+      "h": 59
+     },
+     "framing": "medium",
+     "hold_ms": 2846,
+     "source": "plan",
+     "reason": "Mục việc mới thứ hai xuất hiện là kết quả của thao tác thêm việc.",
+     "item_id": "eje545",
+     "text": "Gọi điện cho mẹ",
+     "item_kind": "paragraph",
+     "region": "main"
+    },
+    {
+     "t_ms": 8788,
+     "bbox": {
+      "x": 595,
+      "y": 44,
+      "w": 550,
+      "h": 152
+     },
+     "framing": "tight",
+     "hold_ms": 1560,
+     "source": "rule",
+     "reason": "Dòng đếm việc ở footer cập nhật số lượng sau khi thêm nhiều việc.",
+     "item_id": "eje525",
+     "text": "todos",
+     "item_kind": "heading",
+     "region": "header"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 1867,
+     "change": "cut"
+    },
+    {
+     "from_ms": 1867,
+     "to_ms": 3850,
+     "change": "punch"
+    },
+    {
+     "from_ms": 3850,
+     "to_ms": 10348,
+     "change": "focus"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 1867,
+     "scale": 0.08
+    }
+   ],
+   "same_page": true
+  },
+  "s4": {
+   "captions": [
+    {
+     "text": "Đánh dấu xong việc Mua",
+     "start_ms": 0,
+     "end_ms": 2016,
+     "words": [
+      {
+       "text": "Đánh",
+       "start_ms": 0,
+       "end_ms": 448
+      },
+      {
+       "text": "dấu",
+       "start_ms": 448,
+       "end_ms": 784
+      },
+      {
+       "text": "xong",
+       "start_ms": 784,
+       "end_ms": 1232
+      },
+      {
+       "text": "việc",
+       "start_ms": 1232,
+       "end_ms": 1680
+      },
+      {
+       "text": "Mua",
+       "start_ms": 1680,
+       "end_ms": 2016
+      }
+     ]
+    },
+    {
+     "text": "sữa, bạn thấy ngay một",
+     "start_ms": 2016,
+     "end_ms": 3920,
+     "words": [
+      {
+       "text": "sữa,",
+       "start_ms": 2016,
+       "end_ms": 2352
+      },
+      {
+       "text": "bạn",
+       "start_ms": 2352,
+       "end_ms": 2688
+      },
+      {
+       "text": "thấy",
+       "start_ms": 2688,
+       "end_ms": 3136
+      },
+      {
+       "text": "ngay",
+       "start_ms": 3136,
+       "end_ms": 3584
+      },
+      {
+       "text": "một",
+       "start_ms": 3584,
+       "end_ms": 3920
+      }
+     ]
+    },
+    {
+     "text": "việc đã hoàn thành.",
+     "start_ms": 3920,
+     "end_ms": 5600,
+     "words": [
+      {
+       "text": "việc",
+       "start_ms": 3920,
+       "end_ms": 4368
+      },
+      {
+       "text": "đã",
+       "start_ms": 4368,
+       "end_ms": 4592
+      },
+      {
+       "text": "hoàn",
+       "start_ms": 4592,
+       "end_ms": 5040
+      },
+      {
+       "text": "thành.",
+       "start_ms": 5040,
+       "end_ms": 5600
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-todomvc\\produce\\s4.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 4081,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 2056,
+     "x": 615,
+     "y": 225,
+     "type": "click"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 2062,
+     "bbox": {
+      "x": 595,
+      "y": 205,
+      "w": 40,
+      "h": 40
+     },
+     "kind": "click",
+     "hold_ms": 1500
+    }
+   ],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 1000,
+     "source": "rule",
+     "reason": "",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 1000,
+     "bbox": {
+      "x": 595,
+      "y": 131,
+      "w": 550,
+      "h": 125
+     },
+     "framing": "tight",
+     "hold_ms": 3081,
+     "source": "rule",
+     "reason": "khớp lời đọc / đang thao tác",
+     "item_id": "eje533",
+     "text": "Mua sữa",
+     "item_kind": "list_item",
+     "region": "main"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 2016,
+     "change": "cut"
+    },
+    {
+     "from_ms": 2016,
+     "to_ms": 3920,
+     "change": "punch"
+    },
+    {
+     "from_ms": 3920,
+     "to_ms": 5850,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 2016,
+     "scale": 0.08
+    },
+    {
+     "t_ms": 3920,
+     "scale": 0.1
+    }
+   ],
+   "same_page": true
+  },
+  "s5": {
+   "captions": [
+    {
+     "text": "Chọn lọc Active,",
+     "start_ms": 0,
+     "end_ms": 1427,
+     "words": [
+      {
+       "text": "Chọn",
+       "start_ms": 0,
+       "end_ms": 439
+      },
+      {
+       "text": "lọc",
+       "start_ms": 439,
+       "end_ms": 769
+      },
+      {
+       "text": "Active,",
+       "start_ms": 769,
+       "end_ms": 1427
+      }
+     ]
+    },
+    {
+     "text": "chỉ còn hai việc chưa",
+     "start_ms": 1427,
+     "end_ms": 3294,
+     "words": [
+      {
+       "text": "chỉ",
+       "start_ms": 1427,
+       "end_ms": 1757
+      },
+      {
+       "text": "còn",
+       "start_ms": 1757,
+       "end_ms": 2086
+      },
+      {
+       "text": "hai",
+       "start_ms": 2086,
+       "end_ms": 2416
+      },
+      {
+       "text": "việc",
+       "start_ms": 2416,
+       "end_ms": 2855
+      },
+      {
+       "text": "chưa",
+       "start_ms": 2855,
+       "end_ms": 3294
+      }
+     ]
+    },
+    {
+     "text": "làm hiện ra,",
+     "start_ms": 3294,
+     "end_ms": 4282,
+     "words": [
+      {
+       "text": "làm",
+       "start_ms": 3294,
+       "end_ms": 3624
+      },
+      {
+       "text": "hiện",
+       "start_ms": 3624,
+       "end_ms": 4063
+      },
+      {
+       "text": "ra,",
+       "start_ms": 4063,
+       "end_ms": 4282
+      }
+     ]
+    },
+    {
+     "text": "tập trung liền.",
+     "start_ms": 4282,
+     "end_ms": 5600,
+     "words": [
+      {
+       "text": "tập",
+       "start_ms": 4282,
+       "end_ms": 4612
+      },
+      {
+       "text": "trung",
+       "start_ms": 4612,
+       "end_ms": 5161
+      },
+      {
+       "text": "liền.",
+       "start_ms": 5161,
+       "end_ms": 5600
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-todomvc\\produce\\s5.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 4646,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 1900,
+     "x": 842,
+     "y": 395,
+     "type": "click"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 1906,
+     "bbox": {
+      "x": 814,
+      "y": 382,
+      "w": 57,
+      "h": 25
+     },
+     "kind": "click",
+     "hold_ms": 1500
+    }
+   ],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 1000,
+     "source": "rule",
+     "reason": "",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 1000,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "wide",
+     "hold_ms": 3646,
+     "source": "fallback",
+     "reason": "Sau khi lọc Active, chỉ còn các việc chưa làm hiện ra như Mua sữa.",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 1427,
+     "change": "cut"
+    },
+    {
+     "from_ms": 1427,
+     "to_ms": 3294,
+     "change": "punch"
+    },
+    {
+     "from_ms": 3294,
+     "to_ms": 4282,
+     "change": "punch"
+    },
+    {
+     "from_ms": 4282,
+     "to_ms": 5850,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 1427,
+     "scale": 0.08
+    },
+    {
+     "t_ms": 3294,
+     "scale": 0.1
+    },
+    {
+     "t_ms": 4282,
+     "scale": 0.12
+    }
+   ],
+   "same_page": true
+  },
+  "s6": {
+   "captions": [
+    {
+     "text": "Lập danh sách việc trong",
+     "start_ms": 0,
+     "end_ms": 1891,
+     "words": [
+      {
+       "text": "Lập",
+       "start_ms": 0,
+       "end_ms": 284
+      },
+      {
+       "text": "danh",
+       "start_ms": 284,
+       "end_ms": 662
+      },
+      {
+       "text": "sách",
+       "start_ms": 662,
+       "end_ms": 1040
+      },
+      {
+       "text": "việc",
+       "start_ms": 1040,
+       "end_ms": 1418
+      },
+      {
+       "text": "trong",
+       "start_ms": 1418,
+       "end_ms": 1891
+      }
+     ]
+    },
+    {
+     "text": "ngày ngay tại todomvc.com,",
+     "start_ms": 1891,
+     "end_ms": 3876,
+     "words": [
+      {
+       "text": "ngày",
+       "start_ms": 1891,
+       "end_ms": 2269
+      },
+      {
+       "text": "ngay",
+       "start_ms": 2269,
+       "end_ms": 2647
+      },
+      {
+       "text": "tại",
+       "start_ms": 2647,
+       "end_ms": 2931
+      },
+      {
+       "text": "todomvc.com,",
+       "start_ms": 2931,
+       "end_ms": 3876
+      }
+     ]
+    },
+    {
+     "text": "không cần đăng ký.",
+     "start_ms": 3876,
+     "end_ms": 5200,
+     "words": [
+      {
+       "text": "không",
+       "start_ms": 3876,
+       "end_ms": 4349
+      },
+      {
+       "text": "cần",
+       "start_ms": 4349,
+       "end_ms": 4633
+      },
+      {
+       "text": "đăng",
+       "start_ms": 4633,
+       "end_ms": 5011
+      },
+      {
+       "text": "ký.",
+       "start_ms": 5011,
+       "end_ms": 5200
+      }
+     ]
+    }
+   ],
+   "screenshot_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-todomvc\\produce\\s6.png",
+   "clip_width": 1440,
+   "clip_height": 900,
+   "focus_log": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 595,
+      "y": 196,
+      "w": 550,
+      "h": 59
+     },
+     "kind": "section",
+     "hold_ms": 0
+    }
+   ],
+   "cta_domain": "todomvc.com"
+  }
+ }
+}

@@ -235,3 +235,30 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
         if fixtures & SLOW_FIXTURES or item.module.__name__.split(".")[-1] in SLOW_MODULES:
             item.add_marker(pytest.mark.slow)
             item.add_marker(pytest.mark.timeout(300))  # browsers / ffmpeg get a longer budget
+        for area in _areas_of(Path(str(item.path))):
+            item.add_marker(getattr(pytest.mark, f"area_{area}"))
+
+
+# --- area markers: `pytest -m area_producer` runs the tests that import app.producer ---------------
+AREAS = (
+    "api", "browser", "core", "explorer", "flows", "llm", "pipeline", "producer", "proposal",
+    "recorder", "script", "session",
+)  # fmt: skip
+_IMPORT = re.compile(r"^\s*(?:from|import)\s+app\.(\w+)", re.M)
+_area_cache: dict[str, set[str]] = {}
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    for area in AREAS:
+        config.addinivalue_line("markers", f"area_{area}: tests that import app.{area}")
+
+
+def _areas_of(path: Path) -> set[str]:
+    key = str(path)
+    if key not in _area_cache:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            text = ""
+        _area_cache[key] = {a for a in _IMPORT.findall(text) if a in AREAS}
+    return _area_cache[key]

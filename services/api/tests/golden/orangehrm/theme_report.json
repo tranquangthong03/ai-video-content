@@ -1,0 +1,19 @@
+{
+  "source": "css",
+  "primary": "#0000EE",
+  "accent": "#FF7B1D",
+  "accent_source": "css",
+  "highlight": "#6e6eff",
+  "logo": "out\\cam-orangehrm\\theme\\logo.png",
+  "candidates": [
+    {
+      "color": "#0000ee",
+      "area": 8701
+    },
+    {
+      "color": "#ff7b1d",
+      "area": 1921
+    }
+  ],
+  "notes": []
+}

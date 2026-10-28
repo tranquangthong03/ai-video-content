@@ -1,0 +1,344 @@
+{
+  "warnings": [
+    "Chưa có con số dung lượng sau nén trong proof_bank nên không nêu cụ thể mức giảm",
+    "auto_trimmed: badge «NÉN ẢNH TRONG TRÌNH DUYỆT» → «NÉN ẢNH TRONG TRÌNH»"
+  ],
+  "theme": {
+    "source": "meta",
+    "primary": "#FF3385",
+    "accent": "#1AFFA3",
+    "accent_source": "opposite_hue",
+    "highlight": "#ff3385",
+    "logo": "out\\cam-squoosh\\theme\\logo.png",
+    "candidates": [],
+    "notes": []
+  },
+  "proof_bank": {
+    "numbers": [
+      {
+        "value": "2.8",
+        "unit": "MB",
+        "context": "Large photo 2.8MB",
+        "source": "profile",
+        "kind": "benefit"
+      },
+      {
+        "value": "13",
+        "unit": "KB",
+        "context": "SVG icon 13KB",
+        "source": "profile",
+        "kind": "benefit"
+      },
+      {
+        "value": "75",
+        "unit": "",
+        "context": "Quality: 75",
+        "source": "frame",
+        "kind": "identifier"
+      },
+      {
+        "value": "50",
+        "unit": "",
+        "context": "Quality: 50",
+        "source": "frame",
+        "kind": "identifier"
+      }
+    ],
+    "quotes": [
+      "Or try one of these:",
+      "Smaller images mean faster load times. Squoosh can reduce file size and maintain high quality.",
+      "Worried about privacy? Images never leave your device since Squoosh does all the work locally."
+    ],
+    "offers": [
+      {
+        "id": "no_install",
+        "label": "không cần cài đặt",
+        "source_text": "Công cụ nén ảnh chạy hoàn toàn trong trình duyệt: kéo thả ảnh vào, xem khác biệt chất lượng rồi lưu ngay, không cần máy "
+      },
+      {
+        "id": "private",
+        "label": "xử lý ngay trên máy bạn",
+        "source_text": "Worried about privacy? Images never leave your device since Squoosh does all the work locally."
+      }
+    ],
+    "audience_pains": [
+      "Worried about privacy? Images never leave your device since Squoosh does all the work locally."
+    ]
+  },
+  "content_budget_s": 33,
+  "content_budget_formula": "content_budget_s = 4 (hook) + 4 (cta) + 5 (one before_after) + sum over demonstrable features: interaction 10, navigation 6, showcase 5",
+  "recommended_duration_s": 30,
+  "critic": {
+    "threshold": 7,
+    "before": {
+      "scores": {
+        "hook_strength": {
+          "score": 7,
+          "reason": "Mở bằng con số 2.8MB và nỗi đau tải chậm, khá cụ thể nhưng câu hỏi 'nén xuống vẫn nét được không?' hơi chung, chưa đánh trúng mong muốn 'thấy rõ khác biệt chất lượng' của persona."
+        },
+        "benefit_clarity": {
+          "score": 6,
+          "reason": "Có nêu được lợi ích giảm dung lượng và không cần cài đặt, nhưng chưa làm rõ persona được 'xem rõ khác biệt chất lượng' và 'tự tin chọn mức nén' — yếu tố cốt lõi của luồng."
+        },
+        "proof_usage": {
+          "score": 7,
+          "reason": "Dùng đúng số 2.8MB và mức 50 từ proof_bank, nhưng chưa khai thác các proof khác như 'xử lý ngay trên máy bạn' (privacy) hay 'không cần cài đặt' một cách tự nhiên, và chưa có câu trích dẫn nào."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể (mở squoosh.app, thử nén ảnh mẫu) nhưng thiếu lý do làm ngay (ưu đãi thật như 'xử lý trên máy bạn' hoặc 'không cần cài đặt') và chưa thật dễ nhớ."
+        },
+        "flow": {
+          "score": 7,
+          "reason": "Mạch từ nỗi đau → chọn ảnh → điều chỉnh nén → CTA khá liền, nhưng câu nối giữa hook và scene 2 còn hơi gượng, thiếu bước 'xem khác biệt chất lượng' trước khi lưu."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chưa đánh trúng mong muốn cốt lõi là 'xem rõ khác biệt chất lượng' và 'tự tin chọn mức nén', chỉ tập trung vào dung lượng.",
+          "suggestion": "Ảnh 2.8MB tải chậm? Xem nén xuống còn bao nhiêu mà vẫn nét, ngay trên trình duyệt."
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Chỉ kể thao tác chọn ảnh mẫu, chưa nói rõ persona được gì (không cần cài đặt, xử lý ngay trên máy).",
+          "suggestion": "Mở trình duyệt, chọn ảnh mẫu 2.8MB có sẵn — không cài đặt, ảnh xử lý ngay trên máy bạn."
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Chưa làm rõ việc 'xem khác biệt chất lượng' giữa ảnh gốc và ảnh nén, cũng chưa nêu lợi ích 'tự tin chọn mức nén' trước khi lưu.",
+          "suggestion": "Hạ chất lượng xuống 50, xem ngay dung lượng giảm mà vẫn đủ nét — tự tin chọn mức nén phù hợp."
+        },
+        {
+          "scene_id": "s4",
+          "problem": "CTA thiếu lý do làm ngay dựa trên ưu đãi thật (xử lý trên máy bạn, không cần cài đặt).",
+          "suggestion": "Mở squoosh.app, thử nén ảnh mẫu ngay trên máy bạn — không cần cài đặt, tự tin chọn mức nén."
+        }
+      ],
+      "issues": [
+        "Scene s1 dùng câu hỏi 'nén xuống vẫn nét được không?' không có trong proof_bank, mang tính sáo rỗng.",
+        "Chưa khai thác quote 'Worried about privacy? Images never leave your device...' dù đây là lợi ích mạnh cho persona.",
+        "Chưa dùng offer 'no_install' và 'private' một cách rõ ràng trong CTA.",
+        "Thiếu bước hiển thị so sánh trực quan chất lượng ảnh gốc và ảnh nén, trong khi persona muốn 'xem rõ khác biệt chất lượng'."
+      ],
+      "summary": "Kịch bản có mạch cơ bản và dùng đúng số liệu 2.8MB, 50, nhưng chưa làm nổi bật giá trị cốt lõi là xem khác biệt chất lượng và tự tin chọn mức nén. Cần sửa hook và các scene để nói rõ lợi ích 'không cần cài đặt', 'xử lý ngay trên máy bạn', đồng thời thêm bước so sánh chất lượng trước khi lưu. CTA nên gắn với ưu đãi thật để tăng tính thuyết phục."
+    },
+    "after": {
+      "scores": {
+        "hook_strength": {
+          "score": 6,
+          "reason": "Nêu con số 2.8MB và 'thấy khác biệt' nhưng 'vẫn nét' chưa đánh trúng nỗi đau privacy/faster load của persona, dễ bị coi là quảng cáo chung."
+        },
+        "benefit_clarity": {
+          "score": 5,
+          "reason": "Chương 1 chỉ kể thao tác 'mở trình duyệt, bấm chọn ảnh mẫu' chứ chưa nói rõ persona được gì; chương 2 có kết quả 'dung lượng giảm' nhưng thiếu số KB cụ thể và chưa nhấn 'xem rõ khác biệt chất lượng'."
+        },
+        "proof_usage": {
+          "score": 7,
+          "reason": "Dùng đúng số 2.8MB và mức 50 từ proof_bank, nhưng bỏ sót lợi ích 'xử lý ngay trên máy bạn' và không tận dụng câu trích privacy mạnh."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "Có hành động cụ thể 'mở squoosh.app, thử nén ảnh mẫu' nhưng thiếu lý do làm ngay (không cần cài đặt / ảnh không rời máy) và không dễ nhớ bằng một câu ngắn."
+        },
+        "flow": {
+          "score": 6,
+          "reason": "Mạch hook → chọn ảnh → chỉnh nén → CTA tương đối liền, nhưng thiếu câu nối nỗi đau privacy/faster load và chương 1 hơi liệt kê thao tác."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chưa đánh trúng nỗi đau privacy hoặc lợi ích 'nhanh hơn' của persona, chỉ nói 'vẫn nét' chung chung.",
+          "suggestion": "Ảnh 2.8MB, nén còn 50 mà không rời máy bạn — xem khác biệt ngay."
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Kể thao tác 'mở trình duyệt, bấm chọn' thay vì nói persona được gì; chưa dùng ưu đãi 'không cần cài đặt' và 'xử lý ngay trên máy bạn' một cách rõ ràng.",
+          "suggestion": "Chọn ảnh mẫu 2.8MB có sẵn — không cài đặt, ảnh xử lý ngay trên máy bạn."
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Chưa cho thấy 'xem rõ khác biệt chất lượng' và thiếu số liệu dung lượng giảm cụ thể trong proof_bank.",
+          "suggestion": "Hạ chất lượng xuống 50, xem dung lượng giảm và so chất lượng gốc/đã nén ngay trên máy."
+        },
+        {
+          "scene_id": "s4",
+          "problem": "CTA thiếu lý do làm ngay gắn với ưu đãi thật (không cần cài đặt / ảnh không rời máy).",
+          "suggestion": "Mở squoosh.app, thử ảnh mẫu 2.8MB ngay — không cần cài đặt, ảnh không rời máy bạn."
+        }
+      ],
+      "issues": [
+        "Hook dùng 'vẫn nét' nhưng không có bằng chứng định lượng trong proof_bank về chất lượng sau nén, dễ thành claim chung.",
+        "Scene s3 nói 'dung lượng giảm' nhưng không nêu con số KB cụ thể; proof_bank chỉ có 2.8MB, 13KB, 50, 75 nên cần tránh bịa số giảm.",
+        "Chưa tận dụng câu trích 'Images never leave your device' — lợi ích privacy mạnh nhất của proof_bank.",
+        "Chưa tận dụng offer 'không cần cài đặt' ở CTA để tăng lý do hành động ngay."
+      ],
+      "summary": "Kịch bản có mạch đúng luồng và dùng được số 2.8MB/mức 50, nhưng hook còn chung chung, chương 1 kể thao tác thay vì lợi ích, và CTA thiếu lý do làm ngay gắn với privacy/không cài đặt. Cần siết lại câu chữ để persona thấy rõ 'được gì' và tự tin chọn mức nén."
+    },
+    "final": {
+      "scores": {
+        "hook_strength": {
+          "score": 7,
+          "reason": "Mở bằng con số 2.8MB và nỗi đau tải chậm, khá cụ thể nhưng câu hỏi 'nén xuống vẫn nét được không?' hơi chung, chưa đánh trúng mong muốn 'thấy rõ khác biệt chất lượng' của persona."
+        },
+        "benefit_clarity": {
+          "score": 6,
+          "reason": "Có nêu được lợi ích giảm dung lượng và không cần cài đặt, nhưng chưa làm rõ persona được 'xem rõ khác biệt chất lượng' và 'tự tin chọn mức nén' — yếu tố cốt lõi của luồng."
+        },
+        "proof_usage": {
+          "score": 7,
+          "reason": "Dùng đúng số 2.8MB và mức 50 từ proof_bank, nhưng chưa khai thác các proof khác như 'xử lý ngay trên máy bạn' (privacy) hay 'không cần cài đặt' một cách tự nhiên, và chưa có câu trích dẫn nào."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể (mở squoosh.app, thử nén ảnh mẫu) nhưng thiếu lý do làm ngay (ưu đãi thật như 'xử lý trên máy bạn' hoặc 'không cần cài đặt') và chưa thật dễ nhớ."
+        },
+        "flow": {
+          "score": 7,
+          "reason": "Mạch từ nỗi đau → chọn ảnh → điều chỉnh nén → CTA khá liền, nhưng câu nối giữa hook và scene 2 còn hơi gượng, thiếu bước 'xem khác biệt chất lượng' trước khi lưu."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chưa đánh trúng mong muốn cốt lõi là 'xem rõ khác biệt chất lượng' và 'tự tin chọn mức nén', chỉ tập trung vào dung lượng.",
+          "suggestion": "Ảnh 2.8MB tải chậm? Xem nén xuống còn bao nhiêu mà vẫn nét, ngay trên trình duyệt."
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Chỉ kể thao tác chọn ảnh mẫu, chưa nói rõ persona được gì (không cần cài đặt, xử lý ngay trên máy).",
+          "suggestion": "Mở trình duyệt, chọn ảnh mẫu 2.8MB có sẵn — không cài đặt, ảnh xử lý ngay trên máy bạn."
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Chưa làm rõ việc 'xem khác biệt chất lượng' giữa ảnh gốc và ảnh nén, cũng chưa nêu lợi ích 'tự tin chọn mức nén' trước khi lưu.",
+          "suggestion": "Hạ chất lượng xuống 50, xem ngay dung lượng giảm mà vẫn đủ nét — tự tin chọn mức nén phù hợp."
+        },
+        {
+          "scene_id": "s4",
+          "problem": "CTA thiếu lý do làm ngay dựa trên ưu đãi thật (xử lý trên máy bạn, không cần cài đặt).",
+          "suggestion": "Mở squoosh.app, thử nén ảnh mẫu ngay trên máy bạn — không cần cài đặt, tự tin chọn mức nén."
+        }
+      ],
+      "issues": [
+        "Scene s1 dùng câu hỏi 'nén xuống vẫn nét được không?' không có trong proof_bank, mang tính sáo rỗng.",
+        "Chưa khai thác quote 'Worried about privacy? Images never leave your device...' dù đây là lợi ích mạnh cho persona.",
+        "Chưa dùng offer 'no_install' và 'private' một cách rõ ràng trong CTA.",
+        "Thiếu bước hiển thị so sánh trực quan chất lượng ảnh gốc và ảnh nén, trong khi persona muốn 'xem rõ khác biệt chất lượng'."
+      ],
+      "summary": "Kịch bản có mạch cơ bản và dùng đúng số liệu 2.8MB, 50, nhưng chưa làm nổi bật giá trị cốt lõi là xem khác biệt chất lượng và tự tin chọn mức nén. Cần sửa hook và các scene để nói rõ lợi ích 'không cần cài đặt', 'xử lý ngay trên máy bạn', đồng thời thêm bước so sánh chất lượng trước khi lưu. CTA nên gắn với ưu đãi thật để tăng tính thuyết phục."
+    },
+    "kept_rewrite": false,
+    "rounds": 0,
+    "hook": {
+      "hook_strength": [
+        7,
+        5
+      ],
+      "chosen": 1,
+      "kinds": [
+        "pain_question",
+        "result_first"
+      ]
+    },
+    "rewritten": [],
+    "notes": [
+      "bản viết lại bị chấm thấp hơn nên giữ bản trước"
+    ],
+    "passed": false
+  },
+  "generation": {
+    "attempts": 3,
+    "errors_history": [
+      [
+        "badge dài 25 ký tự, tối đa 24",
+        "hook_options[1]: hook có 14 từ, cần 5–12",
+        "hook_options[2]: hook có 14 từ, cần 5–12",
+        "scene 1: hook có 14 từ, cần 5–12"
+      ],
+      [
+        "badge dài 25 ký tự, tối đa 24",
+        "hook_options[1]: hook có 13 từ, cần 5–12",
+        "hook_options[2]: hook có 13 từ, cần 5–12",
+        "scene 1: hook có 13 từ, cần 5–12"
+      ],
+      [
+        "badge dài 25 ký tự, tối đa 24"
+      ]
+    ]
+  },
+  "fit": {
+    "target_ms": 30000,
+    "estimated_ms": 29400,
+    "initial_ms": 29400,
+    "deviation": -0.02,
+    "within_tolerance": true,
+    "rounds": 0,
+    "actions": [],
+    "warnings": []
+  },
+  "fit_generation": {
+    "target_ms": 30000,
+    "estimated_ms": 29400,
+    "initial_ms": 29400,
+    "deviation": -0.02,
+    "within_tolerance": true,
+    "rounds": 0,
+    "actions": [],
+    "warnings": []
+  },
+  "footage_ratio": 1.0,
+  "footage_min": 0.4,
+  "versions": [
+    1
+  ],
+  "current_version": 1,
+  "approved": true,
+  "tokens": {
+    "max_tokens": 400000,
+    "total": 75214,
+    "steps": {
+      "classify": {
+        "input": 388,
+        "output": 88,
+        "calls": 1
+      },
+      "analyze": {
+        "input": 978,
+        "output": 367,
+        "calls": 1
+      },
+      "synthesize": {
+        "input": 2062,
+        "output": 3028,
+        "calls": 1
+      },
+      "flow_discovery": {
+        "input": 3623,
+        "output": 3124,
+        "calls": 2
+      },
+      "flow_agent": {
+        "input": 14961,
+        "output": 2196,
+        "calls": 5
+      },
+      "script": {
+        "input": 18080,
+        "output": 3196,
+        "calls": 3
+      },
+      "copy_critic": {
+        "input": 5230,
+        "output": 3700,
+        "calls": 3
+      },
+      "scene": {
+        "input": 13088,
+        "output": 1105,
+        "calls": 5
+      }
+    }
+  }
+}

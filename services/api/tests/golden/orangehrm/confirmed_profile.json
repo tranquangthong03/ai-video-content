@@ -1,0 +1,695 @@
+{
+  "site_type": "web_app",
+  "product_name": "OrangeHRM",
+  "one_liner": "Nền tảng quản trị nhân sự (HRM) mã nguồn mở gộp hồ sơ nhân viên, nghỉ phép, chấm công và tuyển dụng vào một bảng điều khiển duy nhất.",
+  "target_users": [
+    "Quản trị viên nhân sự / HR",
+    "Quản lý nhóm và trưởng bộ phận",
+    "Nhân viên tự phục vụ (self-service)",
+    "Doanh nghiệp vừa và nhỏ cần hệ thống HR tiết kiệm chi phí"
+  ],
+  "value_props": [
+    "Một bảng điều khiển tổng hợp: thời gian làm việc, việc cần làm, nhân viên nghỉ phép và phân bố nhân sự theo bộ phận",
+    "Quản lý hồ sơ nhân viên tập trung với tìm kiếm và lọc theo tên, mã nhân viên, trạng thái, chức danh, bộ phận, quản lý trực tiếp",
+    "Quy trình nghỉ phép khép kín: nhân viên tự xin nghỉ, xem nghỉ phép của mình, HR gán nghỉ và tra cứu danh sách nghỉ",
+    "Chấm công và timesheet theo tuần cho nhân viên lẫn người quản lý",
+    "Mở rộng sang tuyển dụng, hiệu suất và bảng tin nội bộ trong cùng một hệ thống"
+  ],
+  "features": [
+    {
+      "id": "f1",
+      "name": "Bảng điều khiển nhân sự tổng hợp",
+      "description": "Trang Dashboard gom các widget quan trọng: Time at Work, My Actions, Quick Launch, Buzz Latest Posts, Employees on Leave Today và biểu đồ phân bố nhân sự theo Sub Unit/Location, giúp HR và quản lý nắm tình hình nhân sự trong một màn hình.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e22",
+          "quote": "My Leave"
+        },
+        {
+          "source": "nav",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "quote": "Dashboard"
+        },
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e18",
+          "quote": "Assign Leave"
+        }
+      ],
+      "importance": 0.92,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "scroll",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "wait",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "failed",
+      "demo_score": 0.0,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 1,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": "app_dashboard",
+        "notes": ""
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": null,
+      "source": "site",
+      "intent_key": "view_hr_dashboard"
+    },
+    {
+      "id": "f2",
+      "name": "Tìm kiếm và lọc danh sách nhân viên (PIM)",
+      "description": "Module PIM cho phép lọc danh sách nhân viên theo tên, mã nhân viên, trạng thái làm việc, chức danh, bộ phận và quản lý trực tiếp, kèm nút Reset để xóa bộ lọc và bảng kết quả có phân trang.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": "e25",
+          "quote": "Search"
+        },
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": "e21",
+          "quote": "Type for hints..."
+        },
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": "e24",
+          "quote": "Reset"
+        },
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": "e27",
+          "quote": "(138) Records Found"
+        }
+      ],
+      "importance": 0.9,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "type",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": "e21",
+          "text": "Amelia",
+          "file": null,
+          "locator": {
+            "role": "textbox",
+            "name": "Type for hints...",
+            "text": null,
+            "css": "input",
+            "nth": 1,
+            "tag": "input",
+            "fingerprint": "input||0.27,0.08",
+            "bbox": {
+              "x": 332.0,
+              "y": 247.0,
+              "w": 359.0,
+              "h": 40.0
+            }
+          }
+        },
+        {
+          "do": "type",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": "e23",
+          "text": "Charles",
+          "file": null,
+          "locator": {
+            "role": "textbox",
+            "name": "Type for hints...",
+            "text": null,
+            "css": "input",
+            "nth": 3,
+            "tag": "input",
+            "fingerprint": "input||0.27,0.10",
+            "bbox": {
+              "x": 332.0,
+              "y": 330.0,
+              "w": 359.0,
+              "h": 40.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "failed",
+      "demo_score": 0.0,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0004,
+        "target_page_type": "app_list",
+        "notes": ""
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": null,
+      "source": "site",
+      "intent_key": "filter_list"
+    },
+    {
+      "id": "f3",
+      "name": "Thêm nhân viên mới vào hồ sơ nhân sự",
+      "description": "Từ danh sách nhân viên, nút Add mở luồng tạo hồ sơ nhân viên mới (thông tin cá nhân, mã nhân viên, chức danh, bộ phận) để đưa người mới vào hệ thống.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": "e26",
+          "quote": "Add"
+        },
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e4",
+          "quote": "PIM"
+        }
+      ],
+      "importance": 0.85,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": "e26",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": " Add",
+            "text": "Add",
+            "css": "button",
+            "nth": 6,
+            "tag": "button",
+            "fingerprint": "button|add|0.20,0.15",
+            "bbox": {
+              "x": 329.0,
+              "y": 506.0,
+              "w": 109.0,
+              "h": 31.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "navigation",
+      "demo_score": 0.5,
+      "demo_evidence": {
+        "url_changed": true,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": null,
+        "notes": "target page not analysed: https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee"
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\cam-orangehrm\\explore\\verify\\f3\\step3_after.png",
+      "source": "site",
+      "intent_key": "create_employee"
+    },
+    {
+      "id": "f4",
+      "name": "Nhân viên tự xin nghỉ và theo dõi nghỉ phép",
+      "description": "Nhân viên dùng Quick Launch/Leave để tạo đơn xin nghỉ (Apply Leave) và xem lại các đơn nghỉ của mình (My Leave), giảm phụ thuộc vào email và giấy tờ thủ công.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e21",
+          "quote": "Apply Leave"
+        },
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e22",
+          "quote": "My Leave"
+        },
+        {
+          "source": "nav",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "quote": "Leave"
+        }
+      ],
+      "importance": 0.84,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e21",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Apply Leave",
+            "text": null,
+            "css": "button",
+            "nth": 9,
+            "tag": "button",
+            "fingerprint": "button||0.70,0.21",
+            "bbox": {
+              "x": 1307.0,
+              "y": 271.0,
+              "w": 60.0,
+              "h": 60.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "navigation",
+      "demo_score": 0.5,
+      "demo_evidence": {
+        "url_changed": true,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": null,
+        "notes": "target page not analysed: https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave"
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\cam-orangehrm\\explore\\verify\\f4\\step3_after.png",
+      "source": "site",
+      "intent_key": "apply_leave"
+    },
+    {
+      "id": "f5",
+      "name": "Chấm công và timesheet theo tuần",
+      "description": "Nhân viên ghi và xem timesheet của mình (My Timesheet), người quản lý truy cập Timesheets để theo dõi giờ làm; widget Time at Work trên dashboard hiển thị trạng thái punch in/out và tổng giờ trong tuần.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e23",
+          "quote": "My Timesheet"
+        },
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e20",
+          "quote": "Timesheets"
+        },
+        {
+          "source": "nav",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "quote": "Time at Work - This Week"
+        }
+      ],
+      "importance": 0.78,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e23",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "My Timesheet",
+            "text": null,
+            "css": "button",
+            "nth": 11,
+            "tag": "button",
+            "fingerprint": "button||0.80,0.21",
+            "bbox": {
+              "x": 1509.0,
+              "y": 271.0,
+              "w": 60.0,
+              "h": 60.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "navigation",
+      "demo_score": 0.5,
+      "demo_evidence": {
+        "url_changed": true,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": null,
+        "notes": "target page not analysed: https://opensource-demo.orangehrmlive.com/web/index.php/time/viewMyTimesheet"
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\cam-orangehrm\\explore\\verify\\f5\\step3_after.png",
+      "source": "site",
+      "intent_key": "track_timesheet"
+    },
+    {
+      "id": "f6",
+      "name": "HR gán nghỉ phép và tra cứu danh sách nghỉ",
+      "description": "HR/quản lý dùng Assign Leave để tạo đơn nghỉ thay cho nhân viên và Leave List để lọc, xem toàn bộ đơn nghỉ trong tổ chức; dashboard còn có widget Employees on Leave Today.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e18",
+          "quote": "Assign Leave"
+        },
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e19",
+          "quote": "Leave List"
+        },
+        {
+          "source": "nav",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "quote": "Employees on Leave Today"
+        }
+      ],
+      "importance": 0.72,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e19",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Leave List",
+            "text": null,
+            "css": "button",
+            "nth": 7,
+            "tag": "button",
+            "fingerprint": "button||0.75,0.15",
+            "bbox": {
+              "x": 1408.0,
+              "y": 180.0,
+              "w": 60.0,
+              "h": 60.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "navigation",
+      "demo_score": 0.5,
+      "demo_evidence": {
+        "url_changed": true,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": null,
+        "notes": "target page not analysed: https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveList"
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\cam-orangehrm\\explore\\verify\\f6\\step3_after.png",
+      "source": "site",
+      "intent_key": "manage_team_leave"
+    },
+    {
+      "id": "f7",
+      "name": "Module tuyển dụng (Recruitment)",
+      "description": "Truy cập module Recruitment từ thanh điều hướng để quản lý quy trình tuyển dụng; dashboard hiển thị việc cần làm '[1] Candidate to Interview' trong My Actions.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e7",
+          "quote": "Recruitment"
+        },
+        {
+          "source": "nav",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "quote": "[1] Candidate to Interview"
+        }
+      ],
+      "importance": 0.62,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e7",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "link",
+            "name": "Recruitment",
+            "text": "Recruitment",
+            "css": "nav a",
+            "nth": 5,
+            "tag": "a",
+            "fingerprint": "a|recruitment|0.06,0.23",
+            "bbox": {
+              "x": 0.0,
+              "y": 310.0,
+              "w": 246.0,
+              "h": 38.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": null,
+      "demo_score": 0.0,
+      "demo_evidence": null,
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": false,
+      "demo_note": null,
+      "thumbnail": null,
+      "source": "site",
+      "intent_key": "manage_recruitment"
+    },
+    {
+      "id": "f8",
+      "name": "Tìm kiếm nhanh toàn hệ thống",
+      "description": "Ô Search ở đầu thanh điều hướng cho phép người dùng gõ từ khóa để nhảy nhanh tới các module như Leave, PIM, Time thay vì mở menu từng cấp.",
+      "evidence": [
+        {
+          "source": "app_action",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e2",
+          "quote": "Search"
+        }
+      ],
+      "importance": 0.55,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e2",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "textbox",
+            "name": "Search",
+            "text": null,
+            "css": "nav input",
+            "nth": 0,
+            "tag": "input",
+            "fingerprint": "input||0.07,0.09",
+            "bbox": {
+              "x": 46.0,
+              "y": 119.0,
+              "w": 171.0,
+              "h": 20.0
+            }
+          }
+        },
+        {
+          "do": "type",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": "e2",
+          "text": "Leave",
+          "file": null,
+          "locator": {
+            "role": "textbox",
+            "name": "Search",
+            "text": null,
+            "css": "nav input",
+            "nth": 0,
+            "tag": "input",
+            "fingerprint": "input||0.07,0.09",
+            "bbox": {
+              "x": 46.0,
+              "y": 119.0,
+              "w": 171.0,
+              "h": 20.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": null,
+      "demo_score": 0.0,
+      "demo_evidence": null,
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": false,
+      "demo_note": null,
+      "thumbnail": null,
+      "source": "site",
+      "intent_key": "global_search"
+    }
+  ],
+  "open_questions": [
+    "Chưa có trang landing/pricing trong dữ liệu: cần xác nhận định vị (mã nguồn mở miễn phí vs gói trả phí) và thông điệp bán hàng chính để làm video.",
+    "Module Buzz (bảng tin nội bộ) và các module Admin, Performance, Directory, Maintenance, Claim chỉ thấy trong menu, chưa có trang chi tiết — cần xác nhận có đưa vào video hay không.",
+    "Không rõ đối tượng khách hàng ưu tiên (doanh nghiệp nhỏ hay doanh nghiệp vừa) và khu vực/ngôn ngữ của người xem video.",
+    "Chưa rõ có cần demo quy trình phê duyệt nghỉ phép nhiều cấp (manager/HR) hay chỉ dừng ở màn hình Apply Leave / Leave List.",
+    "Trang demo đang hiển thị lỗi 'Unexpected Error' ở góc dưới — cần xác nhận có dùng bản demo này để quay video chính thức không."
+  ]
+}

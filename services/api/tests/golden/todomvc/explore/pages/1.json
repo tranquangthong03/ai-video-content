@@ -1,0 +1,607 @@
+{
+  "n": 1,
+  "url": "https://todomvc.com/examples/react/dist/",
+  "title": "TodoMVC: React",
+  "meta_description": "A TodoMVC written in React.",
+  "og_description": "",
+  "headings": [
+    {
+      "level": 3,
+      "text": "React"
+    },
+    {
+      "level": 1,
+      "text": "todos"
+    }
+  ],
+  "key_texts": [
+    "todos",
+    "React",
+    "ReactJS on Stack Overflow",
+    "Double-click to edit a todo",
+    "Created by the TodoMVC Team"
+  ],
+  "elements": [
+    {
+      "ref": "e1",
+      "role": "link",
+      "name": "Source",
+      "region": "aside",
+      "tag": "a",
+      "text": "Source",
+      "href": "https://github.com/tastejs/todomvc/tree/gh-pages/examples/react",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Source",
+        "text": "Source",
+        "css": "aside a",
+        "nth": 0,
+        "tag": "a",
+        "fingerprint": "a|source|0.02,0.09",
+        "bbox": {
+          "x": 18.0,
+          "y": 85.0,
+          "w": 44.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e2",
+      "role": "link",
+      "name": "Demo",
+      "region": "aside",
+      "tag": "a",
+      "text": "Demo",
+      "href": "https://todomvc.com/examples/typescript-react",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Demo",
+        "text": "Demo",
+        "css": "aside a",
+        "nth": 1,
+        "tag": "a",
+        "fingerprint": "a|demo|0.02,0.13",
+        "bbox": {
+          "x": 18.0,
+          "y": 131.0,
+          "w": 37.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e3",
+      "role": "link",
+      "name": "Source",
+      "region": "aside",
+      "tag": "a",
+      "text": "Source",
+      "href": "https://github.com/tastejs/todomvc/tree/gh-pages/examples/typescript-react",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Source",
+        "text": "Source",
+        "css": "aside a",
+        "nth": 2,
+        "tag": "a",
+        "fingerprint": "a|source|0.04,0.13",
+        "bbox": {
+          "x": 63.0,
+          "y": 131.0,
+          "w": 44.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e4",
+      "role": "link",
+      "name": "React",
+      "region": "aside",
+      "tag": "a",
+      "text": "React",
+      "href": "http://facebook.github.io/react",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "React",
+        "text": "React",
+        "css": "aside a",
+        "nth": 3,
+        "tag": "a",
+        "fingerprint": "a|react|0.14,0.40",
+        "bbox": {
+          "x": 253.0,
+          "y": 428.0,
+          "w": 37.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e5",
+      "role": "link",
+      "name": "Quick Start",
+      "region": "aside",
+      "tag": "a",
+      "text": "Quick Start",
+      "href": "https://react.dev/learn",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Quick Start",
+        "text": "Quick Start",
+        "css": "aside a",
+        "nth": 4,
+        "tag": "a",
+        "fingerprint": "a|quick start|0.04,0.49",
+        "bbox": {
+          "x": 43.0,
+          "y": 522.0,
+          "w": 69.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e6",
+      "role": "link",
+      "name": "API Reference",
+      "region": "aside",
+      "tag": "a",
+      "text": "API Reference",
+      "href": "https://react.dev/reference/react",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "API Reference",
+        "text": "API Reference",
+        "css": "aside a",
+        "nth": 5,
+        "tag": "a",
+        "fingerprint": "a|api reference|0.05,0.51",
+        "bbox": {
+          "x": 43.0,
+          "y": 542.0,
+          "w": 91.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e7",
+      "role": "link",
+      "name": "Philosophy",
+      "region": "aside",
+      "tag": "a",
+      "text": "Philosophy",
+      "href": "https://petehuntsposts.quora.com/React-Under-the-Hood",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Philosophy",
+        "text": "Philosophy",
+        "css": "aside a",
+        "nth": 6,
+        "tag": "a",
+        "fingerprint": "a|philosophy|0.04,0.53",
+        "bbox": {
+          "x": 43.0,
+          "y": 562.0,
+          "w": 69.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e8",
+      "role": "link",
+      "name": "React Community",
+      "region": "aside",
+      "tag": "a",
+      "text": "React Community",
+      "href": "https://react.dev/community",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "React Community",
+        "text": "React Community",
+        "css": "aside a",
+        "nth": 7,
+        "tag": "a",
+        "fingerprint": "a|react community|0.05,0.55",
+        "bbox": {
+          "x": 43.0,
+          "y": 582.0,
+          "w": 111.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e9",
+      "role": "link",
+      "name": "ReactJS on Stack Overflow",
+      "region": "aside",
+      "tag": "a",
+      "text": "ReactJS on Stack Overflow",
+      "href": "https://stackoverflow.com/questions/tagged/reactjs",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "ReactJS on Stack Overflow",
+        "text": "ReactJS on Stack Overflow",
+        "css": "aside a",
+        "nth": 8,
+        "tag": "a",
+        "fingerprint": "a|reactjs on stack overflow|0.07,0.62",
+        "bbox": {
+          "x": 43.0,
+          "y": 664.0,
+          "w": 170.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e10",
+      "role": "link",
+      "name": "let us know",
+      "region": "aside",
+      "tag": "a",
+      "text": "let us know",
+      "href": "https://github.com/tastejs/todomvc/issues",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "let us know",
+        "text": "let us know",
+        "css": "aside a",
+        "nth": 9,
+        "tag": "a",
+        "fingerprint": "a|let us know|0.05,0.72",
+        "bbox": {
+          "x": 63.0,
+          "y": 774.0,
+          "w": 70.0,
+          "h": 16.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e11",
+      "role": "textbox",
+      "name": "New Todo Input",
+      "region": "header",
+      "tag": "input",
+      "text": "",
+      "href": null,
+      "selector": "[data-testid=\"text-input\"]",
+      "locator": {
+        "role": "textbox",
+        "name": "New Todo Input",
+        "text": null,
+        "css": "[data-testid=\"text-input\"]",
+        "nth": null,
+        "tag": "input",
+        "fingerprint": "input||0.58,0.15",
+        "bbox": {
+          "x": 835.0,
+          "y": 130.0,
+          "w": 550.0,
+          "h": 65.0
+        }
+      },
+      "input_type": "text",
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "e12",
+      "role": "link",
+      "name": "TodoMVC",
+      "region": "footer",
+      "tag": "a",
+      "text": "TodoMVC",
+      "href": "http://todomvc.com/",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "TodoMVC",
+        "text": "TodoMVC",
+        "css": "footer a",
+        "nth": 5,
+        "tag": "a",
+        "fingerprint": "a|todomvc|0.59,0.29",
+        "bbox": {
+          "x": 1104.0,
+          "y": 303.0,
+          "w": 48.0,
+          "h": 12.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "s1e1",
+      "role": "generic",
+      "name": "Mua sữa cho bữa sáng",
+      "region": "main",
+      "tag": "label",
+      "text": "Mua sữa cho bữa sáng",
+      "href": null,
+      "selector": "[data-testid=\"todo-item-label\"]",
+      "locator": {
+        "role": "generic",
+        "name": "Mua sữa cho bữa sáng",
+        "text": "Mua sữa cho bữa sáng",
+        "css": "[data-testid=\"todo-item-label\"]",
+        "nth": null,
+        "tag": "label",
+        "fingerprint": "label|mua sữa cho bữa sáng|0.58,0.21",
+        "bbox": {
+          "x": 835.0,
+          "y": 196.0,
+          "w": 550.0,
+          "h": 59.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": [
+        "dblclick"
+      ]
+    },
+    {
+      "ref": "s1e2",
+      "role": "link",
+      "name": "All",
+      "region": "footer",
+      "tag": "a",
+      "text": "All",
+      "href": "https://todomvc.com/examples/react/dist/#/",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "All",
+        "text": "All",
+        "css": "footer a",
+        "nth": 2,
+        "tag": "a",
+        "fingerprint": "a|all|0.54,0.25",
+        "bbox": {
+          "x": 1015.0,
+          "y": 263.0,
+          "w": 33.0,
+          "h": 25.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "s1e3",
+      "role": "link",
+      "name": "Active",
+      "region": "footer",
+      "tag": "a",
+      "text": "Active",
+      "href": "https://todomvc.com/examples/react/dist/#/active",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Active",
+        "text": "Active",
+        "css": "footer a",
+        "nth": 3,
+        "tag": "a",
+        "fingerprint": "a|active|0.56,0.25",
+        "bbox": {
+          "x": 1054.0,
+          "y": 263.0,
+          "w": 57.0,
+          "h": 25.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    },
+    {
+      "ref": "s1e4",
+      "role": "link",
+      "name": "Completed",
+      "region": "footer",
+      "tag": "a",
+      "text": "Completed",
+      "href": "https://todomvc.com/examples/react/dist/#/completed",
+      "selector": null,
+      "locator": {
+        "role": "link",
+        "name": "Completed",
+        "text": "Completed",
+        "css": "footer a",
+        "nth": 4,
+        "tag": "a",
+        "fingerprint": "a|completed|0.60,0.25",
+        "bbox": {
+          "x": 1116.0,
+          "y": 263.0,
+          "w": 89.0,
+          "h": 25.0
+        }
+      },
+      "input_type": null,
+      "button_type": null,
+      "accept": null,
+      "in_form": false,
+      "form": null,
+      "caps": []
+    }
+  ],
+  "anchors": [],
+  "signals": {
+    "forms": 0,
+    "has_nav": false,
+    "has_sidebar": true,
+    "has_price": false,
+    "has_cart": false,
+    "sections": 1,
+    "big_input": 1,
+    "interactive": 12,
+    "canvas": 0,
+    "dblclick_hint": true,
+    "text_length": 657
+  },
+  "layout": {
+    "hero": true,
+    "sidebar": true,
+    "tables": 0,
+    "forms": 0,
+    "cards": 0,
+    "images": 0,
+    "video": 0,
+    "canvas": 0,
+    "big_input": true,
+    "sections": 1
+  },
+  "screenshot": "out\\cam-todomvc\\explore\\pages\\1.png",
+  "depth": 0,
+  "score": 100.0,
+  "setup_steps": [
+    {
+      "do": "goto",
+      "url": "https://todomvc.com/examples/react/dist/",
+      "ref": null,
+      "text": null,
+      "file": null,
+      "locator": null
+    },
+    {
+      "do": "click",
+      "url": "https://todomvc.com/examples/react/dist/",
+      "ref": "e11",
+      "text": null,
+      "file": null,
+      "locator": {
+        "role": "textbox",
+        "name": "New Todo Input",
+        "text": null,
+        "css": "[data-testid=\"text-input\"]",
+        "nth": null,
+        "tag": "input",
+        "fingerprint": "input||0.58,0.15",
+        "bbox": {
+          "x": 835.0,
+          "y": 130.0,
+          "w": 550.0,
+          "h": 65.0
+        }
+      }
+    },
+    {
+      "do": "type",
+      "url": "https://todomvc.com/examples/react/dist/",
+      "ref": "e11",
+      "text": "Mua sữa cho bữa sáng",
+      "file": null,
+      "locator": {
+        "role": "textbox",
+        "name": "New Todo Input",
+        "text": null,
+        "css": "[data-testid=\"text-input\"]",
+        "nth": null,
+        "tag": "input",
+        "fingerprint": "input||0.58,0.15",
+        "bbox": {
+          "x": 835.0,
+          "y": 130.0,
+          "w": 550.0,
+          "h": 65.0
+        }
+      }
+    }
+  ]
+}

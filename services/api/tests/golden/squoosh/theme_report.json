@@ -1,0 +1,10 @@
+{
+  "source": "meta",
+  "primary": "#FF3385",
+  "accent": "#1AFFA3",
+  "accent_source": "opposite_hue",
+  "highlight": "#ff3385",
+  "logo": "out\\cam-squoosh\\theme\\logo.png",
+  "candidates": [],
+  "notes": []
+}

@@ -1,0 +1,366 @@
+{
+  "title": "Lên danh sách việc trong ngày và lọc việc còn lại",
+  "goal": "tutorial",
+  "aspect_ratio": "9:16",
+  "target_duration_s": 30,
+  "template": "desktop_focus",
+  "capture": {
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900
+  },
+  "flow_id": "user_l_n_danh_s_ch_vi_c_trong",
+  "badge": "TODO NHANH",
+  "headline": "Lên việc trong ngày, lọc việc còn lại",
+  "headline_highlight": "lọc việc còn lại",
+  "framework": "pain_journey_result",
+  "hook_options": [
+    {
+      "kind": "pain_question",
+      "voiceover": "Bạn có đang quên việc cần làm mỗi ngày?",
+      "on_screen_text": "Quên việc mỗi ngày?"
+    },
+    {
+      "kind": "you_are_doing_it_wrong",
+      "voiceover": "Đừng ghi việc lên giấy nữa, thử cách này xem.",
+      "on_screen_text": "Ghi giấy lộn xộn?"
+    }
+  ],
+  "theme": {
+    "primary": "#B83F45",
+    "accent": "#42D7CF",
+    "font": "Be Vietnam Pro",
+    "logo_asset": null,
+    "motion_preset": "energetic",
+    "caption_style": "karaoke",
+    "music_mood": "upbeat",
+    "voice_id": "vi_female_01",
+    "language": "vi"
+  },
+  "scenes": [
+    {
+      "id": "s1",
+      "type": "hook",
+      "layout": "big_text_over_blur",
+      "voiceover": "Đừng ghi việc lên giấy nữa, thử cách này xem.",
+      "on_screen_text": "Ghi giấy lộn xộn?",
+      "stat": null,
+      "key_point": "Nỗi đau quên việc mỗi ngày",
+      "icon": "bolt",
+      "visual": {
+        "mode": "recording",
+        "page": "https://todomvc.com/examples/react/dist/",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://todomvc.com/examples/react/dist/",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": null
+    },
+    {
+      "id": "s2",
+      "type": "feature_demo",
+      "layout": "full_screen",
+      "feature": "c1",
+      "voiceover": "Mở trang là thêm ngay việc đầu tiên, không cần tài khoản.",
+      "on_screen_text": "Thêm việc tức thì",
+      "stat": null,
+      "key_point": "Thêm việc đầu tiên ngay khi mở trang",
+      "icon": "check",
+      "visual": {
+        "mode": "recording",
+        "page": "https://todomvc.com/examples/react/dist/",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://todomvc.com/examples/react/dist/",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          },
+          {
+            "do": "type",
+            "target": "New Todo Input",
+            "selector": null,
+            "locator": {
+              "role": "textbox",
+              "name": "New Todo Input",
+              "text": null,
+              "css": "[data-testid=\"text-input\"]",
+              "nth": null,
+              "tag": "input",
+              "fingerprint": "input||0.60,0.18",
+              "bbox": {
+                "x": 595.0,
+                "y": 130.0,
+                "w": 550.0,
+                "h": 65.0
+              }
+            },
+            "file": null,
+            "url": null,
+            "text": "Mua sữa",
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": "c1"
+    },
+    {
+      "id": "s3",
+      "type": "feature_demo",
+      "layout": "full_screen",
+      "feature": "c2",
+      "voiceover": "Gõ thêm hai việc nữa, danh sách tự cập nhật ngay tại dòng nhập.",
+      "on_screen_text": "Thêm nhanh hai việc",
+      "stat": null,
+      "key_point": "Thêm nhiều việc liên tiếp, danh sách tự cập nhật",
+      "icon": "edit",
+      "visual": {
+        "mode": "recording",
+        "page": "https://todomvc.com/examples/react/dist/",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://todomvc.com/examples/react/dist/",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          },
+          {
+            "do": "type",
+            "target": "New Todo Input",
+            "selector": null,
+            "locator": {
+              "role": "textbox",
+              "name": "New Todo Input",
+              "text": null,
+              "css": "[data-testid=\"text-input\"]",
+              "nth": null,
+              "tag": "input",
+              "fingerprint": "input||0.60,0.18",
+              "bbox": {
+                "x": 595.0,
+                "y": 130.0,
+                "w": 550.0,
+                "h": 65.0
+              }
+            },
+            "file": null,
+            "url": null,
+            "text": "Đặt lịch khám bác sĩ",
+            "ms": null,
+            "zoom": false
+          },
+          {
+            "do": "type",
+            "target": "New Todo Input",
+            "selector": null,
+            "locator": {
+              "role": "textbox",
+              "name": "New Todo Input",
+              "text": null,
+              "css": "[data-testid=\"text-input\"]",
+              "nth": null,
+              "tag": "input",
+              "fingerprint": "input||0.60,0.18",
+              "bbox": {
+                "x": 595.0,
+                "y": 130.0,
+                "w": 550.0,
+                "h": 65.0
+              }
+            },
+            "file": null,
+            "url": null,
+            "text": "Gọi điện cho mẹ",
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": "c2"
+    },
+    {
+      "id": "s4",
+      "type": "feature_demo",
+      "layout": "phone_mockup",
+      "feature": "c3",
+      "voiceover": "Đánh dấu xong việc Mua sữa, bạn thấy ngay một việc đã hoàn thành.",
+      "on_screen_text": "Xong một việc",
+      "stat": null,
+      "key_point": "Đánh dấu hoàn thành để theo dõi tiến độ",
+      "icon": "check",
+      "visual": {
+        "mode": "recording",
+        "page": "https://todomvc.com/examples/react/dist/",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://todomvc.com/examples/react/dist/",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          },
+          {
+            "do": "check",
+            "target": "Mua sữa",
+            "selector": null,
+            "locator": {
+              "role": "checkbox",
+              "name": "Mua sữa",
+              "text": null,
+              "css": "main input",
+              "nth": 1,
+              "tag": "input",
+              "fingerprint": "input||0.43,0.25",
+              "bbox": {
+                "x": 595.0,
+                "y": 205.0,
+                "w": 40.0,
+                "h": 40.0
+              }
+            },
+            "file": null,
+            "url": null,
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": "c3"
+    },
+    {
+      "id": "s5",
+      "type": "feature_demo",
+      "layout": "full_screen",
+      "feature": "c4",
+      "voiceover": "Chọn lọc Active, chỉ còn hai việc chưa làm hiện ra, tập trung liền.",
+      "on_screen_text": "Chỉ xem việc còn lại",
+      "stat": {
+        "value": "2",
+        "label": "việc còn lại"
+      },
+      "key_point": "Lọc Active chỉ hiển thị việc chưa hoàn thành",
+      "icon": "filter",
+      "visual": {
+        "mode": "recording",
+        "page": "https://todomvc.com/examples/react/dist/",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://todomvc.com/examples/react/dist/",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          },
+          {
+            "do": "click",
+            "target": "Active",
+            "selector": null,
+            "locator": {
+              "role": "link",
+              "name": "Active",
+              "text": "Active",
+              "css": "footer a",
+              "nth": 3,
+              "tag": "a",
+              "fingerprint": "a|active|0.58,0.44",
+              "bbox": {
+                "x": 814.0,
+                "y": 382.0,
+                "w": 57.0,
+                "h": 25.0
+              }
+            },
+            "file": null,
+            "url": null,
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": "c4"
+    },
+    {
+      "id": "s6",
+      "type": "cta",
+      "layout": "button_pulse",
+      "voiceover": "Lập danh sách việc trong ngày ngay tại todomvc.com, không cần đăng ký.",
+      "on_screen_text": "todomvc.com",
+      "stat": null,
+      "key_point": "Bắt đầu ngay không cần tài khoản",
+      "icon": "globe",
+      "visual": {
+        "mode": "recording",
+        "page": "https://todomvc.com/examples/react/dist/",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://todomvc.com/examples/react/dist/",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": null
+    }
+  ]
+}

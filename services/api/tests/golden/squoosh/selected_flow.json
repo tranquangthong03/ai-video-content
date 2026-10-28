@@ -1,0 +1,35 @@
+{
+  "flows": [
+    {
+      "id": "user_n_n_nh_m_u_v_so_s_nh_tr_",
+      "title": "Nén ảnh mẫu và so sánh trước/sau khi nén",
+      "persona": "Người dùng mới muốn trải nghiệm công cụ nén ảnh trực tuyến",
+      "goal": "Chọn một ảnh mẫu có sẵn, nén nó và xem rõ khác biệt chất lượng giữa ảnh gốc và ảnh đã nén để quyết định mức nén phù hợp",
+      "start_url": "https://squoosh.app/",
+      "expected_steps": [
+        "Mở https://squoosh.app/ và thấy khu vực kéo thả ảnh cùng các lựa chọn ảnh mẫu",
+        "Chọn một ảnh mẫu có sẵn (ví dụ Large photo 2.8MB hoặc Artwork 2.9MB) để đưa vào công cụ",
+        "Quan sát ảnh mẫu được hiển thị ngay trong trình duyệt kèm dung lượng tệp",
+        "Dùng thanh trượt/ô so sánh để đối chiếu ảnh gốc với ảnh đã nén ở cùng một khung hình",
+        "Điều chỉnh cài đặt nén nếu muốn tệp nhỏ hơn và xem dung lượng cập nhật tức thì",
+        "Bấm lưu/tải ảnh đã nén về máy khi hài lòng với chất lượng"
+      ],
+      "success_signal": "Ảnh đã nén được lưu về máy và người dùng đã thấy rõ sự khác biệt chất lượng cùng dung lượng mới nhỏ hơn so với ảnh gốc",
+      "needs_submit": true,
+      "value": "Trải nghiệm trọn vẹn khả năng nén ảnh ngay trong trình duyệt và tự tin chọn mức nén phù hợp trước khi áp dụng cho ảnh thật",
+      "related_feature_ids": [
+        "f6",
+        "f1",
+        "f3",
+        "f4",
+        "f5",
+        "f7"
+      ],
+      "source": "user",
+      "confidence": 0.9,
+      "notes": "Luồng bám sát mô tả người dùng: dùng ảnh mẫu có sẵn thay vì tải ảnh riêng, và bao gồm bước so sánh trước/sau. Bước lưu ảnh là hành động có thật theo mô tả sản phẩm (f5)."
+    }
+  ],
+  "submit_policy": "stop",
+  "warnings": []
+}

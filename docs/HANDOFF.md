@@ -8,6 +8,7 @@
 - Trả lời **tiếng Việt**, cấu trúc rõ, hướng dẫn từng bước.
 - Prompt cho agent phải **đầy đủ, copy dùng được ngay**.
 - Thiết kế hệ thống: luôn có **Mermaid**, tách **High-level / Detailed**, luôn ghi **phạm vi MVP**.
+- Kiểm thử theo tầng T0/T1/T2/T3 và khi nào chạy tầng nào: CLAUDE.md «Chính sách kiểm thử» (công cụ `services/api/scripts/regress.py`).
 - Quy trình với agent (Claude Code): agent trình bày kế hoạch → tôi duyệt/chỉnh → agent làm theo **commit nhỏ** → kiểm tra trước commit nối bằng `&&` + kiểm exit code → nghiệm thu bằng video/contact sheet/report → tôi gửi video cho Claude phân tích từng khung hình.
 - Ưu tiên: **ra video tốt trên URL thật** trước; không sa lầy tinh chỉnh một site; mỗi vòng sửa có quy tắc dừng.
 
@@ -96,6 +97,7 @@ Giao thức tương tác chung: `InteractionRequest(kind, …)` / `UserResponse(
 - C xong: khung chết mở rộng (ảnh/canvas lớn còn là một mảng xám/đen phẳng ≥ 50% ô lưới, dù có thanh công cụ đè lên; chỉ cắt khi nó kết thúc trong clip và ≤ 4 s), mọi đoạn giữa hai điểm cắt ≥ 0,8 s (`enforce_min_shot`), chỗ nối đổi hình nhiều thì hòa tan 160 ms (ffmpeg `xfade`, `Cut.fade_ms`), không đặt điểm cắt trong ±300 ms quanh lúc có phần tử mới (`new_item_windows`).
 - Nghiệm thu xong (số thật ở `docs/cam/README.md` mục «Sau lượt CAM», `docs/cam/generalization.md`): 3 luồng cũ — zoom 11–17% → 2,1–2,5%/khung, pan tới 10% → 0,7–2,2%, đứng yên ≤ 167 ms, 0 đứng-rồi-giật, 0 cảnh chớp, focus_match 71–100%. **Chưa đạt hết ngưỡng**: `focus_text_clipped` > 0 cả 3 (squoosh 434), squoosh pan 2,2%, orangehrm zoom 2,52% và khớp 71%. 3 site mới: excalidraw và paletton ra video (coolors bị Cloudflare chặn → thay paletton; regex101 hết ngân sách explorer 300 s ở bước analyze), không đạt ngưỡng (xem generalization.md), không tinh chỉnh riêng site. Kết quả dao động giữa các lần chạy vì LLM sinh lại kịch bản.
 - E xong ở phần code: hook > 12 từ được LLM viết lại một lần (cắt ở ranh giới cụm chỉ là phương án cuối, `drop_dangling`), số proof bank phân loại benefit/identifier/other và headline/hook/stat chỉ dùng benefit, `copy_critic` có client riêng trong `run_script_step`, cảnh < 6 viết lại tối đa 2 vòng kèm ví dụ theo loại sản phẩm (`script/examples.py`). **Điểm critic thật không cải thiện** (orangehrm 7/5/2/6/6 → 6/5/3/6/5; squoosh 8/6/7/8/7 → 7/6/7/6/7; todomvc 6/5/4/7/6 → 6/5/4/6/6).
+- **Lượt TEST-TIERS** (kế hoạch `docs/plans/test-tiers.md`): kiểm thử theo tầng trên snapshot `services/api/tests/golden/{orangehrm,squoosh,todomvc}` (JSON trong git; clip/ảnh ở `tests/golden-media/`, ngoài git, `scripts/golden.py restore`). `scripts/regress.py --tier t0|t1|t2`: T0 = pytest theo vùng (`-m area_<vùng>`, đánh dấu tự động theo import) + camera_preview; T1 = render lại 3 video từ snapshot (kịch bản, clip live và kế hoạch tiêu điểm đã lưu được phát lại → 0 lần gọi LLM, không mở trình duyệt) + Motion QA so với `docs/regress/last.json`; T2 = chỉ bước script + critic (có gọi LLM, `--brief`). Mốc đầu tiên đã lưu ở `docs/regress/last.json` (T1 ra đúng số của lần nghiệm thu CAM → replay tất định). Quy tắc dùng: CLAUDE.md «Chính sách kiểm thử».
 - Tiếp theo sau CAM: M2 (TTS + nhạc + SFX).
 
 ## 6. Lộ trình tiếp theo

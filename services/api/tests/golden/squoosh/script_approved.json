@@ -1,0 +1,228 @@
+{
+  "title": "Nén ảnh mẫu: thấy rõ trước khi lưu",
+  "goal": "tutorial",
+  "aspect_ratio": "9:16",
+  "target_duration_s": 30,
+  "template": "desktop_focus",
+  "capture": {
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900
+  },
+  "flow_id": "user_n_n_nh_m_u_v_so_s_nh_tr_",
+  "badge": "NÉN ẢNH TRONG TRÌNH",
+  "headline": "Nén ảnh 2.8MB và thấy khác biệt ngay",
+  "headline_highlight": "2.8MB",
+  "framework": "pain_journey_result",
+  "hook_options": [
+    {
+      "kind": "pain_question",
+      "voiceover": "Ảnh 2.8MB làm trang tải chậm, nén xuống vẫn nét được không?",
+      "on_screen_text": "2.8MB quá nặng?"
+    },
+    {
+      "kind": "result_first",
+      "voiceover": "Chọn ảnh mẫu, hạ chất lượng, thấy ngay ảnh nhẹ hơn.",
+      "on_screen_text": "Nhẹ hơn trong 30 giây"
+    }
+  ],
+  "theme": {
+    "primary": "#FF3385",
+    "accent": "#1AFFA3",
+    "font": "Be Vietnam Pro",
+    "logo_asset": "out\\cam-squoosh\\theme\\logo.png",
+    "motion_preset": "energetic",
+    "caption_style": "karaoke",
+    "music_mood": "upbeat",
+    "voice_id": "vi_female_01",
+    "language": "vi"
+  },
+  "scenes": [
+    {
+      "id": "s1",
+      "type": "hook",
+      "layout": "big_text_over_blur",
+      "voiceover": "Ảnh 2.8MB làm trang tải chậm, nén xuống vẫn nét được không?",
+      "on_screen_text": "2.8MB quá nặng?",
+      "stat": null,
+      "key_point": "Ảnh nặng khiến trang tải chậm",
+      "icon": "bolt",
+      "visual": {
+        "mode": "recording",
+        "page": "https://squoosh.app/",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://squoosh.app/",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": null
+    },
+    {
+      "id": "s2",
+      "type": "feature_demo",
+      "layout": "full_screen",
+      "feature": "c1",
+      "voiceover": "Bạn chỉ cần mở trình duyệt và chọn ảnh mẫu 2.8MB có sẵn, không cần cài đặt gì thêm.",
+      "on_screen_text": "Chọn ảnh mẫu",
+      "stat": {
+        "value": "2.8MB",
+        "label": "ảnh mẫu ban đầu"
+      },
+      "key_point": "Mở trình duyệt là dùng được, không cần cài đặt",
+      "icon": "image",
+      "visual": {
+        "mode": "recording",
+        "page": "https://squoosh.app/",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://squoosh.app/",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          },
+          {
+            "do": "click",
+            "target": "2.8MB",
+            "selector": null,
+            "locator": {
+              "role": "button",
+              "name": "2.8MB",
+              "text": "2.8MB",
+              "css": "button",
+              "nth": 2,
+              "tag": "button",
+              "fingerprint": "button|2.8mb|0.32,0.95",
+              "bbox": {
+                "x": 412.0,
+                "y": 784.0,
+                "w": 100.0,
+                "h": 139.0
+              }
+            },
+            "file": null,
+            "url": null,
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": "c1"
+    },
+    {
+      "id": "s3",
+      "type": "feature_demo",
+      "layout": "phone_mockup",
+      "feature": "c2",
+      "voiceover": "Hạ chất lượng xuống 50, bạn thấy ngay dung lượng giảm mà vẫn đủ nét, rồi lưu ảnh đã nén về máy.",
+      "on_screen_text": "Chất lượng 50",
+      "stat": {
+        "value": "50",
+        "label": "mức chất lượng nén"
+      },
+      "key_point": "Tự chọn mức nén và lưu ảnh nhẹ hơn",
+      "icon": "filter",
+      "visual": {
+        "mode": "recording",
+        "page": "https://squoosh.app/editor",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://squoosh.app/editor",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          },
+          {
+            "do": "type",
+            "target": "Quality:",
+            "selector": null,
+            "locator": {
+              "role": "textbox",
+              "name": "Quality:",
+              "text": null,
+              "css": "input",
+              "nth": 3,
+              "tag": "input",
+              "fingerprint": "input||0.97,0.82",
+              "bbox": {
+                "x": 1376.0,
+                "y": 728.0,
+                "w": 54.0,
+                "h": 23.0
+              }
+            },
+            "file": null,
+            "url": null,
+            "text": "50",
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": "c2"
+    },
+    {
+      "id": "s4",
+      "type": "cta",
+      "layout": "button_pulse",
+      "voiceover": "Mở squoosh.app, thử nén ảnh mẫu ngay trên máy bạn và tự tin chọn mức nén phù hợp.",
+      "on_screen_text": "Thử tại squoosh.app",
+      "stat": null,
+      "key_point": "Nén ảnh xử lý ngay trên máy bạn",
+      "icon": "lock",
+      "visual": {
+        "mode": "recording",
+        "page": "https://squoosh.app/",
+        "effect": null,
+        "actions": [
+          {
+            "do": "goto",
+            "target": null,
+            "selector": null,
+            "locator": null,
+            "file": null,
+            "url": "https://squoosh.app/",
+            "text": null,
+            "ms": null,
+            "zoom": false
+          }
+        ],
+        "setup": [],
+        "show_setup": false
+      },
+      "duration_ms": null,
+      "chapter_id": null
+    }
+  ]
+}

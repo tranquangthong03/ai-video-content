@@ -78,3 +78,13 @@ Luôn trả lời và viết báo cáo bằng tiếng Việt.
 
 ## Kế hoạch nhiều bước
 Mọi nhiệm vụ nhiều bước được duyệt phải được lưu vào docs/plans/<tên>.md trước khi bắt đầu làm, để không mất khi /clear.
+
+## Chính sách kiểm thử
+Công cụ: `cd services/api && uv run python scripts/regress.py --tier t0|t1|t2` trên snapshot `services/api/tests/golden/` (xem README ở đó; media ở `tests/golden-media/`, ngoài git, dựng lại bằng `scripts/golden.py restore`). Mốc so sánh: `docs/regress/last.json` (`--save` để cập nhật).
+- **T0** (mỗi commit): pytest theo vùng đã sửa (`pytest -m area_<vùng>`, đánh dấu tự động theo import trong tests/conftest.py; `--paths` hoặc `git status`), + ruff; codegen-check nếu đụng schema; tsc/vitest nếu đụng TS; camera_preview 3 snapshot. 0 lần gọi LLM, không mở trình duyệt.
+- **T1** (sửa camera / dựng phim / template / nối cảnh, trước khi báo xong): render lại 3 video từ snapshot + Motion QA, bảng so với `last.json`. 0 lần gọi LLM, không mở trình duyệt (~6 phút).
+- **T2** (sửa phần lời / prompt): chỉ chạy lại bước script + Copy Critic trên snapshot, điểm critic so với lần trước (`--brief file.json` ghi đè goal/duration_s/title của outline). Có gọi LLM.
+- **Toàn bộ `pytest -n auto`**: 1 lần ở cuối mỗi lượt (chỉ chạy 3 lần liên tiếp khi lượt đó sửa test chập chờn).
+- **T3** (chạy thật từ URL, site mới): CHỈ khi người dùng yêu cầu rõ, hoặc khi lượt đó sửa explorer / flow agent / recorder / login; khi đó chạy 1 site, không phải 3–6 site.
+- Lệnh dài chạy với `-q`, chỉ đọc phần tóm tắt/lỗi, không dán log dài vào ngữ cảnh; không đọc lại tài liệu dài nếu không cần, chỉ đọc đúng mục.
+- Báo cáo cuối lượt ≤ 30 dòng: bảng chỉ số, việc chưa đạt, đường dẫn file; chi tiết để trong docs/.

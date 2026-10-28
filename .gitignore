@@ -46,3 +46,6 @@ pnpm-debug.log*
 Thumbs.db
 .idea/
 .vscode/
+
+# test golden media (clips, pictures): rebuilt from out/ by services/api/scripts/golden.py restore
+/services/api/tests/golden-media/

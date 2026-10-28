@@ -1,0 +1,221 @@
+{
+  "flow_id": "user_l_n_danh_s_ch_vi_c_trong",
+  "title": "Lên danh sách việc trong ngày và lọc việc còn lại",
+  "persona": "Người dùng cá nhân cần danh sách việc cần làm đơn giản, không tài khoản",
+  "goal": "Thêm 3 việc cần làm, đánh dấu hoàn thành 1 việc, rồi lọc để chỉ xem các việc còn lại (Active)",
+  "success_signal": "Danh sách chỉ hiển thị 2 việc chưa hoàn thành sau khi chọn bộ lọc Active; bộ lọc Active được đánh dấu đang chọn",
+  "value": "Người dùng nhanh chóng lập danh sách việc trong ngày và tập trung vào những việc còn phải làm mà không cần tài khoản hay thao tác phức tạp",
+  "needs_submit": false,
+  "status": "reached_goal",
+  "submit_policy": "stop",
+  "hero_texts": [
+    "React",
+    "todos",
+    "TypeScript + React",
+    "Official Resources",
+    "Community",
+    "Mua sữa",
+    "All",
+    "Active"
+  ],
+  "before_after_pair": false,
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "Thêm việc thứ nhất",
+      "notes": [
+        "Mở trang bắt đầu",
+        "Gõ việc cần làm đầu tiên vào ô nhập."
+      ],
+      "steps": 2,
+      "value_line": null
+    },
+    {
+      "id": "c2",
+      "title": "Thêm việc cần làm",
+      "notes": [
+        "Gõ việc thứ hai vào ô nhập để thêm vào danh sách",
+        "Gõ việc thứ ba 'Gọi điện cho mẹ' vào ô nhập và sẽ nhấn Enter để thêm vào danh sách."
+      ],
+      "steps": 2,
+      "value_line": null
+    },
+    {
+      "id": "c3",
+      "title": "Đánh dấu hoàn thành",
+      "notes": [
+        "Đánh dấu việc Mua sữa đã hoàn thành."
+      ],
+      "steps": 1,
+      "value_line": null
+    },
+    {
+      "id": "c4",
+      "title": "Lọc việc còn lại",
+      "notes": [
+        "Nhấp bộ lọc Active để chỉ hiển thị các việc chưa hoàn thành."
+      ],
+      "steps": 1,
+      "value_line": null
+    }
+  ],
+  "visuals": {
+    "c1": {
+      "mode": "recording",
+      "page": "https://todomvc.com/examples/react/dist/",
+      "actions": [
+        {
+          "do": "goto",
+          "url": "https://todomvc.com/examples/react/dist/",
+          "zoom": false
+        },
+        {
+          "do": "type",
+          "target": "New Todo Input",
+          "text": "Mua sữa",
+          "zoom": false,
+          "locator": {
+            "role": "textbox",
+            "name": "New Todo Input",
+            "css": "[data-testid=\"text-input\"]",
+            "tag": "input",
+            "fingerprint": "input||0.60,0.18",
+            "bbox": {
+              "x": 595.0,
+              "y": 130.0,
+              "w": 550.0,
+              "h": 65.0
+            }
+          }
+        }
+      ]
+    },
+    "c2": {
+      "mode": "recording",
+      "page": "https://todomvc.com/examples/react/dist/",
+      "actions": [
+        {
+          "do": "goto",
+          "url": "https://todomvc.com/examples/react/dist/"
+        },
+        {
+          "do": "type",
+          "target": "New Todo Input",
+          "text": "Đặt lịch khám bác sĩ",
+          "zoom": false,
+          "locator": {
+            "role": "textbox",
+            "name": "New Todo Input",
+            "css": "[data-testid=\"text-input\"]",
+            "tag": "input",
+            "fingerprint": "input||0.60,0.18",
+            "bbox": {
+              "x": 595.0,
+              "y": 130.0,
+              "w": 550.0,
+              "h": 65.0
+            }
+          }
+        },
+        {
+          "do": "type",
+          "target": "New Todo Input",
+          "text": "Gọi điện cho mẹ",
+          "zoom": false,
+          "locator": {
+            "role": "textbox",
+            "name": "New Todo Input",
+            "css": "[data-testid=\"text-input\"]",
+            "tag": "input",
+            "fingerprint": "input||0.60,0.18",
+            "bbox": {
+              "x": 595.0,
+              "y": 130.0,
+              "w": 550.0,
+              "h": 65.0
+            }
+          }
+        }
+      ]
+    },
+    "c3": {
+      "mode": "recording",
+      "page": "https://todomvc.com/examples/react/dist/",
+      "actions": [
+        {
+          "do": "goto",
+          "url": "https://todomvc.com/examples/react/dist/"
+        },
+        {
+          "do": "check",
+          "target": "Mua sữa",
+          "zoom": false,
+          "locator": {
+            "role": "checkbox",
+            "name": "Mua sữa",
+            "css": "main input",
+            "nth": 1,
+            "tag": "input",
+            "fingerprint": "input||0.43,0.25",
+            "bbox": {
+              "x": 595.0,
+              "y": 205.0,
+              "w": 40.0,
+              "h": 40.0
+            }
+          }
+        }
+      ]
+    },
+    "c4": {
+      "mode": "recording",
+      "page": "https://todomvc.com/examples/react/dist/",
+      "actions": [
+        {
+          "do": "goto",
+          "url": "https://todomvc.com/examples/react/dist/"
+        },
+        {
+          "do": "click",
+          "target": "Active",
+          "zoom": false,
+          "locator": {
+            "role": "link",
+            "name": "Active",
+            "text": "Active",
+            "css": "footer a",
+            "nth": 3,
+            "tag": "a",
+            "fingerprint": "a|active|0.58,0.44",
+            "bbox": {
+              "x": 814.0,
+              "y": 382.0,
+              "w": 57.0,
+              "h": 25.0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "hook_visual": {
+    "mode": "recording",
+    "page": "https://todomvc.com/examples/react/dist/",
+    "actions": [
+      {
+        "do": "goto",
+        "url": "https://todomvc.com/examples/react/dist/"
+      }
+    ]
+  },
+  "cta_visual": {
+    "mode": "recording",
+    "page": "https://todomvc.com/examples/react/dist/",
+    "actions": [
+      {
+        "do": "goto",
+        "url": "https://todomvc.com/examples/react/dist/"
+      }
+    ]
+  }
+}

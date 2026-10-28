@@ -1,0 +1,208 @@
+{
+  "flow_id": "user_n_n_nh_m_u_v_so_s_nh_tr_",
+  "status": "reached_goal",
+  "steps": [
+    {
+      "i": 1,
+      "action": {
+        "do": "goto",
+        "target": null,
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": "https://squoosh.app/",
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": null,
+      "target_text": null,
+      "value": null,
+      "url_before": null,
+      "url_after": "https://squoosh.app/",
+      "screenshot": "flow/steps/s1.jpg",
+      "note": "Mở trang bắt đầu",
+      "chapter_id": "c1",
+      "t_ms_hint": 0
+    },
+    {
+      "i": 2,
+      "action": {
+        "do": "click",
+        "target": "2.8MB",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": null,
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "button",
+        "name": "2.8MB",
+        "text": "2.8MB",
+        "css": "button",
+        "nth": 2,
+        "tag": "button",
+        "fingerprint": "button|2.8mb|0.32,0.95",
+        "bbox": {
+          "x": 412.0,
+          "y": 784.0,
+          "w": 100.0,
+          "h": 139.0
+        }
+      },
+      "target_text": "2.8MB",
+      "value": null,
+      "url_before": "https://squoosh.app/",
+      "url_after": "https://squoosh.app/editor",
+      "screenshot": "flow/steps/s2.jpg",
+      "note": "Mình bấm chọn ảnh mẫu 2.8MB để đưa vào công cụ nén.",
+      "chapter_id": "c1",
+      "t_ms_hint": 2500
+    },
+    {
+      "i": 3,
+      "action": {
+        "do": "type",
+        "target": "Quality:",
+        "selector": null,
+        "locator": null,
+        "file": null,
+        "url": null,
+        "text": "50",
+        "ms": null,
+        "zoom": false
+      },
+      "locator": {
+        "role": "textbox",
+        "name": "Quality:",
+        "text": null,
+        "css": "input",
+        "nth": 3,
+        "tag": "input",
+        "fingerprint": "input||0.97,0.82",
+        "bbox": {
+          "x": 1376.0,
+          "y": 728.0,
+          "w": 54.0,
+          "h": 23.0
+        }
+      },
+      "target_text": "Quality:",
+      "value": "50",
+      "url_before": "https://squoosh.app/editor",
+      "url_after": "https://squoosh.app/editor",
+      "screenshot": "flow/steps/s3.jpg",
+      "note": "Hạ chất lượng nén xuống 50 để xem dung lượng tệp giảm bao nhiêu so với ảnh gốc 2.79MB.",
+      "chapter_id": "c2",
+      "t_ms_hint": 5000
+    }
+  ],
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "Chọn ảnh mẫu",
+      "step_ids": [
+        1,
+        2
+      ],
+      "value_line": null
+    },
+    {
+      "id": "c2",
+      "title": "Điều chỉnh nén",
+      "step_ids": [
+        3
+      ],
+      "value_line": null
+    }
+  ],
+  "sample_data": {
+    "sample_image": "2.8MB",
+    "quality": "50",
+    "compressed_size": "486 kB",
+    "reduction": "83%"
+  },
+  "warnings": [
+    "Bắt đầu gửi kèm ảnh màn hình: trang có canvas/svg lớn.",
+    "stop_before_submit «e15»: ref không phải nút gửi của form",
+    "stop_before_submit «e15»: ref không phải nút gửi của form"
+  ],
+  "llm_calls": 5,
+  "submit_policy": "stop",
+  "stop_ref": null,
+  "live": {
+    "clip": "flow/live/flow.mp4",
+    "logs": "flow/live/logs.json",
+    "content_ms": 36212,
+    "start_offset_ms": 4788,
+    "sync_offset_ms": -696,
+    "pulse_at_ms": 729,
+    "segments": [
+      {
+        "from_ms": 4899,
+        "to_ms": 6923,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 12890,
+        "to_ms": 17078,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 22274,
+        "to_ms": 26087,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 26087,
+        "to_ms": 29286,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      },
+      {
+        "from_ms": 29286,
+        "to_ms": 35904,
+        "kind": "llm_wait",
+        "step": null,
+        "note": ""
+      }
+    ],
+    "marks": [
+      {
+        "i": 2,
+        "start_ms": 6949,
+        "end_ms": 12336
+      },
+      {
+        "i": 3,
+        "start_ms": 17081,
+        "end_ms": 22157
+      }
+    ]
+  },
+  "give_up": null,
+  "report": {
+    "model": "deepseek-flash",
+    "used_images": true,
+    "llm_calls": 5,
+    "prompt_tokens": 14961,
+    "completion_tokens": 2196,
+    "seconds": 40.0,
+    "write_requests": [],
+    "text_calls": 0,
+    "vision_calls": 5,
+    "escalated_because": "trang có canvas/svg lớn",
+    "invented_refs": 0,
+    "repeat_warnings": 1
+  }
+}

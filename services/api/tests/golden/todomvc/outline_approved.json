@@ -1,0 +1,45 @@
+{
+  "concept_id": "flow:user_l_n_danh_s_ch_vi_c_trong",
+  "title": "Lên danh sách việc trong ngày và lọc việc còn lại",
+  "goal": "tutorial",
+  "duration_s": 30,
+  "feature_ids": [
+    "c1",
+    "c2",
+    "c3",
+    "c4"
+  ],
+  "version": 1,
+  "beats": [
+    {
+      "id": "b1",
+      "text": "Nỗi đau hoặc kết quả của Người dùng cá nhân cần danh sách việc cần làm đơn giản, không tài khoản: Thêm 3 việc cần làm, đánh dấu hoàn thành 1 việc, rồi lọc để chỉ xem các việc còn lại (Active)",
+      "feature_id": null
+    },
+    {
+      "id": "b2",
+      "text": "Thêm việc thứ nhất: Mở trang bắt đầu",
+      "feature_id": "c1"
+    },
+    {
+      "id": "b3",
+      "text": "Thêm việc cần làm: Gõ việc thứ hai vào ô nhập để thêm vào danh sách",
+      "feature_id": "c2"
+    },
+    {
+      "id": "b4",
+      "text": "Đánh dấu hoàn thành: Đánh dấu việc Mua sữa đã hoàn thành.",
+      "feature_id": "c3"
+    },
+    {
+      "id": "b5",
+      "text": "Lọc việc còn lại: Nhấp bộ lọc Active để chỉ hiển thị các việc chưa hoàn thành. → kết quả: Danh sách chỉ hiển thị 2 việc chưa hoàn thành sau khi chọn bộ lọc Active; bộ lọc Active được đánh dấu đang chọn",
+      "feature_id": "c4"
+    },
+    {
+      "id": "b6",
+      "text": "Kêu gọi hành động: Người dùng nhanh chóng lập danh sách việc trong ngày và tập trung vào những việc còn phải làm mà không cần tài khoản hay thao tác phức tạp",
+      "feature_id": null
+    }
+  ]
+}

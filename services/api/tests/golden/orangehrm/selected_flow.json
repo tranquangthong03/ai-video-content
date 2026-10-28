@@ -1,0 +1,30 @@
+{
+  "flows": [
+    {
+      "id": "user_th_m_nh_n_vi_n_m_i_v_o_h",
+      "title": "Thêm nhân viên mới vào hồ sơ nhân sự (PIM)",
+      "persona": "Quản trị viên nhân sự / HR",
+      "goal": "Tạo hồ sơ nhân viên mới trong hệ thống bằng cách điền họ tên và mã nhân viên",
+      "start_url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+      "expected_steps": [
+        "Từ thanh điều hướng, mở module PIM để vào danh sách nhân viên",
+        "Tại trang danh sách nhân viên, bấm nút Add để mở luồng tạo hồ sơ nhân viên mới",
+        "Điền họ tên nhân viên vào các ô thông tin cá nhân (First/Middle/Last Name)",
+        "Nhập mã nhân viên vào ô Employee Id",
+        "Kiểm tra lại thông tin đã điền và dừng trước nút Save để chưa tạo hồ sơ"
+      ],
+      "success_signal": "Form Add Employee đã được điền đầy đủ họ tên và mã nhân viên, sẵn sàng bấm Save để tạo hồ sơ",
+      "needs_submit": true,
+      "value": "HR đưa người mới vào hệ thống nhân sự tập trung thay vì quản lý hồ sơ rời rạc bằng giấy tờ/bảng tính",
+      "related_feature_ids": [
+        "f3",
+        "f2"
+      ],
+      "source": "user",
+      "confidence": 0.9,
+      "notes": "Người dùng yêu cầu dừng trước nút Save; các nhãn ô họ tên/Employee Id là suy luận từ luồng Add Employee chuẩn của OrangeHRM trong module PIM, chưa được xác nhận trực tiếp trên trang đã khám phá."
+    }
+  ],
+  "submit_policy": "stop",
+  "warnings": []
+}

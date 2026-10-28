@@ -1,0 +1,796 @@
+{
+  "video": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-squoosh\\video.mp4",
+  "target_ms": 30000,
+  "estimated_ms": 29400,
+  "planned_ms": 29400,
+  "footage_ratio": 0.747,
+  "actual_ms": 29467,
+  "ffprobe": {
+    "codec_name": "h264",
+    "width": 1080,
+    "height": 1920,
+    "pix_fmt": "yuv420p",
+    "r_frame_rate": "30/1"
+  },
+  "speedup_used": 1.0,
+  "trimmed_ms": 0,
+  "actions_per_scene": {
+    "s1": 0,
+    "s2": 1,
+    "s3": 1
+  },
+  "hold_avg_ms": 1500,
+  "idle_limit_ms": 2500,
+  "idle_ok": false,
+  "scenes": [
+    {
+      "id": "s1",
+      "type": "hook",
+      "kind": "thao tác",
+      "speech_ms": 5050,
+      "usable_ms": 2000,
+      "final_ms": 5050,
+      "playback_rate": 1.0,
+      "freeze": true,
+      "idle_max_ms": 3171,
+      "warnings": [],
+      "steps_ok": 0,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": null,
+      "recording": "recording",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 0,
+      "hold_avg_ms": null,
+      "inventory_snapshots": 2,
+      "inventory_file": "produce\\inventory\\s1.json",
+      "focus": {
+        "planner": "plan",
+        "planner_attempts": 2,
+        "planner_errors": [],
+        "hook_reframed": 1,
+        "replaced_side_focus": 0,
+        "unresolved": 0,
+        "context_limited": 0,
+        "media_replaced": 0,
+        "spoken_preferred": 0,
+        "submit_held_back": 0,
+        "sources": {
+          "plan": 1,
+          "rule": 0,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s1.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 3,
+      "punches": 2,
+      "max_static_ms": 1920
+    },
+    {
+      "id": "s2",
+      "type": "feature_demo",
+      "kind": "thao tác",
+      "speech_ms": 7850,
+      "usable_ms": 5464,
+      "final_ms": 7850,
+      "playback_rate": 1.0,
+      "freeze": true,
+      "idle_max_ms": 4442,
+      "warnings": [
+        "s2: đã cắt 460 ms khung hình chết"
+      ],
+      "steps_ok": 1,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": "c1",
+      "recording": "recording",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 1,
+      "hold_avg_ms": 1500,
+      "inventory_snapshots": 2,
+      "inventory_file": "produce\\inventory\\s2.json",
+      "focus": {
+        "planner": "plan",
+        "planner_attempts": 1,
+        "planner_errors": [],
+        "hook_reframed": 0,
+        "replaced_side_focus": 0,
+        "unresolved": 0,
+        "context_limited": 0,
+        "media_replaced": 0,
+        "spoken_preferred": 0,
+        "submit_held_back": 0,
+        "sources": {
+          "plan": 2,
+          "rule": 0,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s2.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 5,
+      "punches": 3,
+      "max_static_ms": 2084
+    },
+    {
+      "id": "s3",
+      "type": "feature_demo",
+      "kind": "thao tác",
+      "speech_ms": 9050,
+      "usable_ms": 8584,
+      "final_ms": 9050,
+      "playback_rate": 1.0,
+      "freeze": true,
+      "idle_max_ms": 2906,
+      "warnings": [],
+      "steps_ok": 1,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": "c2",
+      "recording": "recording",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 1,
+      "hold_avg_ms": 1500,
+      "inventory_snapshots": 3,
+      "inventory_file": "produce\\inventory\\s3.json",
+      "focus": {
+        "planner": "failed",
+        "planner_attempts": 2,
+        "planner_errors": [
+          "plan[4]: item_id 'eo9158' is not in frame_inventory near 8196"
+        ],
+        "hook_reframed": 0,
+        "replaced_side_focus": 0,
+        "unresolved": 0,
+        "context_limited": 0,
+        "media_replaced": 0,
+        "spoken_preferred": 0,
+        "submit_held_back": 0,
+        "sources": {
+          "plan": 0,
+          "rule": 2,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s3.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 5,
+      "punches": 4,
+      "max_static_ms": 2479
+    },
+    {
+      "id": "s4",
+      "type": "cta",
+      "kind": "thao tác",
+      "speech_ms": 7450,
+      "usable_ms": null,
+      "final_ms": 7450,
+      "playback_rate": 1.0,
+      "freeze": false,
+      "idle_max_ms": 0,
+      "warnings": [],
+      "steps_ok": 0,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": null,
+      "recording": "screenshot",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 0,
+      "hold_avg_ms": null,
+      "inventory_snapshots": 0,
+      "inventory_file": null,
+      "focus": null,
+      "focus_file": null,
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 0,
+      "punches": 0,
+      "max_static_ms": null
+    }
+  ],
+  "dead_frames_ms": 0,
+  "dead_frames_cut_ms": 0,
+  "max_static_shot_s": 2.48,
+  "punch_ins": 9,
+  "text_cards": {
+    "count": 0,
+    "longest_ms": 0,
+    "ratio": 0.0,
+    "ok": true
+  },
+  "features": [
+    {
+      "id": "c1",
+      "name": "Chọn ảnh mẫu"
+    },
+    {
+      "id": "c2",
+      "name": "Điều chỉnh nén"
+    }
+  ],
+  "phases_s": {
+    "timing": 0.0,
+    "record": 16.4,
+    "render": 64.1,
+    "total": 80.5
+  },
+  "render_ms": 62840,
+  "warnings": [
+    "s2: đã cắt 460 ms khung hình chết"
+  ],
+  "dropped_scenes": [],
+  "tokens": {
+    "max_tokens": 400000,
+    "total": 75214,
+    "steps": {
+      "classify": {
+        "input": 388,
+        "output": 88,
+        "calls": 1
+      },
+      "analyze": {
+        "input": 978,
+        "output": 367,
+        "calls": 1
+      },
+      "synthesize": {
+        "input": 2062,
+        "output": 3028,
+        "calls": 1
+      },
+      "flow_discovery": {
+        "input": 3623,
+        "output": 3124,
+        "calls": 2
+      },
+      "flow_agent": {
+        "input": 14961,
+        "output": 2196,
+        "calls": 5
+      },
+      "script": {
+        "input": 18080,
+        "output": 3196,
+        "calls": 3
+      },
+      "copy_critic": {
+        "input": 5230,
+        "output": 3700,
+        "calls": 3
+      },
+      "scene": {
+        "input": 13088,
+        "output": 1105,
+        "calls": 5
+      },
+      "focus_plan": {
+        "input": 13107,
+        "output": 1006,
+        "calls": 5
+      }
+    }
+  },
+  "flow": {
+    "flow_id": "user_n_n_nh_m_u_v_so_s_nh_tr_",
+    "steps": 3,
+    "replayed": 2,
+    "replay_failed_at": null,
+    "skipped_steps": [],
+    "steps_in_clip": 1.0,
+    "operation_steps": 2,
+    "operation_steps_in_clip": 2,
+    "missing_steps": [],
+    "hero": {
+      "t_ms": 9429,
+      "from_ms": 8629,
+      "to_ms": 10629,
+      "score": 50.0
+    },
+    "clip_ms": 18600,
+    "clip_source": "live",
+    "llm_wait_cut_ms": 17842,
+    "retry_segments_cut": 0,
+    "rejected_segments_cut": 0,
+    "notes": [],
+    "write_requests": []
+  },
+  "url": "https://squoosh.app/",
+  "headline": "Nén ảnh 2.8MB và thấy khác biệt ngay",
+  "theme": {
+    "source": "meta",
+    "primary": "#FF3385",
+    "accent": "#1AFFA3",
+    "accent_source": "opposite_hue",
+    "highlight": "#ff3385",
+    "logo": "out\\cam-squoosh\\theme\\logo.png",
+    "candidates": [],
+    "notes": []
+  },
+  "fit": {
+    "target_ms": 30000,
+    "estimated_ms": 29400,
+    "initial_ms": 29400,
+    "deviation": -0.02,
+    "within_tolerance": true,
+    "rounds": 0,
+    "actions": [],
+    "warnings": []
+  },
+  "fit_generation": {
+    "target_ms": 30000,
+    "estimated_ms": 29400,
+    "initial_ms": 29400,
+    "deviation": -0.02,
+    "within_tolerance": true,
+    "rounds": 0,
+    "actions": [],
+    "warnings": []
+  },
+  "script_versions": [
+    1
+  ],
+  "script_warnings": [
+    "Chưa có con số dung lượng sau nén trong proof_bank nên không nêu cụ thể mức giảm",
+    "auto_trimmed: badge «NÉN ẢNH TRONG TRÌNH DUYỆT» → «NÉN ẢNH TRONG TRÌNH»"
+  ],
+  "content_budget_s": 33,
+  "content_budget_formula": "content_budget_s = 4 (hook) + 4 (cta) + 5 (one before_after) + sum over demonstrable features: interaction 10, navigation 6, showcase 5",
+  "recommended_duration_s": 30,
+  "footage_ratio_estimated": 1.0,
+  "critic": {
+    "threshold": 7,
+    "before": {
+      "scores": {
+        "hook_strength": {
+          "score": 7,
+          "reason": "Mở bằng con số 2.8MB và nỗi đau tải chậm, khá cụ thể nhưng câu hỏi 'nén xuống vẫn nét được không?' hơi chung, chưa đánh trúng mong muốn 'thấy rõ khác biệt chất lượng' của persona."
+        },
+        "benefit_clarity": {
+          "score": 6,
+          "reason": "Có nêu được lợi ích giảm dung lượng và không cần cài đặt, nhưng chưa làm rõ persona được 'xem rõ khác biệt chất lượng' và 'tự tin chọn mức nén' — yếu tố cốt lõi của luồng."
+        },
+        "proof_usage": {
+          "score": 7,
+          "reason": "Dùng đúng số 2.8MB và mức 50 từ proof_bank, nhưng chưa khai thác các proof khác như 'xử lý ngay trên máy bạn' (privacy) hay 'không cần cài đặt' một cách tự nhiên, và chưa có câu trích dẫn nào."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể (mở squoosh.app, thử nén ảnh mẫu) nhưng thiếu lý do làm ngay (ưu đãi thật như 'xử lý trên máy bạn' hoặc 'không cần cài đặt') và chưa thật dễ nhớ."
+        },
+        "flow": {
+          "score": 7,
+          "reason": "Mạch từ nỗi đau → chọn ảnh → điều chỉnh nén → CTA khá liền, nhưng câu nối giữa hook và scene 2 còn hơi gượng, thiếu bước 'xem khác biệt chất lượng' trước khi lưu."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chưa đánh trúng mong muốn cốt lõi là 'xem rõ khác biệt chất lượng' và 'tự tin chọn mức nén', chỉ tập trung vào dung lượng.",
+          "suggestion": "Ảnh 2.8MB tải chậm? Xem nén xuống còn bao nhiêu mà vẫn nét, ngay trên trình duyệt."
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Chỉ kể thao tác chọn ảnh mẫu, chưa nói rõ persona được gì (không cần cài đặt, xử lý ngay trên máy).",
+          "suggestion": "Mở trình duyệt, chọn ảnh mẫu 2.8MB có sẵn — không cài đặt, ảnh xử lý ngay trên máy bạn."
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Chưa làm rõ việc 'xem khác biệt chất lượng' giữa ảnh gốc và ảnh nén, cũng chưa nêu lợi ích 'tự tin chọn mức nén' trước khi lưu.",
+          "suggestion": "Hạ chất lượng xuống 50, xem ngay dung lượng giảm mà vẫn đủ nét — tự tin chọn mức nén phù hợp."
+        },
+        {
+          "scene_id": "s4",
+          "problem": "CTA thiếu lý do làm ngay dựa trên ưu đãi thật (xử lý trên máy bạn, không cần cài đặt).",
+          "suggestion": "Mở squoosh.app, thử nén ảnh mẫu ngay trên máy bạn — không cần cài đặt, tự tin chọn mức nén."
+        }
+      ],
+      "issues": [
+        "Scene s1 dùng câu hỏi 'nén xuống vẫn nét được không?' không có trong proof_bank, mang tính sáo rỗng.",
+        "Chưa khai thác quote 'Worried about privacy? Images never leave your device...' dù đây là lợi ích mạnh cho persona.",
+        "Chưa dùng offer 'no_install' và 'private' một cách rõ ràng trong CTA.",
+        "Thiếu bước hiển thị so sánh trực quan chất lượng ảnh gốc và ảnh nén, trong khi persona muốn 'xem rõ khác biệt chất lượng'."
+      ],
+      "summary": "Kịch bản có mạch cơ bản và dùng đúng số liệu 2.8MB, 50, nhưng chưa làm nổi bật giá trị cốt lõi là xem khác biệt chất lượng và tự tin chọn mức nén. Cần sửa hook và các scene để nói rõ lợi ích 'không cần cài đặt', 'xử lý ngay trên máy bạn', đồng thời thêm bước so sánh chất lượng trước khi lưu. CTA nên gắn với ưu đãi thật để tăng tính thuyết phục."
+    },
+    "after": {
+      "scores": {
+        "hook_strength": {
+          "score": 6,
+          "reason": "Nêu con số 2.8MB và 'thấy khác biệt' nhưng 'vẫn nét' chưa đánh trúng nỗi đau privacy/faster load của persona, dễ bị coi là quảng cáo chung."
+        },
+        "benefit_clarity": {
+          "score": 5,
+          "reason": "Chương 1 chỉ kể thao tác 'mở trình duyệt, bấm chọn ảnh mẫu' chứ chưa nói rõ persona được gì; chương 2 có kết quả 'dung lượng giảm' nhưng thiếu số KB cụ thể và chưa nhấn 'xem rõ khác biệt chất lượng'."
+        },
+        "proof_usage": {
+          "score": 7,
+          "reason": "Dùng đúng số 2.8MB và mức 50 từ proof_bank, nhưng bỏ sót lợi ích 'xử lý ngay trên máy bạn' và không tận dụng câu trích privacy mạnh."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "Có hành động cụ thể 'mở squoosh.app, thử nén ảnh mẫu' nhưng thiếu lý do làm ngay (không cần cài đặt / ảnh không rời máy) và không dễ nhớ bằng một câu ngắn."
+        },
+        "flow": {
+          "score": 6,
+          "reason": "Mạch hook → chọn ảnh → chỉnh nén → CTA tương đối liền, nhưng thiếu câu nối nỗi đau privacy/faster load và chương 1 hơi liệt kê thao tác."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chưa đánh trúng nỗi đau privacy hoặc lợi ích 'nhanh hơn' của persona, chỉ nói 'vẫn nét' chung chung.",
+          "suggestion": "Ảnh 2.8MB, nén còn 50 mà không rời máy bạn — xem khác biệt ngay."
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Kể thao tác 'mở trình duyệt, bấm chọn' thay vì nói persona được gì; chưa dùng ưu đãi 'không cần cài đặt' và 'xử lý ngay trên máy bạn' một cách rõ ràng.",
+          "suggestion": "Chọn ảnh mẫu 2.8MB có sẵn — không cài đặt, ảnh xử lý ngay trên máy bạn."
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Chưa cho thấy 'xem rõ khác biệt chất lượng' và thiếu số liệu dung lượng giảm cụ thể trong proof_bank.",
+          "suggestion": "Hạ chất lượng xuống 50, xem dung lượng giảm và so chất lượng gốc/đã nén ngay trên máy."
+        },
+        {
+          "scene_id": "s4",
+          "problem": "CTA thiếu lý do làm ngay gắn với ưu đãi thật (không cần cài đặt / ảnh không rời máy).",
+          "suggestion": "Mở squoosh.app, thử ảnh mẫu 2.8MB ngay — không cần cài đặt, ảnh không rời máy bạn."
+        }
+      ],
+      "issues": [
+        "Hook dùng 'vẫn nét' nhưng không có bằng chứng định lượng trong proof_bank về chất lượng sau nén, dễ thành claim chung.",
+        "Scene s3 nói 'dung lượng giảm' nhưng không nêu con số KB cụ thể; proof_bank chỉ có 2.8MB, 13KB, 50, 75 nên cần tránh bịa số giảm.",
+        "Chưa tận dụng câu trích 'Images never leave your device' — lợi ích privacy mạnh nhất của proof_bank.",
+        "Chưa tận dụng offer 'không cần cài đặt' ở CTA để tăng lý do hành động ngay."
+      ],
+      "summary": "Kịch bản có mạch đúng luồng và dùng được số 2.8MB/mức 50, nhưng hook còn chung chung, chương 1 kể thao tác thay vì lợi ích, và CTA thiếu lý do làm ngay gắn với privacy/không cài đặt. Cần siết lại câu chữ để persona thấy rõ 'được gì' và tự tin chọn mức nén."
+    },
+    "final": {
+      "scores": {
+        "hook_strength": {
+          "score": 7,
+          "reason": "Mở bằng con số 2.8MB và nỗi đau tải chậm, khá cụ thể nhưng câu hỏi 'nén xuống vẫn nét được không?' hơi chung, chưa đánh trúng mong muốn 'thấy rõ khác biệt chất lượng' của persona."
+        },
+        "benefit_clarity": {
+          "score": 6,
+          "reason": "Có nêu được lợi ích giảm dung lượng và không cần cài đặt, nhưng chưa làm rõ persona được 'xem rõ khác biệt chất lượng' và 'tự tin chọn mức nén' — yếu tố cốt lõi của luồng."
+        },
+        "proof_usage": {
+          "score": 7,
+          "reason": "Dùng đúng số 2.8MB và mức 50 từ proof_bank, nhưng chưa khai thác các proof khác như 'xử lý ngay trên máy bạn' (privacy) hay 'không cần cài đặt' một cách tự nhiên, và chưa có câu trích dẫn nào."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể (mở squoosh.app, thử nén ảnh mẫu) nhưng thiếu lý do làm ngay (ưu đãi thật như 'xử lý trên máy bạn' hoặc 'không cần cài đặt') và chưa thật dễ nhớ."
+        },
+        "flow": {
+          "score": 7,
+          "reason": "Mạch từ nỗi đau → chọn ảnh → điều chỉnh nén → CTA khá liền, nhưng câu nối giữa hook và scene 2 còn hơi gượng, thiếu bước 'xem khác biệt chất lượng' trước khi lưu."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chưa đánh trúng mong muốn cốt lõi là 'xem rõ khác biệt chất lượng' và 'tự tin chọn mức nén', chỉ tập trung vào dung lượng.",
+          "suggestion": "Ảnh 2.8MB tải chậm? Xem nén xuống còn bao nhiêu mà vẫn nét, ngay trên trình duyệt."
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Chỉ kể thao tác chọn ảnh mẫu, chưa nói rõ persona được gì (không cần cài đặt, xử lý ngay trên máy).",
+          "suggestion": "Mở trình duyệt, chọn ảnh mẫu 2.8MB có sẵn — không cài đặt, ảnh xử lý ngay trên máy bạn."
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Chưa làm rõ việc 'xem khác biệt chất lượng' giữa ảnh gốc và ảnh nén, cũng chưa nêu lợi ích 'tự tin chọn mức nén' trước khi lưu.",
+          "suggestion": "Hạ chất lượng xuống 50, xem ngay dung lượng giảm mà vẫn đủ nét — tự tin chọn mức nén phù hợp."
+        },
+        {
+          "scene_id": "s4",
+          "problem": "CTA thiếu lý do làm ngay dựa trên ưu đãi thật (xử lý trên máy bạn, không cần cài đặt).",
+          "suggestion": "Mở squoosh.app, thử nén ảnh mẫu ngay trên máy bạn — không cần cài đặt, tự tin chọn mức nén."
+        }
+      ],
+      "issues": [
+        "Scene s1 dùng câu hỏi 'nén xuống vẫn nét được không?' không có trong proof_bank, mang tính sáo rỗng.",
+        "Chưa khai thác quote 'Worried about privacy? Images never leave your device...' dù đây là lợi ích mạnh cho persona.",
+        "Chưa dùng offer 'no_install' và 'private' một cách rõ ràng trong CTA.",
+        "Thiếu bước hiển thị so sánh trực quan chất lượng ảnh gốc và ảnh nén, trong khi persona muốn 'xem rõ khác biệt chất lượng'."
+      ],
+      "summary": "Kịch bản có mạch cơ bản và dùng đúng số liệu 2.8MB, 50, nhưng chưa làm nổi bật giá trị cốt lõi là xem khác biệt chất lượng và tự tin chọn mức nén. Cần sửa hook và các scene để nói rõ lợi ích 'không cần cài đặt', 'xử lý ngay trên máy bạn', đồng thời thêm bước so sánh chất lượng trước khi lưu. CTA nên gắn với ưu đãi thật để tăng tính thuyết phục."
+    },
+    "kept_rewrite": false,
+    "rounds": 0,
+    "hook": {
+      "hook_strength": [
+        7,
+        5
+      ],
+      "chosen": 1,
+      "kinds": [
+        "pain_question",
+        "result_first"
+      ]
+    },
+    "rewritten": [],
+    "notes": [
+      "bản viết lại bị chấm thấp hơn nên giữ bản trước"
+    ],
+    "passed": false
+  },
+  "proof_bank": {
+    "numbers": [
+      {
+        "value": "2.8",
+        "unit": "MB",
+        "context": "Large photo 2.8MB",
+        "source": "profile",
+        "kind": "benefit"
+      },
+      {
+        "value": "13",
+        "unit": "KB",
+        "context": "SVG icon 13KB",
+        "source": "profile",
+        "kind": "benefit"
+      },
+      {
+        "value": "75",
+        "unit": "",
+        "context": "Quality: 75",
+        "source": "frame",
+        "kind": "identifier"
+      },
+      {
+        "value": "50",
+        "unit": "",
+        "context": "Quality: 50",
+        "source": "frame",
+        "kind": "identifier"
+      }
+    ],
+    "quotes": [
+      "Or try one of these:",
+      "Smaller images mean faster load times. Squoosh can reduce file size and maintain high quality.",
+      "Worried about privacy? Images never leave your device since Squoosh does all the work locally."
+    ],
+    "offers": [
+      {
+        "id": "no_install",
+        "label": "không cần cài đặt",
+        "source_text": "Công cụ nén ảnh chạy hoàn toàn trong trình duyệt: kéo thả ảnh vào, xem khác biệt chất lượng rồi lưu ngay, không cần máy "
+      },
+      {
+        "id": "private",
+        "label": "xử lý ngay trên máy bạn",
+        "source_text": "Worried about privacy? Images never leave your device since Squoosh does all the work locally."
+      }
+    ],
+    "audience_pains": [
+      "Worried about privacy? Images never leave your device since Squoosh does all the work locally."
+    ]
+  },
+  "motion_qa": {
+    "metrics": {
+      "frames": 866,
+      "max_zoom_rate": 0.021,
+      "max_pan_rate": 0.0219,
+      "freeze_then_jump": 0,
+      "flash_shots": 0,
+      "static_ms_max": 0,
+      "cuts": [],
+      "page_changes_ms": [
+        11600
+      ],
+      "unfitted_frames": 0,
+      "loading_frames_ms": 0,
+      "per_scene": {
+        "s1": 0,
+        "s2": 0,
+        "s3": 0
+      },
+      "focus_match_rate": 1.0,
+      "focus_match_per_scene": {
+        "s1": 1.0,
+        "s2": 1.0,
+        "s3": 1.0
+      },
+      "focus_text_clipped": 434,
+      "image_zoom_inside": 0
+    },
+    "verdict": {
+      "max_zoom_rate": true,
+      "max_pan_rate": false,
+      "freeze_then_jump": true,
+      "flash_shots": true,
+      "static_ms_max": true,
+      "loading_frames_ms": true,
+      "focus_match_rate": true,
+      "focus_text_clipped": false
+    },
+    "passed": false
+  },
+  "scorecard": {
+    "lines": [
+      {
+        "id": "hook_visual",
+        "label": "Hook: khung gần + chữ ngắn trong 2 giây đầu",
+        "target": "khung tight/medium, chữ ≤ 5 từ",
+        "value": "gần, 3 từ",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "max_static_shot_s",
+        "label": "Không cảnh nào đứng yên quá lâu",
+        "target": "≤ 3.0 s",
+        "value": 2.48,
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "dead_frames_ms",
+        "label": "Không có khung hình chết",
+        "target": "0 ms",
+        "value": 0,
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "fullscreen_text_ratio",
+        "label": "Thẻ chữ toàn màn hình",
+        "target": "mỗi thẻ ≤ 3 s, tổng ≤ 15%",
+        "value": "0%, max 0ms",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "critic_hook_strength",
+        "label": "Critic: hook",
+        "target": "≥ 7",
+        "value": 7,
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "critic_benefit_clarity",
+        "label": "Critic: lợi ích",
+        "target": "≥ 7",
+        "value": 6,
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "critic_cta_strength",
+        "label": "Critic: kêu gọi",
+        "target": "≥ 7",
+        "value": 6,
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "proof_used",
+        "label": "Dùng bằng chứng thật",
+        "target": "có",
+        "value": "có",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "footage_ratio",
+        "label": "Tỉ lệ cảnh quay thật",
+        "target": "≥ 60%",
+        "value": "75%",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "steps_in_clip",
+        "label": "Bước thao tác có trong video",
+        "target": "≥ 80%",
+        "value": "100%",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_max_zoom_rate",
+        "label": "Tốc độ zoom tối đa",
+        "target": "≤ 2.5%/khung",
+        "value": "2.1%/khung",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_max_pan_rate",
+        "label": "Tốc độ kéo khung tối đa",
+        "target": "≤ 1.5%/khung",
+        "value": "2.2%/khung",
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "motion_freeze_then_jump",
+        "label": "Đứng yên rồi giật",
+        "target": "0",
+        "value": "0",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_flash_shots",
+        "label": "Cảnh chớp (< 0,8 s)",
+        "target": "0",
+        "value": "0",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_loading_frames_ms",
+        "label": "Ảnh/canvas đang tải lọt vào hình",
+        "target": "0 ms",
+        "value": "0 ms",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_static_ms_max",
+        "label": "Đứng yên tuyệt đối dài nhất",
+        "target": "≤ 400 ms",
+        "value": "0 ms",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_focus_text_clipped",
+        "label": "Chữ tiêu điểm bị cắt",
+        "target": "0",
+        "value": "434",
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "motion_focus_match_rate",
+        "label": "Tiêu điểm khớp lời đọc/thao tác",
+        "target": "≥ 85%",
+        "value": "100%",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "audio_present",
+        "label": "Âm thanh",
+        "target": "—",
+        "value": "chưa có (M2)",
+        "status": "info",
+        "note": ""
+      }
+    ],
+    "passed": 14,
+    "failed": 4,
+    "total": 18,
+    "all_passed": false
+  },
+  "request_guard": {
+    "allow_mutations": false,
+    "blocked": {},
+    "allowed": {},
+    "faked_204": {},
+    "login_phase": {
+      "posts_allowed": {},
+      "hosts_refused": {}
+    },
+    "writes": {
+      "windows": 0,
+      "requests": []
+    },
+    "first_blocked_urls": [],
+    "first_passed_urls": {}
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "source": "css",
+  "primary": "#B83F45",
+  "accent": "#42D7CF",
+  "accent_source": "opposite_hue",
+  "highlight": "#c85d63",
+  "logo": null,
+  "candidates": [
+    {
+      "color": "#b83f45",
+      "area": 666
+    }
+  ],
+  "notes": []
+}

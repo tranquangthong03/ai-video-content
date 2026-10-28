@@ -1,0 +1,576 @@
+{
+  "site_type": "tool",
+  "product_name": "Squoosh",
+  "one_liner": "Công cụ nén ảnh chạy hoàn toàn trong trình duyệt: kéo thả ảnh vào, xem khác biệt chất lượng rồi lưu ngay, không cần máy chủ và ảnh không rời khỏi thiết bị.",
+  "target_users": [
+    "Lập trình viên / web developer cần tối ưu ảnh cho website",
+    "Nhà thiết kế (designer) muốn giảm dung lượng ảnh mà giữ chất lượng",
+    "Marketer / content creator cần ảnh nhẹ cho landing page, email, mạng xã hội",
+    "Chủ shop bán hàng online tự xử lý ảnh sản phẩm"
+  ],
+  "value_props": [
+    "Ảnh nhỏ hơn nghĩa là tải nhanh hơn: giảm dung lượng tệp mà vẫn giữ chất lượng cao",
+    "Mở ảnh, xem ngay khác biệt rồi lưu tức thì; ai thích vọc có thể chỉnh cài đặt để có tệp còn nhỏ hơn",
+    "Xử lý cục bộ trong trình duyệt: ảnh không bao giờ rời khỏi thiết bị, an tâm về quyền riêng tư",
+    "Không cần cài đặt, không cần tải lên máy chủ — chỉ mở trình duyệt là dùng được"
+  ],
+  "features": [
+    {
+      "id": "f1",
+      "name": "Nén ảnh ngay trong trình duyệt",
+      "description": "Người dùng đưa ảnh vào bằng cách kéo thả hoặc dán, và Squoosh nén ảnh trực tiếp trên trình duyệt để có tệp nhỏ hơn mà vẫn giữ chất lượng cao — không cần tải lên máy chủ.",
+      "evidence": [
+        {
+          "source": "landing_hero",
+          "url": "https://squoosh.app/",
+          "ref": "e1",
+          "quote": "Drop OR Paste Or try one of these"
+        },
+        {
+          "source": "landing_features",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "quote": "Smaller images mean faster load times. Squoosh can reduce file size and maintain high quality."
+        }
+      ],
+      "importance": 0.95,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://squoosh.app/",
+          "ref": "e3",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Large photo 2.8MB",
+            "text": "2.8MB",
+            "css": "button",
+            "nth": 2,
+            "tag": "button",
+            "fingerprint": "button|2.8mb|0.37,0.79",
+            "bbox": {
+              "x": 652.0,
+              "y": 784.0,
+              "w": 100.0,
+              "h": 139.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "navigation",
+      "demo_score": 0.5,
+      "demo_evidence": {
+        "url_changed": true,
+        "dom_delta": 1,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.015,
+        "target_page_type": null,
+        "notes": "target page not analysed: https://squoosh.app/editor"
+      },
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\cam-squoosh\\explore\\verify\\f1\\step3_after.png",
+      "source": "site",
+      "intent_key": "compress_image"
+    },
+    {
+      "id": "f3",
+      "name": "So sánh chất lượng trước và sau khi nén",
+      "description": "Sau khi mở ảnh, người dùng kiểm tra ngay sự khác biệt giữa ảnh gốc và ảnh đã nén để quyết định mức nén phù hợp.",
+      "evidence": [
+        {
+          "source": "landing_features",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "quote": "Open your image, inspect the differences, then save instantly."
+        },
+        {
+          "source": "landing_hero",
+          "url": "https://squoosh.app/",
+          "ref": "e3",
+          "quote": "Large photo 2.8MB"
+        }
+      ],
+      "importance": 0.9,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://squoosh.app/",
+          "ref": "e4",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Artwork 2.9MB",
+            "text": "2.9MB",
+            "css": "button",
+            "nth": 3,
+            "tag": "button",
+            "fingerprint": "button|2.9mb|0.46,0.79",
+            "bbox": {
+              "x": 824.0,
+              "y": 784.0,
+              "w": 100.0,
+              "h": 139.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "showcase",
+      "demo_score": 0.71,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": null,
+        "notes": "section found for the claim"
+      },
+      "showcase_target": {
+        "url": "https://squoosh.app/",
+        "selector": "#app > div > file-drop > div > section:nth-of-type(2)",
+        "ref": null,
+        "text_quote": "Simple - Simple Open your image, inspect the differences, then save instantly. Feeling adventurous? Adjust the settings for even smaller files."
+      },
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\cam-squoosh\\explore\\verify\\f3\\showcase.png",
+      "source": "site",
+      "intent_key": "compare_image_quality"
+    },
+    {
+      "id": "f2",
+      "name": "Dán ảnh trực tiếp từ clipboard",
+      "description": "Ngoài kéo thả, người dùng có thể dán ảnh đang có trong clipboard để đưa vào công cụ nhanh chóng, không cần lưu ảnh ra đĩa trước.",
+      "evidence": [
+        {
+          "source": "landing_hero",
+          "url": "https://squoosh.app/",
+          "ref": "e2",
+          "quote": "Paste"
+        },
+        {
+          "source": "landing_hero",
+          "url": "https://squoosh.app/",
+          "ref": "e1",
+          "quote": "Drop OR Paste Or try one of these"
+        }
+      ],
+      "importance": 0.8,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://squoosh.app/",
+          "ref": "e2",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Paste",
+            "text": "Paste",
+            "css": "button",
+            "nth": 1,
+            "tag": "button",
+            "fingerprint": "button|paste|0.52,0.36",
+            "bbox": {
+              "x": 972.0,
+              "y": 381.0,
+              "w": 37.0,
+              "h": 19.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "showcase",
+      "demo_score": 0.57,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": null,
+        "notes": "section found for the claim"
+      },
+      "showcase_target": {
+        "url": "https://squoosh.app/",
+        "selector": "#app > div > file-drop > div > div:nth-of-type(2)",
+        "ref": null,
+        "text_quote": "Or try one of these: 2.8MB 2.9MB 1.6MB 13KB"
+      },
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\cam-squoosh\\explore\\verify\\f2\\showcase.png",
+      "source": "site",
+      "intent_key": "compress_image"
+    },
+    {
+      "id": "f4",
+      "name": "Tinh chỉnh cài đặt để có tệp nhỏ hơn",
+      "description": "Người dùng muốn tối ưu sâu hơn có thể chỉnh các cài đặt nén để giảm dung lượng tệp hơn nữa, phù hợp với nhu cầu riêng của từng ảnh.",
+      "evidence": [
+        {
+          "source": "landing_features",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "quote": "Feeling adventurous? Adjust the settings for even smaller files."
+        }
+      ],
+      "importance": 0.75,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://squoosh.app/",
+          "ref": "e3",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Large photo 2.8MB",
+            "text": "2.8MB",
+            "css": "button",
+            "nth": 2,
+            "tag": "button",
+            "fingerprint": "button|2.8mb|0.37,0.79",
+            "bbox": {
+              "x": 652.0,
+              "y": 784.0,
+              "w": 100.0,
+              "h": 139.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "showcase",
+      "demo_score": 0.95,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": null,
+        "notes": "section found for the claim"
+      },
+      "showcase_target": {
+        "url": "https://squoosh.app/",
+        "selector": "#app > div > file-drop > div > section:nth-of-type(2)",
+        "ref": null,
+        "text_quote": "Simple - Simple Open your image, inspect the differences, then save instantly. Feeling adventurous? Adjust the settings for even smaller files."
+      },
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\cam-squoosh\\explore\\verify\\f4\\showcase.png",
+      "source": "site",
+      "intent_key": "adjust_compression_settings"
+    },
+    {
+      "id": "f5",
+      "name": "Xem và lưu kết quả tức thì",
+      "description": "Kết quả nén hiển thị ngay trong trình duyệt và người dùng có thể lưu ảnh đã tối ưu về máy ngay sau khi xem, không có bước chờ xử lý phía máy chủ.",
+      "evidence": [
+        {
+          "source": "landing_features",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "quote": "Open your image, inspect the differences, then save instantly."
+        }
+      ],
+      "importance": 0.7,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://squoosh.app/",
+          "ref": "e5",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Device screen 1.6MB",
+            "text": "1.6MB",
+            "css": "button",
+            "nth": 4,
+            "tag": "button",
+            "fingerprint": "button|1.6mb|0.54,0.79",
+            "bbox": {
+              "x": 996.0,
+              "y": 784.0,
+              "w": 100.0,
+              "h": 139.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "showcase",
+      "demo_score": 0.95,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": null,
+        "notes": "section found for the claim"
+      },
+      "showcase_target": {
+        "url": "https://squoosh.app/",
+        "selector": "#app > div > file-drop > div > section:nth-of-type(2)",
+        "ref": null,
+        "text_quote": "Simple - Simple Open your image, inspect the differences, then save instantly. Feeling adventurous? Adjust the settings for even smaller files."
+      },
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\cam-squoosh\\explore\\verify\\f5\\showcase.png",
+      "source": "site",
+      "intent_key": "save_optimized_image"
+    },
+    {
+      "id": "f7",
+      "name": "Bảo mật cục bộ — ảnh không rời khỏi thiết bị",
+      "description": "Mọi xử lý diễn ra ngay trên máy người dùng, ảnh không được gửi lên máy chủ, phù hợp với ảnh nội bộ hoặc tài liệu nhạy cảm.",
+      "evidence": [
+        {
+          "source": "landing_features",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "quote": "Worried about privacy? Images never leave your device since Squoosh does all the work locally."
+        },
+        {
+          "source": "landing_hero",
+          "url": "https://squoosh.app/",
+          "ref": "e1",
+          "quote": "Drop OR Paste Or try one of these"
+        }
+      ],
+      "importance": 0.65,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://squoosh.app/",
+          "ref": "e3",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "Large photo 2.8MB",
+            "text": "2.8MB",
+            "css": "button",
+            "nth": 2,
+            "tag": "button",
+            "fingerprint": "button|2.8mb|0.37,0.79",
+            "bbox": {
+              "x": 652.0,
+              "y": 784.0,
+              "w": 100.0,
+              "h": 139.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": "showcase",
+      "demo_score": 0.95,
+      "demo_evidence": {
+        "url_changed": false,
+        "dom_delta": 0,
+        "new_dialog": false,
+        "new_list_items": 0,
+        "visual_diff": 0.0,
+        "target_page_type": null,
+        "notes": "section found for the claim"
+      },
+      "showcase_target": {
+        "url": "https://squoosh.app/",
+        "selector": "#app > div > file-drop > div > section:nth-of-type(3)",
+        "ref": null,
+        "text_quote": "Secure - Secure Worried about privacy? Images never leave your device since Squoosh does all the work locally."
+      },
+      "requires_setup": false,
+      "verified": true,
+      "demo_note": null,
+      "thumbnail": "out\\cam-squoosh\\explore\\verify\\f7\\showcase.png",
+      "source": "site",
+      "intent_key": "keep_image_private"
+    },
+    {
+      "id": "f6",
+      "name": "Thử nhanh bằng ảnh mẫu có sẵn",
+      "description": "Người dùng mới có thể bắt đầu bằng các ảnh mẫu đa dạng (ảnh chụp lớn, tác phẩm đồ họa, ảnh màn hình thiết bị, icon SVG) để trải nghiệm công cụ trước khi dùng ảnh của mình.",
+      "evidence": [
+        {
+          "source": "landing_hero",
+          "url": "https://squoosh.app/",
+          "ref": "e3",
+          "quote": "Large photo 2.8MB"
+        },
+        {
+          "source": "landing_hero",
+          "url": "https://squoosh.app/",
+          "ref": "e6",
+          "quote": "SVG icon 13KB"
+        }
+      ],
+      "importance": 0.6,
+      "demo_steps": [
+        {
+          "do": "goto",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        },
+        {
+          "do": "click",
+          "url": "https://squoosh.app/",
+          "ref": "e6",
+          "text": null,
+          "file": null,
+          "locator": {
+            "role": "button",
+            "name": "SVG icon 13KB",
+            "text": "13KB",
+            "css": "button",
+            "nth": 5,
+            "tag": "button",
+            "fingerprint": "button|13kb|0.63,0.79",
+            "bbox": {
+              "x": 1168.0,
+              "y": 784.0,
+              "w": 100.0,
+              "h": 139.0
+            }
+          }
+        },
+        {
+          "do": "wait",
+          "url": "https://squoosh.app/",
+          "ref": null,
+          "text": null,
+          "file": null,
+          "locator": null
+        }
+      ],
+      "demo_kind": null,
+      "demo_score": 0.0,
+      "demo_evidence": null,
+      "showcase_target": null,
+      "requires_setup": false,
+      "verified": false,
+      "demo_note": null,
+      "thumbnail": null,
+      "source": "site",
+      "intent_key": "load_sample_image"
+    }
+  ],
+  "open_questions": [
+    "Dữ liệu chỉ có trang landing hero, chưa có màn hình editor của app: các tính năng \"so sánh chất lượng\", \"chỉnh cài đặt nén\", \"lưu tức thì\" mới chỉ được nêu trên landing, cần xác nhận giao diện thực tế trong app.",
+    "Chưa rõ danh sách định dạng/codec ảnh được hỗ trợ (ví dụ WebP, AVIF, JPEG, PNG, SVG) — không có trong dữ liệu trang.",
+    "Chưa rõ đối tượng khách hàng chính mà đội ngũ nhắm tới (developer hay người dùng phổ thông) để điều chỉnh thông điệp video.",
+    "Không có thông tin về pricing/giới hạn dung lượng ảnh hay số ảnh xử lý — cần xác nhận nếu video marketing đề cập chi phí."
+  ]
+}

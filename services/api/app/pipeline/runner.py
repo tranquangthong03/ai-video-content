@@ -12,7 +12,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 
 from app.browser.auth_detect import LoginRequired
 from app.browser.login_find import find_login_url
@@ -537,6 +537,25 @@ def run_script_step(
     return runner.run()
 
 
+def produce_extras(url: str, script: Script, script_report: dict[str, Any]) -> dict[str, Any]:
+    """What the script step knows and report.json carries along (also used by the T1 replay)."""
+    return {
+        "url": url,
+        "headline": script.headline,
+        "theme": script_report.get("theme"),
+        "fit": script_report.get("fit"),
+        "fit_generation": script_report.get("fit_generation"),
+        "script_versions": script_report.get("versions"),
+        "script_warnings": script_report.get("warnings", []),
+        "content_budget_s": script_report.get("content_budget_s"),
+        "content_budget_formula": script_report.get("content_budget_formula"),
+        "recommended_duration_s": script_report.get("recommended_duration_s"),
+        "footage_ratio_estimated": script_report.get("footage_ratio"),
+        "critic": script_report.get("critic"),
+        "proof_bank": script_report.get("proof_bank"),
+    }
+
+
 def run_produce_step(
     cfg: JobConfig,
     rep: Reporter,
@@ -554,21 +573,7 @@ def run_produce_step(
     report_file = job_dir / "script_report.json"
     if report_file.is_file():
         script_report = json.loads(report_file.read_text(encoding="utf-8"))
-    extra = {
-        "url": cfg.url,
-        "headline": script.headline,
-        "theme": script_report.get("theme"),
-        "fit": script_report.get("fit"),
-        "fit_generation": script_report.get("fit_generation"),
-        "script_versions": script_report.get("versions"),
-        "script_warnings": script_report.get("warnings", []),
-        "content_budget_s": script_report.get("content_budget_s"),
-        "content_budget_formula": script_report.get("content_budget_formula"),
-        "recommended_duration_s": script_report.get("recommended_duration_s"),
-        "footage_ratio_estimated": script_report.get("footage_ratio"),
-        "critic": script_report.get("critic"),
-        "proof_bank": script_report.get("proof_bank"),
-    }
+    extra = produce_extras(cfg.url, script, script_report)
     login_report = job_dir / "login_report.json"
     if login_report.is_file():  # which hosts the sign-in posted to (no bodies, no secrets)
         extra["login_phase"] = json.loads(login_report.read_text(encoding="utf-8"))

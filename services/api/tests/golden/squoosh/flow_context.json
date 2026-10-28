@@ -1,0 +1,126 @@
+{
+  "flow_id": "user_n_n_nh_m_u_v_so_s_nh_tr_",
+  "title": "Nén ảnh mẫu và so sánh trước/sau khi nén",
+  "persona": "Người dùng mới muốn trải nghiệm công cụ nén ảnh trực tuyến",
+  "goal": "Chọn một ảnh mẫu có sẵn, nén nó và xem rõ khác biệt chất lượng giữa ảnh gốc và ảnh đã nén để quyết định mức nén phù hợp",
+  "success_signal": "Ảnh đã nén được lưu về máy và người dùng đã thấy rõ sự khác biệt chất lượng cùng dung lượng mới nhỏ hơn so với ảnh gốc",
+  "value": "Trải nghiệm trọn vẹn khả năng nén ảnh ngay trong trình duyệt và tự tin chọn mức nén phù hợp trước khi áp dụng cho ảnh thật",
+  "needs_submit": true,
+  "status": "reached_goal",
+  "submit_policy": "stop",
+  "hero_texts": [
+    "Edit",
+    "Compress",
+    "Copy settings to other side",
+    "Save side settings",
+    "Import saved side settings",
+    "Download",
+    "Rotate",
+    "Toggle smoothing"
+  ],
+  "before_after_pair": false,
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "Chọn ảnh mẫu",
+      "notes": [
+        "Mở trang bắt đầu",
+        "Mình bấm chọn ảnh mẫu 2.8MB để đưa vào công cụ nén."
+      ],
+      "steps": 2,
+      "value_line": null
+    },
+    {
+      "id": "c2",
+      "title": "Điều chỉnh nén",
+      "notes": [
+        "Hạ chất lượng nén xuống 50 để xem dung lượng tệp giảm bao nhiêu so với ảnh gốc 2.79MB."
+      ],
+      "steps": 1,
+      "value_line": null
+    }
+  ],
+  "visuals": {
+    "c1": {
+      "mode": "recording",
+      "page": "https://squoosh.app/",
+      "actions": [
+        {
+          "do": "goto",
+          "url": "https://squoosh.app/",
+          "zoom": false
+        },
+        {
+          "do": "click",
+          "target": "2.8MB",
+          "zoom": false,
+          "locator": {
+            "role": "button",
+            "name": "2.8MB",
+            "text": "2.8MB",
+            "css": "button",
+            "nth": 2,
+            "tag": "button",
+            "fingerprint": "button|2.8mb|0.32,0.95",
+            "bbox": {
+              "x": 412.0,
+              "y": 784.0,
+              "w": 100.0,
+              "h": 139.0
+            }
+          }
+        }
+      ]
+    },
+    "c2": {
+      "mode": "recording",
+      "page": "https://squoosh.app/editor",
+      "actions": [
+        {
+          "do": "goto",
+          "url": "https://squoosh.app/editor"
+        },
+        {
+          "do": "type",
+          "target": "Quality:",
+          "text": "50",
+          "zoom": false,
+          "locator": {
+            "role": "textbox",
+            "name": "Quality:",
+            "css": "input",
+            "nth": 3,
+            "tag": "input",
+            "fingerprint": "input||0.97,0.82",
+            "bbox": {
+              "x": 1376.0,
+              "y": 728.0,
+              "w": 54.0,
+              "h": 23.0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "hook_visual": {
+    "mode": "recording",
+    "page": "https://squoosh.app/",
+    "actions": [
+      {
+        "do": "goto",
+        "url": "https://squoosh.app/"
+      }
+    ]
+  },
+  "cta_visual": {
+    "mode": "recording",
+    "page": "https://squoosh.app/",
+    "actions": [
+      {
+        "do": "goto",
+        "url": "https://squoosh.app/"
+      }
+    ]
+  }
+}

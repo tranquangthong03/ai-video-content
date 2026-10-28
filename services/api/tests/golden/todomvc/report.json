@@ -1,0 +1,944 @@
+{
+  "video": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-todomvc\\video.mp4",
+  "target_ms": 30000,
+  "estimated_ms": 32300,
+  "planned_ms": 36798,
+  "footage_ratio": 0.852,
+  "actual_ms": 36867,
+  "ffprobe": {
+    "codec_name": "h264",
+    "width": 1080,
+    "height": 1920,
+    "pix_fmt": "yuv420p",
+    "r_frame_rate": "30/1"
+  },
+  "speedup_used": 1.0,
+  "trimmed_ms": 2835,
+  "actions_per_scene": {
+    "s1": 0,
+    "s2": 1,
+    "s3": 2,
+    "s4": 1,
+    "s5": 1
+  },
+  "hold_avg_ms": 1500,
+  "idle_limit_ms": 2500,
+  "idle_ok": false,
+  "scenes": [
+    {
+      "id": "s1",
+      "type": "hook",
+      "kind": "thao tác",
+      "speech_ms": 4250,
+      "usable_ms": 2000,
+      "final_ms": 4250,
+      "playback_rate": 1.0,
+      "freeze": true,
+      "idle_max_ms": 2413,
+      "warnings": [],
+      "steps_ok": 0,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": null,
+      "recording": "recording",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 0,
+      "hold_avg_ms": null,
+      "inventory_snapshots": 2,
+      "inventory_file": "produce\\inventory\\s1.json",
+      "focus": {
+        "planner": "plan",
+        "planner_attempts": 1,
+        "planner_errors": [],
+        "hook_reframed": 1,
+        "replaced_side_focus": 0,
+        "unresolved": 0,
+        "context_limited": 0,
+        "media_replaced": 0,
+        "spoken_preferred": 0,
+        "submit_held_back": 0,
+        "sources": {
+          "plan": 1,
+          "rule": 0,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s1.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 2,
+      "punches": 0,
+      "max_static_ms": 2437
+    },
+    {
+      "id": "s2",
+      "type": "feature_demo",
+      "kind": "thao tác",
+      "speech_ms": 5050,
+      "usable_ms": 5050,
+      "final_ms": 5050,
+      "playback_rate": 1.0,
+      "freeze": false,
+      "idle_max_ms": 2082,
+      "warnings": [],
+      "steps_ok": 1,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": "c1",
+      "recording": "recording",
+      "trimmed_ms": 334,
+      "cuts": [
+        {
+          "from_ms": 0,
+          "to_ms": 2073
+        },
+        {
+          "from_ms": 3475,
+          "to_ms": 3809
+        }
+      ],
+      "actions": 1,
+      "hold_avg_ms": 1500,
+      "inventory_snapshots": 2,
+      "inventory_file": "produce\\inventory\\s2.json",
+      "focus": {
+        "planner": "plan",
+        "planner_attempts": 2,
+        "planner_errors": [],
+        "hook_reframed": 0,
+        "replaced_side_focus": 0,
+        "unresolved": 0,
+        "context_limited": 0,
+        "media_replaced": 0,
+        "spoken_preferred": 0,
+        "submit_held_back": 0,
+        "sources": {
+          "plan": 2,
+          "rule": 0,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s2.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 3,
+      "punches": 1,
+      "max_static_ms": 1995
+    },
+    {
+      "id": "s3",
+      "type": "feature_demo",
+      "kind": "thao tác",
+      "speech_ms": 5850,
+      "usable_ms": 10348,
+      "final_ms": 10348,
+      "playback_rate": 1.0,
+      "freeze": false,
+      "idle_max_ms": 1996,
+      "warnings": [],
+      "steps_ok": 2,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": "c2",
+      "recording": "recording",
+      "trimmed_ms": 2501,
+      "cuts": [
+        {
+          "from_ms": 1400,
+          "to_ms": 1745
+        },
+        {
+          "from_ms": 4102,
+          "to_ms": 4733
+        },
+        {
+          "from_ms": 6918,
+          "to_ms": 8443
+        }
+      ],
+      "actions": 2,
+      "hold_avg_ms": 1500,
+      "inventory_snapshots": 5,
+      "inventory_file": "produce\\inventory\\s3.json",
+      "focus": {
+        "planner": "plan",
+        "planner_attempts": 2,
+        "planner_errors": [],
+        "hook_reframed": 0,
+        "replaced_side_focus": 1,
+        "unresolved": 0,
+        "context_limited": 1,
+        "media_replaced": 0,
+        "spoken_preferred": 1,
+        "submit_held_back": 0,
+        "sources": {
+          "plan": 2,
+          "rule": 3,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s3.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 3,
+      "punches": 1,
+      "max_static_ms": 2846
+    },
+    {
+      "id": "s4",
+      "type": "feature_demo",
+      "kind": "thao tác",
+      "speech_ms": 5850,
+      "usable_ms": 4081,
+      "final_ms": 5850,
+      "playback_rate": 1.0,
+      "freeze": true,
+      "idle_max_ms": 3766,
+      "warnings": [],
+      "steps_ok": 1,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": "c3",
+      "recording": "recording",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 1,
+      "hold_avg_ms": 1500,
+      "inventory_snapshots": 3,
+      "inventory_file": "produce\\inventory\\s4.json",
+      "focus": {
+        "planner": "plan",
+        "planner_attempts": 1,
+        "planner_errors": [],
+        "hook_reframed": 0,
+        "replaced_side_focus": 1,
+        "unresolved": 0,
+        "context_limited": 1,
+        "media_replaced": 0,
+        "spoken_preferred": 1,
+        "submit_held_back": 0,
+        "sources": {
+          "plan": 0,
+          "rule": 2,
+          "fallback": 0
+        }
+      },
+      "focus_file": "produce\\focus\\s4.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 3,
+      "punches": 2,
+      "max_static_ms": 1930
+    },
+    {
+      "id": "s5",
+      "type": "feature_demo",
+      "kind": "thao tác",
+      "speech_ms": 5850,
+      "usable_ms": 4646,
+      "final_ms": 5850,
+      "playback_rate": 1.0,
+      "freeze": true,
+      "idle_max_ms": 1995,
+      "warnings": [],
+      "steps_ok": 1,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": "c4",
+      "recording": "recording",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 1,
+      "hold_avg_ms": 1500,
+      "inventory_snapshots": 3,
+      "inventory_file": "produce\\inventory\\s5.json",
+      "focus": {
+        "planner": "plan",
+        "planner_attempts": 1,
+        "planner_errors": [],
+        "hook_reframed": 0,
+        "replaced_side_focus": 0,
+        "unresolved": 1,
+        "context_limited": 0,
+        "media_replaced": 0,
+        "spoken_preferred": 0,
+        "submit_held_back": 0,
+        "sources": {
+          "plan": 0,
+          "rule": 1,
+          "fallback": 1
+        }
+      },
+      "focus_file": "produce\\focus\\s5.json",
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 4,
+      "punches": 3,
+      "max_static_ms": 1867
+    },
+    {
+      "id": "s6",
+      "type": "cta",
+      "kind": "thao tác",
+      "speech_ms": 5450,
+      "usable_ms": null,
+      "final_ms": 5450,
+      "playback_rate": 1.0,
+      "freeze": false,
+      "idle_max_ms": 0,
+      "warnings": [],
+      "steps_ok": 0,
+      "steps_failed": 0,
+      "filled_ms": 0,
+      "feature": null,
+      "recording": "screenshot",
+      "trimmed_ms": 0,
+      "cuts": [],
+      "actions": 0,
+      "hold_avg_ms": null,
+      "inventory_snapshots": 0,
+      "inventory_file": null,
+      "focus": null,
+      "focus_file": null,
+      "dead_cut_ms": 0,
+      "dead_frames_ms": 0,
+      "shots": 0,
+      "punches": 0,
+      "max_static_ms": null
+    }
+  ],
+  "dead_frames_ms": 0,
+  "dead_frames_cut_ms": 0,
+  "max_static_shot_s": 2.85,
+  "punch_ins": 7,
+  "text_cards": {
+    "count": 0,
+    "longest_ms": 0,
+    "ratio": 0.0,
+    "ok": true
+  },
+  "features": [
+    {
+      "id": "c1",
+      "name": "Thêm việc thứ nhất"
+    },
+    {
+      "id": "c2",
+      "name": "Thêm việc cần làm"
+    },
+    {
+      "id": "c3",
+      "name": "Đánh dấu hoàn thành"
+    },
+    {
+      "id": "c4",
+      "name": "Lọc việc còn lại"
+    }
+  ],
+  "phases_s": {
+    "timing": 0.0,
+    "record": 18.8,
+    "render": 66.6,
+    "total": 85.4
+  },
+  "render_ms": 65715,
+  "warnings": [],
+  "dropped_scenes": [],
+  "tokens": {
+    "max_tokens": 400000,
+    "total": 72567,
+    "steps": {
+      "classify": {
+        "input": 376,
+        "output": 92,
+        "calls": 1
+      },
+      "analyze": {
+        "input": 1845,
+        "output": 288,
+        "calls": 2
+      },
+      "synthesize": {
+        "input": 2608,
+        "output": 1429,
+        "calls": 1
+      },
+      "delta": {
+        "input": 2719,
+        "output": 1016,
+        "calls": 2
+      },
+      "flow_discovery": {
+        "input": 2958,
+        "output": 1939,
+        "calls": 2
+      },
+      "flow_agent": {
+        "input": 13308,
+        "output": 528,
+        "calls": 6
+      },
+      "script": {
+        "input": 18875,
+        "output": 3595,
+        "calls": 3
+      },
+      "copy_critic": {
+        "input": 5007,
+        "output": 3449,
+        "calls": 3
+      },
+      "scene": {
+        "input": 11612,
+        "output": 923,
+        "calls": 5
+      },
+      "focus_plan": {
+        "input": 24771,
+        "output": 1286,
+        "calls": 7
+      }
+    }
+  },
+  "flow": {
+    "flow_id": "user_l_n_danh_s_ch_vi_c_trong",
+    "steps": 6,
+    "replayed": 5,
+    "replay_failed_at": null,
+    "skipped_steps": [],
+    "steps_in_clip": 1.0,
+    "operation_steps": 5,
+    "operation_steps_in_clip": 5,
+    "missing_steps": [],
+    "hero": {
+      "t_ms": 6912,
+      "from_ms": 6112,
+      "to_ms": 8112,
+      "score": 30.333333333333332
+    },
+    "clip_ms": 29033,
+    "clip_source": "live",
+    "llm_wait_cut_ms": 5676,
+    "retry_segments_cut": 0,
+    "rejected_segments_cut": 0,
+    "notes": [],
+    "write_requests": []
+  },
+  "url": "https://todomvc.com/examples/react/dist/",
+  "headline": "Lên việc trong ngày, lọc việc còn lại",
+  "theme": {
+    "source": "css",
+    "primary": "#B83F45",
+    "accent": "#42D7CF",
+    "accent_source": "opposite_hue",
+    "highlight": "#c85d63",
+    "logo": null,
+    "candidates": [
+      {
+        "color": "#b83f45",
+        "area": 666
+      }
+    ],
+    "notes": []
+  },
+  "fit": {
+    "target_ms": 30000,
+    "estimated_ms": 32300,
+    "initial_ms": 32300,
+    "deviation": 0.077,
+    "within_tolerance": true,
+    "rounds": 0,
+    "actions": [],
+    "warnings": []
+  },
+  "fit_generation": {
+    "target_ms": 30000,
+    "estimated_ms": 32300,
+    "initial_ms": 32300,
+    "deviation": 0.077,
+    "within_tolerance": true,
+    "rounds": 0,
+    "actions": [],
+    "warnings": []
+  },
+  "script_versions": [
+    1
+  ],
+  "script_warnings": [
+    "Scene 3 chuyển sang layout full_screen quay vùng danh sách sau khi nhập, tách khỏi vùng ô nhập của scene 2.",
+    "Scene 4 dùng layout phone_mockup quay riêng vùng checkbox của dòng Mua sữa, khác khung hero của hook.",
+    "Scene 6 dùng layout button_pulse quay khối liên kết Source và Official Resources ở chân trang, tách khỏi khối hero.",
+    "Chưa dùng trích dẫn proof_bank để giữ tổng voiceover sát mục tiêu 71 từ.",
+    "chưa đạt: scene 3 trùng hình ảnh với scene 2 (cùng trang, cùng vùng): đổi sang section/trang khác",
+    "chưa đạt: scene 4 trùng hình ảnh với scene 1 (cùng trang, cùng vùng): đổi sang section/trang khác",
+    "chưa đạt: scene 6 trùng hình ảnh với scene 1 (cùng trang, cùng vùng): đổi sang section/trang khác"
+  ],
+  "content_budget_s": 53,
+  "content_budget_formula": "content_budget_s = 4 (hook) + 4 (cta) + 5 (one before_after) + sum over demonstrable features: interaction 10, navigation 6, showcase 5",
+  "recommended_duration_s": 45,
+  "footage_ratio_estimated": 1.0,
+  "critic": {
+    "threshold": 7,
+    "before": {
+      "scores": {
+        "hook_strength": {
+          "score": 6,
+          "reason": "Câu mở nêu nỗi đau ghi giấy nhưng còn chung chung, chưa đánh trúng mong muốn 'không cần tài khoản, gọn trong ngày'."
+        },
+        "benefit_clarity": {
+          "score": 5,
+          "reason": "Các scene chủ yếu kể thao tác thêm/gõ/đánh dấu/lọc, chưa nói rõ persona được lợi gì về thời gian, công sức hay kết quả tập trung."
+        },
+        "proof_usage": {
+          "score": 4,
+          "reason": "Chỉ dùng số '2 việc còn lại' có trong proof_bank, nhưng không tận dụng các số 1/2/3 hay câu quote 'Double-click to edit a todo' một cách tự nhiên."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể và lợi ích 'không cần đăng ký', nhưng thiếu lý do làm ngay/ưu đãi thật và chưa đủ dễ nhớ."
+        },
+        "flow": {
+          "score": 6,
+          "reason": "Mạch từ nỗi đau đến demo đến kết quả tương đối liền, nhưng nhịp còn kể thao tác và thiếu câu nối làm nổi bật giá trị cốt lõi."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chưa đánh trúng nỗi đau cụ thể của persona (không tài khoản, nhanh, tập trung việc còn lại).",
+          "suggestion": "Đổi thành: 'Ghi việc lên giấy rồi quên? Lập danh sách trong ngày ngay, không cần tài khoản.'"
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Chỉ kể thao tác mở trang và thêm việc, chưa nói persona được gì.",
+          "suggestion": "Đổi thành: 'Mở trang là thêm việc ngay, không cần tài khoản, mất vài giây.'"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Kể thao tác gõ thêm hai việc, chưa làm rõ lợi ích danh sách tự cập nhật.",
+          "suggestion": "Đổi thành: 'Gõ thêm hai việc, danh sách tự cập nhật, không thao tác phức tạp.'"
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Chưa nhấn vào kết quả 'xong một việc' giúp persona thấy tiến độ.",
+          "suggestion": "Đổi thành: 'Đánh dấu Mua sữa xong, bạn thấy ngay một việc đã hoàn thành.'"
+        },
+        {
+          "scene_id": "s5",
+          "problem": "Chưa nói rõ lợi ích tập trung vào việc còn lại, chỉ nêu thao tác lọc.",
+          "suggestion": "Đổi thành: 'Lọc Active, chỉ còn 2 việc chưa làm, tập trung ngay vào việc còn lại.'"
+        },
+        {
+          "scene_id": "s6",
+          "problem": "CTA thiếu lý do làm ngay và chưa gắn với giá trị cốt lõi.",
+          "suggestion": "Đổi thành: 'Lập danh sách việc trong ngày tại todomvc.com ngay, không cần đăng ký.'"
+        }
+      ],
+      "issues": [
+        "Cụm 'thử cách này xem' ở hook còn sáo rỗng, chưa cụ thể nỗi đau.",
+        "Các scene s2-s5 nghiêng về kể thao tác hơn là nêu lợi ích persona.",
+        "Chưa khai thác quote 'Double-click to edit a todo' và các số 1/2/3 trong proof_bank.",
+        "CTA chưa có lý do làm ngay/ưu đãi thật (proof_bank không có offers)."
+      ],
+      "summary": "Kịch bản có cấu trúc hook-demo-CTA rõ nhưng chưa đủ sắc với persona: hook còn chung, phần demo kể thao tác nhiều hơn nói lợi ích, proof_usage yếu và CTA thiếu lý do hành động ngay. Cần siết câu chữ để làm nổi bật 'không cần tài khoản', 'nhanh', 'tập trung việc còn lại' và dùng proof_bank tự nhiên hơn."
+    },
+    "after": {
+      "scores": {
+        "hook_strength": {
+          "score": 4,
+          "reason": "Hook 'Ghi việc lên giấy rồi quên?' có nỗi đau nhưng chung chung, không đủ cụ thể để khiến persona dừng lướt ngay."
+        },
+        "benefit_clarity": {
+          "score": 5,
+          "reason": "Các scene nói nhiều về thao tác (mở trang, gõ, nhấn Enter, chọn lọc) hơn là lợi ích rõ ràng như tiết kiệm thời gian hay giảm công sức."
+        },
+        "proof_usage": {
+          "score": 6,
+          "reason": "Chỉ dùng số '2 việc còn lại' từ proof_bank ở scene 5, nhưng bỏ lỡ các số 1, 3 và câu trích có sẵn."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể (todomvc.com) và lý do 'không cần đăng ký', nhưng thiếu yếu tố thúc đẩy làm ngay."
+        },
+        "flow": {
+          "score": 5,
+          "reason": "Mạch từ nỗi đau đến hành trình còn rời rạc, thiếu câu nối tự nhiên và một số scene kể lại thao tác thay vì kết quả."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chung chung, không đánh trúng nỗi đau cụ thể của persona (quên việc, mất tập trung).",
+          "suggestion": "Đổi thành: 'Quên việc cần làm mỗi ngày? Đừng lo, chỉ 5 giây là xong.'"
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Kể lại thao tác 'mở trang là thêm việc' hơn là lợi ích.",
+          "suggestion": "Đổi thành: 'Thêm việc ngay không cần tài khoản, tiết kiệm thời gian.'"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Nói 'gõ thêm hai việc' nhưng không nhấn mạnh kết quả.",
+          "suggestion": "Đổi thành: 'Thêm hai việc nhanh chóng, danh sách tự cập nhật.'"
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Chỉ mô tả đánh dấu xong, chưa nêu lợi ích.",
+          "suggestion": "Đổi thành: 'Đánh dấu xong việc Mua sữa, bạn thấy ngay một việc đã hoàn thành.'"
+        },
+        {
+          "scene_id": "s5",
+          "problem": "Câu 'Chọn lọc Active' hơi kỹ thuật, chưa làm rõ lợi ích tập trung.",
+          "suggestion": "Đổi thành: 'Lọc Active, chỉ còn hai việc chưa làm hiện ra, tập trung liền.'"
+        },
+        {
+          "scene_id": "s6",
+          "problem": "CTA thiếu lý do thúc đẩy hành động ngay.",
+          "suggestion": "Đổi thành: 'Lập danh sách việc trong ngày ngay tại todomvc.com, không cần đăng ký.'"
+        }
+      ],
+      "issues": [
+        "Hook 'Ghi việc lên giấy rồi quên?' còn sáo rỗng, chưa đủ mạnh.",
+        "Bỏ lỡ số liệu '1' và '3' trong proof_bank.",
+        "Thiếu câu trích dẫn từ proof_bank để tăng độ tin cậy."
+      ],
+      "summary": "Kịch bản có tiềm năng nhưng cần cải thiện hook, làm rõ lợi ích ở từng scene và tận dụng tốt hơn proof_bank để tăng tính thuyết phục."
+    },
+    "final": {
+      "scores": {
+        "hook_strength": {
+          "score": 6,
+          "reason": "Câu mở nêu nỗi đau ghi giấy nhưng còn chung chung, chưa đánh trúng mong muốn 'không cần tài khoản, gọn trong ngày'."
+        },
+        "benefit_clarity": {
+          "score": 5,
+          "reason": "Các scene chủ yếu kể thao tác thêm/gõ/đánh dấu/lọc, chưa nói rõ persona được lợi gì về thời gian, công sức hay kết quả tập trung."
+        },
+        "proof_usage": {
+          "score": 4,
+          "reason": "Chỉ dùng số '2 việc còn lại' có trong proof_bank, nhưng không tận dụng các số 1/2/3 hay câu quote 'Double-click to edit a todo' một cách tự nhiên."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể và lợi ích 'không cần đăng ký', nhưng thiếu lý do làm ngay/ưu đãi thật và chưa đủ dễ nhớ."
+        },
+        "flow": {
+          "score": 6,
+          "reason": "Mạch từ nỗi đau đến demo đến kết quả tương đối liền, nhưng nhịp còn kể thao tác và thiếu câu nối làm nổi bật giá trị cốt lõi."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chưa đánh trúng nỗi đau cụ thể của persona (không tài khoản, nhanh, tập trung việc còn lại).",
+          "suggestion": "Đổi thành: 'Ghi việc lên giấy rồi quên? Lập danh sách trong ngày ngay, không cần tài khoản.'"
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Chỉ kể thao tác mở trang và thêm việc, chưa nói persona được gì.",
+          "suggestion": "Đổi thành: 'Mở trang là thêm việc ngay, không cần tài khoản, mất vài giây.'"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Kể thao tác gõ thêm hai việc, chưa làm rõ lợi ích danh sách tự cập nhật.",
+          "suggestion": "Đổi thành: 'Gõ thêm hai việc, danh sách tự cập nhật, không thao tác phức tạp.'"
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Chưa nhấn vào kết quả 'xong một việc' giúp persona thấy tiến độ.",
+          "suggestion": "Đổi thành: 'Đánh dấu Mua sữa xong, bạn thấy ngay một việc đã hoàn thành.'"
+        },
+        {
+          "scene_id": "s5",
+          "problem": "Chưa nói rõ lợi ích tập trung vào việc còn lại, chỉ nêu thao tác lọc.",
+          "suggestion": "Đổi thành: 'Lọc Active, chỉ còn 2 việc chưa làm, tập trung ngay vào việc còn lại.'"
+        },
+        {
+          "scene_id": "s6",
+          "problem": "CTA thiếu lý do làm ngay và chưa gắn với giá trị cốt lõi.",
+          "suggestion": "Đổi thành: 'Lập danh sách việc trong ngày tại todomvc.com ngay, không cần đăng ký.'"
+        }
+      ],
+      "issues": [
+        "Cụm 'thử cách này xem' ở hook còn sáo rỗng, chưa cụ thể nỗi đau.",
+        "Các scene s2-s5 nghiêng về kể thao tác hơn là nêu lợi ích persona.",
+        "Chưa khai thác quote 'Double-click to edit a todo' và các số 1/2/3 trong proof_bank.",
+        "CTA chưa có lý do làm ngay/ưu đãi thật (proof_bank không có offers)."
+      ],
+      "summary": "Kịch bản có cấu trúc hook-demo-CTA rõ nhưng chưa đủ sắc với persona: hook còn chung, phần demo kể thao tác nhiều hơn nói lợi ích, proof_usage yếu và CTA thiếu lý do hành động ngay. Cần siết câu chữ để làm nổi bật 'không cần tài khoản', 'nhanh', 'tập trung việc còn lại' và dùng proof_bank tự nhiên hơn."
+    },
+    "kept_rewrite": false,
+    "rounds": 0,
+    "hook": {
+      "hook_strength": [
+        6,
+        6
+      ],
+      "chosen": 2,
+      "kinds": [
+        "pain_question",
+        "you_are_doing_it_wrong"
+      ]
+    },
+    "rewritten": [],
+    "notes": [
+      "bản viết lại bị chấm thấp hơn nên giữ bản trước"
+    ],
+    "passed": false
+  },
+  "proof_bank": {
+    "numbers": [
+      {
+        "value": "1",
+        "unit": "",
+        "context": "1 item left! AllActiveCompleted",
+        "source": "frame",
+        "kind": "identifier"
+      },
+      {
+        "value": "2",
+        "unit": "",
+        "context": "2 items left! AllActiveCompleted",
+        "source": "frame",
+        "kind": "identifier"
+      },
+      {
+        "value": "3",
+        "unit": "",
+        "context": "3 items left! AllActiveCompleted",
+        "source": "frame",
+        "kind": "identifier"
+      }
+    ],
+    "quotes": [
+      "A TodoMVC written in React.",
+      "ReactJS on Stack Overflow",
+      "Double-click to edit a todo",
+      "Created by the TodoMVC Team"
+    ],
+    "offers": [],
+    "audience_pains": []
+  },
+  "motion_qa": {
+    "metrics": {
+      "frames": 1088,
+      "max_zoom_rate": 0.023,
+      "max_pan_rate": 0.0069,
+      "freeze_then_jump": 0,
+      "flash_shots": 0,
+      "static_ms_max": 0,
+      "cuts": [],
+      "page_changes_ms": [
+        7200,
+        13100
+      ],
+      "unfitted_frames": 0,
+      "loading_frames_ms": 0,
+      "per_scene": {
+        "s1": 0,
+        "s2": 0,
+        "s3": 0,
+        "s4": 0,
+        "s5": 0
+      },
+      "focus_match_rate": 0.927,
+      "focus_match_per_scene": {
+        "s1": 1.0,
+        "s2": 1.0,
+        "s3": 0.833,
+        "s4": 1.0,
+        "s5": 1.0
+      },
+      "focus_text_clipped": 38,
+      "image_zoom_inside": 0
+    },
+    "verdict": {
+      "max_zoom_rate": true,
+      "max_pan_rate": true,
+      "freeze_then_jump": true,
+      "flash_shots": true,
+      "static_ms_max": true,
+      "loading_frames_ms": true,
+      "focus_match_rate": true,
+      "focus_text_clipped": false
+    },
+    "passed": false
+  },
+  "scorecard": {
+    "lines": [
+      {
+        "id": "hook_visual",
+        "label": "Hook: khung gần + chữ ngắn trong 2 giây đầu",
+        "target": "khung tight/medium, chữ ≤ 5 từ",
+        "value": "gần, 4 từ",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "max_static_shot_s",
+        "label": "Không cảnh nào đứng yên quá lâu",
+        "target": "≤ 3.0 s",
+        "value": 2.85,
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "dead_frames_ms",
+        "label": "Không có khung hình chết",
+        "target": "0 ms",
+        "value": 0,
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "fullscreen_text_ratio",
+        "label": "Thẻ chữ toàn màn hình",
+        "target": "mỗi thẻ ≤ 3 s, tổng ≤ 15%",
+        "value": "0%, max 0ms",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "critic_hook_strength",
+        "label": "Critic: hook",
+        "target": "≥ 7",
+        "value": 6,
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "critic_benefit_clarity",
+        "label": "Critic: lợi ích",
+        "target": "≥ 7",
+        "value": 5,
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "critic_cta_strength",
+        "label": "Critic: kêu gọi",
+        "target": "≥ 7",
+        "value": 6,
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "proof_used",
+        "label": "Dùng bằng chứng thật",
+        "target": "có",
+        "value": "không",
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "footage_ratio",
+        "label": "Tỉ lệ cảnh quay thật",
+        "target": "≥ 60%",
+        "value": "85%",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "steps_in_clip",
+        "label": "Bước thao tác có trong video",
+        "target": "≥ 80%",
+        "value": "100%",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_max_zoom_rate",
+        "label": "Tốc độ zoom tối đa",
+        "target": "≤ 2.5%/khung",
+        "value": "2.3%/khung",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_max_pan_rate",
+        "label": "Tốc độ kéo khung tối đa",
+        "target": "≤ 1.5%/khung",
+        "value": "0.7%/khung",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_freeze_then_jump",
+        "label": "Đứng yên rồi giật",
+        "target": "0",
+        "value": "0",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_flash_shots",
+        "label": "Cảnh chớp (< 0,8 s)",
+        "target": "0",
+        "value": "0",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_loading_frames_ms",
+        "label": "Ảnh/canvas đang tải lọt vào hình",
+        "target": "0 ms",
+        "value": "0 ms",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_static_ms_max",
+        "label": "Đứng yên tuyệt đối dài nhất",
+        "target": "≤ 400 ms",
+        "value": "0 ms",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "motion_focus_text_clipped",
+        "label": "Chữ tiêu điểm bị cắt",
+        "target": "0",
+        "value": "38",
+        "status": "fail",
+        "note": ""
+      },
+      {
+        "id": "motion_focus_match_rate",
+        "label": "Tiêu điểm khớp lời đọc/thao tác",
+        "target": "≥ 85%",
+        "value": "93%",
+        "status": "pass",
+        "note": ""
+      },
+      {
+        "id": "audio_present",
+        "label": "Âm thanh",
+        "target": "—",
+        "value": "chưa có (M2)",
+        "status": "info",
+        "note": ""
+      }
+    ],
+    "passed": 13,
+    "failed": 5,
+    "total": 18,
+    "all_passed": false
+  },
+  "request_guard": {
+    "allow_mutations": false,
+    "blocked": {},
+    "allowed": {},
+    "faked_204": {},
+    "login_phase": {
+      "posts_allowed": {},
+      "hosts_refused": {}
+    },
+    "writes": {
+      "windows": 0,
+      "requests": []
+    },
+    "first_blocked_urls": [],
+    "first_passed_urls": {}
+  }
+}

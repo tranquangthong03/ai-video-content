@@ -1,0 +1,1015 @@
+{
+ "script": {
+  "title": "Nén ảnh mẫu: thấy rõ trước khi lưu",
+  "goal": "tutorial",
+  "aspect_ratio": "9:16",
+  "target_duration_s": 30,
+  "template": "desktop_focus",
+  "capture": {
+   "viewport": "desktop",
+   "width": 1440,
+   "height": 900
+  },
+  "flow_id": "user_n_n_nh_m_u_v_so_s_nh_tr_",
+  "badge": "NÉN ẢNH TRONG TRÌNH",
+  "headline": "Nén ảnh 2.8MB và thấy khác biệt ngay",
+  "headline_highlight": "2.8MB",
+  "framework": "pain_journey_result",
+  "hook_options": [
+   {
+    "kind": "pain_question",
+    "voiceover": "Ảnh 2.8MB làm trang tải chậm, nén xuống vẫn nét được không?",
+    "on_screen_text": "2.8MB quá nặng?"
+   },
+   {
+    "kind": "result_first",
+    "voiceover": "Chọn ảnh mẫu, hạ chất lượng, thấy ngay ảnh nhẹ hơn.",
+    "on_screen_text": "Nhẹ hơn trong 30 giây"
+   }
+  ],
+  "theme": {
+   "primary": "#FF3385",
+   "accent": "#1AFFA3",
+   "font": "Be Vietnam Pro",
+   "logo_asset": "out\\cam-squoosh\\theme\\logo.png",
+   "motion_preset": "energetic",
+   "caption_style": "karaoke",
+   "music_mood": "upbeat",
+   "voice_id": "vi_female_01",
+   "language": "vi"
+  },
+  "scenes": [
+   {
+    "id": "s1",
+    "type": "hook",
+    "layout": "big_text_over_blur",
+    "voiceover": "Ảnh 2.8MB làm trang tải chậm, nén xuống vẫn nét được không?",
+    "on_screen_text": "2.8MB quá nặng?",
+    "stat": null,
+    "key_point": "Ảnh nặng khiến trang tải chậm",
+    "icon": "bolt",
+    "visual": {
+     "mode": "recording",
+     "page": "https://squoosh.app/",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://squoosh.app/",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 5050,
+    "chapter_id": null
+   },
+   {
+    "id": "s2",
+    "type": "feature_demo",
+    "layout": "full_screen",
+    "feature": "c1",
+    "voiceover": "Bạn chỉ cần mở trình duyệt và chọn ảnh mẫu 2.8MB có sẵn, không cần cài đặt gì thêm.",
+    "on_screen_text": "Chọn ảnh mẫu",
+    "stat": {
+     "value": "2.8MB",
+     "label": "ảnh mẫu ban đầu"
+    },
+    "key_point": "Mở trình duyệt là dùng được, không cần cài đặt",
+    "icon": "image",
+    "visual": {
+     "mode": "recording",
+     "page": "https://squoosh.app/",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://squoosh.app/",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "click",
+       "target": "2.8MB",
+       "selector": null,
+       "locator": {
+        "role": "button",
+        "name": "2.8MB",
+        "text": "2.8MB",
+        "css": "button",
+        "nth": 2,
+        "tag": "button",
+        "fingerprint": "button|2.8mb|0.32,0.95",
+        "bbox": {
+         "x": 412.0,
+         "y": 784.0,
+         "w": 100.0,
+         "h": 139.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 7850,
+    "chapter_id": "c1"
+   },
+   {
+    "id": "s3",
+    "type": "feature_demo",
+    "layout": "phone_mockup",
+    "feature": "c2",
+    "voiceover": "Hạ chất lượng xuống 50, bạn thấy ngay dung lượng giảm mà vẫn đủ nét, rồi lưu ảnh đã nén về máy.",
+    "on_screen_text": "Chất lượng 50",
+    "stat": {
+     "value": "50",
+     "label": "mức chất lượng nén"
+    },
+    "key_point": "Tự chọn mức nén và lưu ảnh nhẹ hơn",
+    "icon": "filter",
+    "visual": {
+     "mode": "recording",
+     "page": "https://squoosh.app/editor",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://squoosh.app/editor",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "type",
+       "target": "Quality:",
+       "selector": null,
+       "locator": {
+        "role": "textbox",
+        "name": "Quality:",
+        "text": null,
+        "css": "input",
+        "nth": 3,
+        "tag": "input",
+        "fingerprint": "input||0.97,0.82",
+        "bbox": {
+         "x": 1376.0,
+         "y": 728.0,
+         "w": 54.0,
+         "h": 23.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": "50",
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 9050,
+    "chapter_id": "c2"
+   },
+   {
+    "id": "s4",
+    "type": "cta",
+    "layout": "button_pulse",
+    "voiceover": "Mở squoosh.app, thử nén ảnh mẫu ngay trên máy bạn và tự tin chọn mức nén phù hợp.",
+    "on_screen_text": "Thử tại squoosh.app",
+    "stat": null,
+    "key_point": "Nén ảnh xử lý ngay trên máy bạn",
+    "icon": "lock",
+    "visual": {
+     "mode": "recording",
+     "page": "https://squoosh.app/",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://squoosh.app/",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 7450,
+    "chapter_id": null
+   }
+  ]
+ },
+ "assets": {
+  "s1": {
+   "captions": [
+    {
+     "text": "Ảnh 2.8MB làm trang tải",
+     "start_ms": 0,
+     "end_ms": 1920,
+     "words": [
+      {
+       "text": "Ảnh",
+       "start_ms": 0,
+       "end_ms": 320
+      },
+      {
+       "text": "2.8MB",
+       "start_ms": 320,
+       "end_ms": 747
+      },
+      {
+       "text": "làm",
+       "start_ms": 747,
+       "end_ms": 1067
+      },
+      {
+       "text": "trang",
+       "start_ms": 1067,
+       "end_ms": 1600
+      },
+      {
+       "text": "tải",
+       "start_ms": 1600,
+       "end_ms": 1920
+      }
+     ]
+    },
+    {
+     "text": "chậm, nén xuống vẫn",
+     "start_ms": 1920,
+     "end_ms": 3520,
+     "words": [
+      {
+       "text": "chậm,",
+       "start_ms": 1920,
+       "end_ms": 2347
+      },
+      {
+       "text": "nén",
+       "start_ms": 2347,
+       "end_ms": 2667
+      },
+      {
+       "text": "xuống",
+       "start_ms": 2667,
+       "end_ms": 3200
+      },
+      {
+       "text": "vẫn",
+       "start_ms": 3200,
+       "end_ms": 3520
+      }
+     ]
+    },
+    {
+     "text": "nét được không?",
+     "start_ms": 3520,
+     "end_ms": 4800,
+     "words": [
+      {
+       "text": "nét",
+       "start_ms": 3520,
+       "end_ms": 3840
+      },
+      {
+       "text": "được",
+       "start_ms": 3840,
+       "end_ms": 4267
+      },
+      {
+       "text": "không?",
+       "start_ms": 4267,
+       "end_ms": 4800
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-squoosh\\produce\\s1.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 2000,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [],
+   "focus_log": [],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 15,
+      "y": 669,
+      "w": 1415,
+      "h": 143
+     },
+     "framing": "medium",
+     "hold_ms": 2000,
+     "source": "rule",
+     "reason": "hook: form đã điền",
+     "item_id": "eo9171",
+     "text": "Original Image (photo.jpg) AVIF Browser JPEG Browser PNG JPEG XL (beta) MozJPEG ",
+     "item_kind": "input",
+     "region": "main"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 1920,
+     "change": "cut"
+    },
+    {
+     "from_ms": 1920,
+     "to_ms": 3520,
+     "change": "punch"
+    },
+    {
+     "from_ms": 3520,
+     "to_ms": 5050,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 1920,
+     "scale": 0.08
+    },
+    {
+     "t_ms": 3520,
+     "scale": 0.1
+    }
+   ]
+  },
+  "s2": {
+   "captions": [
+    {
+     "text": "Bạn chỉ cần mở trình",
+     "start_ms": 0,
+     "end_ms": 1961,
+     "words": [
+      {
+       "text": "Bạn",
+       "start_ms": 0,
+       "end_ms": 368
+      },
+      {
+       "text": "chỉ",
+       "start_ms": 368,
+       "end_ms": 735
+      },
+      {
+       "text": "cần",
+       "start_ms": 735,
+       "end_ms": 1103
+      },
+      {
+       "text": "mở",
+       "start_ms": 1103,
+       "end_ms": 1348
+      },
+      {
+       "text": "trình",
+       "start_ms": 1348,
+       "end_ms": 1961
+      }
+     ]
+    },
+    {
+     "text": "duyệt và chọn ảnh mẫu",
+     "start_ms": 1961,
+     "end_ms": 4045,
+     "words": [
+      {
+       "text": "duyệt",
+       "start_ms": 1961,
+       "end_ms": 2574
+      },
+      {
+       "text": "và",
+       "start_ms": 2574,
+       "end_ms": 2819
+      },
+      {
+       "text": "chọn",
+       "start_ms": 2819,
+       "end_ms": 3310
+      },
+      {
+       "text": "ảnh",
+       "start_ms": 3310,
+       "end_ms": 3677
+      },
+      {
+       "text": "mẫu",
+       "start_ms": 3677,
+       "end_ms": 4045
+      }
+     ]
+    },
+    {
+     "text": "2.8MB có sẵn,",
+     "start_ms": 4045,
+     "end_ms": 5148,
+     "words": [
+      {
+       "text": "2.8MB",
+       "start_ms": 4045,
+       "end_ms": 4535
+      },
+      {
+       "text": "có",
+       "start_ms": 4535,
+       "end_ms": 4781
+      },
+      {
+       "text": "sẵn,",
+       "start_ms": 4781,
+       "end_ms": 5148
+      }
+     ]
+    },
+    {
+     "text": "không cần cài",
+     "start_ms": 5148,
+     "end_ms": 6497,
+     "words": [
+      {
+       "text": "không",
+       "start_ms": 5148,
+       "end_ms": 5761
+      },
+      {
+       "text": "cần",
+       "start_ms": 5761,
+       "end_ms": 6129
+      },
+      {
+       "text": "cài",
+       "start_ms": 6129,
+       "end_ms": 6497
+      }
+     ]
+    },
+    {
+     "text": "đặt gì thêm.",
+     "start_ms": 6497,
+     "end_ms": 7600,
+     "words": [
+      {
+       "text": "đặt",
+       "start_ms": 6497,
+       "end_ms": 6865
+      },
+      {
+       "text": "gì",
+       "start_ms": 6865,
+       "end_ms": 7110
+      },
+      {
+       "text": "thêm.",
+       "start_ms": 7110,
+       "end_ms": 7600
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-squoosh\\produce\\s2.mp4",
+   "start_offset_ms": 4092,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 9556,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 6616,
+     "x": 462,
+     "y": 831,
+     "type": "click"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 6624,
+     "bbox": {
+      "x": 412,
+      "y": 761,
+      "w": 100,
+      "h": 139
+     },
+     "kind": "click",
+     "hold_ms": 1500
+    }
+   ],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 4092,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 1961,
+     "source": "plan",
+     "reason": "Khoảng mở đầu để người xem định hướng giao diện trình duyệt.",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 6053,
+     "bbox": {
+      "x": 1140,
+      "y": 616,
+      "w": 300,
+      "h": 92
+     },
+     "framing": "medium",
+     "hold_ms": 3503,
+     "source": "plan",
+     "reason": "Lời đọc nhắc chọn ảnh mẫu, ô chọn định dạng ảnh là phần tử liên quan.",
+     "item_id": "eo9171",
+     "text": "Original Image (photo.jpg) AVIF Browser JPEG Browser PNG JPEG XL (beta) MozJPEG ",
+     "item_kind": "input",
+     "region": "main"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 1961,
+     "change": "cut"
+    },
+    {
+     "from_ms": 1961,
+     "to_ms": 4045,
+     "change": "focus"
+    },
+    {
+     "from_ms": 4045,
+     "to_ms": 5148,
+     "change": "punch"
+    },
+    {
+     "from_ms": 5148,
+     "to_ms": 6497,
+     "change": "punch"
+    },
+    {
+     "from_ms": 6497,
+     "to_ms": 7850,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 4045,
+     "scale": 0.08
+    },
+    {
+     "t_ms": 5148,
+     "scale": 0.1
+    },
+    {
+     "t_ms": 6497,
+     "scale": 0.12
+    }
+   ]
+  },
+  "s3": {
+   "captions": [
+    {
+     "text": "Hạ chất lượng xuống 50,",
+     "start_ms": 0,
+     "end_ms": 2231,
+     "words": [
+      {
+       "text": "Hạ",
+       "start_ms": 0,
+       "end_ms": 248
+      },
+      {
+       "text": "chất",
+       "start_ms": 248,
+       "end_ms": 744
+      },
+      {
+       "text": "lượng",
+       "start_ms": 744,
+       "end_ms": 1363
+      },
+      {
+       "text": "xuống",
+       "start_ms": 1363,
+       "end_ms": 1983
+      },
+      {
+       "text": "50,",
+       "start_ms": 1983,
+       "end_ms": 2231
+      }
+     ]
+    },
+    {
+     "text": "bạn thấy ngay dung lượng",
+     "start_ms": 2231,
+     "end_ms": 4710,
+     "words": [
+      {
+       "text": "bạn",
+       "start_ms": 2231,
+       "end_ms": 2603
+      },
+      {
+       "text": "thấy",
+       "start_ms": 2603,
+       "end_ms": 3099
+      },
+      {
+       "text": "ngay",
+       "start_ms": 3099,
+       "end_ms": 3594
+      },
+      {
+       "text": "dung",
+       "start_ms": 3594,
+       "end_ms": 4090
+      },
+      {
+       "text": "lượng",
+       "start_ms": 4090,
+       "end_ms": 4710
+      }
+     ]
+    },
+    {
+     "text": "giảm mà vẫn đủ nét,",
+     "start_ms": 4710,
+     "end_ms": 6445,
+     "words": [
+      {
+       "text": "giảm",
+       "start_ms": 4710,
+       "end_ms": 5206
+      },
+      {
+       "text": "mà",
+       "start_ms": 5206,
+       "end_ms": 5454
+      },
+      {
+       "text": "vẫn",
+       "start_ms": 5454,
+       "end_ms": 5825
+      },
+      {
+       "text": "đủ",
+       "start_ms": 5825,
+       "end_ms": 6073
+      },
+      {
+       "text": "nét,",
+       "start_ms": 6073,
+       "end_ms": 6445
+      }
+     ]
+    },
+    {
+     "text": "rồi lưu ảnh đã",
+     "start_ms": 6445,
+     "end_ms": 7808,
+     "words": [
+      {
+       "text": "rồi",
+       "start_ms": 6445,
+       "end_ms": 6817
+      },
+      {
+       "text": "lưu",
+       "start_ms": 6817,
+       "end_ms": 7189
+      },
+      {
+       "text": "ảnh",
+       "start_ms": 7189,
+       "end_ms": 7561
+      },
+      {
+       "text": "đã",
+       "start_ms": 7561,
+       "end_ms": 7808
+      }
+     ]
+    },
+    {
+     "text": "nén về máy.",
+     "start_ms": 7808,
+     "end_ms": 8800,
+     "words": [
+      {
+       "text": "nén",
+       "start_ms": 7808,
+       "end_ms": 8180
+      },
+      {
+       "text": "về",
+       "start_ms": 8180,
+       "end_ms": 8428
+      },
+      {
+       "text": "máy.",
+       "start_ms": 8428,
+       "end_ms": 8800
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-squoosh\\produce\\s3.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 8584,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 2802,
+     "x": 1403,
+     "y": 739,
+     "type": "click"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 2810,
+     "bbox": {
+      "x": 1376,
+      "y": 728,
+      "w": 54,
+      "h": 23
+     },
+     "kind": "type",
+     "hold_ms": 1500
+    }
+   ],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 988,
+     "source": "rule",
+     "reason": "",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 988,
+     "bbox": {
+      "x": 1140,
+      "y": 616,
+      "w": 300,
+      "h": 135
+     },
+     "framing": "tight",
+     "hold_ms": 7596,
+     "source": "rule",
+     "reason": "",
+     "item_id": "eo9174",
+     "text": "50",
+     "item_kind": "input",
+     "region": "main"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 2231,
+     "change": "cut"
+    },
+    {
+     "from_ms": 2231,
+     "to_ms": 4710,
+     "change": "punch"
+    },
+    {
+     "from_ms": 4710,
+     "to_ms": 6445,
+     "change": "punch"
+    },
+    {
+     "from_ms": 6445,
+     "to_ms": 7808,
+     "change": "punch"
+    },
+    {
+     "from_ms": 7808,
+     "to_ms": 9050,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 2231,
+     "scale": 0.08
+    },
+    {
+     "t_ms": 4710,
+     "scale": 0.1
+    },
+    {
+     "t_ms": 6445,
+     "scale": 0.12
+    },
+    {
+     "t_ms": 7808,
+     "scale": 0.08
+    }
+   ],
+   "same_page": true
+  },
+  "s4": {
+   "captions": [
+    {
+     "text": "Mở squoosh.app, thử nén ảnh",
+     "start_ms": 0,
+     "end_ms": 2479,
+     "words": [
+      {
+       "text": "Mở",
+       "start_ms": 0,
+       "end_ms": 236
+      },
+      {
+       "text": "squoosh.app,",
+       "start_ms": 236,
+       "end_ms": 1416
+      },
+      {
+       "text": "thử",
+       "start_ms": 1416,
+       "end_ms": 1770
+      },
+      {
+       "text": "nén",
+       "start_ms": 1770,
+       "end_ms": 2125
+      },
+      {
+       "text": "ảnh",
+       "start_ms": 2125,
+       "end_ms": 2479
+      }
+     ]
+    },
+    {
+     "text": "mẫu ngay trên máy bạn",
+     "start_ms": 2479,
+     "end_ms": 4485,
+     "words": [
+      {
+       "text": "mẫu",
+       "start_ms": 2479,
+       "end_ms": 2833
+      },
+      {
+       "text": "ngay",
+       "start_ms": 2833,
+       "end_ms": 3305
+      },
+      {
+       "text": "trên",
+       "start_ms": 3305,
+       "end_ms": 3777
+      },
+      {
+       "text": "máy",
+       "start_ms": 3777,
+       "end_ms": 4131
+      },
+      {
+       "text": "bạn",
+       "start_ms": 4131,
+       "end_ms": 4485
+      }
+     ]
+    },
+    {
+     "text": "và tự tin chọn mức",
+     "start_ms": 4485,
+     "end_ms": 6138,
+     "words": [
+      {
+       "text": "và",
+       "start_ms": 4485,
+       "end_ms": 4721
+      },
+      {
+       "text": "tự",
+       "start_ms": 4721,
+       "end_ms": 4957
+      },
+      {
+       "text": "tin",
+       "start_ms": 4957,
+       "end_ms": 5311
+      },
+      {
+       "text": "chọn",
+       "start_ms": 5311,
+       "end_ms": 5784
+      },
+      {
+       "text": "mức",
+       "start_ms": 5784,
+       "end_ms": 6138
+      }
+     ]
+    },
+    {
+     "text": "nén phù hợp.",
+     "start_ms": 6138,
+     "end_ms": 7200,
+     "words": [
+      {
+       "text": "nén",
+       "start_ms": 6138,
+       "end_ms": 6492
+      },
+      {
+       "text": "phù",
+       "start_ms": 6492,
+       "end_ms": 6846
+      },
+      {
+       "text": "hợp.",
+       "start_ms": 6846,
+       "end_ms": 7200
+      }
+     ]
+    }
+   ],
+   "screenshot_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-squoosh\\produce\\s4.png",
+   "clip_width": 1440,
+   "clip_height": 900,
+   "focus_log": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 1140,
+      "y": 471,
+      "w": 300,
+      "h": 43
+     },
+     "kind": "section",
+     "hold_ms": 0
+    }
+   ],
+   "cta_domain": "squoosh.app"
+  }
+ }
+}

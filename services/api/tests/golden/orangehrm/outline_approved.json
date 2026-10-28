@@ -1,0 +1,39 @@
+{
+  "concept_id": "flow:user_th_m_nh_n_vi_n_m_i_v_o_h",
+  "title": "Thêm nhân viên mới vào hồ sơ nhân sự (PIM)",
+  "goal": "tutorial",
+  "duration_s": 30,
+  "feature_ids": [
+    "c1",
+    "c2",
+    "c3"
+  ],
+  "version": 1,
+  "beats": [
+    {
+      "id": "b1",
+      "text": "Nỗi đau hoặc kết quả của Quản trị viên nhân sự / HR: Tạo hồ sơ nhân viên mới trong hệ thống bằng cách điền họ tên và mã nhân viên",
+      "feature_id": null
+    },
+    {
+      "id": "b2",
+      "text": "Mở form: Mở trang bắt đầu",
+      "feature_id": "c1"
+    },
+    {
+      "id": "b3",
+      "text": "Điền thông tin: Nhập tên (First Name) của nhân viên mới.",
+      "feature_id": "c2"
+    },
+    {
+      "id": "b4",
+      "text": "Kiểm tra và dừng trước khi lưu: Form đã điền đầy đủ họ tên và mã nhân viên, dừng lại trước nút Save để chưa tạo hồ sơ → kết quả: Form Add Employee đã được điền đầy đủ họ tên và mã nhân viên, sẵn sàng bấm Save để tạo hồ sơ",
+      "feature_id": "c3"
+    },
+    {
+      "id": "b5",
+      "text": "Kêu gọi hành động: HR đưa người mới vào hệ thống nhân sự tập trung thay vì quản lý hồ sơ rời rạc bằng giấy tờ/bảng tính",
+      "feature_id": null
+    }
+  ]
+}

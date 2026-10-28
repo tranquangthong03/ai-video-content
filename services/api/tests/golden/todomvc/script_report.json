@@ -1,0 +1,369 @@
+{
+  "warnings": [
+    "Scene 3 chuyển sang layout full_screen quay vùng danh sách sau khi nhập, tách khỏi vùng ô nhập của scene 2.",
+    "Scene 4 dùng layout phone_mockup quay riêng vùng checkbox của dòng Mua sữa, khác khung hero của hook.",
+    "Scene 6 dùng layout button_pulse quay khối liên kết Source và Official Resources ở chân trang, tách khỏi khối hero.",
+    "Chưa dùng trích dẫn proof_bank để giữ tổng voiceover sát mục tiêu 71 từ.",
+    "chưa đạt: scene 3 trùng hình ảnh với scene 2 (cùng trang, cùng vùng): đổi sang section/trang khác",
+    "chưa đạt: scene 4 trùng hình ảnh với scene 1 (cùng trang, cùng vùng): đổi sang section/trang khác",
+    "chưa đạt: scene 6 trùng hình ảnh với scene 1 (cùng trang, cùng vùng): đổi sang section/trang khác"
+  ],
+  "theme": {
+    "source": "css",
+    "primary": "#B83F45",
+    "accent": "#42D7CF",
+    "accent_source": "opposite_hue",
+    "highlight": "#c85d63",
+    "logo": null,
+    "candidates": [
+      {
+        "color": "#b83f45",
+        "area": 666
+      }
+    ],
+    "notes": []
+  },
+  "proof_bank": {
+    "numbers": [
+      {
+        "value": "1",
+        "unit": "",
+        "context": "1 item left! AllActiveCompleted",
+        "source": "frame",
+        "kind": "identifier"
+      },
+      {
+        "value": "2",
+        "unit": "",
+        "context": "2 items left! AllActiveCompleted",
+        "source": "frame",
+        "kind": "identifier"
+      },
+      {
+        "value": "3",
+        "unit": "",
+        "context": "3 items left! AllActiveCompleted",
+        "source": "frame",
+        "kind": "identifier"
+      }
+    ],
+    "quotes": [
+      "A TodoMVC written in React.",
+      "ReactJS on Stack Overflow",
+      "Double-click to edit a todo",
+      "Created by the TodoMVC Team"
+    ],
+    "offers": [],
+    "audience_pains": []
+  },
+  "content_budget_s": 53,
+  "content_budget_formula": "content_budget_s = 4 (hook) + 4 (cta) + 5 (one before_after) + sum over demonstrable features: interaction 10, navigation 6, showcase 5",
+  "recommended_duration_s": 45,
+  "critic": {
+    "threshold": 7,
+    "before": {
+      "scores": {
+        "hook_strength": {
+          "score": 6,
+          "reason": "Câu mở nêu nỗi đau ghi giấy nhưng còn chung chung, chưa đánh trúng mong muốn 'không cần tài khoản, gọn trong ngày'."
+        },
+        "benefit_clarity": {
+          "score": 5,
+          "reason": "Các scene chủ yếu kể thao tác thêm/gõ/đánh dấu/lọc, chưa nói rõ persona được lợi gì về thời gian, công sức hay kết quả tập trung."
+        },
+        "proof_usage": {
+          "score": 4,
+          "reason": "Chỉ dùng số '2 việc còn lại' có trong proof_bank, nhưng không tận dụng các số 1/2/3 hay câu quote 'Double-click to edit a todo' một cách tự nhiên."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể và lợi ích 'không cần đăng ký', nhưng thiếu lý do làm ngay/ưu đãi thật và chưa đủ dễ nhớ."
+        },
+        "flow": {
+          "score": 6,
+          "reason": "Mạch từ nỗi đau đến demo đến kết quả tương đối liền, nhưng nhịp còn kể thao tác và thiếu câu nối làm nổi bật giá trị cốt lõi."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chưa đánh trúng nỗi đau cụ thể của persona (không tài khoản, nhanh, tập trung việc còn lại).",
+          "suggestion": "Đổi thành: 'Ghi việc lên giấy rồi quên? Lập danh sách trong ngày ngay, không cần tài khoản.'"
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Chỉ kể thao tác mở trang và thêm việc, chưa nói persona được gì.",
+          "suggestion": "Đổi thành: 'Mở trang là thêm việc ngay, không cần tài khoản, mất vài giây.'"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Kể thao tác gõ thêm hai việc, chưa làm rõ lợi ích danh sách tự cập nhật.",
+          "suggestion": "Đổi thành: 'Gõ thêm hai việc, danh sách tự cập nhật, không thao tác phức tạp.'"
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Chưa nhấn vào kết quả 'xong một việc' giúp persona thấy tiến độ.",
+          "suggestion": "Đổi thành: 'Đánh dấu Mua sữa xong, bạn thấy ngay một việc đã hoàn thành.'"
+        },
+        {
+          "scene_id": "s5",
+          "problem": "Chưa nói rõ lợi ích tập trung vào việc còn lại, chỉ nêu thao tác lọc.",
+          "suggestion": "Đổi thành: 'Lọc Active, chỉ còn 2 việc chưa làm, tập trung ngay vào việc còn lại.'"
+        },
+        {
+          "scene_id": "s6",
+          "problem": "CTA thiếu lý do làm ngay và chưa gắn với giá trị cốt lõi.",
+          "suggestion": "Đổi thành: 'Lập danh sách việc trong ngày tại todomvc.com ngay, không cần đăng ký.'"
+        }
+      ],
+      "issues": [
+        "Cụm 'thử cách này xem' ở hook còn sáo rỗng, chưa cụ thể nỗi đau.",
+        "Các scene s2-s5 nghiêng về kể thao tác hơn là nêu lợi ích persona.",
+        "Chưa khai thác quote 'Double-click to edit a todo' và các số 1/2/3 trong proof_bank.",
+        "CTA chưa có lý do làm ngay/ưu đãi thật (proof_bank không có offers)."
+      ],
+      "summary": "Kịch bản có cấu trúc hook-demo-CTA rõ nhưng chưa đủ sắc với persona: hook còn chung, phần demo kể thao tác nhiều hơn nói lợi ích, proof_usage yếu và CTA thiếu lý do hành động ngay. Cần siết câu chữ để làm nổi bật 'không cần tài khoản', 'nhanh', 'tập trung việc còn lại' và dùng proof_bank tự nhiên hơn."
+    },
+    "after": {
+      "scores": {
+        "hook_strength": {
+          "score": 4,
+          "reason": "Hook 'Ghi việc lên giấy rồi quên?' có nỗi đau nhưng chung chung, không đủ cụ thể để khiến persona dừng lướt ngay."
+        },
+        "benefit_clarity": {
+          "score": 5,
+          "reason": "Các scene nói nhiều về thao tác (mở trang, gõ, nhấn Enter, chọn lọc) hơn là lợi ích rõ ràng như tiết kiệm thời gian hay giảm công sức."
+        },
+        "proof_usage": {
+          "score": 6,
+          "reason": "Chỉ dùng số '2 việc còn lại' từ proof_bank ở scene 5, nhưng bỏ lỡ các số 1, 3 và câu trích có sẵn."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể (todomvc.com) và lý do 'không cần đăng ký', nhưng thiếu yếu tố thúc đẩy làm ngay."
+        },
+        "flow": {
+          "score": 5,
+          "reason": "Mạch từ nỗi đau đến hành trình còn rời rạc, thiếu câu nối tự nhiên và một số scene kể lại thao tác thay vì kết quả."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chung chung, không đánh trúng nỗi đau cụ thể của persona (quên việc, mất tập trung).",
+          "suggestion": "Đổi thành: 'Quên việc cần làm mỗi ngày? Đừng lo, chỉ 5 giây là xong.'"
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Kể lại thao tác 'mở trang là thêm việc' hơn là lợi ích.",
+          "suggestion": "Đổi thành: 'Thêm việc ngay không cần tài khoản, tiết kiệm thời gian.'"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Nói 'gõ thêm hai việc' nhưng không nhấn mạnh kết quả.",
+          "suggestion": "Đổi thành: 'Thêm hai việc nhanh chóng, danh sách tự cập nhật.'"
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Chỉ mô tả đánh dấu xong, chưa nêu lợi ích.",
+          "suggestion": "Đổi thành: 'Đánh dấu xong việc Mua sữa, bạn thấy ngay một việc đã hoàn thành.'"
+        },
+        {
+          "scene_id": "s5",
+          "problem": "Câu 'Chọn lọc Active' hơi kỹ thuật, chưa làm rõ lợi ích tập trung.",
+          "suggestion": "Đổi thành: 'Lọc Active, chỉ còn hai việc chưa làm hiện ra, tập trung liền.'"
+        },
+        {
+          "scene_id": "s6",
+          "problem": "CTA thiếu lý do thúc đẩy hành động ngay.",
+          "suggestion": "Đổi thành: 'Lập danh sách việc trong ngày ngay tại todomvc.com, không cần đăng ký.'"
+        }
+      ],
+      "issues": [
+        "Hook 'Ghi việc lên giấy rồi quên?' còn sáo rỗng, chưa đủ mạnh.",
+        "Bỏ lỡ số liệu '1' và '3' trong proof_bank.",
+        "Thiếu câu trích dẫn từ proof_bank để tăng độ tin cậy."
+      ],
+      "summary": "Kịch bản có tiềm năng nhưng cần cải thiện hook, làm rõ lợi ích ở từng scene và tận dụng tốt hơn proof_bank để tăng tính thuyết phục."
+    },
+    "final": {
+      "scores": {
+        "hook_strength": {
+          "score": 6,
+          "reason": "Câu mở nêu nỗi đau ghi giấy nhưng còn chung chung, chưa đánh trúng mong muốn 'không cần tài khoản, gọn trong ngày'."
+        },
+        "benefit_clarity": {
+          "score": 5,
+          "reason": "Các scene chủ yếu kể thao tác thêm/gõ/đánh dấu/lọc, chưa nói rõ persona được lợi gì về thời gian, công sức hay kết quả tập trung."
+        },
+        "proof_usage": {
+          "score": 4,
+          "reason": "Chỉ dùng số '2 việc còn lại' có trong proof_bank, nhưng không tận dụng các số 1/2/3 hay câu quote 'Double-click to edit a todo' một cách tự nhiên."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể và lợi ích 'không cần đăng ký', nhưng thiếu lý do làm ngay/ưu đãi thật và chưa đủ dễ nhớ."
+        },
+        "flow": {
+          "score": 6,
+          "reason": "Mạch từ nỗi đau đến demo đến kết quả tương đối liền, nhưng nhịp còn kể thao tác và thiếu câu nối làm nổi bật giá trị cốt lõi."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chưa đánh trúng nỗi đau cụ thể của persona (không tài khoản, nhanh, tập trung việc còn lại).",
+          "suggestion": "Đổi thành: 'Ghi việc lên giấy rồi quên? Lập danh sách trong ngày ngay, không cần tài khoản.'"
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Chỉ kể thao tác mở trang và thêm việc, chưa nói persona được gì.",
+          "suggestion": "Đổi thành: 'Mở trang là thêm việc ngay, không cần tài khoản, mất vài giây.'"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Kể thao tác gõ thêm hai việc, chưa làm rõ lợi ích danh sách tự cập nhật.",
+          "suggestion": "Đổi thành: 'Gõ thêm hai việc, danh sách tự cập nhật, không thao tác phức tạp.'"
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Chưa nhấn vào kết quả 'xong một việc' giúp persona thấy tiến độ.",
+          "suggestion": "Đổi thành: 'Đánh dấu Mua sữa xong, bạn thấy ngay một việc đã hoàn thành.'"
+        },
+        {
+          "scene_id": "s5",
+          "problem": "Chưa nói rõ lợi ích tập trung vào việc còn lại, chỉ nêu thao tác lọc.",
+          "suggestion": "Đổi thành: 'Lọc Active, chỉ còn 2 việc chưa làm, tập trung ngay vào việc còn lại.'"
+        },
+        {
+          "scene_id": "s6",
+          "problem": "CTA thiếu lý do làm ngay và chưa gắn với giá trị cốt lõi.",
+          "suggestion": "Đổi thành: 'Lập danh sách việc trong ngày tại todomvc.com ngay, không cần đăng ký.'"
+        }
+      ],
+      "issues": [
+        "Cụm 'thử cách này xem' ở hook còn sáo rỗng, chưa cụ thể nỗi đau.",
+        "Các scene s2-s5 nghiêng về kể thao tác hơn là nêu lợi ích persona.",
+        "Chưa khai thác quote 'Double-click to edit a todo' và các số 1/2/3 trong proof_bank.",
+        "CTA chưa có lý do làm ngay/ưu đãi thật (proof_bank không có offers)."
+      ],
+      "summary": "Kịch bản có cấu trúc hook-demo-CTA rõ nhưng chưa đủ sắc với persona: hook còn chung, phần demo kể thao tác nhiều hơn nói lợi ích, proof_usage yếu và CTA thiếu lý do hành động ngay. Cần siết câu chữ để làm nổi bật 'không cần tài khoản', 'nhanh', 'tập trung việc còn lại' và dùng proof_bank tự nhiên hơn."
+    },
+    "kept_rewrite": false,
+    "rounds": 0,
+    "hook": {
+      "hook_strength": [
+        6,
+        6
+      ],
+      "chosen": 2,
+      "kinds": [
+        "pain_question",
+        "you_are_doing_it_wrong"
+      ]
+    },
+    "rewritten": [],
+    "notes": [
+      "bản viết lại bị chấm thấp hơn nên giữ bản trước"
+    ],
+    "passed": false
+  },
+  "generation": {
+    "attempts": 3,
+    "errors_history": [
+      [
+        "scene 3 trùng hình ảnh với scene 2 (cùng trang, cùng vùng): đổi sang section/trang khác",
+        "scene 4 trùng hình ảnh với scene 1 (cùng trang, cùng vùng): đổi sang section/trang khác",
+        "scene 6 trùng hình ảnh với scene 1 (cùng trang, cùng vùng): đổi sang section/trang khác"
+      ],
+      [
+        "scene 3 trùng hình ảnh với scene 2 (cùng trang, cùng vùng): đổi sang section/trang khác",
+        "scene 4 trùng hình ảnh với scene 1 (cùng trang, cùng vùng): đổi sang section/trang khác",
+        "scene 6 trùng hình ảnh với scene 1 (cùng trang, cùng vùng): đổi sang section/trang khác"
+      ],
+      [
+        "scene 3 trùng hình ảnh với scene 2 (cùng trang, cùng vùng): đổi sang section/trang khác",
+        "scene 4 trùng hình ảnh với scene 1 (cùng trang, cùng vùng): đổi sang section/trang khác",
+        "scene 6 trùng hình ảnh với scene 1 (cùng trang, cùng vùng): đổi sang section/trang khác"
+      ]
+    ]
+  },
+  "fit": {
+    "target_ms": 30000,
+    "estimated_ms": 32300,
+    "initial_ms": 32300,
+    "deviation": 0.077,
+    "within_tolerance": true,
+    "rounds": 0,
+    "actions": [],
+    "warnings": []
+  },
+  "fit_generation": {
+    "target_ms": 30000,
+    "estimated_ms": 32300,
+    "initial_ms": 32300,
+    "deviation": 0.077,
+    "within_tolerance": true,
+    "rounds": 0,
+    "actions": [],
+    "warnings": []
+  },
+  "footage_ratio": 1.0,
+  "footage_min": 0.4,
+  "versions": [
+    1
+  ],
+  "current_version": 1,
+  "approved": true,
+  "tokens": {
+    "max_tokens": 400000,
+    "total": 72567,
+    "steps": {
+      "classify": {
+        "input": 376,
+        "output": 92,
+        "calls": 1
+      },
+      "analyze": {
+        "input": 1845,
+        "output": 288,
+        "calls": 2
+      },
+      "synthesize": {
+        "input": 2608,
+        "output": 1429,
+        "calls": 1
+      },
+      "delta": {
+        "input": 2719,
+        "output": 1016,
+        "calls": 2
+      },
+      "flow_discovery": {
+        "input": 2958,
+        "output": 1939,
+        "calls": 2
+      },
+      "flow_agent": {
+        "input": 13308,
+        "output": 528,
+        "calls": 6
+      },
+      "script": {
+        "input": 18875,
+        "output": 3595,
+        "calls": 3
+      },
+      "copy_critic": {
+        "input": 5007,
+        "output": 3449,
+        "calls": 3
+      },
+      "scene": {
+        "input": 11612,
+        "output": 923,
+        "calls": 5
+      }
+    }
+  }
+}

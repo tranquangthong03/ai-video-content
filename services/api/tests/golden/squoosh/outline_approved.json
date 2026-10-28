@@ -1,0 +1,33 @@
+{
+  "concept_id": "flow:user_n_n_nh_m_u_v_so_s_nh_tr_",
+  "title": "Nén ảnh mẫu và so sánh trước/sau khi nén",
+  "goal": "tutorial",
+  "duration_s": 30,
+  "feature_ids": [
+    "c1",
+    "c2"
+  ],
+  "version": 1,
+  "beats": [
+    {
+      "id": "b1",
+      "text": "Nỗi đau hoặc kết quả của Người dùng mới muốn trải nghiệm công cụ nén ảnh trực tuyến: Chọn một ảnh mẫu có sẵn, nén nó và xem rõ khác biệt chất lượng giữa ảnh gốc và ảnh đã nén để quyết định mức nén phù hợp",
+      "feature_id": null
+    },
+    {
+      "id": "b2",
+      "text": "Chọn ảnh mẫu: Mở trang bắt đầu",
+      "feature_id": "c1"
+    },
+    {
+      "id": "b3",
+      "text": "Điều chỉnh nén: Hạ chất lượng nén xuống 50 để xem dung lượng tệp giảm bao nhiêu so với ảnh gốc 2.79MB. → kết quả: Ảnh đã nén được lưu về máy và người dùng đã thấy rõ sự khác biệt chất lượng cùng dung lượng mới nhỏ hơn so với ảnh gốc",
+      "feature_id": "c2"
+    },
+    {
+      "id": "b4",
+      "text": "Kêu gọi hành động: Trải nghiệm trọn vẹn khả năng nén ảnh ngay trong trình duyệt và tự tin chọn mức nén phù hợp trước khi áp dụng cho ảnh thật",
+      "feature_id": null
+    }
+  ]
+}

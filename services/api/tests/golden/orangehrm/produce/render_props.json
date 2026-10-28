@@ -1,0 +1,1460 @@
+{
+ "script": {
+  "title": "Thêm nhân viên mới vào PIM trong 30 giây",
+  "goal": "tutorial",
+  "aspect_ratio": "9:16",
+  "target_duration_s": 30,
+  "template": "desktop_focus",
+  "capture": {
+   "viewport": "desktop",
+   "width": 1440,
+   "height": 900
+  },
+  "flow_id": "user_th_m_nh_n_vi_n_m_i_v_o_h",
+  "badge": "HR NHANH GỌN",
+  "headline": "Tạo hồ sơ nhân viên mới trong 30 giây",
+  "headline_highlight": "30 giây",
+  "framework": "pain_journey_result",
+  "hook_options": [
+   {
+    "kind": "pain_question",
+    "voiceover": "Hồ sơ nhân viên mới lạc giữa giấy tờ và bảng tính?",
+    "on_screen_text": "Hồ sơ lạc giữa giấy?"
+   },
+   {
+    "kind": "result_first",
+    "voiceover": "Đưa người mới vào hệ thống nhân sự chỉ vài cú nhấp.",
+    "on_screen_text": "Vài cú nhấp"
+   }
+  ],
+  "theme": {
+   "primary": "#0000EE",
+   "accent": "#FF7B1D",
+   "font": "Be Vietnam Pro",
+   "logo_asset": "out\\cam-orangehrm\\theme\\logo.png",
+   "motion_preset": "energetic",
+   "caption_style": "karaoke",
+   "music_mood": "upbeat",
+   "voice_id": "vi_female_01",
+   "language": "vi"
+  },
+  "scenes": [
+   {
+    "id": "s1",
+    "type": "hook",
+    "layout": "big_text_over_blur",
+    "voiceover": "Hồ sơ nhân viên mới lạc giữa giấy tờ và bảng tính?",
+    "on_screen_text": "Hồ sơ lạc giữa giấy?",
+    "stat": null,
+    "key_point": "Hồ sơ rời rạc gây khó quản lý",
+    "icon": "users",
+    "visual": {
+     "mode": "recording",
+     "page": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 5050,
+    "chapter_id": null
+   },
+   {
+    "id": "s2",
+    "type": "feature_demo",
+    "layout": "full_screen",
+    "feature": "c1",
+    "voiceover": "Mở PIM, bấm Add. Toàn bộ thông tin nhân viên mới nằm gọn trong một bảng điều khiển tập trung.",
+    "on_screen_text": "Mở PIM, bấm Add",
+    "stat": null,
+    "key_point": "Mở form tạo hồ sơ chỉ một cú bấm",
+    "icon": "edit",
+    "visual": {
+     "mode": "recording",
+     "page": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "click",
+       "target": "Add",
+       "selector": null,
+       "locator": {
+        "role": "button",
+        "name": "Add",
+        "text": "Add",
+        "css": "button",
+        "nth": 6,
+        "tag": "button",
+        "fingerprint": "button|add|0.27,0.15",
+        "bbox": {
+         "x": 329.0,
+         "y": 506.0,
+         "w": 109.0,
+         "h": 31.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 8250,
+    "chapter_id": "c1"
+   },
+   {
+    "id": "s3",
+    "type": "feature_demo",
+    "layout": "full_screen",
+    "feature": "c2",
+    "voiceover": "Gõ First Name, rồi Middle Name Văn một lần. Hệ thống lưu lại, lần sau không phải nhập lại.",
+    "on_screen_text": "Nhập một lần, dùng mãi",
+    "stat": null,
+    "key_point": "Nhập họ tên đầy đủ, không lặp lại",
+    "icon": "edit",
+    "visual": {
+     "mode": "recording",
+     "page": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "type",
+       "target": "Employee Full Name",
+       "selector": null,
+       "locator": {
+        "role": "textbox",
+        "name": "Employee Full Name",
+        "text": null,
+        "css": "input",
+        "nth": 2,
+        "tag": "input",
+        "fingerprint": "input||0.51,0.27",
+        "bbox": {
+         "x": 615.0,
+         "y": 249.0,
+         "w": 250.0,
+         "h": 45.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": "An",
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "type",
+       "target": "Employee Full Name",
+       "selector": null,
+       "locator": {
+        "role": "textbox",
+        "name": "Employee Full Name",
+        "text": null,
+        "css": "input",
+        "nth": 3,
+        "tag": "input",
+        "fingerprint": "input||0.69,0.27",
+        "bbox": {
+         "x": 865.0,
+         "y": 249.0,
+         "w": 250.0,
+         "h": 45.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": "Văn",
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "type",
+       "target": "Employee Full Name",
+       "selector": null,
+       "locator": {
+        "role": "textbox",
+        "name": "Employee Full Name",
+        "text": null,
+        "css": "input",
+        "nth": 4,
+        "tag": "input",
+        "fingerprint": "input||0.86,0.27",
+        "bbox": {
+         "x": 1115.0,
+         "y": 249.0,
+         "w": 250.0,
+         "h": 45.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": "Nguyễn",
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 8519,
+    "chapter_id": "c2"
+   },
+   {
+    "id": "s4",
+    "type": "feature_demo",
+    "layout": "full_screen",
+    "feature": "c3",
+    "voiceover": "Form đã đủ họ tên và mã nhân viên, chỉ một cú bấm Save là xong.",
+    "on_screen_text": "Sẵn sàng Save",
+    "stat": null,
+    "key_point": "Kiểm tra kỹ trước khi lưu hồ sơ",
+    "icon": "check",
+    "visual": {
+     "mode": "recording",
+     "page": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "hover",
+       "target": "Save",
+       "selector": null,
+       "locator": {
+        "role": "button",
+        "name": "Save",
+        "text": "Save",
+        "css": "button",
+        "nth": 5,
+        "tag": "button",
+        "fingerprint": "button|save|0.91,0.49",
+        "bbox": {
+         "x": 1267.0,
+         "y": 477.0,
+         "w": 100.0,
+         "h": 32.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": null,
+       "ms": null,
+       "zoom": false
+      },
+      {
+       "do": "highlight",
+       "target": "Save",
+       "selector": null,
+       "locator": {
+        "role": "button",
+        "name": "Save",
+        "text": "Save",
+        "css": "button",
+        "nth": 5,
+        "tag": "button",
+        "fingerprint": "button|save|0.91,0.49",
+        "bbox": {
+         "x": 1267.0,
+         "y": 477.0,
+         "w": 100.0,
+         "h": 32.0
+        }
+       },
+       "file": null,
+       "url": null,
+       "text": null,
+       "ms": 1800,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 6650,
+    "chapter_id": "c3"
+   },
+   {
+    "id": "s5",
+    "type": "cta",
+    "layout": "button_pulse",
+    "voiceover": "Đưa người mới vào hệ thống nhân sự tập trung, hết giấy tờ rời rạc. Dùng thử miễn phí ngay.",
+    "on_screen_text": "Dùng thử ngay",
+    "stat": null,
+    "key_point": "Quản lý hồ sơ tập trung, miễn phí dùng thử",
+    "icon": "star",
+    "visual": {
+     "mode": "recording",
+     "page": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+     "effect": null,
+     "actions": [
+      {
+       "do": "goto",
+       "target": null,
+       "selector": null,
+       "locator": null,
+       "file": null,
+       "url": "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+       "text": null,
+       "ms": null,
+       "zoom": false
+      }
+     ],
+     "setup": [],
+     "show_setup": false
+    },
+    "duration_ms": 8250,
+    "chapter_id": null
+   }
+  ]
+ },
+ "assets": {
+  "s1": {
+   "captions": [
+    {
+     "text": "Hồ sơ nhân viên mới",
+     "start_ms": 0,
+     "end_ms": 1895,
+     "words": [
+      {
+       "text": "Hồ",
+       "start_ms": 0,
+       "end_ms": 253
+      },
+      {
+       "text": "sơ",
+       "start_ms": 253,
+       "end_ms": 505
+      },
+      {
+       "text": "nhân",
+       "start_ms": 505,
+       "end_ms": 1011
+      },
+      {
+       "text": "viên",
+       "start_ms": 1011,
+       "end_ms": 1516
+      },
+      {
+       "text": "mới",
+       "start_ms": 1516,
+       "end_ms": 1895
+      }
+     ]
+    },
+    {
+     "text": "lạc giữa giấy tờ",
+     "start_ms": 1895,
+     "end_ms": 3537,
+     "words": [
+      {
+       "text": "lạc",
+       "start_ms": 1895,
+       "end_ms": 2274
+      },
+      {
+       "text": "giữa",
+       "start_ms": 2274,
+       "end_ms": 2779
+      },
+      {
+       "text": "giấy",
+       "start_ms": 2779,
+       "end_ms": 3284
+      },
+      {
+       "text": "tờ",
+       "start_ms": 3284,
+       "end_ms": 3537
+      }
+     ]
+    },
+    {
+     "text": "và bảng tính?",
+     "start_ms": 3537,
+     "end_ms": 4800,
+     "words": [
+      {
+       "text": "và",
+       "start_ms": 3537,
+       "end_ms": 3789
+      },
+      {
+       "text": "bảng",
+       "start_ms": 3789,
+       "end_ms": 4295
+      },
+      {
+       "text": "tính?",
+       "start_ms": 4295,
+       "end_ms": 4800
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-orangehrm\\produce\\s1.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 2000,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [],
+   "focus_log": [],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 615,
+      "y": 249,
+      "w": 750,
+      "h": 128
+     },
+     "framing": "medium",
+     "hold_ms": 2000,
+     "source": "rule",
+     "reason": "hook: form đã điền",
+     "item_id": "eqp567",
+     "text": "An",
+     "item_kind": "input",
+     "region": "main"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 1895,
+     "change": "cut"
+    },
+    {
+     "from_ms": 1895,
+     "to_ms": 3537,
+     "change": "punch"
+    },
+    {
+     "from_ms": 3537,
+     "to_ms": 5050,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 1895,
+     "scale": 0.08
+    },
+    {
+     "t_ms": 3537,
+     "scale": 0.1
+    }
+   ]
+  },
+  "s2": {
+   "captions": [
+    {
+     "text": "Mở PIM, bấm Add.",
+     "start_ms": 0,
+     "end_ms": 1239,
+     "words": [
+      {
+       "text": "Mở",
+       "start_ms": 0,
+       "end_ms": 225
+      },
+      {
+       "text": "PIM,",
+       "start_ms": 225,
+       "end_ms": 563
+      },
+      {
+       "text": "bấm",
+       "start_ms": 563,
+       "end_ms": 901
+      },
+      {
+       "text": "Add.",
+       "start_ms": 901,
+       "end_ms": 1239
+      }
+     ]
+    },
+    {
+     "text": "Toàn bộ thông tin nhân",
+     "start_ms": 1239,
+     "end_ms": 3268,
+     "words": [
+      {
+       "text": "Toàn",
+       "start_ms": 1239,
+       "end_ms": 1690
+      },
+      {
+       "text": "bộ",
+       "start_ms": 1690,
+       "end_ms": 1915
+      },
+      {
+       "text": "thông",
+       "start_ms": 1915,
+       "end_ms": 2479
+      },
+      {
+       "text": "tin",
+       "start_ms": 2479,
+       "end_ms": 2817
+      },
+      {
+       "text": "nhân",
+       "start_ms": 2817,
+       "end_ms": 3268
+      }
+     ]
+    },
+    {
+     "text": "viên mới nằm gọn trong",
+     "start_ms": 3268,
+     "end_ms": 5296,
+     "words": [
+      {
+       "text": "viên",
+       "start_ms": 3268,
+       "end_ms": 3718
+      },
+      {
+       "text": "mới",
+       "start_ms": 3718,
+       "end_ms": 4056
+      },
+      {
+       "text": "nằm",
+       "start_ms": 4056,
+       "end_ms": 4394
+      },
+      {
+       "text": "gọn",
+       "start_ms": 4394,
+       "end_ms": 4732
+      },
+      {
+       "text": "trong",
+       "start_ms": 4732,
+       "end_ms": 5296
+      }
+     ]
+    },
+    {
+     "text": "một bảng điều",
+     "start_ms": 5296,
+     "end_ms": 6535,
+     "words": [
+      {
+       "text": "một",
+       "start_ms": 5296,
+       "end_ms": 5634
+      },
+      {
+       "text": "bảng",
+       "start_ms": 5634,
+       "end_ms": 6085
+      },
+      {
+       "text": "điều",
+       "start_ms": 6085,
+       "end_ms": 6535
+      }
+     ]
+    },
+    {
+     "text": "khiển tập trung.",
+     "start_ms": 6535,
+     "end_ms": 8000,
+     "words": [
+      {
+       "text": "khiển",
+       "start_ms": 6535,
+       "end_ms": 7099
+      },
+      {
+       "text": "tập",
+       "start_ms": 7099,
+       "end_ms": 7437
+      },
+      {
+       "text": "trung.",
+       "start_ms": 7437,
+       "end_ms": 8000
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-orangehrm\\produce\\s2.mp4",
+   "start_offset_ms": 6999,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": true,
+   "clip_duration_ms": 13801,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 9409,
+     "x": 383,
+     "y": 521,
+     "type": "click"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 9448,
+     "bbox": {
+      "x": 329,
+      "y": 506,
+      "w": 109,
+      "h": 31
+     },
+     "kind": "click",
+     "hold_ms": 1500
+    }
+   ],
+   "segments": [],
+   "focus_track": [
+    {
+     "t_ms": 6999,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 666,
+     "source": "rule",
+     "reason": "",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 7665,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "wide",
+     "hold_ms": 6136,
+     "source": "fallback",
+     "reason": "",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 1239,
+     "change": "cut"
+    },
+    {
+     "from_ms": 1239,
+     "to_ms": 3268,
+     "change": "punch"
+    },
+    {
+     "from_ms": 3268,
+     "to_ms": 5296,
+     "change": "punch"
+    },
+    {
+     "from_ms": 5296,
+     "to_ms": 6535,
+     "change": "punch"
+    },
+    {
+     "from_ms": 6535,
+     "to_ms": 8250,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 1239,
+     "scale": 0.08
+    },
+    {
+     "t_ms": 3268,
+     "scale": 0.1
+    },
+    {
+     "t_ms": 5296,
+     "scale": 0.12
+    },
+    {
+     "t_ms": 6535,
+     "scale": 0.08
+    }
+   ]
+  },
+  "s3": {
+   "captions": [
+    {
+     "text": "Gõ First Name,",
+     "start_ms": 0,
+     "end_ms": 1229,
+     "words": [
+      {
+       "text": "Gõ",
+       "start_ms": 0,
+       "end_ms": 224
+      },
+      {
+       "text": "First",
+       "start_ms": 224,
+       "end_ms": 782
+      },
+      {
+       "text": "Name,",
+       "start_ms": 782,
+       "end_ms": 1229
+      }
+     ]
+    },
+    {
+     "text": "rồi Middle Name Văn một",
+     "start_ms": 1229,
+     "end_ms": 3353,
+     "words": [
+      {
+       "text": "rồi",
+       "start_ms": 1229,
+       "end_ms": 1565
+      },
+      {
+       "text": "Middle",
+       "start_ms": 1565,
+       "end_ms": 2235
+      },
+      {
+       "text": "Name",
+       "start_ms": 2235,
+       "end_ms": 2682
+      },
+      {
+       "text": "Văn",
+       "start_ms": 2682,
+       "end_ms": 3018
+      },
+      {
+       "text": "một",
+       "start_ms": 3018,
+       "end_ms": 3353
+      }
+     ]
+    },
+    {
+     "text": "lần. Hệ thống lưu lại,",
+     "start_ms": 3353,
+     "end_ms": 5141,
+     "words": [
+      {
+       "text": "lần.",
+       "start_ms": 3353,
+       "end_ms": 3688
+      },
+      {
+       "text": "Hệ",
+       "start_ms": 3688,
+       "end_ms": 3912
+      },
+      {
+       "text": "thống",
+       "start_ms": 3912,
+       "end_ms": 4471
+      },
+      {
+       "text": "lưu",
+       "start_ms": 4471,
+       "end_ms": 4806
+      },
+      {
+       "text": "lại,",
+       "start_ms": 4806,
+       "end_ms": 5141
+      }
+     ]
+    },
+    {
+     "text": "lần sau không",
+     "start_ms": 5141,
+     "end_ms": 6371,
+     "words": [
+      {
+       "text": "lần",
+       "start_ms": 5141,
+       "end_ms": 5476
+      },
+      {
+       "text": "sau",
+       "start_ms": 5476,
+       "end_ms": 5812
+      },
+      {
+       "text": "không",
+       "start_ms": 5812,
+       "end_ms": 6371
+      }
+     ]
+    },
+    {
+     "text": "phải nhập lại.",
+     "start_ms": 6371,
+     "end_ms": 7600,
+     "words": [
+      {
+       "text": "phải",
+       "start_ms": 6371,
+       "end_ms": 6818
+      },
+      {
+       "text": "nhập",
+       "start_ms": 6818,
+       "end_ms": 7265
+      },
+      {
+       "text": "lại.",
+       "start_ms": 7265,
+       "end_ms": 7600
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-orangehrm\\produce\\s3.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": false,
+   "clip_duration_ms": 8519,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 1650,
+     "x": 740,
+     "y": 271,
+     "type": "click"
+    },
+    {
+     "t_ms": 4020,
+     "x": 990,
+     "y": 271,
+     "type": "click"
+    },
+    {
+     "t_ms": 6381,
+     "x": 1240,
+     "y": 271,
+     "type": "click"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 1670,
+     "bbox": {
+      "x": 614,
+      "y": 249,
+      "w": 250,
+      "h": 45
+     },
+     "kind": "type",
+     "hold_ms": 1500
+    },
+    {
+     "t_ms": 4031,
+     "bbox": {
+      "x": 865,
+      "y": 249,
+      "w": 250,
+      "h": 45
+     },
+     "kind": "type",
+     "hold_ms": 1500
+    },
+    {
+     "t_ms": 6419,
+     "bbox": {
+      "x": 1115,
+      "y": 249,
+      "w": 250,
+      "h": 45
+     },
+     "kind": "type",
+     "hold_ms": 1500
+    }
+   ],
+   "segments": [
+    {
+     "from_ms": 1400,
+     "to_ms": 2132
+    },
+    {
+     "from_ms": 4502,
+     "to_ms": 6820
+    },
+    {
+     "from_ms": 9181,
+     "to_ms": 11611
+    },
+    {
+     "from_ms": 13999,
+     "to_ms": 14858
+    }
+   ],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 1000,
+     "source": "rule",
+     "reason": "",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 1000,
+     "bbox": {
+      "x": 329,
+      "y": 181,
+      "w": 1038,
+      "h": 113
+     },
+     "framing": "tight",
+     "hold_ms": 4141,
+     "source": "plan",
+     "reason": "Lời đọc Middle Name Văn nên tập trung ô Middle Name đang được gõ.",
+     "item_id": "eqp568",
+     "text": "Middle Name",
+     "item_kind": "input",
+     "region": "main"
+    },
+    {
+     "t_ms": 5141,
+     "bbox": {
+      "x": 329,
+      "y": 181,
+      "w": 1038,
+      "h": 113
+     },
+     "framing": "tight",
+     "hold_ms": 3378,
+     "source": "rule",
+     "reason": "khớp lời đọc / đang thao tác",
+     "item_id": "eqp569",
+     "text": "Last Name",
+     "item_kind": "input",
+     "region": "main"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 1229,
+     "change": "cut"
+    },
+    {
+     "from_ms": 1229,
+     "to_ms": 3353,
+     "change": "focus"
+    },
+    {
+     "from_ms": 3353,
+     "to_ms": 5141,
+     "change": "punch"
+    },
+    {
+     "from_ms": 5141,
+     "to_ms": 6371,
+     "change": "focus"
+    },
+    {
+     "from_ms": 6371,
+     "to_ms": 8519,
+     "change": "action"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 3353,
+     "scale": 0.08
+    }
+   ],
+   "same_page": true
+  },
+  "s4": {
+   "captions": [
+    {
+     "text": "Form đã đủ họ tên",
+     "start_ms": 0,
+     "end_ms": 1809,
+     "words": [
+      {
+       "text": "Form",
+       "start_ms": 0,
+       "end_ms": 557
+      },
+      {
+       "text": "đã",
+       "start_ms": 557,
+       "end_ms": 835
+      },
+      {
+       "text": "đủ",
+       "start_ms": 835,
+       "end_ms": 1113
+      },
+      {
+       "text": "họ",
+       "start_ms": 1113,
+       "end_ms": 1391
+      },
+      {
+       "text": "tên",
+       "start_ms": 1391,
+       "end_ms": 1809
+      }
+     ]
+    },
+    {
+     "text": "và mã nhân viên,",
+     "start_ms": 1809,
+     "end_ms": 3478,
+     "words": [
+      {
+       "text": "và",
+       "start_ms": 1809,
+       "end_ms": 2087
+      },
+      {
+       "text": "mã",
+       "start_ms": 2087,
+       "end_ms": 2365
+      },
+      {
+       "text": "nhân",
+       "start_ms": 2365,
+       "end_ms": 2922
+      },
+      {
+       "text": "viên,",
+       "start_ms": 2922,
+       "end_ms": 3478
+      }
+     ]
+    },
+    {
+     "text": "chỉ một cú bấm",
+     "start_ms": 3478,
+     "end_ms": 5009,
+     "words": [
+      {
+       "text": "chỉ",
+       "start_ms": 3478,
+       "end_ms": 3896
+      },
+      {
+       "text": "một",
+       "start_ms": 3896,
+       "end_ms": 4313
+      },
+      {
+       "text": "cú",
+       "start_ms": 4313,
+       "end_ms": 4591
+      },
+      {
+       "text": "bấm",
+       "start_ms": 4591,
+       "end_ms": 5009
+      }
+     ]
+    },
+    {
+     "text": "Save là xong.",
+     "start_ms": 5009,
+     "end_ms": 6400,
+     "words": [
+      {
+       "text": "Save",
+       "start_ms": 5009,
+       "end_ms": 5565
+      },
+      {
+       "text": "là",
+       "start_ms": 5565,
+       "end_ms": 5843
+      },
+      {
+       "text": "xong.",
+       "start_ms": 5843,
+       "end_ms": 6400
+      }
+     ]
+    }
+   ],
+   "clip_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-orangehrm\\produce\\s4.mp4",
+   "start_offset_ms": 0,
+   "trim_start_ms": 0,
+   "playback_rate": 1.0,
+   "freeze_last_frame": false,
+   "clip_duration_ms": 6650,
+   "clip_width": 1440,
+   "clip_height": 900,
+   "click_log": [
+    {
+     "t_ms": 1650,
+     "x": 1317,
+     "y": 493,
+     "type": "hover"
+    },
+    {
+     "t_ms": 4203,
+     "x": 1317,
+     "y": 493,
+     "type": "highlight"
+    }
+   ],
+   "focus_log": [
+    {
+     "t_ms": 1677,
+     "bbox": {
+      "x": 1267,
+      "y": 477,
+      "w": 100,
+      "h": 32
+     },
+     "kind": "hover",
+     "hold_ms": 1500
+    },
+    {
+     "t_ms": 4250,
+     "bbox": {
+      "x": 329,
+      "y": 220,
+      "w": 1038,
+      "h": 289
+     },
+     "kind": "highlight",
+     "hold_ms": 1800
+    }
+   ],
+   "segments": [
+    {
+     "from_ms": 1400,
+     "to_ms": 2481
+    },
+    {
+     "from_ms": 5034,
+     "to_ms": 5285
+    },
+    {
+     "from_ms": 7982,
+     "to_ms": 9381
+    }
+   ],
+   "focus_track": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+     },
+     "framing": "establish",
+     "hold_ms": 1000,
+     "source": "rule",
+     "reason": "",
+     "item_id": null,
+     "text": "",
+     "item_kind": null,
+     "region": null
+    },
+    {
+     "t_ms": 1000,
+     "bbox": {
+      "x": 1255,
+      "y": 473,
+      "w": 124,
+      "h": 40
+     },
+     "framing": "tight",
+     "hold_ms": 2478,
+     "source": "rule",
+     "reason": "khớp lời đọc / đang thao tác",
+     "item_id": "eqp576",
+     "text": "Save",
+     "item_kind": "button",
+     "region": "main"
+    },
+    {
+     "t_ms": 3478,
+     "bbox": {
+      "x": 1255,
+      "y": 473,
+      "w": 124,
+      "h": 40
+     },
+     "framing": "tight",
+     "hold_ms": 3172,
+     "source": "plan",
+     "reason": "Lời đọc nói 'chỉ một cú bấm', hướng vào nút Save sắp được thao tác.",
+     "item_id": "eqp576",
+     "text": "Save",
+     "item_kind": "button",
+     "region": "main"
+    }
+   ],
+   "shots": [
+    {
+     "from_ms": 0,
+     "to_ms": 1809,
+     "change": "cut"
+    },
+    {
+     "from_ms": 1809,
+     "to_ms": 3478,
+     "change": "punch"
+    },
+    {
+     "from_ms": 3478,
+     "to_ms": 5009,
+     "change": "focus"
+    },
+    {
+     "from_ms": 5009,
+     "to_ms": 6650,
+     "change": "punch"
+    }
+   ],
+   "punches": [
+    {
+     "t_ms": 1809,
+     "scale": 0.08
+    },
+    {
+     "t_ms": 5009,
+     "scale": 0.1
+    }
+   ],
+   "same_page": true
+  },
+  "s5": {
+   "captions": [
+    {
+     "text": "Đưa người mới vào hệ",
+     "start_ms": 0,
+     "end_ms": 1882,
+     "words": [
+      {
+       "text": "Đưa",
+       "start_ms": 0,
+       "end_ms": 353
+      },
+      {
+       "text": "người",
+       "start_ms": 353,
+       "end_ms": 941
+      },
+      {
+       "text": "mới",
+       "start_ms": 941,
+       "end_ms": 1294
+      },
+      {
+       "text": "vào",
+       "start_ms": 1294,
+       "end_ms": 1647
+      },
+      {
+       "text": "hệ",
+       "start_ms": 1647,
+       "end_ms": 1882
+      }
+     ]
+    },
+    {
+     "text": "thống nhân sự tập trung,",
+     "start_ms": 1882,
+     "end_ms": 4118,
+     "words": [
+      {
+       "text": "thống",
+       "start_ms": 1882,
+       "end_ms": 2471
+      },
+      {
+       "text": "nhân",
+       "start_ms": 2471,
+       "end_ms": 2941
+      },
+      {
+       "text": "sự",
+       "start_ms": 2941,
+       "end_ms": 3176
+      },
+      {
+       "text": "tập",
+       "start_ms": 3176,
+       "end_ms": 3529
+      },
+      {
+       "text": "trung,",
+       "start_ms": 3529,
+       "end_ms": 4118
+      }
+     ]
+    },
+    {
+     "text": "hết giấy tờ rời rạc.",
+     "start_ms": 4118,
+     "end_ms": 5882,
+     "words": [
+      {
+       "text": "hết",
+       "start_ms": 4118,
+       "end_ms": 4471
+      },
+      {
+       "text": "giấy",
+       "start_ms": 4471,
+       "end_ms": 4941
+      },
+      {
+       "text": "tờ",
+       "start_ms": 4941,
+       "end_ms": 5176
+      },
+      {
+       "text": "rời",
+       "start_ms": 5176,
+       "end_ms": 5529
+      },
+      {
+       "text": "rạc.",
+       "start_ms": 5529,
+       "end_ms": 5882
+      }
+     ]
+    },
+    {
+     "text": "Dùng thử miễn phí ngay.",
+     "start_ms": 5882,
+     "end_ms": 8000,
+     "words": [
+      {
+       "text": "Dùng",
+       "start_ms": 5882,
+       "end_ms": 6353
+      },
+      {
+       "text": "thử",
+       "start_ms": 6353,
+       "end_ms": 6706
+      },
+      {
+       "text": "miễn",
+       "start_ms": 6706,
+       "end_ms": 7176
+      },
+      {
+       "text": "phí",
+       "start_ms": 7176,
+       "end_ms": 7529
+      },
+      {
+       "text": "ngay.",
+       "start_ms": 7529,
+       "end_ms": 8000
+      }
+     ]
+    }
+   ],
+   "screenshot_url": "E:\\WORK SPACE\\AI-video-content\\services\\api\\out\\cam-orangehrm\\produce\\s5.png",
+   "clip_width": 1440,
+   "clip_height": 900,
+   "focus_log": [
+    {
+     "t_ms": 0,
+     "bbox": {
+      "x": 304,
+      "y": 24,
+      "w": 25,
+      "h": 19
+     },
+     "kind": "section",
+     "hold_ms": 0
+    }
+   ],
+   "cta_domain": "opensource-demo.orangehrmlive.com"
+  }
+ }
+}

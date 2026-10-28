@@ -1,0 +1,430 @@
+{
+  "warnings": [
+    "chưa đạt: scene 4 trùng hình ảnh với scene 3 (cùng trang, cùng vùng): đổi sang section/trang khác",
+    "chưa đạt: chưa dùng bằng chứng thật (số liệu, ưu đãi hoặc câu trích) từ proof_bank",
+    "ước tính 36.0s so với mục tiêu 30s (thừa 20%)"
+  ],
+  "theme": {
+    "source": "css",
+    "primary": "#0000EE",
+    "accent": "#FF7B1D",
+    "accent_source": "css",
+    "highlight": "#6e6eff",
+    "logo": "out\\cam-orangehrm\\theme\\logo.png",
+    "candidates": [
+      {
+        "color": "#0000ee",
+        "area": 8701
+      },
+      {
+        "color": "#ff7b1d",
+        "area": 1921
+      }
+    ],
+    "notes": []
+  },
+  "proof_bank": {
+    "numbers": [
+      {
+        "value": "1",
+        "unit": "",
+        "context": "dụng; dashboard hiển thị việc cần làm '[1] Candidate to Interview' trong My Actio",
+        "source": "profile",
+        "kind": "identifier"
+      },
+      {
+        "value": "29",
+        "unit": "",
+        "context": "Punched Out: Mar 29th at 01:19 PM (GMT 7)",
+        "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+        "kind": "other"
+      },
+      {
+        "value": "01",
+        "unit": "",
+        "context": "Punched Out: Mar 29th at 01:19 PM (GMT 7)",
+        "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+        "kind": "other"
+      },
+      {
+        "value": "19",
+        "unit": "",
+        "context": "Punched Out: Mar 29th at 01:19 PM (GMT 7)",
+        "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+        "kind": "other"
+      },
+      {
+        "value": "7",
+        "unit": "",
+        "context": "Punched Out: Mar 29th at 01:19 PM (GMT 7)",
+        "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+        "kind": "other"
+      },
+      {
+        "value": "2005",
+        "unit": "",
+        "context": "© 2005 - 2026 OrangeHRM, Inc. All rights reser",
+        "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+        "kind": "other"
+      },
+      {
+        "value": "2026",
+        "unit": "",
+        "context": "© 2005 - 2026 OrangeHRM, Inc. All rights reserved.",
+        "source": "page:https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index",
+        "kind": "other"
+      },
+      {
+        "value": "1",
+        "unit": "MB",
+        "context": "Employee Accepts jpg, .png, .gif up to 1MB. Recommended dimensions: 200px X",
+        "source": "frame",
+        "kind": "benefit"
+      },
+      {
+        "value": "200",
+        "unit": "px",
+        "context": ".gif up to 1MB. Recommended dimensions: 200px X",
+        "source": "frame",
+        "kind": "other"
+      },
+      {
+        "value": "0443",
+        "unit": "",
+        "context": "0443",
+        "source": "frame",
+        "kind": "identifier"
+      },
+      {
+        "value": "5.9",
+        "unit": "",
+        "context": "OrangeHRM OS 5.9",
+        "source": "frame",
+        "kind": "identifier"
+      }
+    ],
+    "quotes": [
+      "Punched Out: Mar 29th at 01:19 PM (GMT 7)",
+      "(1) Pending Self Review",
+      "(1) Candidate to Interview",
+      "Throwback Thursdays!!",
+      "Live SIMPLY Dream BIG Be GREATFULL Give LOVE Laugh LOT.......",
+      "Employees on Leave Today",
+      "No Employees are on Leave Today",
+      "Employee Distribution by Sub Unit"
+    ],
+    "offers": [
+      {
+        "id": "open_source",
+        "label": "mã nguồn mở",
+        "source_text": "Nền tảng quản trị nhân sự (HRM) mã nguồn mở gộp hồ sơ nhân viên, nghỉ phép, chấm công và tuyển dụng vào một bảng điều kh"
+      }
+    ],
+    "audience_pains": [
+      "Chấm công và timesheet theo tuần cho nhân viên lẫn người quản lý",
+      "Chấm công và timesheet theo tuần"
+    ]
+  },
+  "content_budget_s": 43,
+  "content_budget_formula": "content_budget_s = 4 (hook) + 4 (cta) + 5 (one before_after) + sum over demonstrable features: interaction 10, navigation 6, showcase 5",
+  "recommended_duration_s": 30,
+  "critic": {
+    "threshold": 7,
+    "before": {
+      "scores": {
+        "hook_strength": {
+          "score": 5,
+          "reason": "Nêu nỗi đau giấy tờ rải rác nhưng chung chung, chưa đánh trúng cảm giác của HR về hồ sơ rời rạc/bảng tính."
+        },
+        "benefit_clarity": {
+          "score": 4,
+          "reason": "Các scene chủ yếu kể thao tác (mở trang, bấm Add, điền tên) mà chưa nói rõ HR được gì về thời gian/công sức/kết quả."
+        },
+        "proof_usage": {
+          "score": 2,
+          "reason": "Không dùng số liệu/câu trích/ưu đãi thật nào từ proof_bank; con số '30 giây' trong headline không có trong proof_bank."
+        },
+        "cta_strength": {
+          "score": 4,
+          "reason": "Có hành động 'trải nghiệm miễn phí' và URL, nhưng thiếu lý do làm ngay gắn với ưu đãi thật trong proof_bank."
+        },
+        "flow": {
+          "score": 5,
+          "reason": "Mạch nỗi đau → thao tác → kết quả cơ bản liền nhưng nhịp còn kể lể thao tác và kết thúc chưa bật giá trị cốt lõi 'hệ thống tập trung' đủ mạnh."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook chung chung, chưa cụ thể nỗi đau hồ sơ giấy tờ/bảng tính rời rạc của HR.",
+          "suggestion": "Đổi thành: 'HR còn quản hồ sơ nhân viên mới bằng giấy tờ và bảng tính rời rạc?'"
+        },
+        {
+          "scene_id": "s2",
+          "problem": "Kể thao tác, chưa nêu lợi ích; 'mọi thứ trong một bảng điều khiển' hơi sáo.",
+          "suggestion": "Đổi thành: 'Mở PIM, bấm Add: hồ sơ nhân viên mới nằm trong một bảng điều khiển tập trung.'"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Nhấn thao tác điền tên thay vì lợi ích 'nhập một lần dùng về sau' và chưa khớp flow (có nhắc họ trong khi flow chỉ nêu First Name/Middle Name).",
+          "suggestion": "Đổi thành: 'Nhập First Name và Middle Name Văn một lần, dùng lại về sau.'"
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Câu 'chỉ một cú bấm Save là xong' sáo và chưa nhấn giá trị dừng trước Save theo flow.",
+          "suggestion": "Đổi thành: 'Form đã đủ họ tên và mã nhân viên, dừng trước Save để kiểm tra.'"
+        },
+        {
+          "scene_id": "s5",
+          "problem": "CTA thiếu lý do hành động ngay gắn với ưu đãi thật trong proof_bank.",
+          "suggestion": "Đổi thành: 'Đưa người mới vào hệ thống nhân sự tập trung. Dùng thử miễn phí tại opensource-demo.orangehrmlive.com.'"
+        }
+      ],
+      "issues": [
+        "Headline '30 giây' là con số không có trong proof_bank.",
+        "Không sử dụng số liệu/câu trích/ưu đãi thật nào từ proof_bank (ví dụ 'mã nguồn mở', '1MB', '200px').",
+        "Scene s3 nhắc 'họ' không có trong chapter flow (flow chỉ nêu First Name và Middle Name Văn).",
+        "Cụm sáo rỗng: 'mọi thứ trong một bảng điều khiển', 'chỉ một cú bấm Save là xong'."
+      ],
+      "summary": "Kịch bản có cấu trúc hook → demo → CTA nhưng còn kể thao tác, thiếu lợi ích cụ thể cho HR và gần như không dùng proof_bank. Cần siết hook vào nỗi đau hồ sơ rời rạc, mỗi scene nêu rõ HR được gì, và CTA gắn với ưu đãi thật 'dùng thử miễn phí trên bản demo mã nguồn mở'."
+    },
+    "after": {
+      "scores": {
+        "hook_strength": {
+          "score": 6,
+          "reason": "Nêu nỗi đau giấy tờ/bảng tính đúng persona nhưng câu hỏi mở chung chung, thiếu con số hoặc kết quả cụ thể để chặn lướt ngay 12 từ đầu."
+        },
+        "benefit_clarity": {
+          "score": 5,
+          "reason": "Có nói 'bảng điều khiển tập trung' nhưng phần lớn các scene kể lại thao tác (Mở PIM, gõ tên) thay vì nói rõ HR tiết kiệm gì; scene 'Nhập một lần, dùng mãi' không có cơ sở trong flow."
+        },
+        "proof_usage": {
+          "score": 3,
+          "reason": "Chỉ dùng URL demo, không khai thác số liệu/câu trích thật nào trong proof_bank (ví dụ 'No Employees are on Leave Today', 'Employee Distribution by Sub Unit') và còn tạo cảm giác số liệu không có thật."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể (dùng thử tại URL) nhưng thiếu lý do làm ngay/ưu đãi thật từ proof_bank (ví dụ 'mã nguồn mở') và URL dài khó nhớ."
+        },
+        "flow": {
+          "score": 5,
+          "reason": "Mạch đau → demo → kết quả có nhưng scene 3-4 lặp thao tác, câu nối 'lưu lại, lần sau không phải nhập lại' không khớp flow chỉ dừng trước Save, và thiếu kết quả rõ ràng."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook dạng câu hỏi chung, chưa đánh trúng hậu quả cụ thể của hồ sơ rời rạc.",
+          "suggestion": "Hồ sơ nhân viên mới còn kẹt giữa giấy tờ và bảng tính rời rạc?"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Hứa 'lần sau không phải nhập lại' không có trong persona_and_flow, dễ gây hiểu sai và không nói lợi ích thật.",
+          "suggestion": "Nhập First Name và Middle Name Văn ngay trên một form, không cần file rời."
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Kể thao tác Save thay vì nhấn kết quả tập trung; chưa dừng đúng ý 'kiểm tra trước khi lưu'.",
+          "suggestion": "Họ tên và mã nhân viên đã đủ trên một form — kiểm tra xong là sẵn sàng lưu."
+        },
+        {
+          "scene_id": "s5",
+          "problem": "CTA thiếu lý do làm ngay và chưa dùng ưu đãi thật 'mã nguồn mở' trong proof_bank.",
+          "suggestion": "Đưa người mới vào hệ thống tập trung — thử bản mã nguồn mở tại opensource-demo.orangehrmlive.com."
+        }
+      ],
+      "issues": [
+        "Scene 3 có cụm 'Nhập một lần, dùng mãi' không được hỗ trợ bởi persona_and_flow/proof_bank.",
+        "Headline 'trong 30 giây' là con số không có trong proof_bank, cần bỏ hoặc thay bằng lợi ích không định lượng.",
+        "Chưa khai thác proof_bank: có thể dùng 'mã nguồn mở' làm lý do dùng thử, và các câu trích dashboard để tăng độ tin cậy.",
+        "URL demo dài, khó nhớ trên màn hình dọc; nên rút gọn hiển thị hoặc đặt dạng text ngắn kèm mã QR."
+      ],
+      "summary": "Kịch bản đúng persona và có mạch cơ bản nhưng chưa đủ sắc: hook còn chung, các scene demo nặng thao tác, lợi ích tập trung chưa được nhấn, proof_bank gần như bỏ trống và có một cụm hứa không có cơ sở. Cần sửa s1, s3, s4, s5 theo gợi ý, bỏ '30 giây', thêm 'mã nguồn mở' vào CTA để đạt mức đăng được."
+    },
+    "final": {
+      "scores": {
+        "hook_strength": {
+          "score": 6,
+          "reason": "Nêu nỗi đau giấy tờ/bảng tính đúng persona nhưng câu hỏi mở chung chung, thiếu con số hoặc kết quả cụ thể để chặn lướt ngay 12 từ đầu."
+        },
+        "benefit_clarity": {
+          "score": 5,
+          "reason": "Có nói 'bảng điều khiển tập trung' nhưng phần lớn các scene kể lại thao tác (Mở PIM, gõ tên) thay vì nói rõ HR tiết kiệm gì; scene 'Nhập một lần, dùng mãi' không có cơ sở trong flow."
+        },
+        "proof_usage": {
+          "score": 3,
+          "reason": "Chỉ dùng URL demo, không khai thác số liệu/câu trích thật nào trong proof_bank (ví dụ 'No Employees are on Leave Today', 'Employee Distribution by Sub Unit') và còn tạo cảm giác số liệu không có thật."
+        },
+        "cta_strength": {
+          "score": 6,
+          "reason": "CTA có hành động cụ thể (dùng thử tại URL) nhưng thiếu lý do làm ngay/ưu đãi thật từ proof_bank (ví dụ 'mã nguồn mở') và URL dài khó nhớ."
+        },
+        "flow": {
+          "score": 5,
+          "reason": "Mạch đau → demo → kết quả có nhưng scene 3-4 lặp thao tác, câu nối 'lưu lại, lần sau không phải nhập lại' không khớp flow chỉ dừng trước Save, và thiếu kết quả rõ ràng."
+        }
+      },
+      "weak_scenes": [
+        {
+          "scene_id": "s1",
+          "problem": "Hook dạng câu hỏi chung, chưa đánh trúng hậu quả cụ thể của hồ sơ rời rạc.",
+          "suggestion": "Hồ sơ nhân viên mới còn kẹt giữa giấy tờ và bảng tính rời rạc?"
+        },
+        {
+          "scene_id": "s3",
+          "problem": "Hứa 'lần sau không phải nhập lại' không có trong persona_and_flow, dễ gây hiểu sai và không nói lợi ích thật.",
+          "suggestion": "Nhập First Name và Middle Name Văn ngay trên một form, không cần file rời."
+        },
+        {
+          "scene_id": "s4",
+          "problem": "Kể thao tác Save thay vì nhấn kết quả tập trung; chưa dừng đúng ý 'kiểm tra trước khi lưu'.",
+          "suggestion": "Họ tên và mã nhân viên đã đủ trên một form — kiểm tra xong là sẵn sàng lưu."
+        },
+        {
+          "scene_id": "s5",
+          "problem": "CTA thiếu lý do làm ngay và chưa dùng ưu đãi thật 'mã nguồn mở' trong proof_bank.",
+          "suggestion": "Đưa người mới vào hệ thống tập trung — thử bản mã nguồn mở tại opensource-demo.orangehrmlive.com."
+        }
+      ],
+      "issues": [
+        "Scene 3 có cụm 'Nhập một lần, dùng mãi' không được hỗ trợ bởi persona_and_flow/proof_bank.",
+        "Headline 'trong 30 giây' là con số không có trong proof_bank, cần bỏ hoặc thay bằng lợi ích không định lượng.",
+        "Chưa khai thác proof_bank: có thể dùng 'mã nguồn mở' làm lý do dùng thử, và các câu trích dashboard để tăng độ tin cậy.",
+        "URL demo dài, khó nhớ trên màn hình dọc; nên rút gọn hiển thị hoặc đặt dạng text ngắn kèm mã QR."
+      ],
+      "summary": "Kịch bản đúng persona và có mạch cơ bản nhưng chưa đủ sắc: hook còn chung, các scene demo nặng thao tác, lợi ích tập trung chưa được nhấn, proof_bank gần như bỏ trống và có một cụm hứa không có cơ sở. Cần sửa s1, s3, s4, s5 theo gợi ý, bỏ '30 giây', thêm 'mã nguồn mở' vào CTA để đạt mức đăng được."
+    },
+    "kept_rewrite": true,
+    "rounds": 2,
+    "hook": {
+      "hook_strength": [
+        5,
+        4
+      ],
+      "chosen": 1,
+      "kinds": [
+        "pain_question",
+        "result_first"
+      ]
+    },
+    "rewritten": [
+      "s1",
+      "s2",
+      "s3",
+      "s1",
+      "s2",
+      "s3"
+    ],
+    "notes": [],
+    "passed": false
+  },
+  "generation": {
+    "attempts": 3,
+    "errors_history": [
+      [
+        "hook_options[1]: hook có 14 từ, cần 5–12",
+        "hook_options[2]: hook có 15 từ, cần 5–12",
+        "scene 1: hook có 14 từ, cần 5–12"
+      ],
+      [
+        "hook_options[2]: hook có 14 từ, cần 5–12"
+      ],
+      [
+        "scene 4 trùng hình ảnh với scene 3 (cùng trang, cùng vùng): đổi sang section/trang khác",
+        "chưa dùng bằng chứng thật (số liệu, ưu đãi hoặc câu trích) từ proof_bank"
+      ]
+    ]
+  },
+  "fit": {
+    "target_ms": 30000,
+    "estimated_ms": 36050,
+    "initial_ms": 38850,
+    "deviation": 0.202,
+    "within_tolerance": false,
+    "rounds": 4,
+    "actions": [
+      "rút gọn voiceover",
+      "rút gọn voiceover",
+      "rút gọn voiceover",
+      "rút gọn voiceover"
+    ],
+    "warnings": [
+      "ước tính 36.0s so với mục tiêu 30s (thừa 20%)"
+    ]
+  },
+  "fit_generation": {
+    "target_ms": 30000,
+    "estimated_ms": 36050,
+    "initial_ms": 38850,
+    "deviation": 0.202,
+    "within_tolerance": false,
+    "rounds": 4,
+    "actions": [
+      "rút gọn voiceover",
+      "rút gọn voiceover",
+      "rút gọn voiceover",
+      "rút gọn voiceover"
+    ],
+    "warnings": [
+      "ước tính 36.0s so với mục tiêu 30s (thừa 20%)"
+    ]
+  },
+  "footage_ratio": 1.0,
+  "footage_min": 0.4,
+  "versions": [
+    1
+  ],
+  "current_version": 1,
+  "approved": true,
+  "tokens": {
+    "max_tokens": 400000,
+    "total": 110764,
+    "steps": {
+      "classify": {
+        "input": 372,
+        "output": 114,
+        "calls": 1
+      },
+      "analyze": {
+        "input": 2243,
+        "output": 427,
+        "calls": 2
+      },
+      "synthesize": {
+        "input": 2923,
+        "output": 4817,
+        "calls": 1
+      },
+      "flow_discovery": {
+        "input": 4111,
+        "output": 3282,
+        "calls": 2
+      },
+      "flow_agent": {
+        "input": 11548,
+        "output": 407,
+        "calls": 5
+      },
+      "script": {
+        "input": 20496,
+        "output": 3328,
+        "calls": 3
+      },
+      "fit": {
+        "input": 11530,
+        "output": 2183,
+        "calls": 8
+      },
+      "copy_critic": {
+        "input": 8995,
+        "output": 4436,
+        "calls": 4
+      },
+      "scene": {
+        "input": 27651,
+        "output": 1901,
+        "calls": 9
+      }
+    }
+  }
+}
