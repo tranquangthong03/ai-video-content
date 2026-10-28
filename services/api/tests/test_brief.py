@@ -169,3 +169,64 @@ def test_generic_offers_exist_for_every_kind_of_site(kind: str) -> None:
 
     assert GENERIC_OFFERS.get(kind, DEFAULT_OFFERS)
     assert ProofBank().is_empty
+
+
+# --- the card is built from the approved run: chapters live on FlowRun, not on CoreFlow ---------
+
+
+def test_the_brief_card_reads_chapters_from_the_approved_run_not_from_the_flow(
+    tmp_path: Path,
+) -> None:
+    from app.schemas.generated.core_flow import CoreFlow
+    from tests.test_flow_storyboard import make_run
+    from tests.test_select_flow import flow_dict
+
+    flow = CoreFlow.model_validate(flow_dict("f1", title="Xin nghỉ phép"))
+    run = make_run(chapters=[{"id": "c1", "title": "Mở form", "step_ids": [1, 2]}])
+    llm = FakeLLM(lambda _p: SUGGEST)
+    runner = proposal(tmp_path, {"marketing_brief": [{"action": "skip"}]}, llm)
+    runner.marketing_brief(writer_ctx().profile, flow, None, run)
+    assert "Mở form" in llm.calls[0]["prompt"] and "Xin nghỉ phép" in llm.calls[0]["prompt"]
+    assert not hasattr(flow, "chapters")  # the mistake this test guards against
+
+
+def test_the_flow_route_hands_the_approved_run_to_the_brief_step(
+    site: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pytest.importorskip("playwright")
+    from app.pipeline.proposal_run import ProposalRunner as PR
+
+    seen: list[object] = []
+    real = PR.marketing_brief
+
+    def spy(self: PR, profile, flow, given=None, run=None):  # type: ignore[no-untyped-def]
+        seen.append(run)
+        return real(self, profile, flow, given, run)
+
+    monkeypatch.setattr(PR, "marketing_brief", spy)
+    from app.flows.discovery import PageSummary
+    from app.pipeline.flow_run import run_core_flow
+    from tests.test_explorer import profile as mk_profile
+    from tests.test_flow_agent import FILL, step
+    from tests.test_infeasible_route import route
+
+    pages = [PageSummary(url=site + "/flow_apply.html", title="Apply", purpose="Form")]
+    plan = [*FILL, step("stop_before_submit", "Apply")]
+    job, runner, _d, _s, agent = route(tmp_path, site, plan, [("Điền form", "/flow_apply.html")])
+    result = run_core_flow(job, runner, runner.caller, mk_profile([]), pages, agent_caller=agent)
+    assert result is not None and seen and seen[0] is not None
+    assert seen[0].chapters  # type: ignore[attr-defined]
+
+
+def test_mypy_finds_no_flow_attribute_mistakes() -> None:
+    """CoreFlow (the choice) has no chapters/steps; FlowRun (what the agent did) has them."""
+    import subprocess
+    import sys
+
+    api = Path(__file__).resolve().parents[1]
+    out = subprocess.run(
+        [sys.executable, "-m", "mypy", "app/flows", "app/proposal", "app/pipeline", "app/script"],
+        cwd=api, capture_output=True, text=True, timeout=900,
+    )  # fmt: skip
+    bad = [ln for ln in out.stdout.splitlines() if "CoreFlow" in ln or "FlowRun" in ln]
+    assert not bad, "\n".join(bad)

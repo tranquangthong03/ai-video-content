@@ -297,3 +297,25 @@ def test_a_session_file_can_be_uploaded_while_the_job_waits_for_a_login(
     )
     assert bad.status_code == 422
     assert client.get(f"/api/jobs/{job_id}/files/storage_state.json").status_code == 404
+
+
+# --- an unexpected crash: where it happened and how to go on, never the traceback ---------------
+
+
+def test_an_unexpected_crash_names_the_step_and_job_and_keeps_the_traceback_in_the_log(
+    tmp_path: Path,
+) -> None:
+    def crashing(cfg: JobConfig, frontend: FileFrontend) -> JobResult:
+        update_state(cfg.job_dir, step="explore")
+        raise AttributeError("'CoreFlow' object has no attribute 'chapters'")
+
+    app = create_app(tmp_path / "jobs", crashing)
+    with TestClient(app) as c:
+        job_id = create(c)
+        d = until(lambda: job(c, job_id) if job(c, job_id)["state"]["status"] == "failed" else None)
+        error = d["state"]["error"]
+        assert "Khám phá" in error and job_id in error and "Chạy tiếp" in error
+        assert "AttributeError" not in error and "CoreFlow" not in error
+        log = (tmp_path / "jobs" / job_id / "error.log").read_text(encoding="utf-8")
+        assert "AttributeError" in log and "Traceback" in log
+        assert d["can_resume"]

@@ -22,6 +22,14 @@ from app.pipeline.state import JobState, read_state, update_state, write_state
 JOB_FILE = "job.json"
 Pipeline = Callable[[JobConfig, FileFrontend], JobResult]
 RESTART_ERROR = "Máy chủ đã khởi động lại"
+STEP_NAMES = {"explore": "Khám phá", "script": "Viết kịch bản", "produce": "Dựng video"}
+
+
+def unexpected_error_text(job_id: str, step: str) -> str:
+    return (
+        f"Lỗi không mong đợi ở bước «{STEP_NAMES.get(step, step)}» (mã job {job_id}). "
+        "Chi tiết đã ghi vào nhật ký của job; bấm «Chạy tiếp» để làm tiếp từ bước này."
+    )
 
 
 def default_pipeline(cfg: JobConfig, frontend: FileFrontend) -> JobResult:
@@ -172,10 +180,14 @@ class JobRunner:
                 update_state(directory, status="cancelled", error=None)
         except Cancelled:
             update_state(directory, status="cancelled", error=None)
-        except Exception as e:  # a crash must end the job, never the worker
+        except Exception:  # a crash must end the job, never the worker
+            # the full traceback stays in the job's log; the user sees where and how to go on
             (directory / "error.log").write_text(traceback.format_exc(), encoding="utf-8")
+            at = read_state(directory)
             update_state(
-                directory, status="failed", error=f"Lỗi không mong đợi: {type(e).__name__}: {e}"
+                directory,
+                status="failed",
+                error=unexpected_error_text(job_id, at.step if at else "?"),
             )
         finally:
             state = read_state(directory)

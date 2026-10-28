@@ -28,6 +28,7 @@ dev = [
     "pytest-xdist>=3.8.0",
     "pytest-timeout>=2.3",
     "pytest-repeat>=0.9.3",
+    "mypy>=2.4.0",
 ]
 
 [tool.uv]
@@ -63,3 +64,7 @@ markers = [
     "slow: drives a real browser / ffmpeg (auto-marked); skip with -m 'not slow'",
 ]
 pythonpath = ["."]
+
+[tool.mypy]
+ignore_missing_imports = true
+follow_imports = "silent"

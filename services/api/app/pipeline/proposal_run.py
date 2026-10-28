@@ -273,6 +273,7 @@ class ProposalRunner:
         profile: ProductProfile,
         flow: CoreFlow | None,
         given: MarketingBrief | None = None,
+        run: FlowRun | None = None,
     ) -> MarketingBrief | None:
         """The user's brief (None = skipped). `given`: a brief that came with the job (CLI --brief)
         is used as it is, without asking. Asked once; the answer (or the skip) is saved."""
@@ -286,7 +287,7 @@ class ProposalRunner:
         if wants is not None and not wants("marketing_brief"):
             brief_mod.save_brief(self.dir, None)  # --auto without a brief: the old behaviour
             return None
-        suggestions, warning = brief_suggest.suggest(self.caller, profile, flow)
+        suggestions, warning = brief_suggest.suggest(self.caller, profile, flow, run)
         if warning:
             self.warnings.append(warning)
         response = self._ask(brief_mod.build_request(self.job_id, suggestions))

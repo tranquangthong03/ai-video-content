@@ -186,7 +186,9 @@ def run_core_flow(
         return None
     first.append(initial)
     approved = proposal.review_storyboard(flow, run_flow)
-    proposal.marketing_brief(profile, flow, job.brief)  # asked once; saved as marketing_brief.json
+    proposal.marketing_brief(
+        profile, flow, job.brief, approved
+    )  # asked once; saved as marketing_brief.json
     ctx = build_flow_ctx(flow, approved, job.home_url, live_inventory(job.job_dir, approved))
     ctx.save(job.job_dir)
     outline = outline_from_flow(flow, approved, ctx)

@@ -9,6 +9,7 @@ from app.llm.json_call import JsonCaller, LLMCallError
 from app.llm.prompts import render
 from app.schemas.generated.brief_suggestions import BriefSuggestions
 from app.schemas.generated.core_flow import CoreFlow
+from app.schemas.generated.flow_run import FlowRun
 from app.schemas.generated.product_profile import ProductProfile
 
 PER_FIELD = 3
@@ -19,10 +20,11 @@ GENERIC_OFFERS: dict[str, list[str]] = {
 DEFAULT_OFFERS = ["Dùng thử miễn phí", "Xem demo", "Liên hệ tư vấn"]
 
 
-def flow_summary(flow: CoreFlow | None) -> str:
+def flow_summary(flow: CoreFlow | None, run: FlowRun | None = None) -> str:
+    """The flow's goal and value come from CoreFlow; the chapters only exist on the run."""
     if flow is None:
         return ""
-    chapters = "; ".join(c.title for c in flow.chapters)
+    chapters = "; ".join(c.title for c in run.chapters) if run is not None else ""
     return f"Luồng chính: {flow.title} — {flow.goal}\nGiá trị: {flow.value}\nCác chương: {chapters}"
 
 
@@ -35,11 +37,16 @@ def fallback(profile: ProductProfile) -> BriefSuggestions:
 
 
 def suggest(
-    caller: JsonCaller, profile: ProductProfile, flow: CoreFlow | None = None
+    caller: JsonCaller,
+    profile: ProductProfile,
+    flow: CoreFlow | None = None,
+    run: FlowRun | None = None,
 ) -> tuple[BriefSuggestions, str | None]:
     """(suggestions, a warning when the model could not be used)."""
     prompt = render(
-        "brief_suggest", product_summary=profile_summary(profile), flow_summary=flow_summary(flow)
+        "brief_suggest",
+        product_summary=profile_summary(profile),
+        flow_summary=flow_summary(flow, run),
     )
     try:
         got = caller.call("brief_suggest", prompt, BriefSuggestions)
