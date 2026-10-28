@@ -30,5 +30,63 @@
    "video_s": 36.9,
    "seconds": 104.7
   }
+ },
+ "t2": {
+  "orangehrm": {
+   "critic": {
+    "hook_strength": 6,
+    "benefit_clarity": 5,
+    "proof_usage": 3,
+    "cta_strength": 7,
+    "flow": 6
+   }
+  },
+  "squoosh": {
+   "critic": {
+    "hook_strength": 7,
+    "benefit_clarity": 7,
+    "proof_usage": 8,
+    "cta_strength": 8,
+    "flow": 8
+   }
+  },
+  "todomvc": {
+   "critic": {
+    "hook_strength": 6,
+    "benefit_clarity": 5,
+    "proof_usage": 7,
+    "cta_strength": 6,
+    "flow": 7
+   }
+  }
+ },
+ "t2_brief": {
+  "orangehrm": {
+   "critic": {
+    "hook_strength": 8,
+    "benefit_clarity": 5,
+    "proof_usage": 4,
+    "cta_strength": 8,
+    "flow": 6
+   }
+  },
+  "squoosh": {
+   "critic": {
+    "hook_strength": 7,
+    "benefit_clarity": 6,
+    "proof_usage": 7,
+    "cta_strength": 8,
+    "flow": 7
+   }
+  },
+  "todomvc": {
+   "critic": {
+    "hook_strength": 7,
+    "benefit_clarity": 6,
+    "proof_usage": 4,
+    "cta_strength": 7,
+    "flow": 7
+   }
+  }
  }
 }

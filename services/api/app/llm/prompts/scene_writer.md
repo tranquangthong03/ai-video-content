@@ -29,7 +29,7 @@ Mục tiêu: {{ goal }} | Thời lượng mục tiêu: {{ duration_s }}s | Headl
 </proof_bank>
 {% endif %}{# changed: the marketing brief the user gave #}{% if brief_text %}<marketing_brief>
 {{ brief_text }}
-Dùng brief: lợi ích/số liệu/ưu đãi ở trên là nguyên liệu thật, ưu tiên hơn suy đoán; không nói điều trong «Tránh nói».
+Dùng brief: lợi ích/số liệu/ưu đãi ở trên là nguyên liệu thật, ưu tiên hơn suy đoán; không nói điều trong «Tránh nói». Scene demo mở bằng KẾT QUẢ người xem được (ý và từ của lợi ích trong brief), thao tác chỉ là vế phụ; scene cta nói ưu đãi + lời kêu gọi + lý do làm ngay.
 </marketing_brief>
 {% endif %}{# changed: examples of good benefit / CTA copy for this kind of product #}{% if examples %}<good_examples>
 Mẫu lời tốt cho loại sản phẩm này (chỉ để học GIỌNG và CẤU TRÚC: lợi ích trước, một hành động ngắn, lý do thật để làm ngay; KHÔNG sao chép nguyên văn, KHÔNG dùng lại số liệu):
