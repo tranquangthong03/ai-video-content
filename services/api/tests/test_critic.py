@@ -137,7 +137,7 @@ def test_the_prompt_is_the_agreed_one_with_persona_chapters_proof_and_script(
     text = render(
         "copy_critic",
         persona="P", goal="G", value="V", chapters_summary=chapters_summary(ctx),
-        proof_bank_json_or_empty="{}", script_compact_json=compact_script(script),
+        proof_bank_json_or_empty="{}", script_compact_json=compact_script(script), brief_text="",
     )  # fmt: skip
     assert text.startswith("Bạn là giám đốc sáng tạo chuyên short video marketing")
     assert "weak_scenes" in text and "hook_strength" in text and "json" in text.lower()

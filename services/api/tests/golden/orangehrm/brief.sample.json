@@ -1,0 +1,8 @@
+{
+  "_warning": "Dữ liệu thử nghiệm, không dùng cho video thật: chỉ để kiểm tra hệ thống dùng brief (regress.py --tier t2 --brief).",
+  "brief": {
+    "audience": "Phòng nhân sự doanh nghiệp nhỏ",
+    "main_benefit": "Tạo hồ sơ nhân viên mới trong vài phút, không cần giấy tờ",
+    "offer": "Mã nguồn mở, dùng miễn phí"
+  }
+}

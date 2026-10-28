@@ -1,6 +1,7 @@
 // AUTO-GENERATED — DO NOT EDIT. Run 'make codegen'.
 export * from "./action";
 export * from "./beat_op";
+export * from "./brief_suggestions";
 export * from "./concept_set";
 export * from "./core_flow";
 export * from "./edit_op";
@@ -9,6 +10,7 @@ export * from "./flow_run";
 export * from "./focus_plan";
 export * from "./interaction";
 export * from "./locator";
+export * from "./marketing_brief";
 export * from "./outline";
 export * from "./outline_edit_plan";
 export * from "./page_insight";

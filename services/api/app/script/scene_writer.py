@@ -113,14 +113,16 @@ def _prompt(
         if ctx.proof and not ctx.proof.is_empty
         else "",
         examples=examples_for(ctx.profile.site_type),
+        brief_text=ctx.brief_text,
     )
 
 
 def scene_errors(draft: DraftScene, ctx: WriterContext, **kw: Any) -> list[str]:
     """check_scene plus the marketing rules: hook line and numbers with a source."""
     errors = check_scene(
-        draft, "scene", ctx.features, ctx.demo_max_words, flow_mode=ctx.flow is not None, **kw
-    )
+        draft, "scene", ctx.features, ctx.demo_max_words, flow_mode=ctx.flow is not None,
+        avoid=ctx.avoid, **kw,
+    )  # fmt: skip
     if draft.type == "hook":
         errors += nar.hook_line_issues(
             "scene", draft.voiceover, draft.on_screen_text, ctx.profile.product_name

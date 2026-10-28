@@ -20,6 +20,7 @@ DEFAULT_ACTION = {
     "outline_review": ("approve", {}),
     "script_review": ("approve", {}),
     "flow_storyboard_review": ("approve", {}),
+    "marketing_brief": ("skip", {}),
     "clarify": ("cancel", {}),
 }
 
@@ -46,6 +47,10 @@ class ScriptedFrontend:
 
     def info(self, text: str) -> None:
         self.console.print(text)
+
+    def wants(self, kind: str) -> bool:
+        """A scripted answer exists for this kind (else --auto skips the optional brief)."""
+        return bool(self.queues.get(kind))
 
     def ask(self, request: InteractionRequest) -> UserResponse:
         queue = self.queues.get(request.kind, [])
@@ -155,6 +160,8 @@ class TerminalFrontend:
             return self._ask_storyboard(request, questionary)
         if kind == "login_required":
             return self._ask_login(request, questionary)
+        if kind == "marketing_brief":
+            return self._ask_brief(request, questionary)
         if kind == "choose_concept":
             self._show_concepts(request)
             concepts = request.concepts or []
@@ -202,6 +209,71 @@ class TerminalFrontend:
                 return make_response(request, "cancel")
             return make_response(request, "answer", answers={q.id: pick})
         raise ValueError(f"TerminalFrontend cannot render {kind}")
+
+    def _ask_brief(self, request: InteractionRequest, questionary: Any) -> UserResponse:
+        """marketing_brief: pick or type each field; all optional, «Bỏ qua» keeps the old way."""
+        form = request.brief_form
+        self.console.print(f"\n[bold]{request.message}[/]")
+        if form is not None:
+            self.console.print(f"[yellow]{form.note}[/]")
+        go = questionary.select(
+            "Bạn muốn bổ sung brief không?",
+            choices=[
+                questionary.Choice("Nhập brief (mọi ô đều tùy chọn)", "fill"),
+                questionary.Choice("Bỏ qua (video chỉ dựa vào website)", "skip"),
+                questionary.Choice("Hủy", "cancel"),
+            ],
+        ).ask()
+        if go in (None, "cancel"):
+            return make_response(request, "cancel")
+        if go == "skip" or form is None:
+            return make_response(request, "skip")
+
+        def pick(label: str, ideas: list[str]) -> str | None:
+            choices = [questionary.Choice(i, i) for i in ideas]
+            choices += [
+                questionary.Choice("Tự nhập", "__own"),
+                questionary.Choice("Bỏ qua ô này", "__none"),
+            ]
+            got = questionary.select(f"{label}:", choices=choices).ask()
+            if got == "__own":
+                got = questionary.text(f"{label}:").ask()
+            return None if got in (None, "", "__none") else str(got)
+
+        def many(label: str) -> list[str]:
+            raw = questionary.text(f"{label} (cách nhau bằng dấu ;, Enter để bỏ qua):").ask() or ""
+            return [x.strip() for x in raw.split(";") if x.strip()]
+
+        sg = form.suggestions
+        brief: dict[str, Any] = {
+            "audience": pick("Đối tượng", sg.audience),
+            "main_benefit": pick("Lợi ích chính", sg.main_benefit),
+            "secondary_benefits": many("Lợi ích phụ"),
+            "proof_points": [],
+        }
+        self.console.print("[dim]Số liệu thật (chỉ nhập số bạn chắc chắn; Enter để dừng)[/]")
+        while len(brief["proof_points"]) < 5:
+            value = questionary.text("Con số (ví dụ 40 hoặc 2.8):").ask() or ""
+            if not value.strip():
+                break
+            unit = questionary.text("Đơn vị (ví dụ %, phút, MB; Enter để bỏ qua):").ask() or ""
+            claim = questionary.text("Câu đầy đủ chứa con số này:").ask() or ""
+            if claim.strip():
+                brief["proof_points"].append(
+                    {"value": value.strip(), "unit": unit.strip() or None, "claim": claim.strip()}
+                )
+        brief["offer"] = pick("Ưu đãi / lý do hành động ngay", sg.offer)
+        brief["cta_text"] = (
+            questionary.text("Lời kêu gọi (Enter để bỏ qua):").ask() or ""
+        ).strip() or None
+        brief["cta_url"] = (
+            questionary.text("Địa chỉ hiện ở cảnh cuối (Enter để bỏ qua):").ask() or ""
+        ).strip() or None
+        brief["tone"] = (
+            questionary.text("Giọng điệu (Enter để bỏ qua):").ask() or ""
+        ).strip() or None
+        brief["avoid"] = many("Điều cần tránh nói")
+        return make_response(request, "answer", brief=brief)
 
     def _ask_login(self, request: InteractionRequest, questionary: Any) -> UserResponse:
         login = request.login

@@ -12,7 +12,7 @@ Usage (from services/api):
       against docs/regress/last.json                          -> 0 LLM calls, no browser
   t2  rerun ONLY the script step + Copy Critic on the snapshot (the explore / flow / theme data
       is read from the snapshot, the LLM cache is off), critic scores against the last run
-      --brief: JSON with fields of the outline to override (goal, duration_s, title)
+      --brief: a marketing brief file (schema marketing_brief); without it the run has no brief
 
 Every tier ends with one line: time, LLM calls, tokens. t0 and t1 forbid LLM calls (they raise).
 """
@@ -34,6 +34,7 @@ API = Path(__file__).resolve().parents[1]
 ROOT = API.parents[1]
 sys.path.insert(0, str(API))  # for `app`
 
+from app.core import brief as bf  # noqa: E402
 from scripts import golden  # noqa: E402
 
 WORK = API / "out" / "regress"
@@ -320,8 +321,14 @@ def critic_scores(report: dict[str, Any]) -> dict[str, Any]:
     return {k: v.get("score") for k, v in (final.get("scores") or {}).items()}
 
 
+def spoken(scene: dict[str, Any]) -> str:
+    """A scene's voice-over, with the on-screen text in brackets."""
+    text = scene.get("voiceover") or ""
+    return f"{text} [{scene['on_screen_text']}]" if scene.get("on_screen_text") else text
+
+
 def run_t2(
-    names: list[str], brief: dict[str, Any] | None, *, save: bool = False
+    names: list[str], brief: Path | None, *, save: bool = False
 ) -> tuple[dict[str, Any], Meter, bool]:
     from app.core.flow_ctx import FlowCtx
     from app.core.usage import UsageTracker
@@ -349,8 +356,9 @@ def run_t2(
                 flow = FlowCtx.load(ws)
                 if flow is not None:
                     profile = flow_profile(profile, flow)
-                if brief:
-                    outline = outline.model_copy(update=brief)
+                # the brief the run works from: the file's, or none (the old behaviour: skipped)
+                given = bf.read_brief_file(brief) if brief else None
+                bf.save_brief(ws, bf.clean_brief(given) if given else None)
                 url = json.loads((ws / "report.json").read_text("utf-8"))["url"]
                 settings = replace(load_settings(), cache_enabled=False)  # the cache is off here
                 tracker = UsageTracker(max_tokens=400_000)
@@ -370,10 +378,14 @@ def run_t2(
                     critic=get_client("copy_critic", tracker=tracker),
                 ).run()  # fmt: skip
                 after = critic_scores(json.loads((ws / "script_report.json").read_text("utf-8")))
+                made = json.loads((ws / "script_approved.json").read_text("utf-8"))["scenes"]
                 now[name] = {
                     "critic": after,
                     "before_snapshot": before,
                     "seconds": round(time.monotonic() - t, 1),
+                    "hook": spoken(made[0]),
+                    "cta": spoken(made[-1]),
+                    "brief": bool(brief),
                 }
             except Exception as e:  # noqa: BLE001
                 ok = False
@@ -394,6 +406,10 @@ def run_t2(
     for name in names:
         if "error" in now[name]:
             print(f"  LỖI {name}: {now[name]['error']}")
+        else:
+            print(f"  {name} ({'có brief' if now[name]['brief'] else 'không brief'})")
+            print(f"    hook: {now[name]['hook']}")
+            print(f"    cta : {now[name]['cta']}")
     if save and ok:
         data = load_last()
         data["t2"] = {**data.get("t2", {}), **{n: {"critic": v["critic"]} for n, v in now.items()}}
@@ -438,6 +454,15 @@ def run_cmd(cmd: list[str], cwd: Path) -> tuple[bool, str]:
     return done.returncode == 0, "\n    ".join([summary or (lines[-1] if lines else ""), *failed])
 
 
+GIT_BASH = ("C:/Program Files/Git/bin/bash.exe", "C:/Program Files/Git/usr/bin/bash.exe")
+
+
+def git_bash() -> str:
+    """Git's bash (on Windows a bare `bash` may be WSL's, which cannot run the script)."""
+    found = next((c for c in GIT_BASH if Path(c).is_file()), None)
+    return found or shutil.which("bash") or "bash"
+
+
 def run_t0(names: list[str], paths: list[str]) -> tuple[Meter, bool]:
     areas, other = areas_of(paths or changed_paths())
     ok = True
@@ -462,7 +487,7 @@ def run_t0(names: list[str], paths: list[str]) -> tuple[Meter, bool]:
                 rows.append([label, "ok" if good else "LỖI", text])
                 ok &= good
         if other["schema"]:
-            good, text = run_cmd(["bash", "packages/script-schema/codegen.sh", "--check"], ROOT)
+            good, text = run_cmd([git_bash(), "packages/script-schema/codegen.sh", "--check"], ROOT)
             rows.append(["codegen-check", "ok" if good else "LỖI", text])
             ok &= good
         for name, good, secs in camera_previews(names):
@@ -494,8 +519,7 @@ def main() -> int:
     elif args.tier == "t1":
         _now, meter, ok = run_t1(args.names, save=args.save, sheets=args.sheets)
     else:
-        brief = json.loads(args.brief.read_text(encoding="utf-8")) if args.brief else None
-        _now, meter, ok = run_t2(args.names, brief, save=args.save)
+        _now, meter, ok = run_t2(args.names, args.brief, save=args.save)
     print(
         f"\nTỔNG {args.tier}: {'đạt' if ok else 'LỖI'} | thời gian {time.monotonic() - started:.0f}s"
         f" | gọi LLM {meter.calls} | token {meter.tokens} | LLM bị chặn {meter.blocked}"

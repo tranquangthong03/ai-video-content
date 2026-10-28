@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from app.browser.form_actions import fold
+from app.schemas.generated.marketing_brief import MarketingBrief
 from app.schemas.generated.product_profile import ProductProfile
 
 MAX_QUOTE_CHARS = 120
@@ -162,10 +163,28 @@ def _quote_ok(text: str) -> bool:
     return MIN_QUOTE_CHARS <= len(text) <= MAX_QUOTE_CHARS and " " in text
 
 
+def _add_user_facts(bank: "ProofBank", brief: MarketingBrief, seen: set[tuple[str, str]]) -> None:
+    """Numbers, claims and the offer of the marketing brief, as sourced facts (source = user)."""
+    for p in brief.proof_points:
+        unit = p.unit or ""
+        value = norm_number(p.value)
+        if (value, unit) in seen:
+            continue
+        seen.add((value, unit))
+        bank.numbers.append(NumberFact(value, unit, p.claim, "user", "benefit"))
+        if p.claim not in bank.quotes:
+            bank.quotes.append(p.claim)
+    if brief.offer:
+        bank.offers.append(Offer("user", brief.offer, brief.offer))
+    if brief.main_benefit and brief.main_benefit not in bank.quotes:
+        bank.quotes.append(brief.main_benefit)
+
+
 def build_proof_bank(
     profile: ProductProfile | None,
     pages: Iterable[dict[str, Any]] = (),
     inventory: Iterable[dict[str, Any]] = (),
+    brief: MarketingBrief | None = None,
 ) -> ProofBank:
     """Read the facts a video may use from the confirmed profile, explored pages and flow frames."""
     sources: list[tuple[str, str]] = []  # (source label, text)
@@ -178,6 +197,8 @@ def build_proof_bank(
 
     bank = ProofBank()
     seen_numbers: set[tuple[str, str]] = set()
+    if brief is not None:  # what the user vouches for comes first and is never dropped
+        _add_user_facts(bank, brief, seen_numbers)
     for label, text in sources:
         for value, unit, start, end in numbers_in(text):
             if (value, unit) in seen_numbers or len(bank.numbers) >= MAX_NUMBERS:

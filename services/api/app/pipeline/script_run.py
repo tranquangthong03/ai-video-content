@@ -12,6 +12,7 @@ from typing import Any
 from pydantic import ValidationError
 from rich.markup import escape
 
+from app.core.brief import load_brief
 from app.core.budget import budget_for, oversize_warning
 from app.core.flow_ctx import FlowCtx, live_inventory
 from app.core.interaction import check_response, make_request
@@ -171,7 +172,7 @@ class ScriptRunner:
                 self.dir, FlowRun.model_validate_json(approved.read_text(encoding="utf-8"))
             )
         ctx.inventory = inventory
-        ctx.proof = build_proof_bank(profile, pages, inventory)
+        ctx.proof = build_proof_bank(profile, pages, inventory, ctx.brief)
         self.report["proof_bank"] = ctx.proof.to_dict()
 
     def prepare(self) -> WriterContext:
@@ -186,6 +187,7 @@ class ScriptRunner:
         )
         self.ctx.capture = self.capture
         self.ctx.flow = self.flow
+        self.ctx.brief = load_brief(self.dir)  # None: never given, or skipped
         self._load_proof(self.ctx)
         if self.flow is None:
             self.ctx.lite = LiteContext(

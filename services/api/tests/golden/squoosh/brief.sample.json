@@ -1,0 +1,7 @@
+{
+  "_warning": "Dữ liệu thử nghiệm, không dùng cho video thật: chỉ để kiểm tra hệ thống dùng brief (regress.py --tier t2 --brief).",
+  "brief": {
+    "main_benefit": "Ảnh nhẹ hơn, web tải nhanh hơn",
+    "offer": "Miễn phí, chạy ngay trên trình duyệt"
+  }
+}

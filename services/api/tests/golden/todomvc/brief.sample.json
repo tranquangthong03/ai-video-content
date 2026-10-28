@@ -1,0 +1,7 @@
+{
+  "_warning": "Dữ liệu thử nghiệm, không dùng cho video thật: chỉ để kiểm tra hệ thống dùng brief (regress.py --tier t2 --brief).",
+  "brief": {
+    "audience": "Người bận rộn cần ghi việc nhanh",
+    "offer": "Thử ngay, không cần đăng ký"
+  }
+}

@@ -41,6 +41,7 @@ from app.pipeline.state import (
 from app.producer.pipeline import ProduceResult, produce
 from app.producer.render import RenderError, render_props
 from app.proposal.flow_outline import flow_profile
+from app.schemas.generated.marketing_brief import MarketingBrief
 from app.schemas.generated.outline import Outline
 from app.schemas.generated.product_profile import ProductProfile
 from app.schemas.generated.script import Script
@@ -89,6 +90,7 @@ class JobConfig:
     # the feature route when no flow can be found or run
     core_flow: bool = True
     flow_film: str = "auto"  # auto | live | replay: how the flow is filmed (see producer.live_clip)
+    brief: MarketingBrief | None = None  # a marketing brief given with the job (CLI --brief)
 
 
 @dataclass
@@ -410,7 +412,7 @@ def _run(cfg: JobConfig, frontend: Frontend, rep: Reporter, progress: Progress) 
                 flow_result = run_core_flow(
                     FlowJob(
                         job_dir, cfg.url, cfg.app_home_url or cfg.url, cfg.storage_state,
-                        cfg.capture, lambda e: sign_in(e).storage_state, cfg.flow_film,
+                        cfg.capture, lambda e: sign_in(e).storage_state, cfg.flow_film, cfg.brief,
                     ),
                     proposal,
                     caller,

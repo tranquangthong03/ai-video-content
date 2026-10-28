@@ -43,6 +43,7 @@ SAMPLE_VARS = {
         allowed_icons="check, globe", duration_s=45, target_words=110, flow_json="",
         proof_json="", framework="", product_name="P", home_domain="x.test",
         forbidden_phrases="a", hook_kinds="b", hook_max_words=12, on_screen_max_words=5,
+        brief_text="",
     ),
     "duration_fit": dict(
         direction="ngắn hơn", target_words=110, current_words=80, script_json="{}",
@@ -55,14 +56,16 @@ SAMPLE_VARS = {
         product_profile_summary="s", forced=False, scene_catalog_json="{}", allowed_icons="check",
         proof_json="",
         examples="",
+        brief_text="",
     ),
     "hook_rewrite": dict(
         text="t", max_words=12, kind="pain_question", persona="p", product_name="P"
     ),
     "copy_critic": dict(
         persona="p", goal="g", value="v", chapters_summary="c", proof_bank_json_or_empty="",
-        script_compact_json="{}",
+        script_compact_json="{}", brief_text="",
     ),
+    "brief_suggest": dict(product_summary="p", flow_summary=""),
     "flow_agent": dict(
         title="t", persona="p", goal="g", expected_steps="a; b", success_signal="s",
         submit_policy="stop", user_notes_or_none="không có", sample_data_json_or_empty="{}",

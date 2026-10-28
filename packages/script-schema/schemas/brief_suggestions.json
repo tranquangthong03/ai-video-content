@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "brief_suggestions.json",
+  "title": "BriefSuggestions",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Ideas for the marketing_brief card, made from the profile and the approved flow: the user picks or edits them.",
+  "required": ["audience", "main_benefit", "offer"],
+  "properties": {
+    "audience": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "main_benefit": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "offer": { "type": "array", "items": { "type": "string" }, "default": [] }
+  }
+}

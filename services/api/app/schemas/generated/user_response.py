@@ -6,7 +6,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from . import edit_op
+from . import edit_op, marketing_brief
 
 
 class Explore(BaseModel):
@@ -68,6 +68,7 @@ class UserResponse(BaseModel):
         'login_done',
         'cancel',
         'explore_more',
+        'skip',
     ]
     explore: Annotated[
         Explore | None,
@@ -81,4 +82,8 @@ class UserResponse(BaseModel):
     ] = None
     answers: dict[str, Any] | None = None
     edit: Edit | None = None
+    brief: Annotated[
+        marketing_brief.MarketingBrief | None,
+        Field(description='Payload of answer on marketing_brief.'),
+    ] = None
     revert_to: int | None = None

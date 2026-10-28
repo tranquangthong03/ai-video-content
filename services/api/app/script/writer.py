@@ -8,17 +8,20 @@ twice, with the list of what is wrong.
 """
 
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
+from app.core import brief as brief_mod
 from app.core.demo_steps import summarize_steps
 from app.core.flow_ctx import FlowCtx
 from app.llm.json_call import JsonCaller, LLMCallError
 from app.llm.prompts import render
 from app.schemas.generated.layouts import LAYOUTS_BY_TYPE
+from app.schemas.generated.marketing_brief import MarketingBrief
 from app.schemas.generated.outline import Outline
 from app.schemas.generated.product_profile import Feature, ProductProfile
 from app.schemas.generated.script import Script
@@ -113,7 +116,17 @@ class WriterContext:
     forced: bool = False
     capture: tuple[int, int] | None = None  # recording size; None = the schema default (1440x900)
     proof: ProofBank | None = None  # real numbers / quotes / offers the words may lean on
+    brief: MarketingBrief | None = None  # what the user told us the website does not say
     inventory: list[dict[str, Any]] = field(default_factory=list)  # frames of the filmed flow
+
+    @property
+    def avoid(self) -> tuple[str, ...]:
+        """Phrases the user asked the video not to say."""
+        return tuple(self.brief.avoid) if self.brief else ()
+
+    @property
+    def brief_text(self) -> str:
+        return brief_mod.prompt_text(self.brief)
 
     @property
     def framework(self) -> str | None:
@@ -211,7 +224,8 @@ def build_prompt(ctx: WriterContext) -> str:
         framework=ctx.framework or "",
         product_name=ctx.profile.product_name,
         home_domain=ctx.home_domain,
-        forbidden_phrases=", ".join(cat.FORBIDDEN_PHRASES),
+        forbidden_phrases=", ".join([*cat.FORBIDDEN_PHRASES, *ctx.avoid]),
+        brief_text=ctx.brief_text,
         hook_kinds=", ".join(cat.HOOK_KINDS),
         hook_max_words=cat.HOOK_MAX_WORDS,
         on_screen_max_words=cat.ON_SCREEN_MAX_WORDS,
@@ -233,6 +247,7 @@ def check_scene(
     *,
     strict_min: bool = True,
     flow_mode: bool = False,
+    avoid: Sequence[str] = (),
 ) -> list[str]:
     """Limits that hold for every scene, whoever wrote it (writer, scene writer, user edit).
 
@@ -259,7 +274,7 @@ def check_scene(
     if cat.word_count(s.on_screen_text) > cat.ON_SCREEN_MAX_WORDS:
         errors.append(f"{label}: on_screen_text quá {cat.ON_SCREEN_MAX_WORDS} từ")
     for field_name, text in nar.scene_texts(s).items():
-        if hits := nar.forbidden_in(text):
+        if hits := nar.forbidden_in(text, avoid):
             errors.append(f"{label}: {field_name} dùng cụm sáo rỗng «{hits[0]}», hãy nói cụ thể")
     if s.stat and (
         not s.stat.value.strip()
@@ -331,7 +346,7 @@ def check_draft(draft: DraftScript, ctx: WriterContext, *, strict_min: bool = Tr
         label = f"scene {i + 1}"
         errors += check_scene(
             scene, label, features, ctx.demo_max_words, strict_min=strict_min,
-            flow_mode=ctx.flow is not None,
+            flow_mode=ctx.flow is not None, avoid=ctx.avoid,
         )  # fmt: skip
         if scene.type == "before_after" and ctx.flow is not None and not ctx.flow.before_after_pair:
             errors.append(
@@ -361,7 +376,7 @@ def narrative_errors(draft: DraftScript, ctx: WriterContext) -> list[str]:
     """Hook, hook options, CTA and headline rules that are checked by code."""
     errors: list[str] = []
     name = ctx.profile.product_name
-    if hits := nar.forbidden_in(draft.headline):
+    if hits := nar.forbidden_in(draft.headline, ctx.avoid):
         errors.append(f"headline dùng cụm sáo rỗng «{hits[0]}»")
     errors += nar.hook_option_issues(
         draft.hook_options,
@@ -633,7 +648,11 @@ def rewrite_long_hooks(
             ).text.strip()  # fmt: skip
         except (LLMCallError, ValidationError):
             return text
-        if new and cat.word_count(new) <= cat.HOOK_MAX_WORDS and not nar.forbidden_in(new):
+        if (
+            new
+            and cat.word_count(new) <= cat.HOOK_MAX_WORDS
+            and not nar.forbidden_in(new, ctx.avoid)
+        ):
             notes.append(f"auto_rewritten: hook «{text}» → «{new}»")
             return new
         return text

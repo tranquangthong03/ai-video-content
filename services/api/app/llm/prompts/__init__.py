@@ -27,6 +27,7 @@ PROMPTS = (
     "flow_agent",
     "copy_critic",
     "hook_rewrite",
+    "brief_suggest",
 )
 
 

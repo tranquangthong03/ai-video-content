@@ -9,6 +9,7 @@ import json
 from collections.abc import Callable
 from pathlib import Path
 
+from app.core import brief as brief_mod
 from app.core import flow_choice
 from app.core.features import default_selection, merge_duplicates, restrict_profile
 from app.core.flow_choice import FlowSelection
@@ -18,7 +19,7 @@ from app.llm.json_call import JsonCaller, LLMCallError
 from app.pipeline.asker import Cancelled as Cancelled  # re-exported: callers import it from here
 from app.pipeline.asker import ask as ask_user
 from app.pipeline.frontend import Frontend
-from app.proposal import beat_mapper
+from app.proposal import beat_mapper, brief_suggest
 from app.proposal import concepts as concepts_mod
 from app.proposal import outline as outline_mod
 from app.proposal import selection as selection_mod
@@ -27,6 +28,7 @@ from app.proposal.wordlimit import enforce_outline
 from app.schemas.generated.core_flow import CoreFlow
 from app.schemas.generated.flow_run import FlowRun
 from app.schemas.generated.interaction import InteractionRequest
+from app.schemas.generated.marketing_brief import MarketingBrief
 from app.schemas.generated.outline import Outline
 from app.schemas.generated.product_profile import ProductProfile
 from app.schemas.generated.user_response import UserResponse
@@ -263,6 +265,37 @@ class ProposalRunner:
             )
             return selection
         raise RuntimeError("too many select_flow rounds")
+
+    # --- 1e. the marketing brief: what the website does not say ----------------------------------
+
+    def marketing_brief(
+        self,
+        profile: ProductProfile,
+        flow: CoreFlow | None,
+        given: MarketingBrief | None = None,
+    ) -> MarketingBrief | None:
+        """The user's brief (None = skipped). `given`: a brief that came with the job (CLI --brief)
+        is used as it is, without asking. Asked once; the answer (or the skip) is saved."""
+        if brief_mod.asked(self.dir):
+            return brief_mod.load_brief(self.dir)
+        if given is not None:
+            cleaned = brief_mod.clean_brief(given)
+            brief_mod.save_brief(self.dir, cleaned)
+            return None if brief_mod.is_empty(cleaned) else cleaned
+        wants = getattr(self.frontend, "wants", None)
+        if wants is not None and not wants("marketing_brief"):
+            brief_mod.save_brief(self.dir, None)  # --auto without a brief: the old behaviour
+            return None
+        suggestions, warning = brief_suggest.suggest(self.caller, profile, flow)
+        if warning:
+            self.warnings.append(warning)
+        response = self._ask(brief_mod.build_request(self.job_id, suggestions))
+        if response.action == "answer" and response.brief is not None:
+            cleaned = brief_mod.clean_brief(response.brief)
+            brief_mod.save_brief(self.dir, cleaned)
+            return None if brief_mod.is_empty(cleaned) else cleaned
+        brief_mod.save_brief(self.dir, None)
+        return None
 
     # --- 1d. storyboard review of the flow the agent ran ---------------------------------------
 

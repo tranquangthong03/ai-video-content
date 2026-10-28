@@ -15,6 +15,14 @@ Bạn là biên kịch short video marketing (TikTok/YouTube Shorts) cho sản p
 {# changed: proof bank, narrative framework and product name for the marketing copy #}{% if proof_json %}<proof_bank>
 {{ proof_json }}
 </proof_bank>
+{% endif %}{# changed: the marketing brief the user gave (what the website does not say) #}{% if brief_text %}<marketing_brief>
+{{ brief_text }}
+Cách dùng brief (ưu tiên hơn mọi suy đoán từ website):
+- Hook (voiceover và hook_options) mở bằng lợi ích chính hoặc một số liệu thật ở trên, nói theo đối tượng đã nêu; không thêm số liệu khác.
+- Mỗi chương feature_demo gắn với MỘT lợi ích (chính hoặc phụ) và nói lợi ích đó, không kể lại thao tác.
+- CTA nói ưu đãi và lời kêu gọi ở trên; địa chỉ (nếu có) hiện trên màn hình nên không đọc từng chữ.
+- Giọng điệu theo brief; tuyệt đối không nói điều trong mục «Tránh nói».
+</marketing_brief>
 {% endif %}{% if framework %}<framework>{{ framework }}</framework>
 {% endif %}<theme>
 {{ theme_json }}

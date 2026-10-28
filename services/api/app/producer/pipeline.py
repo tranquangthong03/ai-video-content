@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 
 from app.browser.auth_detect import LoginRequired
 from app.browser.session import BrowserSession
+from app.core.brief import cta_domain, load_brief
 from app.core.timing import PAUSE_MS, EstimatedTimer, estimate_captions
 from app.llm.json_call import JsonCaller
 from app.producer.dead_frames import cut_dead, dead_ms
@@ -632,7 +633,7 @@ def produce(
         if record.continues:
             entry["same_page"] = True
         if s.type == "cta":
-            entry["cta_domain"] = short_domain(url)
+            entry["cta_domain"] = cta_domain(load_brief(job_dir)) or short_domain(url)
         assets[s.id] = entry
         inventory_file = save_inventory(work, s.id, plan)
         outcomes.append(

@@ -11,7 +11,12 @@ Các chương của luồng: {{ chapters_summary }}
 {{ proof_bank_json_or_empty }}
 </proof_bank>
 
-<script>
+{# changed: the marketing brief the user gave #}{% if brief_text %}<marketing_brief>
+{{ brief_text }}
+</marketing_brief>
+Có brief: chấm benefit_clarity và cta_strength THEO brief (hook/chương có nói đúng lợi ích chính/phụ không; CTA có dùng ưu đãi và lời kêu gọi người dùng đưa không); proof_usage: có dùng số liệu thật trong brief không.
+
+{% endif %}<script>
 {{ script_compact_json }}   {# headline, hook (voiceover, on_screen_text), mỗi scene: id, chapter, voiceover, on_screen_text, stat; cta #}
 </script>
 

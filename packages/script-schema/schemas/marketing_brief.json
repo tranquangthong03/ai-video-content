@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketing_brief.json",
+  "title": "MarketingBrief",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "What the website does not say, given by the user: every field is optional. proof_points are facts the user vouches for; they may appear in the video.",
+  "properties": {
+    "audience": { "type": ["string", "null"], "default": null },
+    "main_benefit": { "type": ["string", "null"], "default": null },
+    "secondary_benefits": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "proof_points": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value", "claim"],
+        "properties": {
+          "value": { "type": "string", "description": "the number as written, e.g. 40 or 2.8" },
+          "unit": { "type": ["string", "null"], "default": null },
+          "claim": { "type": "string", "description": "the full sentence the number belongs to" },
+          "source_note": { "type": ["string", "null"], "default": null }
+        }
+      }
+    },
+    "offer": { "type": ["string", "null"], "default": null },
+    "cta_text": { "type": ["string", "null"], "default": null },
+    "cta_url": { "type": ["string", "null"], "default": null },
+    "tone": { "type": ["string", "null"], "default": null },
+    "avoid": { "type": "array", "items": { "type": "string" }, "default": [] }
+  }
+}

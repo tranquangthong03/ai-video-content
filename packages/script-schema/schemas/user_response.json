@@ -10,7 +10,7 @@
     "job_id": { "type": "string" },
     "base_version": { "type": ["integer", "null"], "default": null },
     "action": {
-      "enum": ["answer", "approve", "edit", "regenerate", "revert", "login_done", "cancel", "explore_more"]
+      "enum": ["answer", "approve", "edit", "regenerate", "revert", "login_done", "cancel", "explore_more", "skip"]
     },
     "explore": {
       "type": ["object", "null"],
@@ -71,6 +71,11 @@
         },
         "ops": { "type": "array", "items": { "$ref": "edit_op.json" }, "default": [] }
       }
+    },
+    "brief": {
+      "oneOf": [{ "$ref": "marketing_brief.json" }, { "type": "null" }],
+      "default": null,
+      "description": "Payload of answer on marketing_brief."
     },
     "revert_to": { "type": ["integer", "null"], "default": null }
   }

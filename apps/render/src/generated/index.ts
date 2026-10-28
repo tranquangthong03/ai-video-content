@@ -1,6 +1,7 @@
 // AUTO-GENERATED — DO NOT EDIT. Run 'make codegen'.
 export * from "./action.js";
 export * from "./beat_op.js";
+export * from "./brief_suggestions.js";
 export * from "./concept_set.js";
 export * from "./core_flow.js";
 export * from "./edit_op.js";
@@ -9,6 +10,7 @@ export * from "./flow_run.js";
 export * from "./focus_plan.js";
 export * from "./interaction.js";
 export * from "./locator.js";
+export * from "./marketing_brief.js";
 export * from "./outline.js";
 export * from "./outline_edit_plan.js";
 export * from "./page_insight.js";

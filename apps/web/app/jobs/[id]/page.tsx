@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { useJob } from "@/lib/use-job";
 import { Button } from "@/components/ui/button";
 import { LoginCard } from "@/components/job/login-card";
+import { MarketingBriefCard } from "@/components/job/brief-card";
 import { SelectFlowCard, StoryboardCard } from "@/components/job/flow-cards";
 import { ClarifyCard, ConceptCard, ConfirmCard, OutlineCard, SelectFeaturesCard } from "@/components/job/proposal-cards";
 import { FailedPanel, RunningPanel, Sidebar, StatusBadge, VideoPanel } from "@/components/job/panels";
@@ -47,6 +48,7 @@ export default function JobPage({ params }: { params: Promise<{ id: string }> })
     else if (pending.kind === "select_features" && pending.profile) body = <SelectFeaturesCard key={pending.interaction_id} ctx={ctx} pending={pending} />;
     else if (pending.kind === "select_flow" && pending.flow_select) body = <SelectFlowCard key={pending.interaction_id} ctx={ctx} pending={pending} />;
     else if (pending.kind === "flow_storyboard_review" && pending.flow_review) body = <StoryboardCard key={pending.interaction_id} ctx={ctx} pending={pending} />;
+    else if (pending.kind === "marketing_brief" && pending.brief_form) body = <MarketingBriefCard key={pending.interaction_id} ctx={ctx} pending={pending} />;
     else if (pending.kind === "choose_concept") body = <ConceptCard key={pending.interaction_id} ctx={ctx} pending={pending} />;
     else if (pending.kind === "outline_review" && pending.outline) body = <OutlineCard key={pending.interaction_id} ctx={ctx} pending={pending} />;
     else if (pending.kind === "script_review") body = <ScriptCard key={pending.interaction_id} ctx={ctx} pending={pending} />;

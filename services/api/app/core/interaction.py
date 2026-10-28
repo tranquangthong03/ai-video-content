@@ -12,6 +12,7 @@ ALLOWED_ACTIONS: dict[str, list[str]] = {
     "login_required": ["login_done", "answer", "cancel"],
     "select_features": ["answer", "explore_more", "cancel"],
     "select_flow": ["answer", "cancel"],
+    "marketing_brief": ["answer", "skip", "cancel"],
     "flow_storyboard_review": ["approve", "edit", "regenerate", "cancel"],
     "choose_concept": ["answer", "regenerate", "cancel"],
     "outline_review": ["approve", "edit", "regenerate", "cancel"],

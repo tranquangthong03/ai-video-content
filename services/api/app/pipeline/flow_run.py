@@ -21,6 +21,7 @@ from app.proposal.flow_outline import build_flow_ctx, flow_profile, outline_from
 from app.recorder.live import LiveFilm
 from app.schemas.generated.core_flow import CoreFlow
 from app.schemas.generated.flow_run import FlowRun
+from app.schemas.generated.marketing_brief import MarketingBrief
 from app.schemas.generated.outline import Outline
 from app.schemas.generated.page_insight import PageInsight
 from app.schemas.generated.product_profile import ProductProfile
@@ -45,6 +46,7 @@ class FlowJob:
     capture: tuple[int, int] | None
     sign_in: Callable[[LoginRequired], Path | None]  # asks the user to sign in again
     film: str = "auto"  # replay: do not film while the agent runs (the steps are replayed later)
+    brief: MarketingBrief | None = None  # a marketing brief that came with the job (CLI --brief)
 
 
 @dataclass
@@ -184,6 +186,7 @@ def run_core_flow(
         return None
     first.append(initial)
     approved = proposal.review_storyboard(flow, run_flow)
+    proposal.marketing_brief(profile, flow, job.brief)  # asked once; saved as marketing_brief.json
     ctx = build_flow_ctx(flow, approved, job.home_url, live_inventory(job.job_dir, approved))
     ctx.save(job.job_dir)
     outline = outline_from_flow(flow, approved, ctx)

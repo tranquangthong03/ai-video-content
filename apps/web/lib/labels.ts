@@ -30,6 +30,7 @@ export const KIND_TITLE: Record<string, string> = {
   select_features: "Chọn tính năng để review",
   select_flow: "Chọn luồng chính để quay",
   flow_storyboard_review: "Duyệt storyboard luồng",
+  marketing_brief: "Bổ sung brief cho video",
   choose_concept: "Chọn hướng video",
   outline_review: "Duyệt dàn ý",
   script_review: "Duyệt kịch bản",

@@ -20,10 +20,10 @@ class HookOption(Protocol):
     on_screen_text: str | None
 
 
-def forbidden_in(text: str | None) -> list[str]:
-    """Empty marketing phrases found in the text."""
+def forbidden_in(text: str | None, extra: Iterable[str] = ()) -> list[str]:
+    """Empty marketing phrases found in the text (`extra`: what the user asked not to say)."""
     folded = fold(text or "")
-    return [p for p in cat.FORBIDDEN_PHRASES if fold(p) in folded]
+    return [p for p in (*cat.FORBIDDEN_PHRASES, *extra) if fold(p) and fold(p) in folded]
 
 
 def opens_with_name(text: str, product_name: str) -> bool:

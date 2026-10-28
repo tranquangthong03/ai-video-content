@@ -143,6 +143,7 @@ def prompt_for(ctx: WriterContext, script: Script) -> str:
         if proof and not proof.is_empty
         else "",
         script_compact_json=compact_script(script),
+        brief_text=ctx.brief_text,
     )
 
 

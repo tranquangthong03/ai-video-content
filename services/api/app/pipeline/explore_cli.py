@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 from rich.console import Console
 from rich.table import Table
 
+from app.core.brief import read_brief_file
 from app.pipeline.explore_run import ExploreRunner
 from app.pipeline.frontend import ScriptedFrontend, TerminalFrontend
 from app.pipeline.runner import (
@@ -69,6 +70,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--film", choices=["auto", "live", "replay"], default="auto",
         help="how a core flow is filmed: during the agent run (live), replayed, or auto",
     )  # fmt: skip
+    p.add_argument(
+        "--brief",
+        type=Path,
+        help="marketing brief (JSON, schema marketing_brief): used instead of asking",
+    )
     p.add_argument(
         "--classic", action="store_true",
         help="the old route: pick separate features instead of one core flow",
@@ -186,6 +192,7 @@ def main(argv: list[str] | None = None) -> int:
         core_flow=not args.classic,
         flow_film=args.film,
         login_url=args.login_url,
+        brief=(read_brief_file(args.brief) if args.brief else None),
     )
     frontend = ScriptedFrontend.from_file(args.answers) if args.auto else TerminalFrontend(console)
     return run_job(cfg, frontend, ConsoleReporter(console)).exit_code

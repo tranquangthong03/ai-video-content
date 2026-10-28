@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from . import core_flow, flow_run
+from . import brief_suggestions, core_flow, flow_run, marketing_brief
 from . import outline as outline_1
 from . import product_profile, video_concept
 
@@ -83,6 +83,15 @@ class Selection(BaseModel):
     new_ids: list[str] = []
 
 
+class BriefForm(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    suggestions: brief_suggestions.BriefSuggestions
+    note: str
+    draft: marketing_brief.MarketingBrief | None = None
+
+
 class InteractionRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -100,6 +109,7 @@ class InteractionRequest(BaseModel):
         'outline_review',
         'select_flow',
         'flow_storyboard_review',
+        'marketing_brief',
     ]
     message: str
     questions: Annotated[list[Question], Field(validate_default=True)] = []
@@ -126,4 +136,5 @@ class InteractionRequest(BaseModel):
             description='flow_storyboard_review: the run to look at (steps carry screenshot paths)'
         ),
     ] = None
+    brief_form: BriefForm | None = None
     selection: Selection | None = None
