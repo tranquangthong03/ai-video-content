@@ -58,6 +58,7 @@ REVISIT_STOP = 3  # the same page state entered this many times = a loop
 # "the account cannot do this" needs evidence; the agent may be refused this many times first
 GIVE_UP_REFUSALS = 2
 EVIDENCE_KINDS = ("no_data", "feature_missing")
+FOCUS_ROLES = ("textbox", "searchbox", "combobox", "slider")
 GIVE_UP_NEEDS_ENV = "env_blocked cần cảnh báo môi trường (trang trống vì hệ thống an toàn chặn)"
 GIVE_UP_NEEDS_PROOF = (
     "chưa có thông báo của trang và chưa thử mở menu/mục khớp mô tả luồng; "
@@ -611,6 +612,9 @@ class FlowAgent:
         in the flow) and the model is told on its next turn."""
         last = run.steps[-1] if run.steps else None
         if last is None or last.action["do"] not in ("click", "navigate"):  # page-changing ones
+            return
+        role = (last.locator or {}).get("role")
+        if role in FOCUS_ROLES:  # clicking a field only focuses it
             return
         if is_commit_text(last.target_text):  # a commit works through a request, not the screen
             return

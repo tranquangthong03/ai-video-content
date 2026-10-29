@@ -47,3 +47,12 @@ def test_blank_and_no_effect_steps_do_not_count() -> None:
             self.blank, self.no_effect = blank, no_effect
 
     assert counts(Step()) and not counts(Step(blank=True)) and not counts(Step(no_effect=True))
+
+
+def test_an_app_shell_with_a_field_is_not_blank(browser_session: BrowserSession) -> None:
+    page = browser_session.new_context().new_page()
+    page.set_content("<body><section><input placeholder='What needs to be done?'></section></body>")
+    assert not page_is_blank(page)
+    page.set_content("<body><nav><a href='/'>Home</a></nav><div id=app></div></body>")
+    assert page_is_blank(page)
+    page.context.close()

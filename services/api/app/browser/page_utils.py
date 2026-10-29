@@ -60,6 +60,9 @@ BLANK_JS = """
     .forEach((n) => n.remove());
   const text = (root.innerText || root.textContent || '').replace(/\\s+/g, ' ').trim();
   if (text.length >= 40) return false;
+  // an app shell with a field or a button to use (an empty to-do list) is not a blank page
+  const usable = 'input:not([type=hidden]),textarea,select,button,[contenteditable]';
+  if (root.querySelector(usable)) return false;
   const big = (el) => {
     const r = el.getBoundingClientRect();
     return r.width >= 80 && r.height >= 80;

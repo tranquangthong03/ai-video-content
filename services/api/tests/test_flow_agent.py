@@ -329,10 +329,10 @@ def test_scrolling_back_up_is_a_valid_step_that_the_recorder_can_repeat(
 def test_a_click_that_changes_nothing_is_a_no_effect_step_the_model_hears_about(
     session: BrowserSession, site: str, tmp_path: Path
 ) -> None:
-    plan = [step("click", "Leave Type"), step("give_up", reason="x", reason_kind="stuck")]
+    plan = [step("navigate", "Leave"), step("give_up", reason="x", reason_kind="stuck")]
     run_agent, llm = agent(session, site, tmp_path, plan)
     run = run_agent.run()
-    clicked = [s for s in run.steps if s.action.do == "click"]
+    clicked = [s for s in run.steps if s.action.do == "navigate"]
     assert clicked and clicked[0].no_effect and clicked[0].flag_reason == "no_effect"
     assert any("TRANG KHÔNG ĐỔI" in c["prompt"] for c in llm.calls[1:])
 
