@@ -348,3 +348,16 @@ def test_a_loop_between_two_pages_stops_before_the_fifteenth_action(
     assert len(moves) < 15 and run.status == "partial"
     assert run.give_up is not None and run.give_up.reason_kind == "stuck"
     assert any("đi vòng" in w for w in run.warnings)
+
+
+def test_a_refused_action_does_not_make_the_step_before_it_a_no_effect_step(
+    session: BrowserSession, site: str, tmp_path: Path
+) -> None:
+    """The page changed (step 2 moved to another page); the refused submit that follows must not
+    be read as "the page did not change after step 2"."""
+    plan = [step("navigate", "Leave"), step("click", "Apply"), step("give_up", reason="x")]
+    flow = flow_for(site, start_url=site + "/flow_home.html")
+    run_agent, _ = agent(session, site, tmp_path, plan, flow=flow)
+    run = run_agent.run()
+    moved = [s for s in run.steps if s.action.do == "navigate"]
+    assert moved and not moved[0].no_effect

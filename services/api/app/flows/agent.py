@@ -295,6 +295,7 @@ class FlowAgent:
         pending_key: str | None = None
         pending_sig = ""
         last_sig = ""
+        acted = False  # the last answer became a step (a refused or failed action did not)
         entered: dict[str, int] = {}  # how many times the page came back to the same state
         shot = self._shot(page, run, 1)
         run.steps.append(self._goto_step(page))
@@ -306,7 +307,8 @@ class FlowAgent:
             state = capture_state(page)
             sig = signature(state)
             if pending_key is not None and sig == pending_sig:
-                self._mark_no_effect(run)
+                if acted:
+                    self._mark_no_effect(run)
                 run.unchanged[pending_key] = run.unchanged.get(pending_key, 0) + 1
                 if run.unchanged[pending_key] >= REPEAT_STOP:
                     run.warnings.append(
@@ -320,6 +322,7 @@ class FlowAgent:
                     return
             last_sig = sig
             pending_key = None
+            acted = False
             self._maybe_escalate(state, run)
             stop = self._limit_reached(run, started)
             if stop:
@@ -385,6 +388,7 @@ class FlowAgent:
             step = self._step(result, answer, action)
             self._flag(run, step, result)
             run.steps.append(step)
+            acted = True
             run.history.append(self._history_line(len(run.steps), result))
             if result.env_issue is not None:
                 self._note_env_issue(run, result.env_issue)
