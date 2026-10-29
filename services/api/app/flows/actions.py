@@ -20,6 +20,7 @@ from app.browser.guard import MAX_WRITE_WINDOWS, RequestGuard, WritesNotAllowed
 from app.browser.locate import ElementInfo, Target, Unsafe, check_clickable, check_typeable, resolve
 from app.browser.page_utils import page_is_blank, wait_for_settle
 from app.browser.write_intent import action_trigger
+from app.core.commit_verbs import is_strong_commit
 from app.flows.page_state import PageElement, PageState
 from app.schemas.generated.locator import LocatorSpec
 
@@ -81,6 +82,8 @@ def is_submit_target(element: PageElement) -> bool:
     """A button that sends the form: the DOM says so, or it sits in a form and is named like one.
     Links never count (a menu entry called "Apply" only goes to another page)."""
     if element.is_submit_like and element.role != "link":
+        return True
+    if is_strong_commit(element.name):  # add to cart / order / pay: a link styled as a button too
         return True
     return element.role == "button" and element.in_form and bool(SUBMIT_NAME.search(element.name))
 

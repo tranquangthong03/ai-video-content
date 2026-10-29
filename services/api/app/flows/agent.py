@@ -25,6 +25,8 @@ from app.browser.form_actions import ActionFailed, NoReadableOptions, fold
 from app.browser.locate import Unsafe, resolve
 from app.browser.page_utils import dismiss_cookie_banner, page_is_blank, wait_for_settle
 from app.browser.session import BrowserSession
+from app.core.commit_verbs import commit_group
+from app.core.goal_status import goal_status, required_groups
 from app.core.usage import BudgetExceeded
 from app.flows.actions import ActionRunner, FlowAction, StepResult, is_submit_target
 from app.flows.chapters import chapter_ids, group_chapters
@@ -607,6 +609,13 @@ class FlowAgent:
             run.invented_refs += int(element is None)
             self._failed(run, action, action.ref or "", "ref không phải nút gửi của form")
             return False
+        wanted = required_groups(self.flow)
+        if wanted and commit_group(element.name) not in wanted and not element.is_submit_like:
+            self._failed(  # the warning must point at the button that matches the user's action
+                run, action, element.name,
+                "nút này không khớp hành động phải làm: " + "; ".join(self.flow.required_actions),
+            )  # fmt: skip
+            return False
         found = resolve(page, element.locator)
         if found.target is None:
             self._failed(run, action, element.name, "không tìm lại được nút gửi")
@@ -679,7 +688,7 @@ class FlowAgent:
                     "flag_reason": s.flag_reason,
                 }
             )
-        return FlowRun.model_validate(
+        flow_run = FlowRun.model_validate(
             {
                 "flow_id": self.flow.id,
                 "status": run.status if run.steps else "failed",
@@ -713,6 +722,18 @@ class FlowAgent:
                 },
             }
         )
+        flow_run.goal_status = goal_status(self.flow, flow_run)  # code decides, not the model
+        if flow_run.goal_status == "not_reached" and flow_run.status in (
+            "reached_goal",
+            "stopped_before_submit",
+        ):
+            flow_run.status = "partial"
+            flow_run.warnings.append(
+                "Chưa thực hiện hành động bạn yêu cầu: " + "; ".join(self.flow.required_actions)
+                if self.flow.required_actions
+                else "Luồng chưa chứng minh được kết quả."
+            )
+        return flow_run
 
     # --- cache ----------------------------------------------------------------------------
 

@@ -186,6 +186,12 @@ class FlowRun(BaseModel):
         ),
     ] = None
     live: Live | None = None
+    goal_status: Annotated[
+        Literal['reached', 'stopped_before_submit', 'not_reached'] | None,
+        Field(
+            description='Computed by code from the actions the user asked for and the real steps; the model never sets it'
+        ),
+    ] = None
     env_issues: Annotated[
         list[EnvIssue],
         Field(

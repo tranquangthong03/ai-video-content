@@ -102,6 +102,11 @@
       ],
       "default": null
     },
+    "goal_status": {
+      "enum": ["reached", "stopped_before_submit", "not_reached", null],
+      "default": null,
+      "description": "Computed by code from the actions the user asked for and the real steps; the model never sets it"
+    },
     "env_issues": {
       "type": "array",
       "default": [],

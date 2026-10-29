@@ -36,3 +36,34 @@ def commit_verb(text: str) -> str | None:
 
 def is_commit_text(text: str) -> bool:
     return commit_verb(text) is not None
+
+
+# the same commitment in different words / languages: "thêm vào giỏ" and "Add to cart" match
+COMMIT_GROUPS: dict[str, tuple[str, ...]] = {
+    "cart": ("add to cart", "add to basket", "add to bag", "them vao gio"),
+    "order": (
+        "place order", "order now", "buy now", "purchase", "checkout", "check out", "pay now",
+        "dat hang", "mua ngay", "thanh toan",
+    ),
+    "save": ("save", "luu", "apply", "confirm", "xac nhan"),
+    "send": ("submit", "send", "gui", "post", "publish", "dang bai", "dang tai"),
+    "create": ("create", "tao", "register", "sign up", "dang ky", "subscribe"),
+    "book": ("book now", "dat cho", "dat lich"),
+    "upload": ("upload",),
+    "delete": ("delete", "remove", "xoa"),
+}  # fmt: skip
+# commits that are written the same way on any control (a link styled as a button included)
+STRONG_GROUPS = ("cart", "order")
+
+
+def commit_group(text: str) -> str | None:
+    """The group of the commit verb in `text` (cart, order, save, ...), or None."""
+    verb = commit_verb(text)
+    if verb is None:
+        return None
+    return next((g for g, phrases in COMMIT_GROUPS.items() if verb in phrases), None)
+
+
+def is_strong_commit(text: str) -> bool:
+    """Add to cart / order / pay: a commitment whatever the control is."""
+    return commit_group(text) in STRONG_GROUPS

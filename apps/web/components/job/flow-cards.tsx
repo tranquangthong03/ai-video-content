@@ -6,7 +6,7 @@ import { fileUrl } from "@/lib/api";
 import {
   EDIT_EXAMPLES,
   FLOW_EXAMPLES,
-  FLOW_STATUS_LABEL,
+  flowStatusLabel,
   canApprove,
   flowAnswers,
   flowStatusTone,
@@ -206,7 +206,7 @@ export function StoryboardCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
       <div className="space-y-1">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-xl font-bold">Storyboard luồng{flow ? `: ${flow.title}` : ""}</h2>
-          <Badge tone={flowStatusTone(run.status)}>{FLOW_STATUS_LABEL[run.status]}</Badge>
+          <Badge tone={flowStatusTone(run.status)}>{flowStatusLabel(run)}</Badge>
           {pending.script_version != null && <Badge tone="muted">bản {pending.script_version}</Badge>}
         </div>
         <p className="text-sm text-muted-foreground">

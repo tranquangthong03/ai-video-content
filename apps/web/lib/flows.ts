@@ -33,6 +33,13 @@ export const FLOW_STATUS_LABEL: Record<FlowRun["status"], string> = {
   failed: "Không thực hiện được",
 };
 
+/** The label comes from the code-verified goal when there is one: the model never says "reached". */
+export function flowStatusLabel(run: FlowRun): string {
+  if (run.goal_status === "not_reached") return "Chưa đạt mục tiêu";
+  if (run.goal_status === "stopped_before_submit") return "Dừng trước khi gửi";
+  return FLOW_STATUS_LABEL[run.status];
+}
+
 export function flowStatusTone(status: FlowRun["status"]): "success" | "default" | "warning" {
   if (status === "reached_goal") return "success";
   if (status === "stopped_before_submit") return "default";
