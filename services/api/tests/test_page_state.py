@@ -194,3 +194,14 @@ def test_a_page_with_nothing_to_operate_says_what_it_shows(
     page.goto(site + "/flowform.html")  # a page with a form does not add its text as messages
     assert not any(m.startswith("Nội dung trang") for m in capture_state(page).messages)
     context.close()
+
+
+def test_a_link_that_stays_on_the_page_is_an_action_even_when_its_text_names_a_side_page() -> None:
+    from app.flows.page_state import _leaves_page, _listed
+
+    url = "https://shop.test/item?id=8"
+    base = {"role": "link", "name": "Add to cart", "text": "Add to cart", "row_named": False}
+    assert _listed({**base, "href": url + "#"}, url)  # href="#" + onclick: an action
+    assert _listed({**base, "href": "javascript:void(0)"}, url)
+    assert not _listed({**base, "href": "https://shop.test/cart"}, url)  # a real side page
+    assert not _leaves_page("#", url) and _leaves_page("https://shop.test/cart", url)

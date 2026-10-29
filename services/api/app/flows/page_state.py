@@ -298,7 +298,14 @@ class PageState:
         return self.scroll_y < self.max_scroll - 4
 
 
-def _listed(raw: dict[str, Any]) -> bool:
+def _leaves_page(href: str | None, url: str) -> bool:
+    """A link that really goes to another page (not "#", javascript: or the page itself)."""
+    if not href or href.lower().startswith(("javascript:", "#")):
+        return False
+    return href.split("#")[0] != url.split("#")[0]
+
+
+def _listed(raw: dict[str, Any], url: str = "") -> bool:
     """False for what the agent must never be offered."""
     name, role = raw["name"], raw["role"]
     texts = [] if raw.get("row_named") else [name, raw["text"]]
@@ -307,7 +314,11 @@ def _listed(raw: dict[str, Any]) -> bool:
     href = raw["href"]
     if href and (is_blocked_href(href) or is_logout_url(href)):
         return False
-    if role == "link" and (is_sensitive_text(name) or is_subpage_text(name)):
+    if role == "link" and is_sensitive_text(name):
+        return False
+    # a side page (cart, sign-in...) is not offered as a destination; a control that stays on the
+    # page (an "Add to cart" link styled as a button, href="#") is an action, not a destination
+    if role == "link" and is_subpage_text(name) and _leaves_page(href, url):
         return False
     return True
 
@@ -324,7 +335,7 @@ def _rank(raw: dict[str, Any]) -> tuple[int, int, int]:
 
 
 def build_state(raw: dict[str, Any]) -> PageState:
-    kept = [e for e in raw["elements"] if _listed(e)]
+    kept = [e for e in raw["elements"] if _listed(e, raw["url"])]
     kept = sorted(sorted(kept, key=_rank)[:MAX_ELEMENTS], key=lambda e: e["index"])
     elements: list[PageElement] = []
     for i, e in enumerate(kept, start=1):
