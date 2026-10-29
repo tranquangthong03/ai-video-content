@@ -103,5 +103,25 @@ export function flowAnswers(opts: {
   return answers;
 }
 
-/** The buttons under the storyboard that fill the edit box with an example sentence. */
-export const EDIT_EXAMPLES = ["Bỏ bước 3", "Chọn loại nghỉ Annual thay vì Personal", "Thêm bước xem My Leave"];
+/** Shown when the flow gives nothing to suggest from. */
+export const EDIT_PLACEHOLDER = "Ví dụ: bỏ một bước, thêm một bước, hoặc nói rõ bạn muốn làm lại luồng khác";
+
+const POINTING = ["hover", "highlight", "goto", "scroll"];
+const words = (text: string): string[] => text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length >= 4);
+
+/**
+ * Up to three sentences to change THIS storyboard (no model call): add an expected step the run
+ * never touched, drop the last real step, stop before the action the user asked for.
+ */
+export function editSuggestions(run: FlowRun, flow?: CoreFlow): string[] {
+  const out: string[] = [];
+  const used = new Set(run.steps.flatMap((s) => words(`${s.target_text ?? ""} ${s.value ?? ""} ${s.note}`)));
+  const unused = flow?.expected_steps.find((e) => words(e).length > 0 && !words(e).some((w) => used.has(w)));
+  if (unused) out.push(`Thêm bước: ${unused}`);
+  const real = run.steps.filter((s) => !POINTING.includes(s.action.do) && !s.blank && !s.no_effect);
+  const last = real[real.length - 1];
+  if (last && real.length > 1) out.push(`Bỏ bước ${last.i}${last.target_text ? ` (${last.target_text})` : ""}`);
+  const action = flow?.required_actions?.[0];
+  if (action && run.goal_status !== "stopped_before_submit") out.push(`Dừng trước khi ${action}`);
+  return out.slice(0, 3);
+}

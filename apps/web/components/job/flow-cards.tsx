@@ -4,7 +4,8 @@ import { useState } from "react";
 import type { InteractionRequest } from "@/lib/generated";
 import { fileUrl } from "@/lib/api";
 import {
-  EDIT_EXAMPLES,
+  EDIT_PLACEHOLDER,
+  editSuggestions,
   FLOW_EXAMPLES,
   flowStatusLabel,
   canApprove,
@@ -199,6 +200,7 @@ export function StoryboardCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
   const [instruction, setInstruction] = useState("");
   const jobId = ctx.job.state.job_id;
   const groups = groupByChapter(run);
+  const suggestions = editSuggestions(run, flow);
   const report = run.report;
 
   return (
@@ -258,12 +260,12 @@ export function StoryboardCard({ ctx, pending }: { ctx: JobCtx; pending: Pending
         <Textarea
           value={instruction}
           onChange={(e) => setInstruction(e.target.value)}
-          placeholder="Ví dụ: chọn loại nghỉ Annual thay vì Personal"
+          placeholder={suggestions[0] ? `Ví dụ: ${suggestions[0]}` : EDIT_PLACEHOLDER}
           aria-label="Yêu cầu sửa luồng"
           disabled={busy}
         />
         <div className="flex flex-wrap gap-2">
-          {EDIT_EXAMPLES.map((e) => (
+          {suggestions.map((e) => (
             <Button key={e} variant="outline" size="sm" disabled={busy} onClick={() => setInstruction(e)}>
               {e}
             </Button>

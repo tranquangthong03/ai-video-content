@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { CoreFlow, FlowRun } from "./generated";
 import { FlowRunSchema, CoreFlowSchema } from "./generated";
 import { buildResponse } from "./responses";
-import { FLOW_EXAMPLES, canApprove, flowAnswers, groupByChapter, qualityLine, stepLine, submitOffer, toggleFlow } from "./flows";
+import { EDIT_PLACEHOLDER, FLOW_EXAMPLES, canApprove, editSuggestions, flowAnswers, groupByChapter, qualityLine, stepLine, submitOffer, toggleFlow } from "./flows";
 
 const flow = (id: string, needsSubmit: boolean): CoreFlow =>
   CoreFlowSchema.parse({
@@ -98,5 +98,32 @@ describe("what the select_flow card says about a flow", () => {
   it("offers two short examples for describing a flow", () => {
     expect(FLOW_EXAMPLES).toHaveLength(2);
     expect(FLOW_EXAMPLES.every((e) => e.length < 60)).toBe(true);
+  });
+});
+
+describe("editSuggestions", () => {
+  const f = CoreFlowSchema.parse({
+    id: "f", title: "t", persona: "p", goal: "g", start_url: "https://x.test/",
+    expected_steps: ["Mở trang", "Xem báo cáo tuần"], success_signal: "s", needs_submit: false, value: "v",
+    required_actions: ["them vao gio"],
+  });
+
+  it("is made from this flow: an unused expected step, the last real step, the user's action", () => {
+    const r = run({ goal_status: "not_reached" });
+    const out = editSuggestions(r, f);
+    expect(out).toContain("Thêm bước: Xem báo cáo tuần");
+    expect(out.some((s) => s.startsWith("Bỏ bước 3"))).toBe(true);
+    expect(out).toContain("Dừng trước khi them vao gio");
+    expect(out.length).toBeLessThanOrEqual(3);
+  });
+
+  it("does not suggest stopping when the run already stopped, and has nothing without data", () => {
+    expect(editSuggestions(run({ goal_status: "stopped_before_submit" }), f)).not.toContain("Dừng trước khi them vao gio");
+    expect(editSuggestions(run({ steps: [] }))).toEqual([]);
+  });
+
+  it("carries no example from a particular site", () => {
+    const text = JSON.stringify([EDIT_PLACEHOLDER, editSuggestions(run(), f)]);
+    expect(text).not.toMatch(/Annual|My Leave|Personal/);
   });
 });
