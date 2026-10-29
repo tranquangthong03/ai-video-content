@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 from app.browser.form_actions import fold
 from app.browser.urls import normalize_url
+from app.core import required_actions
 from app.core.flow_value import rank_by_value
 from app.core.subpages import is_sensitive, is_subpage
 from app.llm.json_call import JsonCaller
@@ -275,6 +276,7 @@ def normalize_flow(
     flow.source = "user"
     flow.expected_steps = flow.expected_steps[:MAX_STEPS]
     notes: list[str] = [flow.notes] if flow.notes else []
+    notes += required_actions.enforce(flow, description)  # the user's own actions stay the goal
     bad = start_problem(flow.start_url, {page_key(p.url) for p in pages})
     wanted = " ".join([description, flow.title, flow.goal])
     near = nearest_page(wanted, pages)

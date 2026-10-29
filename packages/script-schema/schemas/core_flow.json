@@ -17,6 +17,7 @@
     "needs_submit": { "type": "boolean" },
     "value": { "type": "string", "description": "One-sentence benefit for the persona" },
     "related_feature_ids": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "required_actions": { "type": "array", "items": { "type": "string" }, "default": [], "maxItems": 4, "description": "Actions the user named in their own description (e.g. add to cart): the goal of the flow, never swapped for another" },
     "source": { "enum": ["proposed", "user"], "default": "proposed" },
     "confidence": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.7 },
     "notes": { "type": ["string", "null"], "default": null }

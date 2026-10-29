@@ -358,13 +358,15 @@ class ProposalRunner:
             if not instruction:
                 notice = "Bạn chưa nhập yêu cầu sửa."
                 continue
+            if storyboard.classify_edit(instruction) == "redo":
+                notes.clear()  # the earlier changes were about a run that is thrown away
             notes.append(instruction)
             keep = storyboard.keep_prefix(run, instruction)
-            run = run_flow("\n".join(notes), run, keep)
+            run = run_flow("\n".join(notes), run if keep > 1 else None, keep)
             notice = (
                 f"Đã chạy lại theo yêu cầu, giữ {max(0, keep - 1)} bước đầu."
                 if keep > 1
-                else "Đã chạy lại theo yêu cầu từ đầu."
+                else "Đã chạy lại từ đầu, không giữ bước nào của lần trước."
             )
         raise RuntimeError("too many flow_storyboard_review rounds")
 

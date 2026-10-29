@@ -21,6 +21,13 @@ class CoreFlow(BaseModel):
     needs_submit: bool
     value: Annotated[str, Field(description='One-sentence benefit for the persona')]
     related_feature_ids: list[str] = []
+    required_actions: Annotated[
+        list[str],
+        Field(
+            description='Actions the user named in their own description (e.g. add to cart): the goal of the flow, never swapped for another',
+            max_length=4,
+        ),
+    ] = []
     source: Literal['proposed', 'user'] = 'proposed'
     confidence: Annotated[float, Field(ge=0.0, le=1.0)] = 0.7
     notes: str | None = None

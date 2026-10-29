@@ -7,6 +7,7 @@ Step numbers are the `i` of the run (step 1 is the opening page), the same numbe
 import re
 
 from app.browser.form_actions import fold
+from app.core.flow_steps import counts
 from app.core.interaction import make_request
 from app.flows.actions import SUBMIT_NAME
 from app.schemas.generated.core_flow import CoreFlow
@@ -71,6 +72,32 @@ def first_unsafe_index(run: FlowRun) -> int:
     return n
 
 
+STRONG_REDO = (
+    "luong khac", "sai het", "sai roi", "bat dau lai", "tu dau", "tu dau", "start over",
+    "start again", "from scratch", "different flow", "another flow", "wrong flow", "doi luong",
+)  # fmt: skip
+WEAK_REDO = ("lam lai", "lam moi", "redo", "do again")  # "làm lại bước 3" is a change, not a redo
+
+
+def classify_edit(instruction: str) -> str:
+    """'redo' (the whole flow is wrong: start over, keep nothing) or 'modify' (add / drop / change
+    one step: keep the leading steps that are still right)."""
+    text = fold(instruction)
+    if any(p in text for p in STRONG_REDO):
+        return "redo"
+    if any(p in text for p in WEAK_REDO) and not STEP_NUMBER.search(text):
+        return "redo"
+    return "modify"
+
+
+def valid_prefix(run: FlowRun) -> int:
+    """Number of leading steps with no blank / no-effect step among them."""
+    for index, step in enumerate(run.steps):
+        if not counts(step):
+            return index
+    return len(run.steps)
+
+
 def _tokens(text: str) -> set[str]:
     return {t for t in re.findall(r"[a-z0-9]+", fold(text)) if len(t) >= 3 and t not in STOP_WORDS}
 
@@ -78,10 +105,15 @@ def _tokens(text: str) -> set[str]:
 def keep_prefix(run: FlowRun, instruction: str) -> int:
     """How many leading steps (the opening page included) to keep for the user's change.
 
+    A redo keeps only the opening page (= start over). A change keeps the steps before it that
+    are still valid (not blank, not without effect, before any submit).
+
     "bỏ bước 3" keeps steps 1-2; "thêm bước ..." keeps everything that can be repeated safely;
     otherwise the first step whose target or value is named in the sentence is where the rerun
     starts. Nothing recognised: only the opening page is kept."""
-    limit = first_unsafe_index(run)
+    if classify_edit(instruction) == "redo":
+        return 1  # nothing of the old run is kept, not even its first steps
+    limit = min(first_unsafe_index(run), valid_prefix(run))
     text = fold(instruction)
     numbers = [int(m) for m in STEP_NUMBER.findall(text)]
     if numbers:

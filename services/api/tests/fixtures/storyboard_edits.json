@@ -1,0 +1,8 @@
+[
+  {"instruction": "làm lại, chọn sản phẩm khác thay vì cái này", "intent": "redo", "keep": 1},
+  {"instruction": "luong khac di, sai het roi", "intent": "redo", "keep": 1},
+  {"instruction": "bắt đầu lại từ đầu với mục báo cáo", "intent": "redo", "keep": 1},
+  {"instruction": "bỏ bước 4", "intent": "modify", "keep": 3},
+  {"instruction": "them buoc xem trang cai dat nhom", "intent": "modify", "keep": 5},
+  {"instruction": "đổi nội dung Comment", "intent": "modify", "keep": 4}
+]
