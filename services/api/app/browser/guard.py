@@ -124,6 +124,8 @@ class RequestGuard:
     blocked_log: list[tuple[float, str]] = field(default_factory=list)  # (monotonic s, "POST url")
     sink: Callable[[dict[str, Any]], None] | None = None  # told every decision (the job's events)
     env_issues: list[dict[str, Any]] = field(default_factory=list)
+    dialogs: list[dict[str, str]] = field(default_factory=list)  # every native dialog seen
+    unseen_dialogs: list[dict[str, str]] = field(default_factory=list)  # not yet told to the agent
     clock: Callable[[], float] = time.monotonic
 
     def _is_main_domain(self, url: str) -> bool:
@@ -166,6 +168,18 @@ class RequestGuard:
         ):
             return
         self.last_action = (now, trigger, text)
+
+    def note_dialog(self, kind: str, message: str) -> None:
+        event = {"type": kind, "message": message}
+        self.dialogs.append(event)
+        self.unseen_dialogs.append(event)
+        if self.sink is not None:
+            self.sink({"event": "dialog", **event})
+
+    def take_dialogs(self) -> list[dict[str, str]]:
+        """Dialogs that appeared since the last call (the agent's next observation)."""
+        out, self.unseen_dialogs = self.unseen_dialogs, []
+        return out
 
     def trigger(self) -> Trigger:
         last = self.last_action

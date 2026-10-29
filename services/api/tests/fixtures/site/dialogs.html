@@ -1,0 +1,10 @@
+<!doctype html>
+<html><head><title>Dialogs</title></head>
+<body>
+<h1>Dialogs</h1>
+<p>Buttons that open the browser's own message boxes, as shops and admin tools do.</p>
+<button id="a" onclick="alert('Product added'); document.getElementById('out').textContent = 'alert done'">Alert</button>
+<button id="c" onclick="document.getElementById('out').textContent = confirm('Are you sure?') ? 'yes' : 'no'">Confirm</button>
+<button id="p" onclick="document.getElementById('out').textContent = String(prompt('Name?'))">Prompt</button>
+<p id="out">none</p>
+</body></html>

@@ -8,6 +8,7 @@ from typing import Any
 
 from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
 
+from app.browser.dialogs import install_dialog_handler
 from app.browser.guard import RequestGuard
 from app.browser.page_utils import PENDING_JS
 from app.browser.privacy import BLUR_JS, blur_enabled
@@ -80,6 +81,7 @@ class BrowserSession:
 
     def _watch_page(self, page: Page) -> None:
         """A navigation of the main frame is a page load: the requests it brings are reads."""
+        install_dialog_handler(page, self.guard)
         page.on(
             "framenavigated",
             lambda frame: self.guard.note_action("page_load") if frame == page.main_frame else None,

@@ -20,6 +20,7 @@ from playwright.sync_api import Page
 from pydantic import BaseModel, Field
 
 from app.browser.auth_detect import LoginRequired, detect_login
+from app.browser.dialogs import dialog_line
 from app.browser.env_issue import check_env_issue
 from app.browser.form_actions import ActionFailed, NoReadableOptions, fold
 from app.browser.locate import Unsafe, resolve
@@ -466,6 +467,8 @@ class FlowAgent:
 
     def _prompt(self, state: PageState, run: _Run, with_image: bool) -> str:
         warnings = [f"⚠ {w}" for w in self._repeat_warnings(run)]
+        for event in self.session.guard.take_dialogs():
+            warnings.append("ℹ " + dialog_line(event))
         for issue in run.env_issues[-1:]:
             warnings.append(
                 f"⚠ MÔI TRƯỜNG: trang {issue['page_url']} trống vì hệ thống an toàn đã chặn "
