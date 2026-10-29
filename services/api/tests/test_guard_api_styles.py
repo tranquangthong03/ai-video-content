@@ -42,7 +42,7 @@ del.onclick = () => rpc('deleteItem').catch(() => { document.title = 'failed'; }
 <script>
 q.oninput = () => fetch('/indexes/products/queries', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({requests:[{indexName:'p', params:'query=' + q.value}]})}).then(r => r.json()).then(d => { list.innerHTML = d.items.map(i => '<li>' + i + '</li>').join(''); });
 </script>""",
-    "button": """<h1>Items</h1><ul id=list></ul><button id=show>Show</button>
+    "button": """<h1>Items</h1><ul id=list></ul><nav><button id=show>Show</button></nav>
 <script>
 show.onclick = () => fetch('/api/x', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({page: 1})}).then(r => r.json()).then(d => { list.innerHTML = d.items.map(i => '<li>' + i + '</li>').join(''); }).catch(() => 0);
 </script>""",
