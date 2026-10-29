@@ -324,3 +324,27 @@ def test_scrolling_back_up_is_a_valid_step_that_the_recorder_can_repeat(
     }
     r = rec(session, site, tmp_path / "rec", visual, speech_ms=1000)
     assert r.warnings == [] and r.steps_ok == 2
+
+
+def test_a_click_that_changes_nothing_is_a_no_effect_step_the_model_hears_about(
+    session: BrowserSession, site: str, tmp_path: Path
+) -> None:
+    plan = [step("click", "Leave Type"), step("give_up", reason="x", reason_kind="stuck")]
+    run_agent, llm = agent(session, site, tmp_path, plan)
+    run = run_agent.run()
+    clicked = [s for s in run.steps if s.action.do == "click"]
+    assert clicked and clicked[0].no_effect and clicked[0].flag_reason == "no_effect"
+    assert any("TRANG KHÔNG ĐỔI" in c["prompt"] for c in llm.calls[1:])
+
+
+def test_a_loop_between_two_pages_stops_before_the_fifteenth_action(
+    session: BrowserSession, site: str, tmp_path: Path
+) -> None:
+    plan = [step("navigate", "Leave" if n % 2 == 0 else "Dashboard") for n in range(16)]
+    flow = flow_for(site, start_url=site + "/flow_home.html")  # forth and back, forever
+    run_agent, _ = agent(session, site, tmp_path, plan, flow=flow, limits=Limits(max_actions=15))
+    run = run_agent.run()
+    moves = [s for s in run.steps if s.action.do != "goto"]
+    assert len(moves) < 15 and run.status == "partial"
+    assert run.give_up is not None and run.give_up.reason_kind == "stuck"
+    assert any("đi vòng" in w for w in run.warnings)

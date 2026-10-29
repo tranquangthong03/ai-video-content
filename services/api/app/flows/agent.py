@@ -25,7 +25,8 @@ from app.browser.form_actions import ActionFailed, NoReadableOptions, fold
 from app.browser.locate import Unsafe, resolve
 from app.browser.page_utils import dismiss_cookie_banner, page_is_blank, wait_for_settle
 from app.browser.session import BrowserSession
-from app.core.commit_verbs import commit_group
+from app.core.commit_verbs import commit_group, is_commit_text
+from app.core.flow_value import STATE_DO
 from app.core.goal_status import goal_status, required_groups
 from app.core.usage import BudgetExceeded
 from app.flows.actions import ActionRunner, FlowAction, StepResult, is_submit_target
@@ -52,6 +53,7 @@ ESCALATE_FAILED = 2  # refused actions after which the screenshot goes along
 ESCALATE_CANVAS = 0.25  # share of the viewport a canvas / svg must take to do the same
 FILMED_TIMEOUT_S = 480.0
 REPEAT_WARN, REPEAT_STOP = 2, 3
+REVISIT_STOP = 3  # the same page state entered this many times = a loop
 # "the account cannot do this" needs evidence; the agent may be refused this many times first
 GIVE_UP_REFUSALS = 2
 EVIDENCE_KINDS = ("no_data", "feature_missing")
@@ -103,6 +105,27 @@ class _Step:
     blank: bool = False  # the page was empty after the wait: not a valid storyboard step
     no_effect: bool = False  # the page did not change after the action
     flag_reason: str | None = None
+
+
+def flag_useless_returns(steps: list[_Step]) -> None:
+    """Going back to a page already seen only counts when something valuable is done afterwards."""
+    seen: set[str] = set()
+    for index, s in enumerate(steps):
+        later = steps[index + 1 :]
+        returning = (
+            s.action["do"] in ("navigate", "click")
+            and s.url_after in seen
+            and s.url_before != s.url_after  # it moved, and to a page already seen
+            and not is_commit_text(s.target_text)
+        )
+        if returning and not s.no_effect and not any(_valuable(t) for t in later):
+            s.no_effect, s.flag_reason = True, "return_without_value"
+        if s.url_after:
+            seen.add(s.url_after)
+
+
+def _valuable(step: _Step) -> bool:
+    return step.action["do"] in STATE_DO or step.action["do"] in ("hover", "highlight")
 
 
 def tried_to_reach(flow: CoreFlow, steps: list[_Step]) -> bool:
@@ -270,6 +293,8 @@ class FlowAgent:
         )
         pending_key: str | None = None
         pending_sig = ""
+        last_sig = ""
+        entered: dict[str, int] = {}  # how many times the page came back to the same state
         shot = self._shot(page, run, 1)
         run.steps.append(self._goto_step(page))
         if self.previous is not None and self.keep > 1:
@@ -280,12 +305,19 @@ class FlowAgent:
             state = capture_state(page)
             sig = signature(state)
             if pending_key is not None and sig == pending_sig:
+                self._mark_no_effect(run)
                 run.unchanged[pending_key] = run.unchanged.get(pending_key, 0) + 1
                 if run.unchanged[pending_key] >= REPEAT_STOP:
                     run.warnings.append(
                         f"Dừng: «{pending_key}» lặp {REPEAT_STOP} lần mà trang không đổi."
                     )
                     return
+            if sig != last_sig:  # a state entered again, not just the same one still on screen
+                entered[sig] = entered.get(sig, 0) + 1
+                if entered[sig] >= REVISIT_STOP:
+                    self._stop_looping(run, state)
+                    return
+            last_sig = sig
             pending_key = None
             self._maybe_escalate(state, run)
             stop = self._limit_reached(run, started)
@@ -567,6 +599,30 @@ class FlowAgent:
         )
 
     @staticmethod
+    def _mark_no_effect(run: _Run) -> None:
+        """The page looks the same after the last step: the step did nothing (kept in the log, not
+        in the flow) and the model is told on its next turn."""
+        last = run.steps[-1] if run.steps else None
+        if last is None or last.action["do"] not in ("click", "navigate"):  # page-changing ones
+            return
+        if is_commit_text(last.target_text):  # a commit works through a request, not the screen
+            return
+        if not last.no_effect:
+            last.no_effect, last.flag_reason = True, last.flag_reason or "no_effect"
+            run.warnings.append(f"Bước {len(run.steps)} «{last.target_text}» không làm trang đổi.")
+            if run.history:
+                run.history[-1] += " (TRANG KHÔNG ĐỔI: bước này không có tác dụng)"
+
+    @staticmethod
+    def _stop_looping(run: _Run, state: PageState) -> None:
+        """The same state came back for the third time: ending is better than a 15th action."""
+        kind = "env_blocked" if run.env_issues else "stuck"
+        why = f"Trang {state.url} quay lại cùng trạng thái {REVISIT_STOP} lần: agent đang đi vòng."
+        run.warnings.append("Dừng: " + why)
+        run.status = "partial"
+        run.give_up = {"reason_kind": kind, "reason": why, "quote": None}
+
+    @staticmethod
     def _flag(run: _Run, step: _Step, result: StepResult) -> None:
         """A step whose page is empty after the wait is no valid storyboard step."""
         if result.blank:
@@ -651,6 +707,7 @@ class FlowAgent:
     def _finish(
         self, run: _Run, started: float, before: dict[str, int], live: dict[str, Any] | None = None
     ) -> FlowRun:
+        flag_useless_returns(run.steps)
         names = [(i, s.action["do"], s.chapter) for i, s in enumerate(run.steps, start=1)]
         first = next((c for _, d, c in names if d != "goto" and c), "Mở trang")
         names = [(i, d, first if d == "goto" else c) for i, d, c in names]
